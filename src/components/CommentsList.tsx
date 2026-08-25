@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/cn';
 import { commentPreviewText } from '@/lib/commentHeight';
@@ -35,14 +36,19 @@ const REPLY_COLUMN = '2.25rem';
  */
 const LRM = '\u200E';
 
+/** How close the reveal may come to the right edge of the window. */
+const REVEAL_MARGIN = 12;
+
+/** The reveal's own right border. The path never sits under it. */
+const REVEAL_BORDER = 1;
+
 /**
- * U+200B, ZERO WIDTH SPACE, after each separator. A path holds no spaces, so
- * without it the hover layer would wrap by breaking a directory name in half.
- * With it the wrap happens at the slashes, where a reader expects it.
+ * One pixel on top of what the heading clips. `scrollWidth` and `clientWidth`
+ * are whole pixels and the row's own box is not, so the two measurements can
+ * fall a fraction short of the path. A pixel short leaves the ellipsis on a
+ * path that has room, which is the one thing the reveal exists to remove.
  */
-function wrappablePath(path: string): string {
-  return path.replaceAll('/', '/\u200B');
-}
+const REVEAL_SLACK = 1;
 
 export function CommentsList({
   activeKey,
@@ -147,6 +153,16 @@ export function CommentsList({
   );
 }
 
+/** The heading's own rectangle, and what of the path it holds back. */
+interface RevealFrame {
+  /** The width the heading clips. The reveal grows by exactly this. */
+  clipped: number;
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+}
+
 /**
  * The file a group of threads belongs to.
  *
@@ -158,32 +174,131 @@ export function CommentsList({
  * leading LRM keeps a path that opens on a dot or a slash from being reordered
  * around it.
  *
- * Hovering shows the whole path in a small layer under the heading. It wraps
- * rather than reaching past the panel, so nothing about it depends on how wide
- * the sidebar has been dragged.
+ * The pointer over the row reveals the rest of the path on the row's own line.
+ * See PathReveal.
  */
 function SectionHeading({ path }: { path: string }) {
+  const rowRef = useRef<HTMLHeadingElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [frame, setFrame] = useState<RevealFrame | null>(null);
+  const close = useCallback(() => setFrame(null), []);
+
+  // The pointer arriving on the row opens the reveal, and a move inside the row
+  // is what re-arms it: a scroll closes the layer without the pointer having
+  // left, so no second `mouseenter` is coming to open it again.
+  const open = () => {
+    const row = rowRef.current;
+    const text = textRef.current;
+    if (frame != null || row == null || text == null) return;
+    // A path the heading already shows whole has nothing to reveal, and a
+    // layer that grew by nothing over the top of it would only blink.
+    const clipped = text.scrollWidth - text.clientWidth;
+    if (clipped < 1) return;
+    const box = row.getBoundingClientRect();
+    setFrame({
+      clipped,
+      height: box.height,
+      left: box.left,
+      top: box.top,
+      width: box.width,
+    });
+  };
+
   return (
-    <h3 className="bg-surface group relative sticky top-0 z-10 px-3 py-1 hover:z-30">
+    <h3
+      ref={rowRef}
+      className="bg-surface sticky top-0 z-10 px-3 py-1"
+      onMouseEnter={open}
+      onMouseMove={open}
+      onMouseLeave={close}
+    >
       <span
+        ref={textRef}
         dir="rtl"
         className="text-ink-faint block truncate text-left font-mono text-[11px]"
       >
         {LRM + path}
       </span>
-      <span
-        aria-hidden="true"
-        className={cn(
-          'border-line bg-raised text-ink pointer-events-none absolute inset-x-2 top-[calc(100%-3px)]',
-          'z-30 rounded-md border px-2 py-1 font-mono text-[10px] leading-snug break-words shadow-lg',
-          'origin-top scale-[0.98] opacity-0 transition-[opacity,transform] duration-100 ease-out',
-          'group-hover:scale-100 group-hover:opacity-100',
-          'motion-reduce:transition-none'
-        )}
-      >
-        {wrappablePath(path)}
-      </span>
+      {frame != null && (
+        <PathReveal frame={frame} onClose={close} path={path} />
+      )}
     </h3>
+  );
+}
+
+/**
+ * The whole path, on the line the heading already occupies.
+ *
+ * The heading clips the start of the path, so the rest of it can arrive one way
+ * only: the path is anchored to the right edge of its box, and a box that grows
+ * to the right carries every character the row already shows to the right with
+ * it while the missing directories appear at the clip. The layer starts at the
+ * heading's own rectangle and grows by exactly what the heading clips, so it
+ * reads as the row stretching rather than a second copy of it arriving, and it
+ * crosses the sidebar's border and sits over the diff for the width it needs.
+ *
+ * A fixed layer in a portal is what buys that reach. The list scrolls in a
+ * region that hides horizontal overflow — a long path must never give the panel
+ * a scrollbar — and that region clips an absolute child of the heading just as
+ * hard.
+ *
+ * The layer takes no pointer events. It covers the row it belongs to, and a
+ * pointer that entered it would leave the heading and close it, once a frame.
+ * It closes on a scroll rather than following the row, because the heading is
+ * sticky and its section leaves without it.
+ */
+function PathReveal({
+  frame,
+  onClose,
+  path,
+}: {
+  frame: RevealFrame;
+  onClose(): void;
+  path: string;
+}) {
+  const [grown, setGrown] = useState(false);
+
+  // The browser needs one frame at the resting width to transition from.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setGrown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', onClose, true);
+    window.addEventListener('resize', onClose);
+    return () => {
+      window.removeEventListener('scroll', onClose, true);
+      window.removeEventListener('resize', onClose);
+    };
+  }, [onClose]);
+
+  const rest = frame.width + REVEAL_BORDER;
+  const wanted = rest + frame.clipped + REVEAL_SLACK;
+  // The window is the only limit. A path too long for it keeps its ellipsis.
+  const room = window.innerWidth - frame.left - REVEAL_MARGIN;
+  const width = grown ? Math.max(rest, Math.min(wanted, room)) : rest;
+
+  return createPortal(
+    <div
+      aria-hidden="true"
+      className={cn(
+        'border-line bg-raised pointer-events-none fixed z-40 flex items-center',
+        'overflow-hidden rounded-r-md border border-l-0 shadow-lg',
+        'motion-safe:transition-[width] motion-safe:duration-200',
+        'motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]'
+      )}
+      style={{ height: frame.height, left: frame.left, top: frame.top, width }}
+    >
+      {/* The heading's own padding, so the path lands on the pixel it left. */}
+      <span
+        dir="rtl"
+        className="text-ink min-w-0 flex-1 truncate px-3 text-left font-mono text-[11px]"
+      >
+        {LRM + path}
+      </span>
+    </div>,
+    document.body
   );
 }
 
