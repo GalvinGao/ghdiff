@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
-import { formatWatchedRepo } from '@/lib/pullSwitcher';
+import { formatWatchedRepo } from '@/lib/pulls';
 
 /**
  * The watch list, and nothing around it: the dialog that shows this owns the

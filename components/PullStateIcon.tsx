@@ -6,7 +6,7 @@ import { GitPullRequestDraftIcon } from '@primer/octicons-react/GitPullRequestDr
 import { GitPullRequestIcon } from '@primer/octicons-react/GitPullRequestIcon';
 
 import { cn } from '@/lib/cn';
-import type { PullState } from '@/lib/pullSwitcher';
+import type { PullState } from '@/lib/pulls';
 
 // The official octicons, imported one file at a time so only these four reach
 // the bundle. Colors are GitHub's own Primer state tokens, defined per scheme in

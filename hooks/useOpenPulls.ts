@@ -5,30 +5,35 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { withGitHubToken } from './useGitHubToken';
 import {
   formatWatchedRepo,
-  type PullSwitcherData,
+  type OpenPullsData,
   type WatchedRepo,
-} from '@/lib/pullSwitcher';
+} from '@/lib/pulls';
 
-export interface PullSwitcherState {
-  data?: PullSwitcherData;
+export interface OpenPullsState {
+  data?: OpenPullsData;
   loading: boolean;
   error?: string;
   reload(): void;
 }
 
-const EMPTY_DATA: PullSwitcherData = { groups: [], failures: [] };
+const EMPTY_DATA: OpenPullsData = { pulls: [], failures: [] };
 
 /**
- * Loads open pull requests for the watched repositories. It runs only while the
- * switcher is open, so opening the app costs no GitHub requests.
+ * The open pull requests of the watched repositories. The left bar is on every
+ * page, so this runs for the whole session and one instance feeds every list.
+ *
+ * `ready` holds the first request back until the browser has read the token and
+ * the watch list out of storage. Without it the app asks GitHub anonymously,
+ * gets an unauthenticated answer with no review or check state, and then asks
+ * again a tick later.
  */
-export function usePullSwitcher(options: {
-  active: boolean;
+export function useOpenPulls(options: {
+  ready: boolean;
   repos: readonly WatchedRepo[];
   token?: string;
-}): PullSwitcherState {
-  const { active, repos, token } = options;
-  const [data, setData] = useState<PullSwitcherData | undefined>(undefined);
+}): OpenPullsState {
+  const { ready, repos, token } = options;
+  const [data, setData] = useState<OpenPullsData | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   // One request at a time. A reload, or a change of repositories, cancels the
@@ -52,7 +57,7 @@ export function usePullSwitcher(options: {
       if (!response.ok) {
         throw new Error(`GitHub request failed (${response.status}).`);
       }
-      setData((await response.json()) as PullSwitcherData);
+      setData((await response.json()) as OpenPullsData);
     } catch (cause) {
       if (controller.signal.aborted) return;
       setError(
@@ -64,7 +69,7 @@ export function usePullSwitcher(options: {
   }, [repoKey, token]);
 
   useEffect(() => {
-    if (!active) return undefined;
+    if (!ready) return undefined;
     if (repoKey.length === 0) {
       setData(EMPTY_DATA);
       setError(undefined);
@@ -79,11 +84,13 @@ export function usePullSwitcher(options: {
       // good, and the indicator beside the list turned for ever.
       setLoading(false);
     };
-  }, [active, load, repoKey]);
+  }, [load, ready, repoKey]);
 
   const reload = useCallback(() => {
     void load();
   }, [load]);
 
-  return { data, loading, error, reload };
+  // Before the first answer arrives there is nothing on screen yet, and a list
+  // that says "empty" is wrong. `loading` covers the wait either way.
+  return { data, loading: loading || !ready, error, reload };
 }

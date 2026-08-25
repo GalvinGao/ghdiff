@@ -101,6 +101,52 @@ export async function githubWrite<T>(
   return (await response.json()) as T;
 }
 
+/**
+ * POST a GraphQL query. Throws GitHubError on a transport failure, on a
+ * response that carries `errors`, and on a null `data`.
+ *
+ * REST has no field for a review decision and no field for a check rollup, so
+ * the open pull request list asks GraphQL for both in one request per
+ * repository. GraphQL refuses an anonymous caller outright, which is why the
+ * REST path stays as the fallback for a reviewer with no token.
+ */
+export async function githubGraphQL<T>(
+  query: string,
+  variables: Record<string, unknown>,
+  token: string
+): Promise<T> {
+  const response = await fetch(`${GITHUB_API_ROOT}/graphql`, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      accept: JSON_MEDIA_TYPE,
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+      'x-github-api-version': GITHUB_API_VERSION,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  if (!response.ok) {
+    throw new GitHubError(response.status, await readErrorMessage(response));
+  }
+  const body = (await response.json()) as {
+    data?: T | null;
+    errors?: { message?: string }[];
+  };
+  // GraphQL answers 200 with an `errors` array for a repository the token
+  // cannot read, so the status alone does not say whether this worked.
+  if (body.errors != null && body.errors.length > 0) {
+    throw new GitHubError(
+      200,
+      body.errors[0]?.message ?? 'GitHub rejected that query.'
+    );
+  }
+  if (body.data == null) {
+    throw new GitHubError(200, 'GitHub returned no data for that query.');
+  }
+  return body.data;
+}
+
 /** GET a unified diff. Returns the raw response so the body can stream. */
 export async function githubDiff(
   path: string,

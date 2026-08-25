@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 
+import { AppShell } from '@/components/AppShell';
 import { ColorModeScript } from '@/components/ColorModeScript';
 import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import './globals.css';
@@ -26,7 +27,9 @@ export default function RootLayout({
         <ColorModeScript />
       </head>
       <body className="flex h-dvh flex-col">
-        <WorkerPoolProvider>{children}</WorkerPoolProvider>
+        <WorkerPoolProvider>
+          <AppShell>{children}</AppShell>
+        </WorkerPoolProvider>
       </body>
     </html>
   );

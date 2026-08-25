@@ -10,6 +10,7 @@ import type { CodeViewHandle } from '@pierre/diffs/react';
 import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
+import { useAppData } from '@/components/AppDataProvider';
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
 import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
@@ -20,12 +21,9 @@ import {
 } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
-import { useColorMode } from '@/hooks/useColorMode';
-import { useGitHubToken } from '@/hooks/useGitHubToken';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
-import { useWatchedRepos } from '@/hooks/useWatchedRepos';
 import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
 import { cn } from '@/lib/cn';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
@@ -47,10 +45,10 @@ const DEFAULT_CONTROLS: ViewerControls = {
 };
 
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
-  const colorMode = useColorMode();
+  // The left bar owns these, so the diff and the bar cannot disagree about who
+  // the token belongs to or which repositories are watched.
+  const { colorMode, token } = useAppData();
   const workersReady = useWorkerPoolReady();
-  const token = useGitHubToken();
-  const watched = useWatchedRepos();
   const [controls, setControls] = useState<ViewerControls>(DEFAULT_CONTROLS);
   const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   const [selectedLines, setSelectedLines] =
@@ -192,12 +190,10 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       <ReviewHeader
         colorMode={colorMode}
         controls={controls}
-        currentPull={pullTarget}
         onControlsChange={setControls}
         pull={pullTarget == null ? undefined : pull}
-        switcherLabel={describeReviewTarget(target)}
+        targetLabel={describeReviewTarget(target)}
         token={token}
-        watched={watched}
       />
 
       {patch.state === 'ready' && workersReady ? (

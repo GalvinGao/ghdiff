@@ -9,13 +9,11 @@ import {
   IconGearFill,
   IconSymbolDiffstat,
 } from '@pierre/icons';
-import Link from 'next/link';
 import { useState } from 'react';
 
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { GitHubTokenControl } from '@/components/GitHubTokenControl';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
-import { PullSwitcher } from '@/components/PullSwitcher';
 import type { ViewerControls } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
 import {
@@ -31,13 +29,15 @@ import {
 import type { ColorModeState } from '@/hooks/useColorMode';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
 import type { PullDetailsState } from '@/hooks/usePullDetails';
-import type { WatchedReposState } from '@/hooks/useWatchedRepos';
-import type { GitHubPullTarget } from '@/lib/reviewTarget';
 
 // The bar sits on the same surface as the sidebar and carries no boxes: a row of
 // bordered buttons across the top of a diff reads as a form to fill in, and the
 // code is what should hold the eye. Every control here is a bare glyph or a bare
 // word that lifts on hover, which is how diffs-hub does it.
+//
+// Moving between pull requests is the left bar's job now, so what used to be a
+// picker here is a label: the bar already lists every open pull request, and a
+// second list of the same rows behind a menu button was one list too many.
 
 const MARKERS: {
   icon: typeof IconCodeStyleBars;
@@ -53,42 +53,31 @@ const MARKERS: {
 interface ReviewHeaderProps {
   colorMode: ColorModeState;
   controls: ViewerControls;
-  /** The pull request on screen, so the switcher can mark it. */
-  currentPull?: GitHubPullTarget;
   onControlsChange(next: ViewerControls): void;
   /** Absent unless the target is a pull request. */
   pull?: PullDetailsState;
-  switcherLabel: string;
+  /** What is under review, in words. */
+  targetLabel: string;
   token: GitHubTokenState;
-  watched: WatchedReposState;
 }
 
 export function ReviewHeader({
   colorMode,
   controls,
-  currentPull,
   onControlsChange,
   pull,
-  switcherLabel,
+  targetLabel,
   token,
-  watched,
 }: ReviewHeaderProps) {
   const split = controls.diffStyle === 'split';
   return (
     <header className="border-line bg-surface flex h-11 shrink-0 items-center gap-1 border-b px-3">
-      <Link
-        href="/"
-        className="text-ink-faint hover:text-ink mr-1 shrink-0 text-xs font-semibold tracking-wide uppercase"
+      <span
+        className="text-ink-muted shrink-0 truncate text-xs font-medium"
+        title={targetLabel}
       >
-        reviewer
-      </Link>
-      <PullSwitcher
-        current={currentPull}
-        label={switcherLabel}
-        token={token.token}
-        viewerLogin={token.viewer?.login}
-        watched={watched}
-      />
+        {targetLabel}
+      </span>
       {pull != null && <PullTitle pull={pull} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5">

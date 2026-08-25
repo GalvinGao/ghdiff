@@ -48,6 +48,7 @@ npx prek run --all-files
 
 ```
 app/
+  layout.tsx               the app shell: the permanent left bar, then the page
   page.tsx                 home: the open pull requests, and a box for any GitHub URL
   gh/[...segments]/        mirrors github.com paths: /gh/owner/repo/pull/123
   api/diff/                one unified diff
@@ -55,13 +56,48 @@ app/
   api/github/pull/         one pull request's own details, for the header card
   api/github/pulls/        open pull requests for the watched repositories
   api/github/viewer/       who the token belongs to
-components/                the review surface and its chrome
-hooks/                     client state: token, color mode, patch, comments, switcher
+components/                the left bar, the review surface, and their chrome
+hooks/                     client state: token, color mode, patch, comments, pulls
 lib/                       pure domain logic, unit tested
 lib/server/                server-only: the GitHub client
 ```
 
 ## Rules this project holds to
+
+**The left bar belongs to the app, not to a screen.** `app/layout.tsx` mounts
+`AppShell`, which is the bar plus whatever page is open. Moving between pull
+requests never unmounts it, so the list is fetched once per session. The bar
+reads the pull request on screen out of `usePathname()` rather than being told,
+which is what lets it sit above the home page, a review, and a 404 alike.
+
+**One owner for the state the whole app shares.** `AppDataProvider` mounts
+`useColorMode`, `useGitHubToken`, `useWatchedRepos`, and `useOpenPulls` once,
+above the bar and the page. Each of those reads browser storage, and a hook that
+reads storage owns a copy of what it read: two instances would let the bar and
+the page disagree about the token or the watch list. Call `useAppData()`; never
+call those four hooks in a screen.
+
+**The pull request list is repository, then author, then stack.**
+`groupPullsByRepo` in `lib/pulls.ts` produces that shape, `buildPullStacks` in
+`lib/pullStacks.ts` produces the stacks, and everything still level with
+something else goes by pull request number, newest first. GitHub has no stack
+object to ask for, so a stack is read off the branches: one open pull request
+whose base branch is another open pull request's head branch is stacked on it.
+Stacks are built inside an author group, so two people never share one chain.
+
+**The review and the check axes need a token.** `/api/github/pulls` asks GraphQL
+for `reviewDecision` and the head commit's `statusCheckRollup`, which REST does
+not carry. GraphQL refuses an anonymous caller, so a reviewer with no token gets
+the REST list and `PullSummary.status` stays **absent** — not `none`. Absent
+means "never asked", and `PullStatusIcon` leaves the square off the row rather
+than claim there is no review and no CI.
+
+**The status square is GalvinGao/floodgate's, deliberately.** Left half review,
+right half checks, white `+` when the author pushed after somebody asked for
+changes. The colours are Primer's, defined per scheme as `--app-status-*` in
+`globals.css`. floodgate paints the same square into the favicon of every pull
+request tab, so a colour must keep meaning the same thing in both places: change
+`lib/pullStatus.ts` and floodgate's `lib/pr-status.ts` together, or not at all.
 
 **The filter drives both panes.** `applyReviewFilter` returns the items for the
 viewer and the paths for the tree from one pass. Never filter one without the
