@@ -3,7 +3,7 @@ import {
   type CommentPayload,
   gitHubSideFromAnnotation,
 } from '@/lib/comments';
-import { useLogger, withEvlog } from '@/lib/logger';
+import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
   GitHubError,
   type GitHubPullRequest,
@@ -49,13 +49,13 @@ function json(body: unknown, status = 200): Response {
 
 function errorResponse(
   error: unknown,
-  log: ReturnType<typeof useLogger>
+  log: ReturnType<typeof requestLog>
 ): Response {
   if (error instanceof GitHubError) {
     log.set({ outcome: 'error', status: error.status });
     return json({ error: error.message }, error.status);
   }
-  log.error(error, { step: 'comments' });
+  log.error(toLoggable(error), { step: 'comments' });
   return json({ error: 'That comment request failed.' }, 500);
 }
 
@@ -84,7 +84,7 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
 }
 
 export const GET = withEvlog(async (request: Request): Promise<Response> => {
-  const log = useLogger();
+  const log = requestLog();
   const pull = readPullRef(new URL(request.url));
   if (pull == null) {
     return json({ error: 'Name a pull request.' }, 400);
@@ -114,7 +114,7 @@ interface CreateCommentBody {
 }
 
 export const POST = withEvlog(async (request: Request): Promise<Response> => {
-  const log = useLogger();
+  const log = requestLog();
   const pull = readPullRef(new URL(request.url));
   if (pull == null) {
     return json({ error: 'Name a pull request.' }, 400);
@@ -185,7 +185,7 @@ export const POST = withEvlog(async (request: Request): Promise<Response> => {
 });
 
 export const DELETE = withEvlog(async (request: Request): Promise<Response> => {
-  const log = useLogger();
+  const log = requestLog();
   const url = new URL(request.url);
   const owner = url.searchParams.get('owner');
   const repo = url.searchParams.get('repo');

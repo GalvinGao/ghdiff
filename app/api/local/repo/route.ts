@@ -1,4 +1,4 @@
-import { useLogger, withEvlog } from '@/lib/logger';
+import { requestLog, withEvlog } from '@/lib/logger';
 import {
   isLocalGitEnabled,
   LocalGitError,
@@ -13,7 +13,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 export const GET = withEvlog(async (request: Request): Promise<Response> => {
-  const log = useLogger();
+  const log = requestLog();
   const url = new URL(request.url);
   const input = url.searchParams.get('repo');
 

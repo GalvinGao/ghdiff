@@ -126,12 +126,21 @@ export async function verifyRef(
   if (!REF_PATTERN.test(trimmed)) {
     throw new LocalGitError(400, `"${ref}" is not a valid git ref.`);
   }
-  await runGit(repoPath, [
-    'rev-parse',
-    '--verify',
-    '--quiet',
-    `${trimmed}^{commit}`,
-  ]);
+  // `rev-parse --quiet` prints nothing and exits 1 for an unknown ref, so
+  // runGit would surface the raw command line. Say what the reviewer needs.
+  try {
+    await runGit(repoPath, [
+      'rev-parse',
+      '--verify',
+      '--quiet',
+      `${trimmed}^{commit}`,
+    ]);
+  } catch {
+    throw new LocalGitError(
+      404,
+      `"${trimmed}" is not a commit in this repository.`
+    );
+  }
   return trimmed;
 }
 

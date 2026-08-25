@@ -1,24 +1,25 @@
 import type { AnnotationSide, SelectedLineRange } from '@pierre/diffs';
 
-/** A comment the user is still typing. It has no upstream identity yet. */
-export interface DraftComment {
-  kind: 'draft';
+/**
+ * One comment on one diff line range.
+ *
+ * This is a single interface rather than a draft-or-saved union on purpose.
+ * `DiffLineAnnotation<T>` resolves its metadata through a conditional type, and
+ * a union `T` would distribute into a union of annotation shapes that the
+ * viewer will not accept. `kind` discriminates, and the two aliases below name
+ * the fields each kind guarantees.
+ */
+export interface CommentMetadata {
+  kind: 'draft' | 'saved';
   /** Client-side identity, unique for the life of the page. */
   key: string;
   body: string;
   range: SelectedLineRange;
-}
-
-/** A comment that exists in its store, either GitHub or browser storage. */
-export interface SavedComment {
-  kind: 'saved';
-  key: string;
+  /** Set once the comment is saved. */
+  author?: string;
+  authorAvatarUrl?: string;
   /** GitHub review-comment id. Absent for a browser-only comment. */
   githubId?: number;
-  author: string;
-  authorAvatarUrl?: string;
-  body: string;
-  range: SelectedLineRange;
   createdAt?: string;
   /** URL of the comment on github.com, when it has one. */
   htmlUrl?: string;
@@ -28,7 +29,11 @@ export interface SavedComment {
   error?: string;
 }
 
-export type CommentMetadata = DraftComment | SavedComment;
+/** A comment the user is still typing. It has no upstream identity yet. */
+export type DraftComment = CommentMetadata & { kind: 'draft' };
+
+/** A comment that exists in its store, either GitHub or browser storage. */
+export type SavedComment = CommentMetadata & { kind: 'saved'; author: string };
 
 export function isDraftComment(
   metadata: CommentMetadata
@@ -39,7 +44,7 @@ export function isDraftComment(
 export function isSavedComment(
   metadata: CommentMetadata
 ): metadata is SavedComment {
-  return metadata.kind === 'saved';
+  return metadata.kind === 'saved' && metadata.author != null;
 }
 
 /**

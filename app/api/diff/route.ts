@@ -1,4 +1,4 @@
-import { useLogger, withEvlog } from '@/lib/logger';
+import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import { reviewTargetFromQuery, reviewTargetKey } from '@/lib/reviewTarget';
 import {
   GitHubError,
@@ -26,7 +26,7 @@ function textResponse(body: string, status: number): Response {
 }
 
 export const GET = withEvlog(async (request: Request): Promise<Response> => {
-  const log = useLogger();
+  const log = requestLog();
   const params = new URL(request.url).searchParams;
   const target = reviewTargetFromQuery(params);
   if (target == null) {
@@ -60,7 +60,7 @@ export const GET = withEvlog(async (request: Request): Promise<Response> => {
       log.set({ outcome: 'error', status: error.status });
       return textResponse(error.message, error.status);
     }
-    log.error(error, { step: 'load-diff' });
+    log.error(toLoggable(error), { step: 'load-diff' });
     return textResponse('Could not load that diff.', 500);
   }
 });

@@ -1,4 +1,4 @@
-import { useLogger, withEvlog } from '@/lib/logger';
+import { requestLog, withEvlog } from '@/lib/logger';
 import {
   dedupeWatchedRepos,
   formatWatchedRepo,
@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic';
 const MAX_WATCHED_REPOS = 25;
 
 export const GET = withEvlog(async (request: Request): Promise<Response> => {
-  const log = useLogger();
+  const log = requestLog();
   const raw = new URL(request.url).searchParams.get('repos') ?? '';
   const repos = dedupeWatchedRepos(
     raw

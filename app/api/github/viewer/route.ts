@@ -1,4 +1,4 @@
-import { useLogger, withEvlog } from '@/lib/logger';
+import { requestLog, withEvlog } from '@/lib/logger';
 import {
   GitHubError,
   type GitHubUser,
@@ -12,7 +12,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 export const GET = withEvlog(async (request: Request): Promise<Response> => {
-  const log = useLogger();
+  const log = requestLog();
   const token = readGitHubToken(request);
   if (token == null) {
     return Response.json(
