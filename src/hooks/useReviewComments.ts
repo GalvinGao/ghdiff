@@ -449,7 +449,7 @@ export function useReviewComments(options: {
       const range = existing.metadata.range;
 
       // Shown at once as a thread of one, then reconciled with what GitHub
-      // returns. Reviewer posts a new top-level comment; it does not reply.
+      // returns. ghdiff posts a new top-level comment; it does not reply.
       replace(itemId, key, () => ({
         kind: 'thread',
         key,
@@ -525,7 +525,7 @@ export function useReviewComments(options: {
       const metadata = state.byItemId
         .get(itemId)
         ?.find((annotation) => annotation.metadata.key === key)?.metadata;
-      // Deleting a thread deletes every message reviewer knows about it. A
+      // Deleting a thread deletes every message ghdiff knows about it. A
       // reply left behind on GitHub would reappear as its own thread.
       const githubIds =
         metadata != null && isCommentThread(metadata)

@@ -24,7 +24,7 @@ export function DropdownMenuContent({
           // the end of the list hands the gesture to the page behind it, and
           // the whole app rubber-bands away from under the open menu.
           'overscroll-contain',
-          'data-[state=open]:reviewer-pop-in',
+          'data-[state=open]:ghdiff-pop-in',
           className
         )}
         {...props}

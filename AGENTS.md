@@ -1,13 +1,13 @@
-# reviewer
+# ghdiff
 
 A code review surface built on [`@pierre/diffs`](https://diffs.com) and
-`@pierre/trees`. It renders one unified diff, filters the file list by preset
-path rules, and carries line comments back to GitHub.
+`@pierre/trees`, served at ghdiff.com. It renders one unified diff, filters the
+file list by preset path rules, and carries line comments back to GitHub.
 
 `diffs-hub` in the `pierrecomputer/pierre` monorepo is the reference
-implementation. Reviewer differs from it in three ways that matter:
+implementation. ghdiff differs from it in three ways that matter:
 
-| Concern        | diffs-hub                                          | reviewer                                                  |
+| Concern        | diffs-hub                                          | ghdiff                                                    |
 | -------------- | -------------------------------------------------- | --------------------------------------------------------- |
 | File filter    | git status only                                    | preset path rules **and** git status **and** a path query |
 | Filter reach   | the file tree                                      | the file tree **and** the diff scroll region              |
@@ -47,7 +47,8 @@ src/
   routes/
     __root.tsx             the document, then AppShell: the left bar, then the page
     index.tsx              home: the open pull requests, and a box for any GitHub URL
-    gh/$.tsx               mirrors github.com paths: /gh/owner/repo/pull/123
+    $.tsx                  mirrors github.com paths: /owner/repo/pull/123
+    gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff
     api/comments.ts        GitHub pull request review comments: read, post, reply, delete
     api/github/pull.ts     one pull request's own details, for the header card
@@ -72,6 +73,33 @@ pull requests never unmounts it, so the list is fetched once per session. The
 bar reads the pull request on screen out of `useLocation()` rather than being
 told, which is what lets it sit above the home page, a review, and a 404 alike.
 
+**A review URL is github.com's own path, at the root.** `src/routes/$.tsx` is a
+splat over the whole path, so `ghdiff.com/owner/repo/pull/123` is the github.com
+URL with the host swapped and nothing else. Every static route — `/` and each
+`/api/...` handler — outranks the splat, so adding a static route is safe and
+adding a top-level _page_ route is what would shadow a repository owner of that
+name. `src/routes/gh/$.tsx` is the old prefix and holds no component: its loader
+throws a `redirect`, which keeps every link already written alive. `PullRail`
+reads through a leading `gh` segment for the one navigation the redirect takes.
+
+**The left bar is not there when it has nothing to list.** `PullRail` returns
+`null` while the watch list is empty, because an empty column beside a diff is a
+promise the app cannot keep. The test is
+`watched.hydrated && repos.length === 0` and not `repos.length` alone: browser
+storage is read after mount, so an unread watch list looks empty, and hiding the
+bar on that reading would unmount it and re-mount it on every load. With the bar
+away, `ReviewHeader` takes its `showBrand` prop and carries the way home, so no
+screen is a dead end.
+
+**The accent is ink, not a hue.** `--app-accent` is near-black in the light
+scheme and near-white in the dark one, and `--app-accent-ink` is its opposite,
+so the one filled control on a screen is the app's only colour and every other
+colour on screen belongs to the diff. That is also why `--app-accent-hover`
+exists: a `brightness` filter moves near-black and near-white by nothing, so the
+`solid` variant in `src/components/ui/buttonClass.ts` names a second tone
+instead. A link inside a comment body is `text-accent` and reads as body text;
+its underline is what marks it.
+
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
 `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and `useOpenPulls` once,
 above the bar and the page. Each of those reads browser storage, and a hook that
@@ -89,7 +117,7 @@ Stacks are built inside an author group, so two people never share one chain.
 
 **The review and the check axes need a token.** `/api/github/pulls` asks GraphQL
 for `reviewDecision` and the head commit's `statusCheckRollup`, which REST does
-not carry. GraphQL refuses an anonymous caller, so a reviewer with no token gets
+not carry. GraphQL refuses an anonymous caller, so a caller with no token gets
 the REST list and `PullSummary.status` stays **absent** — not `none`. Absent
 means "never asked", and `PullStatusIcon` leaves the square off the row rather
 than claim there is no review and no CI.
@@ -133,7 +161,7 @@ into a union of annotation shapes the viewer rejects. `kind` discriminates
 instead.
 
 **Client hooks depend on strings, not on the target object.** The target comes
-from the `/gh/$` loader, so its identity changes on every re-run of that loader.
+from the `/$` loader, so its identity changes on every re-run of that loader.
 `useReviewComments` derives `storageKey`, `pullQuery`, and `pullRepo` and
 depends on those.
 
@@ -213,7 +241,7 @@ every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
 
 **A sidebar drag renders nothing.** `src/hooks/useSidebarWidth.ts` writes every
-pointermove straight onto `--reviewer-sidebar-width` on the layout element, and
+pointermove straight onto `--ghdiff-sidebar-width` on the layout element, and
 tells React once, on pointerup. The grid column and the handle's own `left` both
 read that property, so the pane and the seam travel together while the
 `CodeView` beside them is neither re-rendered nor re-measured. The drag's active

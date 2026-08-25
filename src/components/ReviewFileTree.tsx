@@ -56,10 +56,10 @@ const TREE_CSS = `
     text-align: right;
   }
   [data-item-section='decoration'] > span > span:first-child {
-    width: var(--reviewer-tree-add-column, 3ch);
+    width: var(--ghdiff-tree-add-column, 3ch);
   }
   [data-item-section='decoration'] > span > span:last-child {
-    width: var(--reviewer-tree-delete-column, 3ch);
+    width: var(--ghdiff-tree-delete-column, 3ch);
   }
   /* A directory total is a summary of the rows under it, so it sits behind
      them rather than competing with them. */
@@ -76,7 +76,7 @@ const PRESERVE_PATCH_ORDER: Exclude<
 
 const BASE_OPTIONS = {
   flattenEmptyDirectories: true,
-  id: 'reviewer-file-tree',
+  id: 'ghdiff-file-tree',
   initialExpansion: 'open',
   presorted: true,
   // The sidebar's own field owns the search: it writes the filter's path
@@ -237,8 +237,8 @@ export const ReviewFileTree = memo(function ReviewFileTree({
         ...STYLE_OVERRIDES,
         // One extra character for the sign. `ch` is the width of a zero, and
         // the lane sets tabular figures, so every digit measures the same.
-        '--reviewer-tree-add-column': `${String(stats.addedDigits + 1)}ch`,
-        '--reviewer-tree-delete-column': `${String(stats.deletedDigits + 1)}ch`,
+        '--ghdiff-tree-add-column': `${String(stats.addedDigits + 1)}ch`,
+        '--ghdiff-tree-delete-column': `${String(stats.deletedDigits + 1)}ch`,
       }) as CSSProperties,
     [colorScheme, stats.addedDigits, stats.deletedDigits]
   );

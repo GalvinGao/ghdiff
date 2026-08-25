@@ -7,6 +7,7 @@ import {
   IconGearFill,
   IconSymbolDiffstat,
 } from '@pierre/icons';
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { ColorModeToggle } from '@/components/ColorModeToggle';
@@ -54,6 +55,8 @@ interface ReviewHeaderProps {
   onControlsChange(next: ViewerControls): void;
   /** Absent unless the target is a pull request. */
   pull?: PullDetailsState;
+  /** True when the left bar is not on screen and the way home has to be here. */
+  showBrand?: boolean;
   /** What is under review, in words. */
   targetLabel: string;
   token: GitHubTokenState;
@@ -64,12 +67,21 @@ export function ReviewHeader({
   controls,
   onControlsChange,
   pull,
+  showBrand = false,
   targetLabel,
   token,
 }: ReviewHeaderProps) {
   const split = controls.diffStyle === 'split';
   return (
     <header className="border-line bg-surface flex h-11 shrink-0 items-center gap-1 border-b px-3">
+      {showBrand && (
+        <Link
+          to="/"
+          className="text-ink-faint hover:text-ink shrink-0 text-xs font-semibold tracking-wide uppercase"
+        >
+          ghdiff
+        </Link>
+      )}
       <span
         className="text-ink-muted shrink-0 truncate text-xs font-medium"
         title={targetLabel}

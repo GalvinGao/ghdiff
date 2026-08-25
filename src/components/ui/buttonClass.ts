@@ -16,8 +16,11 @@ export type ButtonVariant = 'solid' | 'outline' | 'danger' | 'quiet' | 'chrome';
 export type ButtonSize = 'sm' | 'md' | 'icon' | 'icon-sm';
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
+  // The accent is near-black in one scheme and near-white in the other, so a
+  // brightness filter moves it by nothing in either. The hover tone is its own
+  // colour, stated in globals.css.
   solid:
-    'border-accent bg-accent text-accent-ink shadow-sm hover:brightness-110 active:brightness-95',
+    'border-accent bg-accent text-accent-ink shadow-sm hover:border-accent-hover hover:bg-accent-hover active:border-accent active:bg-accent',
   outline: [
     'border-line bg-raised text-ink shadow-sm hover:bg-surface hover:border-ink-faint active:bg-surface',
     'aria-pressed:bg-surface aria-pressed:border-ink-faint aria-pressed:shadow-none',

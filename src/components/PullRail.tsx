@@ -29,6 +29,13 @@ import { RAIL_COLLAPSED_STORAGE_KEY } from '@/lib/storageKeys';
 //
 // The bar reads the pull request on screen out of the path rather than being
 // told, so it works the same above the home page, a review, and a 404.
+//
+// With no repository on the watch list the bar has no list to be, so it does not
+// render at all: an empty column beside a diff is a promise the app cannot keep.
+// The home page owns the watch list and every screen keeps a way back to it, so
+// nothing is out of reach while the bar is away. The test is `hydrated`, not
+// `repos.length` alone, because browser storage is read after mount and an
+// unread watch list looks empty.
 
 const EXPANDED_WIDTH = '17rem';
 const COLLAPSED_WIDTH = '2.75rem';
@@ -41,6 +48,10 @@ export function PullRail() {
     false
   );
   const current = useCurrentPull();
+
+  if (watched.hydrated && watched.repos.length === 0) {
+    return null;
+  }
 
   return (
     <>
@@ -60,7 +71,7 @@ export function PullRail() {
               to="/"
               className="text-ink-faint hover:text-ink min-w-0 truncate px-1 text-xs font-semibold tracking-wide uppercase"
             >
-              reviewer
+              ghdiff
             </Link>
           )}
           <Button
@@ -165,7 +176,7 @@ function CollapsedMarks({ current }: { current?: GitHubPullTarget }) {
         return (
           <Link
             key={`${pull.owner}/${pull.repo}#${pull.number}`}
-            to="/gh/$"
+            to="/$"
             params={{
               _splat: reviewTargetSplat({
                 kind: 'github-pull',
@@ -202,8 +213,11 @@ function useCurrentPull(): GitHubPullTarget | undefined {
   const pathname = useLocation({ select: (location) => location.pathname });
   return useMemo(() => {
     const segments = pathname.split('/').filter((part) => part.length > 0);
-    if (segments[0] !== 'gh') return undefined;
-    const target = gitHubTargetFromSegments(segments.slice(1));
+    // A `/gh` prefix redirects to the same path without it. The redirect is one
+    // navigation away, and reading through the prefix keeps the row highlighted
+    // for that navigation instead of blinking off and on.
+    const path = segments[0] === 'gh' ? segments.slice(1) : segments;
+    const target = gitHubTargetFromSegments(path);
     return target?.kind === 'github-pull' ? target : undefined;
   }, [pathname]);
 }

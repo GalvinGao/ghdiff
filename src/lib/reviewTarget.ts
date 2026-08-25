@@ -70,7 +70,7 @@ export function describeReviewTarget(target: ReviewTarget): string {
 }
 
 /**
- * The splat for the `/gh/$` route, which is everything after `/gh/`. The router
+ * The splat for the `/$` route, which is the whole path. The router
  * percent-encodes each segment on the way out and decodes it on the way back,
  * so this function writes the path plainly and `gitHubTargetFromSegments`
  * reads it back.
@@ -150,7 +150,7 @@ export function reviewTargetFromQuery(
 }
 
 /**
- * Rebuilds a GitHub target from the `/gh/...` route segments, which mirror
+ * Rebuilds a GitHub target from the route's path segments, which mirror
  * github.com's own paths.
  */
 export function gitHubTargetFromSegments(

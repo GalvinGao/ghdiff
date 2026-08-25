@@ -10,7 +10,7 @@ const GITHUB_API_VERSION = '2022-11-28';
 // GitHub answers 403 "Request forbidden by administrative rules" to a request
 // that carries no User-Agent. Node's fetch sends one of its own; workerd sends
 // none, so every request from this client names itself.
-const USER_AGENT = 'reviewer';
+const USER_AGENT = 'ghdiff';
 const JSON_MEDIA_TYPE = 'application/vnd.github+json';
 const DIFF_MEDIA_TYPE = 'application/vnd.github.diff';
 

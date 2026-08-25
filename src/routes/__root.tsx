@@ -12,11 +12,11 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'reviewer' },
+      { title: 'ghdiff' },
       {
         name: 'description',
         content:
-          'Review a GitHub pull request, commit, or compare range, with preset file filters and comments that sync to GitHub.',
+          'Open any GitHub pull request, commit, or compare range by swapping github.com for ghdiff.com. Narrow the file list with preset path rules, and write line comments that land back on GitHub.',
       },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],

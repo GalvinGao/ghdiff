@@ -78,7 +78,7 @@ export function ConfirmInline({
           className={cn(
             'border-removed/60 bg-raised absolute top-full right-0 z-10 mt-2',
             'w-60 rounded-lg border p-2.5 shadow-xl',
-            'reviewer-pop-in origin-top-right'
+            'ghdiff-pop-in origin-top-right'
           )}
         >
           {/* The arrow points back at the button that armed this. */}

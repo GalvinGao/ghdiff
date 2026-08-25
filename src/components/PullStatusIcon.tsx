@@ -10,7 +10,7 @@ import { describePullStatus, type PullReviewStatus } from '@/lib/pullStatus';
  *
  * The square is left off a merged or closed pull request, where the octicon has
  * already said everything that matters, and off a pull request read without a
- * token, where reviewer never asked GitHub for the two axes.
+ * token, where ghdiff never asked GitHub for the two axes.
  */
 export function PullStatusIcon({
   state,

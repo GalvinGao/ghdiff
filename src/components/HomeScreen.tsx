@@ -76,22 +76,26 @@ export function HomeScreen() {
 
       <div className="m-auto w-full max-w-2xl px-6 py-14">
         <h1 className="text-ink text-2xl font-semibold tracking-tight">
-          reviewer
+          ghdiff.com
         </h1>
-        <p className="text-ink-muted mt-1.5 text-sm text-pretty">
-          Review a GitHub pull request, commit, or compare range. Filter the
-          file list by preset rules, and leave comments that go back to GitHub.
-        </p>
+        {/* One line per thing the app does. Three clauses in one paragraph read
+            as a sentence to get through; three lines read as a list. */}
+        <div className="text-ink-muted mt-1.5 space-y-0.5 text-sm">
+          <p>Open any GitHub pull request, commit, or compare range.</p>
+          <p>Narrow the file list with preset path rules.</p>
+          <p>Write line comments that land back on GitHub.</p>
+        </div>
 
-        {/* Any github.com path works with `/gh` in front of it, which is worth
-            showing rather than describing. */}
+        {/* The whole instruction is the host swap, which is worth showing
+            rather than describing. Square corners, because these two lines are
+            a diff and a diff has none. */}
         <div className="text-ink-muted mt-6 flex flex-col gap-px font-mono text-xs leading-6">
-          <code className="border-removed truncate rounded-l border-l-2 pl-2">
+          <code className="border-removed truncate border-l-2 pl-2">
             <span className="text-removed">- github.com</span>
             /owner/repo/pull/123
           </code>
-          <code className="border-added truncate rounded-l border-l-2 pl-2">
-            <span className="text-added">+ /gh</span>
+          <code className="border-added truncate border-l-2 pl-2">
+            <span className="text-added">+ ghdiff.com</span>
             /owner/repo/pull/123
           </code>
         </div>
@@ -110,7 +114,7 @@ export function HomeScreen() {
               }
               setError(undefined);
               void navigate({
-                to: '/gh/$',
+                to: '/$',
                 params: { _splat: reviewTargetSplat(target) },
               });
             }}
@@ -129,14 +133,16 @@ export function HomeScreen() {
                 if (error != null) setError(undefined);
               }}
             />
+            {/* The page's primary action, so it is filled and it is named.
+                A bare glyph left the one thing to do here looking like a hint. */}
             <Button
-              aria-label="Open this diff"
               disabled={input.trim().length === 0}
-              size="icon-sm"
+              size="md"
               title="Open this diff"
               type="submit"
-              variant="quiet"
+              variant="solid"
             >
+              Review
               <IconArrow className="rotate-180" size={15} />
             </Button>
           </form>
@@ -214,6 +220,16 @@ export function HomeScreen() {
             FileTree
           </a>
           , both by Pierre.
+        </p>
+        <p className="text-ink-faint mt-1 text-xs">
+          <a
+            className="hover:text-ink underline"
+            href="https://github.com/GalvinGao/reviewer"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Source on GitHub
+          </a>
         </p>
       </div>
     </main>

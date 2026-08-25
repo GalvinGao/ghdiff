@@ -39,7 +39,7 @@ export function PullRow({
   const isCurrent = isCurrentPull(pull, current);
   return (
     <Link
-      to="/gh/$"
+      to="/$"
       params={{
         _splat: reviewTargetSplat({
           kind: 'github-pull',

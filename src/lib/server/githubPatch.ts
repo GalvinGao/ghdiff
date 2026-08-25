@@ -4,7 +4,7 @@
 // endpoints caps out: GitHub answers 406 with "Sorry, the diff exceeded the
 // maximum number of lines (20000)". The JSON endpoints have no such cap. They
 // return one entry per file, each carrying its own hunks in a `patch` field,
-// so reviewer stitches those entries back into a git-style patch.
+// so ghdiff stitches those entries back into a git-style patch.
 //
 // Two limits remain, and both are GitHub's:
 //  - A pull request lists at most 3000 files; a commit or compare at most 300.

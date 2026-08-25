@@ -4,12 +4,12 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 
 export { createEvlogError, log } from 'evlog';
 
-/** The fields reviewer attaches to a request event. */
+/** The fields ghdiff attaches to a request event. */
 export interface RequestFields extends Record<string, unknown> {}
 
 // evlog ships integrations for Next, Nitro, Hono, and others, but not for a
 // TanStack Start server route. `defineFrameworkIntegration` is the seam evlog
-// exposes for exactly this: reviewer declares what to read off the handler
+// exposes for exactly this: ghdiff declares what to read off the handler
 // context and evlog owns the request logger, the sampling, and the emit.
 const storage = new AsyncLocalStorage<RequestLogger>();
 
@@ -17,7 +17,7 @@ const storage = new AsyncLocalStorage<RequestLogger>();
 // fields queryable in the dashboard instead of collapsing them into a string.
 initLogger({
   env: {
-    service: 'reviewer',
+    service: 'ghdiff',
     environment: import.meta.env.MODE,
   },
   stringify: false,
@@ -69,12 +69,12 @@ export function withEvlog<TContext extends ServerHandlerContext>(
   };
 }
 
-/** The request-scoped logger, typed for reviewer's field set. */
+/** The request-scoped logger, typed for ghdiff's field set. */
 export function requestLog(): RequestLogger<RequestFields> {
   const logger = storage.getStore();
   if (logger == null) {
     throw new Error(
-      '[reviewer] requestLog() ran outside withEvlog(). Wrap the handler.'
+      '[ghdiff] requestLog() ran outside withEvlog(). Wrap the handler.'
     );
   }
   return logger as RequestLogger<RequestFields>;

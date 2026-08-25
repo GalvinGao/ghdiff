@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "reviewer",
+  "name": "ghdiff",
   "compatibility_date": "2026-08-25",
   // AsyncLocalStorage backs the request-scoped logger, and `process.env`
   // carries GITHUB_TOKEN. Both come from nodejs_compat.

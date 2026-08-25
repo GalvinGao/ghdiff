@@ -15,7 +15,7 @@ import {
   readGitHubToken,
 } from '@/lib/server/github';
 
-// Review comments for a GitHub pull request. Reviewer keeps no comment store
+// Review comments for a GitHub pull request. ghdiff keeps no comment store
 // of its own: a comment posted here becomes a real pull-request review comment,
 // and a comment made on any other target stays in the browser.
 

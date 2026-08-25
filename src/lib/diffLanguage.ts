@@ -6,7 +6,7 @@ import type { SupportedLanguages } from '@pierre/diffs';
 // resolves to plain text, and a suffixed one such as `.env.local` resolves on
 // `local`. Only a root `Dockerfile` and a bare `.env` come out right.
 //
-// So reviewer answers for the two families it meets most and sets the answer on
+// So ghdiff answers for the two families it meets most and sets the answer on
 // the diff item as `lang`, which the renderer prefers over its own guess. The
 // grammars are already in the highlighter's bundle; nothing here registers one.
 

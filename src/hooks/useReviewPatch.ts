@@ -24,12 +24,12 @@ export interface ReviewPatchState {
 }
 
 /** The route sets this when a fallback source left something out. */
-const NOTICE_HEADER = 'x-reviewer-notice';
+const NOTICE_HEADER = 'x-ghdiff-notice';
 
 /**
  * Fetches the patch for a target and parses it into review data.
  *
- * Reviewer loads the whole patch before it renders, unlike diffs-hub, which
+ * ghdiff loads the whole patch before it renders, unlike diffs-hub, which
  * streams file diffs into the viewer as they arrive. Holding the whole diff in
  * one array is what lets a filter change be a pure array pass.
  */

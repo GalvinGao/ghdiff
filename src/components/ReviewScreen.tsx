@@ -60,7 +60,7 @@ const DEFAULT_CONTROLS: ViewerControls = {
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // The left bar owns these, so the diff and the bar cannot disagree about who
   // the token belongs to or which repositories are watched.
-  const { colorMode, token } = useAppData();
+  const { colorMode, token, watched } = useAppData();
   const workersReady = useWorkerPoolReady();
   const [controls, setControls] = useState<ViewerControls>(DEFAULT_CONTROLS);
   const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
@@ -245,6 +245,10 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         controls={controls}
         onControlsChange={setControls}
         pull={pullTarget == null ? undefined : pull}
+        // PullRail renders nothing while the watch list is empty, and the bar's
+        // own name is the way home. The header takes that job over when the bar
+        // is away, so a review always has a route out of itself.
+        showBrand={watched.hydrated && watched.repos.length === 0}
         targetLabel={describeReviewTarget(target)}
         token={token}
       />

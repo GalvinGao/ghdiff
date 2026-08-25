@@ -60,7 +60,7 @@ export function PullRequestList({
     <>
       {repos.length === 0 ? (
         <p className="text-ink-muted px-2 py-3 text-sm">
-          Add a repository to watch. Reviewer then lists its open pull requests
+          Add a repository to watch. ghdiff then lists its open pull requests
           here.
         </p>
       ) : loading && data == null ? (

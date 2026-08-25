@@ -4,7 +4,7 @@
 // request, and a stack is what that leaves behind: when one open pull request
 // targets the head branch of another open pull request, the first is stacked on
 // the second. `gh-stack` and every other stacking tool build their chains the
-// same way, so reviewer needs no extra field from the API to draw them.
+// same way, so ghdiff needs no extra field from the API to draw them.
 
 import type { PullSummary } from './pulls.ts';
 

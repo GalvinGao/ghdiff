@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as ApiCommentsRouteImport } from './routes/api/comments'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
 import { Route as GhSplatRouteImport } from './routes/gh/$'
@@ -20,6 +21,11 @@ import { Route as ApiGithubViewerRouteImport } from './routes/api/github/viewer'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCommentsRoute = ApiCommentsRouteImport.update({
@@ -55,6 +61,7 @@ const ApiGithubViewerRoute = ApiGithubViewerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/api/comments': typeof ApiCommentsRoute
   '/api/diff': typeof ApiDiffRoute
   '/gh/$': typeof GhSplatRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/api/comments': typeof ApiCommentsRoute
   '/api/diff': typeof ApiDiffRoute
   '/gh/$': typeof GhSplatRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/api/comments': typeof ApiCommentsRoute
   '/api/diff': typeof ApiDiffRoute
   '/gh/$': typeof GhSplatRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
     | '/api/comments'
     | '/api/diff'
     | '/gh/$'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
     | '/api/comments'
     | '/api/diff'
     | '/gh/$'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$'
     | '/api/comments'
     | '/api/diff'
     | '/gh/$'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
   ApiCommentsRoute: typeof ApiCommentsRoute
   ApiDiffRoute: typeof ApiDiffRoute
   GhSplatRoute: typeof GhSplatRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/comments': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
   ApiCommentsRoute: ApiCommentsRoute,
   ApiDiffRoute: ApiDiffRoute,
   GhSplatRoute: GhSplatRoute,

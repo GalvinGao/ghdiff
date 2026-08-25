@@ -14,6 +14,7 @@
   --color-ink-muted: var(--app-ink-muted);
   --color-ink-faint: var(--app-ink-faint);
   --color-accent: var(--app-accent);
+  --color-accent-hover: var(--app-accent-hover);
   --color-accent-ink: var(--app-accent-ink);
   --color-added: var(--app-added);
   --color-removed: var(--app-removed);
@@ -57,11 +58,17 @@
   --app-ink: #0a0a0a;
   --app-ink-muted: #525252;
   --app-ink-faint: #737373;
-  --app-accent: #0072e0;
+  /* The accent is the ink itself. A filled control is black on white in the
+     light scheme and white on black in the dark one, so the app has one colour
+     of its own and every other colour on screen belongs to the diff. A
+     near-black fill cannot signal hover by getting brighter, so the hover tone
+     is a stated value rather than a filter. */
+  --app-accent: #0a0a0a;
+  --app-accent-hover: #333333;
   --app-accent-ink: #ffffff;
   --app-added: #1a7f37;
   --app-removed: #cf222e;
-  --app-tree-selected: color-mix(in srgb, var(--app-accent) 14%, transparent);
+  --app-tree-selected: color-mix(in srgb, var(--app-accent) 10%, transparent);
 
   /* GitHub Primer state colors, light mode: fgColor-open, fgColor-muted,
      fgColor-done, fgColor-closed. A pull request state should read the same
@@ -73,7 +80,7 @@
 
   /* The two axes floodgate paints into a pull request's favicon: the review on
      the left, the checks on the right. Primer's own light fills, so an approved
-     pull request is the same green in the tab strip and in reviewer's list. */
+     pull request is the same green in the tab strip and in ghdiff's list. */
   --app-status-success: #1f883d;
   --app-status-pending: #bf8700;
   --app-status-failure: #cf222e;
@@ -89,11 +96,12 @@
   --app-ink: #fafafa;
   --app-ink-muted: #a3a3a3;
   --app-ink-faint: #787878;
-  --app-accent: #009fff;
-  --app-accent-ink: #06131f;
+  --app-accent: #fafafa;
+  --app-accent-hover: #d4d4d4;
+  --app-accent-ink: #0a0a0a;
   --app-added: #3fb950;
   --app-removed: #f85149;
-  --app-tree-selected: color-mix(in srgb, var(--app-accent) 26%, transparent);
+  --app-tree-selected: color-mix(in srgb, var(--app-accent) 18%, transparent);
 
   /* GitHub Primer state colors, dark mode. */
   --app-pr-open: #3fb950;
@@ -144,7 +152,7 @@ body {
 /* Two small entrances, defined here rather than pulled in with
    tw-animate-css: `animate-in` is not a Tailwind v4 utility, and two
    keyframes do not earn a dependency. */
-@keyframes reviewer-pop-in {
+@keyframes ghdiff-pop-in {
   from {
     opacity: 0;
     transform: scale(0.96) translateY(-2px);
@@ -155,12 +163,12 @@ body {
   }
 }
 
-.reviewer-pop-in {
-  animation: reviewer-pop-in 140ms cubic-bezier(0.32, 0.72, 0, 1);
+.ghdiff-pop-in {
+  animation: ghdiff-pop-in 140ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reviewer-pop-in {
+  .ghdiff-pop-in {
     animation: none;
   }
 }
