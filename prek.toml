@@ -1,0 +1,16 @@
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "oxfmt"
+name = "oxfmt"
+language = "system"
+entry = "npx oxfmt --write --no-error-on-unmatched-pattern"
+files = "\\.(js|jsx|ts|tsx|mjs|cjs|mts|cts|json|css|md|yaml|yml|html)$"
+
+[[repos.hooks]]
+id = "oxlint"
+name = "oxlint"
+language = "system"
+entry = "npx oxlint"
+files = "\\.(js|jsx|ts|tsx|mjs|cjs|mts|cts)$"

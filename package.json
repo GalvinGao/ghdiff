@@ -14,6 +14,7 @@
     "fmt:check": "oxfmt --check"
   },
   "devDependencies": {
+    "@j178/prek": "^0.4.14",
     "oxfmt": "^0.64.0",
     "oxlint": "^1.79.0"
   },
