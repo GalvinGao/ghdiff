@@ -5,7 +5,7 @@
 // because it costs a separate request, and only the pull request on screen pays
 // for it.
 
-import { type PullState, pullState } from './pullSwitcher.ts';
+import { type PullState, pullState } from './pulls.ts';
 
 export interface PullDetails {
   owner: string;

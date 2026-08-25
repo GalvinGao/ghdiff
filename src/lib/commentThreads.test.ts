@@ -124,6 +124,48 @@ describe('groupCommentThreads', () => {
     );
   });
 
+  it('groups browser-only rows by the thread they name', () => {
+    const root: CommentPayload = {
+      path: 'a.ts',
+      author: 'you',
+      body: 'local note',
+      line: 3,
+      side: 'additions',
+      threadKey: 'local-1',
+      createdAt: '2026-01-01',
+    };
+    const reply: CommentPayload = {
+      ...root,
+      body: 'and a reply',
+      threadKey: 'local-1',
+      createdAt: '2026-01-02',
+    };
+    const other: CommentPayload = {
+      ...root,
+      body: 'a second thread',
+      threadKey: 'local-2',
+    };
+    const threads = groupCommentThreads([root, reply, other]);
+    assert.equal(threads.length, 2);
+    assert.deepEqual(
+      threads[0].comments.map((c) => c.body),
+      ['local note', 'and a reply']
+    );
+    assert.deepEqual(
+      threads[1].comments.map((c) => c.body),
+      ['a second thread']
+    );
+  });
+
+  it('lets a named thread win over the reply chain', () => {
+    const threads = groupCommentThreads([
+      { ...comment(1, 'ada', '2026-01-01'), threadKey: 'kept' },
+      { ...comment(2, 'grace', '2026-01-02', 1), threadKey: 'kept' },
+    ]);
+    assert.equal(threads.length, 1);
+    assert.equal(threads[0].key, 'kept');
+  });
+
   it('handles an empty list', () => {
     assert.deepEqual(groupCommentThreads([]), []);
   });

@@ -1,13 +1,13 @@
-import { IconComment, IconFileTree, IconSearch } from '@pierre/icons';
-import type { FileTree as FileTreeModel } from '@pierre/trees';
+import { IconComment, IconFileTree, IconSearch, IconX } from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
-import { useFileTreeSearch } from '@pierre/trees/react';
-import { useCallback, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import { CommentAuthorFilterBar } from '@/components/CommentAuthorFilterBar';
 import { CommentsList } from '@/components/CommentsList';
 import { FilterMenu } from '@/components/FilterMenu';
 import { ReviewFileTree } from '@/components/ReviewFileTree';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import {
   Segmented,
   SegmentedCount,
@@ -15,6 +15,10 @@ import {
 } from '@/components/ui/Segmented';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { CommentStore } from '@/hooks/useReviewComments';
+import type {
+  CommentAuthorCounts,
+  CommentAuthorFilter,
+} from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import { countComments, countThreads } from '@/lib/commentSections';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
@@ -23,6 +27,7 @@ import {
   type ReviewFilterState,
   type ReviewTreeSource,
 } from '@/lib/reviewFilter';
+import type { TreeStatIndex } from '@/lib/treeStats';
 
 type Tab = 'files' | 'comments';
 
@@ -31,24 +36,33 @@ interface ReviewSidebarProps {
   activeItemId?: string;
   /** The thread the diff has selected, which the comment list follows. */
   activeThreadKey?: string;
+  authorCounts: CommentAuthorCounts;
+  authorFilter: CommentAuthorFilter;
   availableStatuses: ReadonlySet<GitStatus>;
   colorScheme: ColorScheme;
+  /** Already narrowed by `authorFilter`. This is what the list shows. */
   commentSections: readonly CommentListSection[];
   commentStore: CommentStore;
   entries: readonly ReviewFileEntry[];
   filter: ReviewFilterState;
   hiddenCount: number;
+  onAuthorFilterChange(next: CommentAuthorFilter): void;
   onFilterChange(next: ReviewFilterState): void;
   onSelectComment(comment: CommentListEntry): void;
   onSelectItem(itemId: string): void;
+  /** The files on screen, not the whole patch. */
   stats: ReviewDiffStats;
+  /** Total files in the patch, so the footer can say what is hidden. */
+  totalFileCount: number;
   treeSource: ReviewTreeSource;
-  visibleFileCount: number;
+  treeStats: TreeStatIndex;
 }
 
 export function ReviewSidebar({
   activeItemId,
   activeThreadKey,
+  authorCounts,
+  authorFilter,
   availableStatuses,
   colorScheme,
   commentSections,
@@ -56,19 +70,23 @@ export function ReviewSidebar({
   entries,
   filter,
   hiddenCount,
+  onAuthorFilterChange,
   onFilterChange,
   onSelectComment,
   onSelectItem,
   stats,
+  totalFileCount,
   treeSource,
-  visibleFileCount,
+  treeStats,
 }: ReviewSidebarProps) {
   const [tab, setTab] = useState<Tab>('files');
-  const [model, setModel] = useState<FileTreeModel | null>(null);
-  const handleModelReady = useCallback(
-    (next: FileTreeModel | null) => setModel(next),
-    []
-  );
+  // The field is shown on demand, and closing it clears the query. A path
+  // filter that hides files from a closed field would hide them for good.
+  const [searching, setSearching] = useState(false);
+  const closeSearch = () => {
+    setSearching(false);
+    if (filter.query.length > 0) onFilterChange({ ...filter, query: '' });
+  };
 
   const commentCount = countComments(commentSections);
   const threadCount = countThreads(commentSections);
@@ -84,7 +102,7 @@ export function ReviewSidebar({
           <SegmentedItem value="files">
             <IconFileTree size={13} />
             Files
-            <SegmentedCount>{visibleFileCount}</SegmentedCount>
+            <SegmentedCount>{stats.fileCount}</SegmentedCount>
           </SegmentedItem>
           <SegmentedItem
             value="comments"
@@ -96,11 +114,34 @@ export function ReviewSidebar({
             <SegmentedCount>{threadCount}</SegmentedCount>
           </SegmentedItem>
         </Segmented>
-        {tab === 'files' && model != null && <TreeSearchToggle model={model} />}
+        {tab === 'files' && (
+          <Button
+            aria-label={searching ? 'Hide the path search' : 'Search by path'}
+            aria-pressed={searching}
+            className="ml-auto"
+            size="icon-sm"
+            title="Search by path"
+            variant="chrome"
+            onClick={() => (searching ? closeSearch() : setSearching(true))}
+          >
+            <IconSearch size={14} />
+          </Button>
+        )}
       </div>
 
       {tab === 'files' && (
-        <div className="border-line border-b px-2 pb-2">
+        // The search field and the rules button are one block, directly under
+        // the control that opens the field. The tree's own search box sat
+        // below this border, inside the scroll region, two rows from its
+        // toggle, and it narrowed the tree while the diff kept every file.
+        <div className="border-line space-y-1.5 border-b px-2 pb-2">
+          {searching && (
+            <PathSearchField
+              value={filter.query}
+              onChange={(query) => onFilterChange({ ...filter, query })}
+              onClose={closeSearch}
+            />
+          )}
           <FilterMenu
             availableStatuses={availableStatuses}
             entries={entries}
@@ -136,9 +177,9 @@ export function ReviewSidebar({
             <ReviewFileTree
               activeItemId={activeItemId}
               colorScheme={colorScheme}
-              onModelReady={handleModelReady}
               onSelectPath={onSelectItem}
               source={treeSource}
+              stats={treeStats}
             />
           )}
         </div>
@@ -157,11 +198,57 @@ export function ReviewSidebar({
         </div>
       </div>
 
-      <dl className="border-line text-ink-muted flex items-center gap-3 border-t px-3 py-2 text-xs tabular-nums">
-        <div className="flex gap-1">
-          <dt className="sr-only">Files</dt>
-          <dd>{stats.fileCount} files</dd>
-        </div>
+      {/* One strip, and it belongs to whichever tab is open: the files tab has
+          a size to report and the comments tab has a filter to set, and neither
+          has anything to say about the other. */}
+      <div className="border-line flex h-9 shrink-0 items-center border-t px-2">
+        {tab === 'files' ? (
+          <FileTotals
+            hiddenCount={hiddenCount}
+            stats={stats}
+            totalFileCount={totalFileCount}
+          />
+        ) : (
+          <CommentAuthorFilterBar
+            counts={authorCounts}
+            onChange={onAuthorFilterChange}
+            value={authorFilter}
+          />
+        )}
+      </div>
+    </aside>
+  );
+}
+
+/**
+ * The size of the review on screen. The count is the count of the files the
+ * tree lists above it, and it says so when a filter is holding some back: a
+ * footer that reported the whole patch while the tree showed a third of it made
+ * the two panes disagree.
+ */
+function FileTotals({
+  hiddenCount,
+  stats,
+  totalFileCount,
+}: {
+  hiddenCount: number;
+  stats: ReviewDiffStats;
+  totalFileCount: number;
+}) {
+  return (
+    <dl className="text-ink-muted flex w-full min-w-0 items-baseline gap-2 px-1 text-[11px] tabular-nums">
+      <div className="flex min-w-0 gap-1 truncate">
+        <dt className="sr-only">Files</dt>
+        <dd>
+          {stats.fileCount} {stats.fileCount === 1 ? 'file' : 'files'}
+          {hiddenCount > 0 && (
+            <span className="text-ink-faint"> of {totalFileCount}</span>
+          )}
+        </dd>
+      </div>
+      {/* Pushed to the right edge, in the same order and the same two colours
+          the tree uses on every row above. */}
+      <div className="ml-auto flex shrink-0 gap-2">
         <div className="flex gap-1">
           <dt className="sr-only">Added lines</dt>
           <dd className="text-added">+{stats.addedLines}</dd>
@@ -170,27 +257,65 @@ export function ReviewSidebar({
           <dt className="sr-only">Deleted lines</dt>
           <dd className="text-removed">-{stats.deletedLines}</dd>
         </div>
-      </dl>
-    </aside>
+      </div>
+    </dl>
   );
 }
 
-function TreeSearchToggle({ model }: { model: FileTreeModel }) {
-  const search = useFileTreeSearch(model);
+/**
+ * The path query, which is one of the three tests in `applyReviewFilter`. So it
+ * takes a file out of the tree and out of the diff together, the way a preset
+ * does, instead of only marking rows in the tree.
+ */
+function PathSearchField({
+  onChange,
+  onClose,
+  value,
+}: {
+  onChange(query: string): void;
+  onClose(): void;
+  value: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // A press on the magnifier opens this field, and a field is opened to be
+  // typed in.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
-    <Button
-      aria-label={search.isOpen ? 'Hide file search' : 'Search files'}
-      aria-pressed={search.isOpen}
-      className="ml-auto"
-      size="icon-sm"
-      title="Search files"
-      variant="chrome"
-      // The tree's search input closes on blur, so focus must not move here
-      // before the click handler runs.
-      onPointerDown={(event) => event.preventDefault()}
-      onClick={() => (search.isOpen ? search.close() : search.open())}
-    >
-      <IconSearch size={14} />
-    </Button>
+    <div className="relative">
+      <IconSearch
+        className="text-ink-faint pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
+        size={12}
+      />
+      <Input
+        ref={inputRef}
+        aria-label="Search files by path"
+        autoComplete="off"
+        className="h-7 pr-7 pl-7 text-xs"
+        placeholder="Path contains…"
+        spellCheck={false}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') onClose();
+        }}
+      />
+      {value.length > 0 && (
+        <button
+          aria-label="Clear the path search"
+          className="text-ink-faint hover:text-ink absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 cursor-pointer items-center justify-center"
+          type="button"
+          onClick={() => {
+            onChange('');
+            inputRef.current?.focus();
+          }}
+        >
+          <IconX size={12} />
+        </button>
+      )}
+    </div>
   );
 }

@@ -1,11 +1,15 @@
 import type { CommentPayload, ThreadComment } from './comments.ts';
 
-// Grouping GitHub review comments into threads.
+// Grouping review comments into threads.
 //
 // GitHub returns a flat list. A reply carries `replyToId` pointing at the
 // comment it answers, which may itself be a reply, so the root is found by
 // walking that chain. On troph-team/lilja#584 this turns 28 rows into 9
 // threads, which is 9 cards in the diff instead of 28.
+//
+// A comment kept in this browser has no GitHub id, so a reply to it has no id
+// to point at. Those rows name their thread outright, in `threadKey`, and that
+// name wins over the chain walk.
 
 export interface RawThread {
   /** Identifies the thread: the root's GitHub id, or its own key. */
@@ -59,7 +63,8 @@ export function groupCommentThreads(
 
   for (const [index, payload] of payloads.entries()) {
     const root = rootOf(payload);
-    const key = payloadKey(root, indexOf.get(root) ?? index);
+    const key =
+      payload.threadKey ?? payloadKey(root, indexOf.get(root) ?? index);
     let thread = threads.get(key);
     if (thread == null) {
       thread = { key, comments: [] };
@@ -93,6 +98,7 @@ export function threadComments(thread: RawThread): ThreadComment[] {
     githubId: payload.githubId,
     author: payload.author,
     authorAvatarUrl: payload.authorAvatarUrl,
+    authorIsBot: payload.authorIsBot,
     body: payload.body,
     createdAt: payload.createdAt,
     htmlUrl: payload.htmlUrl,

@@ -1,5 +1,6 @@
 import type { CodeViewDiffItem, DiffLineAnnotation } from '@pierre/diffs';
 
+import { isBotLogin } from './commentAuthors.ts';
 import { classifyCommentLineType } from './commentLine.ts';
 import {
   type CommentListSection,
@@ -42,6 +43,10 @@ export function buildCommentSections(
             path: entry.path,
             key: metadata.key,
             author: root.author,
+            authorAvatarUrl: root.authorAvatarUrl,
+            // GitHub's own answer when there is one, and the login when there
+            // is not: a browser-stored comment keeps no user object.
+            authorIsBot: root.authorIsBot ?? isBotLogin(root.author),
             body: root.body,
             replyCount: metadata.comments.length - 1,
             participants: threadParticipants(metadata),

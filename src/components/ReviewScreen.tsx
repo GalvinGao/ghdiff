@@ -8,6 +8,7 @@ import type { CodeViewHandle } from '@pierre/diffs/react';
 import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
+import { useAppData } from '@/components/AppDataProvider';
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
 import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
@@ -16,16 +17,26 @@ import {
   ReviewViewer,
   type ViewerControls,
 } from '@/components/ReviewViewer';
+import { SidebarResizeHandle } from '@/components/SidebarResizeHandle';
 import { Button } from '@/components/ui/Button';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
-import { useColorMode } from '@/hooks/useColorMode';
-import { useGitHubToken } from '@/hooks/useGitHubToken';
+import { useStoredJson } from '@/hooks/useLocalStorage';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
-import { useWatchedRepos } from '@/hooks/useWatchedRepos';
+import {
+  SIDEBAR_WIDTH_PROPERTY,
+  useSidebarWidth,
+} from '@/hooks/useSidebarWidth';
 import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
 import { cn } from '@/lib/cn';
+import {
+  type CommentAuthorFilter,
+  countCommentAuthors,
+  DEFAULT_COMMENT_AUTHOR_FILTER,
+  filterCommentSections,
+  isCommentAuthorFilter,
+} from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
 import {
@@ -35,6 +46,8 @@ import {
   type ReviewFilterState,
 } from '@/lib/reviewFilter';
 import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
+import { COMMENT_AUTHOR_FILTER_STORAGE_KEY } from '@/lib/storageKeys';
+import { buildTreeStatIndex } from '@/lib/treeStats';
 
 const DEFAULT_CONTROLS: ViewerControls = {
   diffStyle: 'split',
@@ -45,10 +58,10 @@ const DEFAULT_CONTROLS: ViewerControls = {
 };
 
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
-  const colorMode = useColorMode();
+  // The left bar owns these, so the diff and the bar cannot disagree about who
+  // the token belongs to or which repositories are watched.
+  const { colorMode, token } = useAppData();
   const workersReady = useWorkerPoolReady();
-  const token = useGitHubToken();
-  const watched = useWatchedRepos();
   const [controls, setControls] = useState<ViewerControls>(DEFAULT_CONTROLS);
   const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   const [selectedLines, setSelectedLines] =
@@ -59,6 +72,25 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<CodeViewHandle<CommentMetadata> | null>(null);
+  // Destructured, so nothing reads a property of the state object while this
+  // component renders.
+  const {
+    attachContainer: attachLayout,
+    onHandleKeyDown: onSidebarHandleKeyDown,
+    onHandlePointerDown: onSidebarHandlePointerDown,
+    reset: resetSidebarWidth,
+    style: sidebarStyle,
+    width: sidebarWidth,
+  } = useSidebarWidth();
+  const authorFilter = useStoredJson<CommentAuthorFilter>(
+    COMMENT_AUTHOR_FILTER_STORAGE_KEY,
+    DEFAULT_COMMENT_AUTHOR_FILTER
+  );
+  // Storage holds whatever an older build wrote there, so the value is checked
+  // rather than trusted.
+  const authorMode = isCommentAuthorFilter(authorFilter.value)
+    ? authorFilter.value
+    : DEFAULT_COMMENT_AUTHOR_FILTER;
 
   const patch = useReviewPatch({
     target,
@@ -110,6 +142,27 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         patch.data.entries
       ),
     [comments.annotationsByItemId, patch.data.entries, patch.data.items]
+  );
+
+  // Every thread in the diff, and the subset the sidebar lists. The counts come
+  // from the whole set, so the buttons still say how many the other filter
+  // holds while one of them is on.
+  const authorCounts = useMemo(
+    () => countCommentAuthors(commentSections),
+    [commentSections]
+  );
+  const listedSections = useMemo(
+    () => filterCommentSections(commentSections, authorMode),
+    [authorMode, commentSections]
+  );
+
+  // Read from the filtered list, not from the whole patch. The filter drives
+  // both panes, so a directory total has to be the sum of the rows listed under
+  // it: a folder reporting lines from a file the filter hid would contradict
+  // its own children.
+  const treeStats = useMemo(
+    () => buildTreeStatIndex(filtered.entries),
+    [filtered.entries]
   );
 
   const statuses = useMemo(
@@ -190,39 +243,59 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       <ReviewHeader
         colorMode={colorMode}
         controls={controls}
-        currentPull={pullTarget}
         onControlsChange={setControls}
         pull={pullTarget == null ? undefined : pull}
-        switcherLabel={describeReviewTarget(target)}
+        targetLabel={describeReviewTarget(target)}
         token={token}
-        watched={watched}
       />
 
       {patch.state === 'ready' && workersReady ? (
-        <div className="bg-canvas grid min-h-0 flex-1 grid-cols-[19rem_minmax(0,1fr)] overflow-hidden">
+        // The first column is a custom property rather than a fixed width,
+        // because the drag writes that property straight onto this element and
+        // never re-renders the diff beside it. See hooks/useSidebarWidth.ts.
+        <div
+          ref={attachLayout}
+          className="bg-canvas relative grid min-h-0 flex-1 overflow-hidden"
+          style={{
+            ...sidebarStyle,
+            gridTemplateColumns: `var(${SIDEBAR_WIDTH_PROPERTY}) minmax(0,1fr)`,
+          }}
+        >
           <ReviewSidebar
             activeItemId={active.activeItemId}
             activeThreadKey={activeThreadKey}
+            authorCounts={authorCounts}
+            authorFilter={authorMode}
             availableStatuses={statuses}
             colorScheme={colorMode.scheme}
-            commentSections={commentSections}
+            commentSections={listedSections}
             commentStore={comments.store}
             entries={patch.data.entries}
             filter={filter}
             hiddenCount={filtered.hiddenCount}
+            onAuthorFilterChange={authorFilter.setValue}
             onFilterChange={setFilter}
             onSelectComment={handleSelectComment}
             onSelectItem={handleSelectItem}
-            stats={patch.data.stats}
+            stats={filtered.stats}
+            totalFileCount={patch.data.stats.fileCount}
             treeSource={filtered.treeSource}
-            visibleFileCount={filtered.entries.length}
+            treeStats={treeStats}
+          />
+          <SidebarResizeHandle
+            onKeyDown={onSidebarHandleKeyDown}
+            onPointerDown={onSidebarHandlePointerDown}
+            onReset={resetSidebarWidth}
+            width={sidebarWidth}
           />
           <ReviewViewer
+            commentStore={comments.store}
             controls={controls}
             items={items}
             onCancelDraft={comments.removeComment}
             onCreateDraft={handleCreateDraft}
             onDeleteComment={comments.removeComment}
+            onReplyToThread={comments.replyToThread}
             onSaveDraft={comments.saveDraft}
             onScroll={active.onScroll}
             onSelectedLinesChange={handleSelectedLinesChange}

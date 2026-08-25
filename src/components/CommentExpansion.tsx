@@ -36,12 +36,19 @@ interface CommentExpansionProps {
   /** The card being expanded. Its rectangle is the opening frame. */
   anchor: HTMLElement;
   children: ReactNode;
+  /**
+   * Changes when the content changes height, which re-measures the layer. A
+   * reply added to the thread is the case that needs it: the panel has to grow
+   * to the message the reviewer just wrote instead of scrolling it off.
+   */
+  measureKey?: number | string;
   onClose(): void;
 }
 
 export function CommentExpansion({
   anchor,
   children,
+  measureKey,
   onClose,
 }: CommentExpansionProps) {
   const [from] = useState<Frame>(() => {
@@ -88,7 +95,12 @@ export function CommentExpansion({
 
     const id = requestAnimationFrame(() => setTo({ top, left, width, height }));
     return () => cancelAnimationFrame(id);
-  }, [from]);
+    // measureKey is a signal, not a value this reads: it changes when the
+    // content has grown, and re-running is the whole point of it. scrollHeight
+    // is still the full content height on a second run, because the panel
+    // clips its content rather than growing with it.
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
+  }, [from, measureKey]);
 
   const close = useCallback(() => onClose(), [onClose]);
 

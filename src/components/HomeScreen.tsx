@@ -1,41 +1,65 @@
 import { IconArrow } from '@pierre/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { PullRequestList } from '@/components/PullRequestList';
+import { RepoPicker } from '@/components/RepoPicker';
 import { Button } from '@/components/ui/Button';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { Spinner } from '@/components/ui/Spinner';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
-import { useColorMode } from '@/hooks/useColorMode';
-import { useGitHubToken } from '@/hooks/useGitHubToken';
-import { usePullSwitcher } from '@/hooks/usePullSwitcher';
-import { useWatchedRepos } from '@/hooks/useWatchedRepos';
+import { formatWatchedRepo } from '@/lib/pulls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
 
-// The home page carries no chrome. There is no diff on screen yet, so a header
-// with a switcher, a token button, and view settings would be a toolbar for
-// something that isn't here: the switcher's list is the page's main content
-// instead, and the token is a field in the box that needs it.
+// The home page carries no chrome of its own. There is no diff on screen yet, so
+// a header with a token button and view settings would be a toolbar for
+// something that isn't here. The left bar is the app's own chrome and is already
+// on the page.
 
 const CARD =
   'border-line bg-raised overflow-hidden rounded-xl border shadow-sm';
 
 export function HomeScreen() {
   const navigate = useNavigate();
-  const colorMode = useColorMode();
-  const token = useGitHubToken();
-  const watched = useWatchedRepos();
+  const { colorMode, pulls, token, watched } = useAppData();
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [editingRepos, setEditingRepos] = useState(false);
-  // The list is the page, not a menu, so it loads with the page.
-  const pulls = usePullSwitcher({
-    active: true,
-    repos: watched.repos,
-    token: token.token,
-  });
+  const [repoFilter, setRepoFilter] = useState<string | undefined>(undefined);
+
+  // A repository can leave the watch list while it is the one selected, and a
+  // filter for something nobody watches any more would show an empty list with
+  // no way to read it. Falling back to all of them is the honest answer.
+  const activeFilter =
+    repoFilter != null &&
+    watched.repos.some(
+      (repo) =>
+        formatWatchedRepo(repo).toLowerCase() === repoFilter.toLowerCase()
+    )
+      ? repoFilter
+      : undefined;
+
+  const counts = useMemo(() => {
+    if (pulls.data == null) return undefined;
+    const result = new Map<string, number>();
+    for (const pull of pulls.data.pulls) {
+      const key = formatWatchedRepo(pull).toLowerCase();
+      result.set(key, (result.get(key) ?? 0) + 1);
+    }
+    return result;
+  }, [pulls.data]);
+
+  const list = (
+    <PullRequestList
+      repoFilter={activeFilter}
+      repos={watched.repos}
+      showRepoHeadings={activeFilter == null}
+      state={pulls}
+    />
+  );
 
   return (
     // `m-auto` on the column below, not `items-center`: auto margins take the
@@ -130,6 +154,7 @@ export function HomeScreen() {
 
         <div className="mt-10 flex items-center gap-2">
           <SectionLabel>Open pull requests</SectionLabel>
+          {pulls.loading && <Spinner label="Loading the pull requests" />}
           <Button
             className="ml-auto"
             size="sm"
@@ -139,12 +164,25 @@ export function HomeScreen() {
             Watched repos
           </Button>
         </div>
-        <div className={`${CARD} mt-2 p-1`}>
-          <PullRequestList
-            repos={watched.repos}
-            state={pulls}
-            viewerLogin={token.viewer?.login}
-          />
+        <div className={`${CARD} mt-2`}>
+          {/* The picker only earns its column when there is something to pick
+              between. With one repository it would name the repository twice. */}
+          {watched.repos.length > 1 ? (
+            <div className="divide-line grid grid-cols-[9rem_minmax(0,1fr)] divide-x">
+              <div className="p-1">
+                <RepoPicker
+                  counts={counts}
+                  repos={watched.repos}
+                  total={pulls.data?.pulls.length}
+                  value={activeFilter}
+                  onChange={setRepoFilter}
+                />
+              </div>
+              <div className="p-1">{list}</div>
+            </div>
+          ) : (
+            <div className="p-1">{list}</div>
+          )}
         </div>
 
         <WatchedReposDialog

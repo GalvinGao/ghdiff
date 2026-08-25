@@ -21,6 +21,10 @@
   --color-pr-draft: var(--app-pr-draft);
   --color-pr-merged: var(--app-pr-merged);
   --color-pr-closed: var(--app-pr-closed);
+  --color-status-success: var(--app-status-success);
+  --color-status-pending: var(--app-status-pending);
+  --color-status-failure: var(--app-status-failure);
+  --color-status-neutral: var(--app-status-neutral);
   --font-sans: var(--app-font-sans);
   --font-mono: var(--app-font-mono);
 }
@@ -66,6 +70,14 @@
   --app-pr-draft: #59636e;
   --app-pr-merged: #8250df;
   --app-pr-closed: #cf222e;
+
+  /* The two axes floodgate paints into a pull request's favicon: the review on
+     the left, the checks on the right. Primer's own light fills, so an approved
+     pull request is the same green in the tab strip and in reviewer's list. */
+  --app-status-success: #1f883d;
+  --app-status-pending: #bf8700;
+  --app-status-failure: #cf222e;
+  --app-status-neutral: #8c959f;
 }
 
 [data-color-scheme='dark'] {
@@ -88,6 +100,12 @@
   --app-pr-draft: #9198a1;
   --app-pr-merged: #ab7df8;
   --app-pr-closed: #f85149;
+
+  /* Primer's dark fills for the same two axes. */
+  --app-status-success: #3fb950;
+  --app-status-pending: #d29922;
+  --app-status-failure: #f85149;
+  --app-status-neutral: #6e7681;
 }
 
 html,
@@ -96,10 +114,14 @@ body {
 }
 
 /* Both, not just body. A rubber-band scroll exposes the area behind the page,
-   and an unpainted html element shows through it as a hole in the app. */
+   and an unpainted html element shows through it as a hole in the app.
+   `overscroll-behavior: none` then stops the bounce itself: this app is a shell
+   whose panes scroll, and a scroll that reaches the end of a pane must not
+   drag the shell off its own background. */
 html,
 body {
   background-color: var(--app-canvas);
+  overscroll-behavior: none;
 }
 
 body {

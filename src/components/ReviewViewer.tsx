@@ -13,6 +13,7 @@ import { memo, type RefObject, useMemo } from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
+import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
 
@@ -31,11 +32,14 @@ interface ItemTopReader {
 
 interface ReviewViewerProps {
   className?: string;
+  /** Where a comment written here goes, which a card says out loud. */
+  commentStore: CommentStore;
   controls: ViewerControls;
   items: readonly CodeViewDiffItem<CommentMetadata>[];
   onCancelDraft(itemId: string, key: string): void;
   onCreateDraft(itemId: string, range: SelectedLineRange): void;
   onDeleteComment(itemId: string, key: string): void;
+  onReplyToThread(itemId: string, key: string, body: string): void;
   onSaveDraft(itemId: string, key: string, body: string): void;
   /** Reports the scroll offset, so the file tree can follow the diff. */
   onScroll(scrollTop: number, viewer: ItemTopReader): void;
@@ -50,11 +54,13 @@ interface ReviewViewerProps {
 // hover. It is what opens a comment composer on the hovered line.
 export const ReviewViewer = memo(function ReviewViewer({
   className,
+  commentStore,
   controls,
   items,
   onCancelDraft,
   onCreateDraft,
   onDeleteComment,
+  onReplyToThread,
   onSaveDraft,
   onScroll,
   onSelectedLinesChange,
@@ -129,6 +135,8 @@ export const ReviewViewer = memo(function ReviewViewer({
             itemId={item.id}
             metadata={diffAnnotation.metadata}
             onDelete={onDeleteComment}
+            onReply={onReplyToThread}
+            store={commentStore}
           />
         );
       }}

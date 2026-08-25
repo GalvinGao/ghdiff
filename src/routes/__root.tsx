@@ -1,6 +1,7 @@
 import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
+import { AppShell } from '@/components/AppShell';
 import { ColorModeScript } from '@/components/ColorModeScript';
 import { NotFound } from '@/components/NotFound';
 import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
@@ -32,7 +33,9 @@ function RootDocument({ children }: { children: ReactNode }) {
         <ColorModeScript />
       </head>
       <body className="flex h-dvh flex-col">
-        <WorkerPoolProvider>{children}</WorkerPoolProvider>
+        <WorkerPoolProvider>
+          <AppShell>{children}</AppShell>
+        </WorkerPoolProvider>
         <Scripts />
       </body>
     </html>

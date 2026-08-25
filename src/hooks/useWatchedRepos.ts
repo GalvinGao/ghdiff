@@ -6,7 +6,7 @@ import {
   formatWatchedRepo,
   parseWatchedRepo,
   type WatchedRepo,
-} from '@/lib/pullSwitcher';
+} from '@/lib/pulls';
 import { WATCHED_REPOS_STORAGE_KEY } from '@/lib/storageKeys';
 
 const EMPTY: WatchedRepo[] = [];
