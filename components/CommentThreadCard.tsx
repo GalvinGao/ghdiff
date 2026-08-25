@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { CommentBody } from '@/components/CommentBody';
 import { CommentExpansion } from '@/components/CommentExpansion';
+import { ConfirmInline } from '@/components/ConfirmInline';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import { measureThread } from '@/lib/commentHeight';
@@ -142,17 +143,20 @@ export function CommentThreadCard({
                 ? root.author
                 : `${comments.length} comments`}
             </span>
-            <Button
-              variant="danger"
-              size="sm"
+            <ConfirmInline
               className="ml-auto"
-              onClick={() => {
+              label="Delete"
+              question={
+                comments.length === 1
+                  ? 'Delete this comment on GitHub? This cannot be undone.'
+                  : `Delete all ${comments.length} comments in this thread on GitHub? This cannot be undone.`
+              }
+              confirmLabel="Delete"
+              onConfirm={() => {
                 close();
                 onDelete(itemId, metadata.key);
               }}
-            >
-              Delete thread
-            </Button>
+            />
             <Button variant="outline" size="sm" onClick={close}>
               Close
             </Button>

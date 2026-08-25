@@ -4,6 +4,7 @@ import {
   formatWatchedRepo,
   groupPulls,
   parseWatchedRepo,
+  pullState,
   type PullSummary,
   type PullSwitcherData,
 } from '@/lib/pullSwitcher';
@@ -74,7 +75,7 @@ export const GET = withEvlog(async (request: Request): Promise<Response> => {
             title: pull.title,
             author: pull.user?.login ?? 'unknown',
             authorAvatarUrl: pull.user?.avatar_url,
-            draft: pull.draft === true,
+            state: pullState(pull),
             htmlUrl: pull.html_url,
             updatedAt: pull.updated_at,
             headRef: pull.head.ref,

@@ -10,6 +10,13 @@ export interface WatchedRepo {
   repo: string;
 }
 
+/**
+ * The states GitHub itself distinguishes in its own pull request lists, each
+ * with its own octicon and Primer color. `draft` outranks `open`, the way
+ * github.com shows it.
+ */
+export type PullState = 'open' | 'draft' | 'merged' | 'closed';
+
 export interface PullSummary {
   owner: string;
   repo: string;
@@ -17,11 +24,23 @@ export interface PullSummary {
   title: string;
   author: string;
   authorAvatarUrl?: string;
-  draft: boolean;
+  state: PullState;
   htmlUrl: string;
   updatedAt: string;
   headRef: string;
   baseRef: string;
+}
+
+/** Derives the state from the fields GitHub returns for a pull request. */
+export function pullState(pull: {
+  draft?: boolean;
+  merged_at?: string | null;
+  state?: string;
+}): PullState {
+  if (pull.merged_at != null) return 'merged';
+  if (pull.state === 'closed') return 'closed';
+  if (pull.draft === true) return 'draft';
+  return 'open';
 }
 
 export type PullGroupKind = 'yours' | 'others';

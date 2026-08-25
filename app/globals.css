@@ -17,6 +17,10 @@
   --color-accent-ink: var(--app-accent-ink);
   --color-added: var(--app-added);
   --color-removed: var(--app-removed);
+  --color-pr-open: var(--app-pr-open);
+  --color-pr-draft: var(--app-pr-draft);
+  --color-pr-merged: var(--app-pr-merged);
+  --color-pr-closed: var(--app-pr-closed);
   --font-mono:
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
@@ -34,6 +38,14 @@
   --app-accent-ink: #ffffff;
   --app-added: #17845f;
   --app-removed: #c8453b;
+
+  /* GitHub Primer state colors, light mode: fgColor-open, fgColor-muted,
+     fgColor-done, fgColor-closed. A pull request state should read the same
+     colour here as it does on github.com. */
+  --app-pr-open: #1a7f37;
+  --app-pr-draft: #59636e;
+  --app-pr-merged: #8250df;
+  --app-pr-closed: #cf222e;
 }
 
 [data-color-scheme='dark'] {
@@ -49,6 +61,12 @@
   --app-accent-ink: #0b0b0c;
   --app-added: #3fce9d;
   --app-removed: #ff6f66;
+
+  /* GitHub Primer state colors, dark mode. */
+  --app-pr-open: #3fb950;
+  --app-pr-draft: #9198a1;
+  --app-pr-merged: #ab7df8;
+  --app-pr-closed: #f85149;
 }
 
 html,
@@ -71,4 +89,28 @@ body {
 .cv-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--app-line) transparent;
+}
+
+/* Two small entrances, defined here rather than pulled in with
+   tw-animate-css: `animate-in` is not a Tailwind v4 utility, and two
+   keyframes do not earn a dependency. */
+@keyframes reviewer-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reviewer-pop-in {
+  animation: reviewer-pop-in 140ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reviewer-pop-in {
+    animation: none;
+  }
 }

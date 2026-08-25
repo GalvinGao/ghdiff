@@ -21,7 +21,7 @@ export function DropdownMenuContent({
         sideOffset={sideOffset}
         className={cn(
           'border-line bg-raised text-ink z-50 max-h-[min(28rem,var(--radix-dropdown-menu-content-available-height))] min-w-56 overflow-y-auto rounded-lg border p-1 shadow-lg',
-          'data-[state=closed]:animate-out data-[state=open]:animate-in',
+          'data-[state=open]:reviewer-pop-in',
           className
         )}
         {...props}

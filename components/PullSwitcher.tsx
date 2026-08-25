@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { WatchedReposEditor } from './WatchedReposEditor';
+import { PullStateIcon } from '@/components/PullStateIcon';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -180,16 +181,14 @@ function PullRow({
         'focus-visible:bg-surface'
       )}
     >
-      <span className="flex items-baseline gap-2">
-        <span className="text-ink-faint font-mono text-xs tabular-nums">
+      <span className="flex min-w-0 items-center gap-2">
+        <PullStateIcon state={pull.state} />
+        <span className="text-ink-faint shrink-0 font-mono text-xs tabular-nums">
           #{pull.number}
         </span>
         <span className="text-ink min-w-0 flex-1 truncate">{pull.title}</span>
-        {pull.draft && (
-          <span className="text-ink-faint text-[11px] uppercase">draft</span>
-        )}
       </span>
-      <span className="text-ink-faint block truncate text-xs">
+      <span className="text-ink-faint block truncate pl-6 text-xs">
         {pull.owner}/{pull.repo} · {pull.headRef} into {pull.baseRef}
       </span>
     </Link>

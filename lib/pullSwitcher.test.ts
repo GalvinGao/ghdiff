@@ -6,6 +6,7 @@ import {
   formatWatchedRepo,
   groupPulls,
   parseWatchedRepo,
+  pullState,
   type PullSummary,
 } from './pullSwitcher.ts';
 
@@ -16,7 +17,7 @@ function pull(author: string, number: number, updatedAt: string): PullSummary {
     number,
     title: `Change ${number}`,
     author,
-    draft: false,
+    state: 'open',
     htmlUrl: `https://github.com/acme/app/pull/${number}`,
     updatedAt,
     headRef: `feature/${number}`,
@@ -133,5 +134,41 @@ describe('groupPulls', () => {
 
   it('returns no groups for no pull requests', () => {
     assert.deepEqual(groupPulls([], 'galvin'), []);
+  });
+});
+
+describe('pullState', () => {
+  it('reads a plain open pull request', () => {
+    assert.equal(pullState({ state: 'open' }), 'open');
+  });
+
+  it('reads a draft', () => {
+    assert.equal(pullState({ state: 'open', draft: true }), 'draft');
+  });
+
+  it('reads a merged pull request, even though it is also closed', () => {
+    assert.equal(
+      pullState({ state: 'closed', merged_at: '2026-08-01T00:00:00Z' }),
+      'merged'
+    );
+  });
+
+  it('reads a closed pull request that was never merged', () => {
+    assert.equal(pullState({ state: 'closed', merged_at: null }), 'closed');
+  });
+
+  it('prefers merged over draft, which GitHub can report together', () => {
+    assert.equal(
+      pullState({
+        state: 'closed',
+        draft: true,
+        merged_at: '2026-08-01T00:00:00Z',
+      }),
+      'merged'
+    );
+  });
+
+  it('defaults to open when GitHub sends nothing useful', () => {
+    assert.equal(pullState({}), 'open');
   });
 });

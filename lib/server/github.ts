@@ -126,6 +126,8 @@ export interface GitHubPullRequest {
   number: number;
   title: string;
   draft?: boolean;
+  state?: string;
+  merged_at?: string | null;
   html_url: string;
   created_at: string;
   updated_at: string;
