@@ -144,6 +144,14 @@ body {
   overflow: hidden;
 }
 
+/* The left bar, before the browser has read the watch list. `WatchedReposScript`
+   writes the attribute in the document head, and `PullRail` returns null a
+   moment later for the same reading, so this rule only covers the first paint.
+   Without it the bar is drawn on every load and then taken away again. */
+html[data-watching='no'] [data-app-rail] {
+  display: none;
+}
+
 .cv-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--app-line) transparent;

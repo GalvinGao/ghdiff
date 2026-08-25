@@ -91,6 +91,19 @@ bar on that reading would unmount it and re-mount it on every load. With the bar
 away, `ReviewHeader` takes its `showBrand` prop and carries the way home, so no
 screen is a dead end.
 
+**The first paint of that bar is settled in the document head.** `hydrated` is
+false for one paint, and the server already sent the bar's markup, so a reviewer
+who watches nothing saw the column arrive and then leave. `WatchedReposScript`
+reads the same key before the body is parsed and writes `data-watching` on the
+document; `html[data-watching='no'] [data-app-rail]` in `src/globals.css` keeps
+that paint empty, and React's answer lands after it and agrees. Every reading
+that leaves `useWatchedRepos` empty has to reach `'no'` there — no key, a value
+that is not an array, and storage that throws alike — or the flash returns the
+other way round. `PullRequestList` takes `hydrated` for the same reason: an
+empty `repos` before the read is the default, not an answer, so it draws
+`PullListSkeleton` and does not tell a reviewer who watches five that they watch
+none.
+
 **The accent is ink, not a hue.** `--app-accent` is near-black in the light
 scheme and near-white in the dark one, and `--app-accent-ink` is its opposite,
 so the one filled control on a screen is the app's only colour and every other

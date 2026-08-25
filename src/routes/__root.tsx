@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { ColorModeScript } from '@/components/ColorModeScript';
 import { NotFound } from '@/components/NotFound';
+import { WatchedReposScript } from '@/components/WatchedReposScript';
 import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import appCss from '@/globals.css?url';
 
@@ -31,6 +32,7 @@ function RootDocument({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <ColorModeScript />
+        <WatchedReposScript />
       </head>
       <body className="flex h-dvh flex-col">
         <WorkerPoolProvider>

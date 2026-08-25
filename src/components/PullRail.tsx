@@ -38,6 +38,13 @@ import { RAIL_COLLAPSED_STORAGE_KEY } from '@/lib/storageKeys';
 // nothing is out of reach while the bar is away. The test is `hydrated`, not
 // `repos.length` alone, because browser storage is read after mount and an
 // unread watch list looks empty.
+//
+// That leaves one paint this test cannot reach. The bar's markup is in the
+// server's answer, and the browser draws it before any effect runs, so a
+// reviewer who watches nothing saw the bar and then saw it go.
+// `WatchedReposScript` settles the same question in the document head and the
+// rule on `[data-app-rail]` in globals.css keeps that paint empty. The hook's
+// answer arrives after it and agrees with it.
 
 const EXPANDED_WIDTH = '17rem';
 const COLLAPSED_WIDTH = '2.75rem';
@@ -60,6 +67,7 @@ export function PullRail() {
       <aside
         aria-label="Open pull requests"
         className="border-line bg-surface flex h-full shrink-0 flex-col border-r"
+        data-app-rail=""
         style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH }}
       >
         <div
@@ -103,6 +111,7 @@ export function PullRail() {
             <div className="px-1 pb-2">
               <PullRequestList
                 current={current}
+                hydrated={watched.hydrated}
                 repos={watched.repos}
                 state={pulls}
               />

@@ -17,6 +17,8 @@ import type { GitHubPullTarget } from '@/lib/reviewTarget';
 interface PullRequestListProps {
   /** The pull request under review, which the list marks. */
   current?: GitHubPullTarget;
+  /** Whether `repos` is the stored watch list yet, or still the empty default. */
+  hydrated: boolean;
   onNavigate?(): void;
   /** One `owner/repo`, or undefined for every watched repository. */
   repoFilter?: string;
@@ -36,6 +38,7 @@ interface PullRequestListProps {
  */
 export function PullRequestList({
   current,
+  hydrated,
   onNavigate,
   repoFilter,
   repos,
@@ -60,7 +63,13 @@ export function PullRequestList({
 
   return (
     <>
-      {repos.length === 0 ? (
+      {!hydrated ? (
+        // The watch list is read from browser storage after mount, so until it
+        // arrives an empty `repos` is the default and not an answer. Saying
+        // "watch a repository" here told every reviewer who watches five that
+        // they watch none, for as long as the read took.
+        <PullListSkeleton />
+      ) : repos.length === 0 ? (
         <p className="text-ink-muted px-2 py-3 text-sm">
           Watch a repository to see its open pull requests.
         </p>

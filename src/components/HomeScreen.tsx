@@ -60,6 +60,7 @@ export function HomeScreen() {
 
   const list = (
     <PullRequestList
+      hydrated={watched.hydrated}
       repoFilter={activeFilter}
       repos={watched.repos}
       showRepoHeadings={activeFilter == null}
