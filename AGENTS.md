@@ -424,9 +424,16 @@ the thread under People.
 identifies the file, and a column of `src/components/CommentThre…` against
 `src/components/CommentsLi…` says nothing. `dir="rtl"` moves the ellipsis to the
 other end while the letters stay left to right, and a leading U+200E keeps a
-path that opens on a dot or a slash from being reordered around it. The hover
-layer that shows the whole path wraps at U+200B after each separator, so it
-breaks between directories rather than through one.
+path that opens on a dot or a slash from being reordered around it. The pointer
+on the row then reveals the rest of the path on the row's own line: the path is
+anchored to the right edge of its box, so a box that grows to the right carries
+every character already on screen right with it while the missing directories
+arrive at the clip. The layer starts at the heading's own rectangle and grows by
+exactly what the heading clips, which is what makes it read as the row
+stretching rather than a second copy of it arriving, and it crosses the
+sidebar's border and sits over the diff for the width it needs. That reach costs
+a fixed layer in a portal: the list scrolls in a region that hides horizontal
+overflow, and that region clips an absolute child of the heading just as hard.
 
 **The footer strip belongs to the tab that is open.** The files tab has a size
 to report and the comments tab has a filter to set, and neither has anything to
