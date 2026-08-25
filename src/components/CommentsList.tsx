@@ -7,6 +7,8 @@ import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 interface CommentsListProps {
   /** The thread the diff has selected. Its row is marked as the current one. */
   activeKey?: string;
+  /** The heading of a group is the file's name, so it opens that file. */
+  onSelectFile(itemId: string): void;
   onSelectThread(thread: CommentListEntry): void;
   sections: readonly CommentListSection[];
   store: 'github' | 'local';
@@ -46,6 +48,7 @@ function wrappablePath(path: string): string {
 
 export function CommentsList({
   activeKey,
+  onSelectFile,
   onSelectThread,
   sections,
   store,
@@ -81,7 +84,10 @@ export function CommentsList({
     <div className="cv-scrollbar h-full min-h-0 overflow-x-hidden overflow-y-auto pb-4">
       {sections.map((section) => (
         <section key={section.itemId} className="min-w-0">
-          <SectionHeading path={section.path} />
+          <SectionHeading
+            path={section.path}
+            onSelect={() => onSelectFile(section.itemId)}
+          />
           <ul className="min-w-0">
             {section.threads.map((thread) => (
               <li key={thread.key} className="min-w-0">
@@ -148,7 +154,9 @@ export function CommentsList({
 }
 
 /**
- * The file a group of threads belongs to.
+ * The file a group of threads belongs to, and the control that opens it. A name
+ * on screen that matches a file in the diff goes to that file, here as in the
+ * tree, and the address bar says so afterwards.
  *
  * The path is trimmed from its start, not its end. The end of a path is the
  * part that identifies the file, and a column of `components/CommentThre…`
@@ -162,15 +170,27 @@ export function CommentsList({
  * rather than reaching past the panel, so nothing about it depends on how wide
  * the sidebar has been dragged.
  */
-function SectionHeading({ path }: { path: string }) {
+function SectionHeading({
+  onSelect,
+  path,
+}: {
+  onSelect(): void;
+  path: string;
+}) {
   return (
     <h3 className="bg-surface group relative sticky top-0 z-10 px-3 py-1 hover:z-30">
-      <span
+      <button
         dir="rtl"
-        className="text-ink-faint block truncate text-left font-mono text-[11px]"
+        type="button"
+        aria-label={`Go to ${path}`}
+        onClick={onSelect}
+        className={cn(
+          'text-ink-faint hover:text-ink block w-full cursor-pointer truncate text-left font-mono text-[11px]',
+          'focus-visible:ring-accent rounded-xs focus-visible:ring-1 focus-visible:outline-none'
+        )}
       >
         {LRM + path}
-      </span>
+      </button>
       <span
         aria-hidden="true"
         className={cn(

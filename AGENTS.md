@@ -55,7 +55,7 @@ src/
     api/github/viewer.ts   who the token belongs to
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: token, color mode, patch, comments,
-                           pulls, sidebar width
+                           pulls, sidebar width, the URL fragment
   lib/                     pure domain logic, unit tested
   lib/server/              server-only: the GitHub client
 ```
@@ -190,6 +190,53 @@ bodies — an attached screenshot is an `<img>` with a width — so dropping it 
 descriptions full of holes. Widening that schema means deciding a tag is safe
 against a body any GitHub user can write, so do not widen it without saying here
 why the addition cannot carry script or a navigation.
+
+**The address names the file and the lines.** `src/lib/diffAnchor.ts` owns the
+fragment and `src/hooks/useDiffAnchor.ts` owns the two directions. The grammar
+follows github.com's: a file part, then an optional line part of one or two
+points, each a side letter and a line number, `R` for the new file and `L` for
+the old one.
+
+```
+#diff-src/lib/reviewFilter.ts           the file, scrolled to its own top
+#diff-src/lib/reviewFilter.ts:R42       one line of the new file
+#diff-src/lib/reviewFilter.ts:R42-R58   a range down the new file
+#diff-src/lib/reviewFilter.ts:L18-R24   a range across the two sides
+#diff-<64 hex digits>R42-R58            github.com's own form, read only
+```
+
+The file part differs. GitHub writes the SHA-256 of the path, which a reader
+cannot read and nobody can type; reviewer writes the item id, which is the path,
+and separates the line part with a `:`. Because a path can end in something that
+reads as a line part, and can hold a `:`, `lookupDiffAnchor` tries each reading
+against the files of the diff on screen rather than trusting the text. A
+github.com anchor is tried last and resolved by digesting every path, so a link
+pasted from a pull request works and is then rewritten in place into the
+readable form.
+
+Reviewer writes the fragment when the reviewer opens a file, which keeps a
+history entry, and when the selection moves, which replaces one: a drag reports
+every line it crosses. Scrolling writes nothing, the way github.com writes
+nothing. A fragment typed into the address bar raises `hashchange` and nothing
+else, and TanStack Router listens for `popstate` alone, so `useDiffAnchor`
+forwards that event to the router itself.
+
+**A range anchor takes more than one frame.** `CodeView.scrollTo` resolves a
+range through `getLinePosition`, which answers only for a file the viewer has
+already rendered, and it drops a target it cannot resolve without a word. The
+file an anchor names is almost always far off screen when the anchor arrives, so
+`ReviewScreen` scrolls to the item first — its top is in the layout, so that one
+always lands — and then asks for the range again on the next few frames, which
+is what catches it once the scroll has rendered the file. The range is aligned
+to `start`, not `center`: the viewer puts it directly under its own sticky
+header, so the file at the top of the screen is the file the fragment names, and
+the tree, which reads the top, marks the same one.
+
+**A jump names its own file.** A scroll the viewer was told to make raises no
+scroll report, so `useActiveDiffItem` cannot see it. Every jump — a row in the
+tree, a thread in the comment list, a fragment in the URL — calls `select` as
+well, or the file list goes on marking whichever file the reviewer last scrolled
+past.
 
 **One row in the tree, not a trail.** `FileTreeItemHandle.select()` **adds** to
 the selection, and the diff's scroll selects a row on every file it passes. So
