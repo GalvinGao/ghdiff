@@ -27,11 +27,19 @@ const TALL = 76;
 /** A fence, table, list, quote, heading, or image needs room. */
 const BLOCK_MARKDOWN = /(^|\n)\s*(```|~~~|\||[-*+]\s|\d+\.\s|>|#{1,6}\s)|!\[/;
 
+/**
+ * The same, written as HTML. GitHub's editor puts an attached screenshot in an
+ * `<img>` and folds a long note into `<details>`, and CommentBody renders both
+ * now, so a body carrying one needs the same room as its markdown twin.
+ */
+const BLOCK_HTML =
+  /<(img|details|table|picture|video|pre|blockquote|[uo]l)[\s>]/i;
+
 export function measureCommentBody(body: string): CommentSizeSpec {
   const trimmed = body.trim();
   const lineCount = trimmed.split('\n').length;
 
-  if (BLOCK_MARKDOWN.test(trimmed)) {
+  if (BLOCK_MARKDOWN.test(trimmed) || BLOCK_HTML.test(trimmed)) {
     return { size: 'tall', bodyHeight: TALL };
   }
   if (lineCount === 1 && trimmed.length <= 72) {
@@ -63,16 +71,22 @@ export function measureThread(bodies: readonly string[]): CommentSizeSpec {
  * rather than rendered.
  */
 export function commentPreviewText(body: string): string {
-  return body
-    .replace(/```[\s\S]*?```/g, ' code ')
-    .replace(/`([^`]*)`/g, '$1')
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' image ')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
-    .replace(/^\s{0,3}>\s?/gm, '')
-    .replace(/^\s*[-*+]\s+/gm, '')
-    .replace(/(\*\*|__|~~|\*|_)/g, '')
-    .replace(/<\/?[a-zA-Z][^>]*>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    body
+      .replace(/```[\s\S]*?```/g, ' code ')
+      .replace(/`([^`]*)`/g, '$1')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, ' image ')
+      // An HTML image is named the same way its markdown twin is. Stripping the
+      // tag alone would leave a row saying nothing at all, since the whole
+      // comment is often one screenshot.
+      .replace(/<img\b[^>]*>/gi, ' image ')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+      .replace(/^\s{0,3}>\s?/gm, '')
+      .replace(/^\s*[-*+]\s+/gm, '')
+      .replace(/(\*\*|__|~~|\*|_)/g, '')
+      .replace(/<\/?[a-zA-Z][^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }

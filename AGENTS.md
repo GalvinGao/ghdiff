@@ -107,6 +107,24 @@ portaled fixed-position layer that grows from the card's own rectangle, so the
 card in the diff is untouched. A clipped body is `overflow: hidden`, which also
 makes a late-loading image harmless. Never let a card grow in place.
 
+**A comment body is untrusted, and the schema is what makes it safe.**
+`CommentBody` parses raw HTML with `rehype-raw` and then filters it with
+`rehype-sanitize` on its **default** schema, which follows GitHub's own
+sanitation: `img`, `details`, `kbd`, the table elements and the layout
+attributes survive, `script`, `style`, `iframe`, every `on*` handler, and any
+`src` or `href` outside http and https do not. GitHub's editor writes HTML into
+bodies — an attached screenshot is an `<img>` with a width — so dropping it left
+descriptions full of holes. Widening that schema means deciding a tag is safe
+against a body any GitHub user can write, so do not widen it without saying here
+why the addition cannot carry script or a navigation.
+
+**A modal is the platform's `dialog`.** `components/ui/Dialog.tsx` drives
+`showModal()` from React state, which brings the focus trap, Escape, the inert
+background, and the top layer, so a dialog opened from inside a portaled menu is
+not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
+every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
+colour are set explicitly.
+
 ## Tests
 
 `pnpm test` runs the Node test runner with `--experimental-strip-types`. There

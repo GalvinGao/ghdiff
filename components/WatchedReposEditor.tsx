@@ -4,39 +4,30 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { SectionLabel } from '@/components/ui/SectionLabel';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
 import { formatWatchedRepo } from '@/lib/pullSwitcher';
 
-interface WatchedReposEditorProps {
-  onDone(): void;
-  watched: WatchedReposState;
-}
-
-/** The watch list lives in this browser, so no server holds it. */
+/**
+ * The watch list, and nothing around it: the dialog that shows this owns the
+ * title and the way out. The list lives in this browser, so no server holds it.
+ */
 export function WatchedReposEditor({
-  onDone,
   watched,
-}: WatchedReposEditorProps) {
+}: {
+  watched: WatchedReposState;
+}) {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
 
   return (
-    <div className="p-2">
-      <div className="mb-2 flex items-center gap-2">
-        <SectionLabel>Watched repositories</SectionLabel>
-        <Button
-          size="sm"
-          variant="outline"
-          className="ml-auto"
-          onClick={onDone}
-        >
-          Done
-        </Button>
-      </div>
+    <div>
+      <p className="text-ink-faint mb-2 text-xs">
+        Reviewer lists the open pull requests of these repositories. The list
+        stays in this browser.
+      </p>
 
       <form
-        className="mb-2 flex gap-2"
+        className="flex gap-2"
         onSubmit={(event) => {
           event.preventDefault();
           if (watched.add(input)) {
@@ -50,19 +41,19 @@ export function WatchedReposEditor({
         <Input
           value={input}
           placeholder="owner/repo"
-          autoFocus
+          aria-label="Repository to watch"
           onChange={(event) => setInput(event.target.value)}
         />
         <Button type="submit" variant="solid" size="md">
           Add
         </Button>
       </form>
-      {error != null && <p className="text-removed mb-2 text-xs">{error}</p>}
+      {error != null && <p className="text-removed mt-2 text-xs">{error}</p>}
 
       {watched.repos.length === 0 ? (
-        <p className="text-ink-muted text-sm">Nothing watched yet.</p>
+        <p className="text-ink-muted mt-3 text-sm">Nothing watched yet.</p>
       ) : (
-        <ul className="flex flex-col gap-0.5">
+        <ul className="mt-3 flex flex-col gap-0.5">
           {watched.repos.map((repo) => (
             <li
               key={formatWatchedRepo(repo)}

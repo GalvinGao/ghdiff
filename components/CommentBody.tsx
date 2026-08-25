@@ -2,15 +2,27 @@
 
 import { memo } from 'react';
 import Markdown, { type Components } from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
 import { cn } from '@/lib/cn';
 
 // GFM for comment bodies: tables, task lists, strikethrough, autolinks, fences.
 //
-// react-markdown does not render raw HTML unless rehype-raw is added, and it is
-// deliberately absent. A comment body is written by whoever reviewed the pull
-// request, so it is untrusted text and must never become markup.
+// Raw HTML is parsed and then sanitized, in that order. GitHub's own editor
+// writes HTML into bodies — an attached screenshot arrives as an `<img>` with a
+// width, a release note as `<details>` — and dropping it left a description
+// with holes where its pictures should be. So `rehype-raw` parses it and
+// `rehype-sanitize` keeps only what its default schema permits.
+//
+// That schema is not ours to invent: it is hast-util-sanitize's, which follows
+// GitHub's own sanitation. It allows `img`, `details`, `summary`, `kbd`, `sub`,
+// the table elements, and the layout attributes; it drops `script` and `style`,
+// every `on*` handler, `iframe`, `object`, and `embed`, and it holds `src` and
+// `href` to http and https, so a `javascript:` URL cannot survive. A body is
+// written by whoever reviewed the pull request, so nothing outside that list is
+// trusted, and the list is not widened without a reason written down here.
 //
 // The component map is a module constant, and the whole render is memoized on
 // the body string, so scrolling the diff past a comment costs no reparse.
@@ -64,6 +76,22 @@ const COMPONENTS: Components = {
   h5: ({ children }) => <p className="mt-2 mb-1 font-semibold">{children}</p>,
   h6: ({ children }) => <p className="mt-2 mb-1 font-semibold">{children}</p>,
   hr: () => <hr className="border-line my-2" />,
+  // Only reachable now that raw HTML is parsed. A release note or a long log is
+  // usually folded into one of these, and the browser's default marker on our
+  // own surface needs the same treatment as everything else here.
+  details: ({ children }) => (
+    <details className="border-line bg-surface my-1.5 rounded-md border px-2 py-1.5">
+      {children}
+    </details>
+  ),
+  summary: ({ children }) => (
+    <summary className="cursor-pointer font-medium">{children}</summary>
+  ),
+  kbd: ({ children }) => (
+    <kbd className="border-line bg-surface rounded border px-1 font-mono text-[0.85em]">
+      {children}
+    </kbd>
+  ),
   table: ({ children }) => (
     <div className="my-1.5 overflow-x-auto">
       <table className="border-line w-full border-collapse border text-[0.9em]">
@@ -79,14 +107,18 @@ const COMPONENTS: Components = {
   td: ({ children }) => (
     <td className="border-line border px-2 py-1">{children}</td>
   ),
-  // A comment image is usually a badge. It is capped so one loading image
-  // cannot push the body past the height its card already reserved.
+  // Either a badge or a screenshot. The height is capped so the expanded thread
+  // and the description stay scrollable rather than turning into one tall
+  // picture; a collapsed card clips to its reserved height regardless, so a late
+  // image cannot resize it. `width` and `height` from the markup are dropped:
+  // GitHub writes the pixel width of the original, which is wider than any
+  // surface here.
   img: ({ alt, src }) => (
     <img
       alt={alt ?? ''}
       src={typeof src === 'string' ? src : undefined}
       loading="lazy"
-      className="my-0.5 inline-block max-h-40 max-w-full align-middle"
+      className="border-line my-1 block max-h-80 max-w-full rounded border object-contain"
     />
   ),
   input: ({ checked, type }) =>
@@ -100,7 +132,10 @@ const COMPONENTS: Components = {
     ) : null,
 };
 
-const PLUGINS = [remarkGfm];
+const REMARK_PLUGINS = [remarkGfm];
+// Order matters: raw parses the HTML, sanitize then throws away what is not on
+// the schema. Reversing them would sanitize the text before the markup exists.
+const REHYPE_PLUGINS = [rehypeRaw, rehypeSanitize];
 
 export const CommentBody = memo(function CommentBody({
   body,
@@ -111,7 +146,11 @@ export const CommentBody = memo(function CommentBody({
 }) {
   return (
     <div className={cn('text-sm leading-snug break-words', className)}>
-      <Markdown components={COMPONENTS} remarkPlugins={PLUGINS}>
+      <Markdown
+        components={COMPONENTS}
+        rehypePlugins={REHYPE_PLUGINS}
+        remarkPlugins={REMARK_PLUGINS}
+      >
         {body}
       </Markdown>
     </div>

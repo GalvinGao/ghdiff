@@ -35,6 +35,21 @@ describe('measureCommentBody', () => {
     }
   });
 
+  it('takes the tall bucket for block html, which renders now', () => {
+    for (const body of [
+      '<img width="900" alt="a hint" src="https://example.test/a.png" />',
+      '<details><summary>log</summary>lines</details>',
+      '<table><tr><td>a</td></tr></table>',
+      '<ul><li>one</li></ul>',
+    ]) {
+      assert.equal(measureCommentBody(body).size, 'tall', body);
+    }
+  });
+
+  it('leaves an inline tag on one line', () => {
+    assert.equal(measureCommentBody('press <kbd>a</kbd>').size, 'one-line');
+  });
+
   it('is stable for the same input', () => {
     const body = 'some comment';
     assert.deepEqual(measureCommentBody(body), measureCommentBody(body));
@@ -85,6 +100,19 @@ describe('commentPreviewText', () => {
 
   it('strips raw html tags', () => {
     assert.equal(commentPreviewText('<sub><sub>text</sub></sub>'), 'text');
+  });
+
+  it('names an html image, which is often the whole comment', () => {
+    assert.equal(
+      commentPreviewText(
+        '<img width="900" alt="the hint" src="https://example.test/a.png" />'
+      ),
+      'image'
+    );
+    assert.equal(
+      commentPreviewText('before <img src="https://example.test/a.png"> after'),
+      'before image after'
+    );
   });
 
   it('collapses whitespace', () => {

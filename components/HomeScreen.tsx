@@ -9,7 +9,7 @@ import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { PullRequestList } from '@/components/PullRequestList';
 import { Button } from '@/components/ui/Button';
 import { SectionLabel } from '@/components/ui/SectionLabel';
-import { WatchedReposEditor } from '@/components/WatchedReposEditor';
+import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useColorMode } from '@/hooks/useColorMode';
 import { useGitHubToken } from '@/hooks/useGitHubToken';
 import { usePullSwitcher } from '@/hooks/usePullSwitcher';
@@ -40,7 +40,11 @@ export function HomeScreen() {
   });
 
   return (
-    <main className="bg-surface min-h-0 flex-1 overflow-y-auto overscroll-none">
+    // `m-auto` on the column below, not `items-center`: auto margins take the
+    // free space when the page is shorter than the window and collapse to
+    // nothing when it is taller, so a long page still scrolls from its top
+    // instead of having its head cut off.
+    <main className="bg-surface flex min-h-0 flex-1 overflow-y-auto overscroll-none">
       {/* The only control that isn't part of the page's own work, so it sits
           out of the column entirely. */}
       <ColorModeToggle
@@ -48,14 +52,13 @@ export function HomeScreen() {
         colorMode={colorMode}
       />
 
-      <div className="mx-auto w-full max-w-2xl px-6 py-14">
+      <div className="m-auto w-full max-w-2xl px-6 py-14">
         <h1 className="text-ink text-2xl font-semibold tracking-tight">
           reviewer
         </h1>
         <p className="text-ink-muted mt-1.5 text-sm text-pretty">
-          Review a GitHub pull request, or a range in a git repository on this
-          machine. Filter the file list by preset rules, and leave comments that
-          go back to GitHub.
+          Review a GitHub pull request, commit, or compare range. Filter the
+          file list by preset rules, and leave comments that go back to GitHub.
         </p>
 
         {/* Any github.com path works with `/gh` in front of it, which is worth
@@ -127,35 +130,30 @@ export function HomeScreen() {
         <div className="mt-10 flex items-center gap-2">
           <SectionLabel>Open pull requests</SectionLabel>
           <Button
-            aria-pressed={editingRepos}
             className="ml-auto"
             size="sm"
             variant="chrome"
-            onClick={() => {
-              setEditingRepos((current) => !current);
-              if (editingRepos) pulls.reload();
-            }}
+            onClick={() => setEditingRepos(true)}
           >
             Watched repos
           </Button>
         </div>
         <div className={`${CARD} mt-2 p-1`}>
-          {editingRepos ? (
-            <WatchedReposEditor
-              watched={watched}
-              onDone={() => {
-                setEditingRepos(false);
-                pulls.reload();
-              }}
-            />
-          ) : (
-            <PullRequestList
-              repos={watched.repos}
-              state={pulls}
-              viewerLogin={token.viewer?.login}
-            />
-          )}
+          <PullRequestList
+            repos={watched.repos}
+            state={pulls}
+            viewerLogin={token.viewer?.login}
+          />
         </div>
+
+        <WatchedReposDialog
+          open={editingRepos}
+          watched={watched}
+          onClose={() => {
+            setEditingRepos(false);
+            pulls.reload();
+          }}
+        />
 
         <p className="text-ink-faint mt-10 text-xs">
           The diff is{' '}
