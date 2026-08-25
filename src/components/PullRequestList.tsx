@@ -1,6 +1,7 @@
 import { type CSSProperties, useMemo } from 'react';
 
 import { PullRow } from '@/components/PullRow';
+import { PullStackBadge } from '@/components/PullStackBadge';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { cn } from '@/lib/cn';
@@ -10,6 +11,7 @@ import {
   type PullStackNode,
   type WatchedRepo,
 } from '@/lib/pulls';
+import { countStackNodes } from '@/lib/pullStacks';
 import type { GitHubPullTarget } from '@/lib/reviewTarget';
 
 interface PullRequestListProps {
@@ -78,10 +80,25 @@ export function PullRequestList({
           </p>
         )
       ) : (
-        groups.map((group) => (
+        // A rule between the groups, and none above the first. A heading alone
+        // left two authors' pull requests reading as one run, because the
+        // heading sits closer to the rows under it than the rows do to each
+        // other — which is what a heading is for, and why it cannot also be
+        // the boundary.
+        groups.map((group, groupIndex) => (
           // The gap belongs between the groups. On the last one it would be
           // a second bottom padding under the menu's or the card's own.
-          <section key={group.key} className="pb-1 last:pb-0">
+          //
+          // The rule is drawn from the index rather than `:first-child`. A
+          // group is not always the first child of what holds it, and an author
+          // never is: the repository heading is.
+          <section
+            key={group.key}
+            className={cn(
+              'border-line pb-1 last:pb-0',
+              groupIndex > 0 && 'border-t'
+            )}
+          >
             {showRepoHeadings && (
               <div className="flex items-baseline gap-2 px-2 pt-2 pb-1">
                 <SectionLabel className="min-w-0 truncate">
@@ -92,8 +109,14 @@ export function PullRequestList({
                 </span>
               </div>
             )}
-            {group.authors.map((author) => (
-              <div key={author.author}>
+            {group.authors.map((author, authorIndex) => (
+              <div
+                key={author.author}
+                className={cn(
+                  'border-line',
+                  authorIndex > 0 && 'mt-1 border-t'
+                )}
+              >
                 <p className="text-ink-muted flex items-baseline gap-1.5 px-2 pt-1 pb-0.5 text-xs">
                   <span className="min-w-0 truncate">{author.author}</span>
                   {author.isViewer && (
@@ -137,11 +160,64 @@ export function PullRequestList({
 }
 
 /**
- * One stack, drawn as the chain it is. A pull request stacked on another sits
- * indented under it behind a guide line, so what depends on what is visible
- * without reading a single branch name.
+ * One author's stacks. A chain of more than one pull request is drawn as a block
+ * of its own: a background that holds the whole chain, and the layers badge over
+ * it saying how many pull requests are in it. A pull request that stands alone
+ * gets neither, so the background means one thing only.
+ *
+ * The indentation and the guide line inside a block say which pull request
+ * stands on which. The block says where the chain begins and ends, which
+ * indentation on its own could not: two roots in a row read as one tree.
  */
 function PullStack({
+  current,
+  nodes,
+  onNavigate,
+}: {
+  current?: GitHubPullTarget;
+  nodes: readonly PullStackNode[];
+  onNavigate?(): void;
+}) {
+  return (
+    <>
+      {nodes.map((node) => {
+        const size = countStackNodes([node]);
+        if (size === 1) {
+          return (
+            <PullRow
+              key={node.pull.number}
+              current={current}
+              pull={node.pull}
+              onNavigate={onNavigate}
+            />
+          );
+        }
+        return (
+          <div
+            key={node.pull.number}
+            className="bg-raised/50 inset-ring-line/70 my-1 rounded-md py-0.5 inset-ring"
+          >
+            <div className="flex justify-end px-2 pt-0.5">
+              <PullStackBadge size={size} />
+            </div>
+            <PullChain
+              current={current}
+              nodes={[node]}
+              onNavigate={onNavigate}
+            />
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+/**
+ * The rows of one stack. A pull request stacked on another sits indented under
+ * it behind a guide line, so what depends on what is visible without reading a
+ * single branch name.
+ */
+function PullChain({
   current,
   nodes,
   onNavigate,
@@ -157,7 +233,7 @@ function PullStack({
           <PullRow current={current} pull={node.pull} onNavigate={onNavigate} />
           {node.children.length > 0 && (
             <div className="border-line ml-2.5 border-l pl-0.5">
-              <PullStack
+              <PullChain
                 current={current}
                 nodes={node.children}
                 onNavigate={onNavigate}

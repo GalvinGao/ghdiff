@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
+import { ExampleTargets } from '@/components/ExampleTargets';
 import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { PullRequestList } from '@/components/PullRequestList';
 import { RepoPicker } from '@/components/RepoPicker';
@@ -156,6 +157,19 @@ export function HomeScreen() {
             heading="Private GitHub access"
             token={token}
           />
+        </div>
+
+        {/* Nothing on this page moves until somebody pastes a URL, and a
+            reviewer arriving with no pull request of their own to read has no
+            way to find out what the surface does. These are that way in. */}
+        <div className="mt-10 flex items-baseline gap-2">
+          <SectionLabel>Examples</SectionLabel>
+          <span className="text-ink-faint text-xs">
+            Diffs large enough to be worth the trip
+          </span>
+        </div>
+        <div className={`${CARD} mt-2 p-1`}>
+          <ExampleTargets />
         </div>
 
         <div className="mt-10 flex items-center gap-2">
