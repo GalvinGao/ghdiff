@@ -1,0 +1,187 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  describeReviewTarget,
+  gitHubTargetFromSegments,
+  parseGitHubInput,
+  reviewTargetFromQuery,
+  reviewTargetHref,
+  reviewTargetKey,
+  reviewTargetQuery,
+  supportsGitHubComments,
+} from './reviewTarget.ts';
+
+describe('parseGitHubInput', () => {
+  it('parses a pull request URL', () => {
+    assert.deepEqual(
+      parseGitHubInput('https://github.com/oven-sh/bun/pull/30412'),
+      {
+        kind: 'github-pull',
+        owner: 'oven-sh',
+        repo: 'bun',
+        number: 30412,
+      }
+    );
+  });
+
+  it('parses a pull request files tab', () => {
+    assert.deepEqual(
+      parseGitHubInput('https://github.com/oven-sh/bun/pull/30412/files'),
+      { kind: 'github-pull', owner: 'oven-sh', repo: 'bun', number: 30412 }
+    );
+  });
+
+  it('parses a raw patch URL', () => {
+    assert.deepEqual(
+      parseGitHubInput('https://github.com/oven-sh/bun/pull/30412.diff'),
+      { kind: 'github-pull', owner: 'oven-sh', repo: 'bun', number: 30412 }
+    );
+  });
+
+  it('parses the owner/repo#number shorthand', () => {
+    assert.deepEqual(parseGitHubInput('GalvinGao/reviewer#7'), {
+      kind: 'github-pull',
+      owner: 'GalvinGao',
+      repo: 'reviewer',
+      number: 7,
+    });
+  });
+
+  it('parses a commit URL', () => {
+    assert.deepEqual(
+      parseGitHubInput('github.com/pierrecomputer/pierre/commit/0800fbaa'),
+      {
+        kind: 'github-commit',
+        owner: 'pierrecomputer',
+        repo: 'pierre',
+        sha: '0800fbaa',
+      }
+    );
+  });
+
+  it('parses a compare URL', () => {
+    assert.deepEqual(
+      parseGitHubInput('https://github.com/torvalds/linux/compare/v6.0...v6.1'),
+      {
+        kind: 'github-compare',
+        owner: 'torvalds',
+        repo: 'linux',
+        base: 'v6.0',
+        head: 'v6.1',
+      }
+    );
+  });
+
+  it('rejects a host that is not github.com', () => {
+    assert.equal(parseGitHubInput('https://gitlab.com/a/b/pull/1'), undefined);
+  });
+
+  it('rejects text that is not a target', () => {
+    assert.equal(parseGitHubInput(''), undefined);
+    assert.equal(parseGitHubInput('hello world'), undefined);
+    assert.equal(parseGitHubInput('https://github.com/oven-sh/bun'), undefined);
+  });
+});
+
+describe('gitHubTargetFromSegments', () => {
+  it('rejects a pull number that is not a positive integer', () => {
+    assert.equal(gitHubTargetFromSegments(['a', 'b', 'pull', '0']), undefined);
+    assert.equal(gitHubTargetFromSegments(['a', 'b', 'pull', 'x']), undefined);
+  });
+
+  it('rejects a sha that is too short', () => {
+    assert.equal(
+      gitHubTargetFromSegments(['a', 'b', 'commit', 'abc']),
+      undefined
+    );
+  });
+
+  it('accepts a percent-encoded compare range', () => {
+    assert.deepEqual(
+      gitHubTargetFromSegments([
+        'a',
+        'b',
+        'compare',
+        encodeURIComponent('main...feature/x'),
+      ]),
+      {
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
+        base: 'main',
+        head: 'feature/x',
+      }
+    );
+  });
+});
+
+describe('round trips', () => {
+  const targets = [
+    { kind: 'github-pull', owner: 'a', repo: 'b', number: 12 },
+    { kind: 'github-commit', owner: 'a', repo: 'b', sha: 'deadbeef' },
+    {
+      kind: 'github-compare',
+      owner: 'a',
+      repo: 'b',
+      base: 'main',
+      head: 'feature/x',
+    },
+    { kind: 'local', repoPath: '/repos/a/b', base: 'main', head: 'HEAD' },
+  ] as const;
+
+  for (const target of targets) {
+    it(`survives the api query for ${target.kind}`, () => {
+      assert.deepEqual(
+        reviewTargetFromQuery(reviewTargetQuery(target)),
+        target
+      );
+    });
+
+    it(`produces a href and a key for ${target.kind}`, () => {
+      assert.ok(reviewTargetHref(target).startsWith('/'));
+      assert.ok(reviewTargetKey(target).length > 0);
+      assert.ok(describeReviewTarget(target).length > 0);
+    });
+  }
+
+  it('recovers a github target from its own href', () => {
+    for (const target of targets) {
+      if (target.kind === 'local') continue;
+      const path = reviewTargetHref(target).replace(/^\/gh\//, '');
+      assert.deepEqual(gitHubTargetFromSegments(path.split('/')), target);
+    }
+  });
+});
+
+describe('supportsGitHubComments', () => {
+  it('is true only for a pull request', () => {
+    assert.equal(
+      supportsGitHubComments({
+        kind: 'github-pull',
+        owner: 'a',
+        repo: 'b',
+        number: 1,
+      }),
+      true
+    );
+    assert.equal(
+      supportsGitHubComments({
+        kind: 'github-commit',
+        owner: 'a',
+        repo: 'b',
+        sha: 'deadbeef',
+      }),
+      false
+    );
+    assert.equal(
+      supportsGitHubComments({
+        kind: 'local',
+        repoPath: '/x',
+        base: 'main',
+        head: 'HEAD',
+      }),
+      false
+    );
+  });
+});

@@ -1,0 +1,13 @@
+# No workspace packages: reviewer is a single Next.js application at the repo
+# root. This file exists only to hold pnpm settings, which pnpm 11 reads from
+# here instead of from package.json.
+
+# @pierre/trees pins @pierre/theming 1.0.0 and @pierre/diffs pins 1.0.1. Two
+# copies give the two libraries two separate theme controllers, so the diff
+# and the file tree drift apart. 1.0.1 is a patch release and it accepts
+# @pierre/theme 2.x, which @pierre/diffs requires exactly.
+overrides:
+  '@pierre/theming': '1.0.1'
+
+minimumReleaseAgeExclude:
+  - '@pierre/diffs@1.3.6'
