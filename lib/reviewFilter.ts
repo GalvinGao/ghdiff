@@ -10,6 +10,7 @@ import {
 import {
   gitStatusEntries,
   type ReviewData,
+  type ReviewDiffStats,
   type ReviewFileEntry,
 } from './reviewData.ts';
 
@@ -39,6 +40,12 @@ export interface FilteredReviewData {
   items: readonly CodeViewDiffItem<CommentMetadata>[];
   entries: readonly ReviewFileEntry[];
   treeSource: ReviewTreeSource;
+  /**
+   * The size of what is on screen, not of the whole patch. The footer strip
+   * reads this, so the count it prints is the count of the files the tree
+   * lists above it.
+   */
+  stats: ReviewDiffStats;
   /** How many files the filter removed. Drives the "N hidden" chip. */
   hiddenCount: number;
 }
@@ -109,6 +116,12 @@ export function applyReviewFilter(
   const items: CodeViewDiffItem<CommentMetadata>[] = [];
   const paths: string[] = [];
   const itemIdByPath = new Map<string, string>();
+  const stats: ReviewDiffStats = {
+    addedLines: 0,
+    deletedLines: 0,
+    fileCount: 0,
+    totalLines: 0,
+  };
 
   for (const entry of data.entries) {
     if (!preset.matches(entry.path)) continue;
@@ -122,6 +135,12 @@ export function applyReviewFilter(
     items.push(item);
     paths.push(entry.treePath);
     itemIdByPath.set(entry.treePath, entry.itemId);
+    stats.fileCount += 1;
+    stats.addedLines += entry.addedLines;
+    stats.deletedLines += entry.deletedLines;
+    if (item.type === 'diff') {
+      stats.totalLines += item.fileDiff.unifiedLineCount;
+    }
   }
 
   return {
@@ -132,6 +151,7 @@ export function applyReviewFilter(
       gitStatus: gitStatusEntries(entries),
       itemIdByPath,
     },
+    stats,
     hiddenCount: data.entries.length - entries.length,
   };
 }

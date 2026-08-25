@@ -70,6 +70,9 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
     path: comment.path,
     author: comment.user?.login ?? 'unknown',
     authorAvatarUrl: comment.user?.avatar_url,
+    // GitHub types an App's account as 'Bot'. The sidebar's People and Bots
+    // filter reads this rather than guessing from the login.
+    authorIsBot: comment.user?.type === 'Bot',
     body: comment.body,
     line,
     startLine: startLine ?? undefined,
@@ -112,6 +115,8 @@ interface CreateCommentBody {
   side?: unknown;
   startLine?: unknown;
   startSide?: unknown;
+  /** The comment this one answers. Its presence makes this a reply. */
+  replyToId?: unknown;
 }
 
 export const POST = withEvlog(async (request: Request): Promise<Response> => {
@@ -128,20 +133,45 @@ export const POST = withEvlog(async (request: Request): Promise<Response> => {
   if (
     input == null ||
     typeof input.body !== 'string' ||
-    input.body.trim().length === 0 ||
-    typeof input.path !== 'string' ||
-    typeof input.line !== 'number'
+    input.body.trim().length === 0
   ) {
-    return json(
-      { error: 'That comment is missing a body, path, or line.' },
-      400
-    );
+    return json({ error: 'That comment has no body.' }, 400);
   }
+  const body = input.body.trim();
+  const replyToId =
+    typeof input.replyToId === 'number' ? input.replyToId : undefined;
+  const path = typeof input.path === 'string' ? input.path : undefined;
+  const line = typeof input.line === 'number' ? input.line : undefined;
 
   try {
     const token = readGitHubToken(request);
     if (token == null) {
       return json({ error: 'Add a GitHub token before you comment.' }, 401);
+    }
+
+    // A reply names only the comment it answers. Everything else about where it
+    // lands, the path, the line, the side and the commit, comes from that
+    // comment, so a reply cannot drift off its thread.
+    if (replyToId != null) {
+      log.set({ replyToId });
+      const reply = await githubWrite<GitHubReviewComment>(
+        'POST',
+        `/repos/${pull.owner}/${pull.repo}/pulls/${pull.number}/comments/${String(replyToId)}/replies`,
+        token,
+        { body }
+      );
+      if (reply == null) {
+        return json(
+          { error: 'GitHub accepted the reply but returned nothing.' },
+          502
+        );
+      }
+      log.set({ outcome: 'replied', commentId: reply.id });
+      return json({ comment: toPayload(reply) }, 201);
+    }
+
+    if (path == null || line == null) {
+      return json({ error: 'That comment is missing a path or a line.' }, 400);
     }
 
     // A review comment must name the commit it applies to.
@@ -156,13 +186,12 @@ export const POST = withEvlog(async (request: Request): Promise<Response> => {
       `/repos/${pull.owner}/${pull.repo}/pulls/${pull.number}/comments`,
       token,
       {
-        body: input.body.trim(),
+        body,
         commit_id: pullRequest.head.sha,
-        path: input.path,
-        line: input.line,
+        path,
+        line,
         side: gitHubSideFromAnnotation(side),
-        ...(typeof input.startLine === 'number' &&
-        input.startLine !== input.line
+        ...(typeof input.startLine === 'number' && input.startLine !== line
           ? {
               start_line: input.startLine,
               start_side: gitHubSideFromAnnotation(

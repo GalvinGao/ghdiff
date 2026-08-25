@@ -54,6 +54,8 @@ export interface ReviewCommentsState {
   startDraft(itemId: string, range: SelectedLineRange): void;
   /** Turns a draft into a saved comment and writes it to the store. */
   saveDraft(itemId: string, key: string, body: string): void;
+  /** Adds a message to the end of a thread that already exists. */
+  replyToThread(itemId: string, key: string, body: string): void;
   /** Removes a draft, or deletes a saved comment from its store. */
   removeComment(itemId: string, key: string): void;
   reload(): void;
@@ -98,8 +100,12 @@ function toStoredRows(
       for (const comment of metadata.comments) {
         rows.push({
           key: comment.key,
+          // Names the thread, so a reply written here is still a reply after a
+          // reload. There is no GitHub id for it to point at.
+          threadKey: metadata.key,
           path,
           author: comment.author,
+          authorIsBot: comment.authorIsBot,
           body: comment.body,
           createdAt: comment.createdAt,
           ...range,
@@ -343,6 +349,7 @@ export function useReviewComments(options: {
               githubId: comment.githubId,
               author: comment.author,
               authorAvatarUrl: comment.authorAvatarUrl,
+              authorIsBot: comment.authorIsBot,
               body: comment.body,
               createdAt: comment.createdAt,
               htmlUrl: comment.htmlUrl,
@@ -360,6 +367,72 @@ export function useReviewComments(options: {
             cause instanceof Error
               ? cause.message
               : 'Could not post that comment to GitHub.',
+        }));
+      }
+    },
+    [pullQuery, replace, token]
+  );
+
+  const postReply = useCallback(
+    async (
+      itemId: string,
+      key: string,
+      pendingKey: string,
+      replyToId: number,
+      body: string
+    ) => {
+      if (pullQuery == null) return;
+      try {
+        const response = await fetch(
+          `/api/comments?${pullQuery}`,
+          withGitHubToken(token, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ body, replyToId }),
+          })
+        );
+        const payload = (await response.json()) as {
+          comment?: CommentPayload;
+          error?: string;
+        };
+        if (!response.ok || payload.comment == null) {
+          throw new Error(
+            payload.error ?? `GitHub rejected the reply (${response.status}).`
+          );
+        }
+        const comment = payload.comment;
+        // The optimistic message becomes the real one, in place. Its position
+        // is already right: GitHub sorts replies by creation time and this is
+        // the newest, so the thread does not reorder under the reader.
+        replace(itemId, key, (metadata) => ({
+          ...metadata,
+          comments: (metadata.comments ?? []).map((existing) =>
+            existing.key === pendingKey
+              ? {
+                  key: `gh-${comment.githubId ?? pendingKey}`,
+                  githubId: comment.githubId,
+                  author: comment.author,
+                  authorAvatarUrl: comment.authorAvatarUrl,
+                  authorIsBot: comment.authorIsBot,
+                  body: comment.body,
+                  createdAt: comment.createdAt,
+                  htmlUrl: comment.htmlUrl,
+                }
+              : existing
+          ),
+          pending: false,
+          error: undefined,
+        }));
+      } catch (cause) {
+        // The text stays in the thread, marked as failed. Throwing it away
+        // would lose what the reviewer wrote.
+        replace(itemId, key, (metadata) => ({
+          ...metadata,
+          pending: false,
+          error:
+            cause instanceof Error
+              ? cause.message
+              : 'Could not post that reply to GitHub.',
         }));
       }
     },
@@ -408,6 +481,45 @@ export function useReviewComments(options: {
       );
     },
     [pathByItemId, postToGitHub, replace, state.byItemId, store, viewerLogin]
+  );
+
+  const replyToThread = useCallback(
+    (itemId: string, key: string, body: string) => {
+      const trimmed = body.trim();
+      if (trimmed.length === 0) return;
+
+      const metadata = state.byItemId
+        .get(itemId)
+        ?.find((annotation) => annotation.metadata.key === key)?.metadata;
+      if (metadata == null || !isCommentThread(metadata)) return;
+
+      // GitHub files a reply under the thread of the comment it answers, and
+      // the root is the comment that identifies the thread. A thread whose
+      // root has not reached GitHub yet cannot take a reply, so the composer
+      // stays closed until the root has posted.
+      const replyToId = metadata.comments[0].githubId;
+      if (store === 'github' && replyToId == null) return;
+
+      const pendingKey = `reply-${nextKeyRef.current++}`;
+      replace(itemId, key, (current) => ({
+        ...current,
+        comments: [
+          ...(current.comments ?? []),
+          {
+            key: pendingKey,
+            author: viewerLogin ?? 'you',
+            body: trimmed,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        pending: store === 'github',
+        error: undefined,
+      }));
+
+      if (store !== 'github' || replyToId == null) return;
+      void postReply(itemId, key, pendingKey, replyToId, trimmed);
+    },
+    [postReply, replace, state.byItemId, store, viewerLogin]
   );
 
   const removeComment = useCallback(
@@ -471,6 +583,7 @@ export function useReviewComments(options: {
     error,
     startDraft,
     saveDraft,
+    replyToThread,
     removeComment,
     reload,
   };

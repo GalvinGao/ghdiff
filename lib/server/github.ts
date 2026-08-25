@@ -166,6 +166,8 @@ export interface GitHubUser {
   login: string;
   avatar_url?: string;
   name?: string | null;
+  /** 'User', 'Organization', or 'Bot' for a GitHub App. */
+  type?: string;
 }
 
 export interface GitHubPullRequest {

@@ -6,6 +6,8 @@ import pierreLight from '@pierre/theme/pierre-light';
 import {
   type FileTree as FileTreeModel,
   type FileTreeOptions,
+  type FileTreeRowDecoration,
+  type FileTreeRowDecorationContext,
   themeToTreeStyles,
 } from '@pierre/trees';
 import { FileTree, useFileTree } from '@pierre/trees/react';
@@ -20,17 +22,51 @@ import {
 
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { ReviewTreeSource } from '@/lib/reviewFilter';
+import type { TreeStatIndex } from '@/lib/treeStats';
 
 const ITEM_HEIGHT = 24;
 
 // Drop the folder dot: every file in this tree changed, so the dot says
 // nothing.
+//
+// The rest of this stylesheet is the diff-stat lane. Two columns, each as wide
+// as the widest number in this diff and each right-aligned, so every `+` figure
+// in the tree ends on one pixel and every `-` figure on another. The eye then
+// reads a column of numbers instead of hunting for where each row's number
+// starts. `flex: 1 0 auto` is what holds that: the lane grows into the space a
+// short filename leaves, and never shrinks, so a long filename truncates and
+// the numbers stay whole.
 const TREE_CSS = `
   [data-item-contains-git-change='true'] > [data-item-section='git'] {
     display: none;
   }
   [data-item-type='folder'] {
     font-weight: 500;
+  }
+  [data-item-section='decoration'] {
+    flex: 1 0 auto;
+    padding-left: 10px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  [data-item-section='decoration'] > span {
+    gap: 5px;
+    max-width: none;
+  }
+  [data-item-section='decoration'] > span > span {
+    display: inline-block;
+    text-align: right;
+  }
+  [data-item-section='decoration'] > span > span:first-child {
+    width: var(--reviewer-tree-add-column, 3ch);
+  }
+  [data-item-section='decoration'] > span > span:last-child {
+    width: var(--reviewer-tree-delete-column, 3ch);
+  }
+  /* A directory total is a summary of the rows under it, so it sits behind
+     them rather than competing with them. */
+  [data-item-type='folder'] [data-item-section='decoration'] {
+    opacity: 0.55;
   }
 `;
 
@@ -75,6 +111,8 @@ interface ReviewFileTreeProps {
   onModelReady?(model: FileTreeModel | null): void;
   onSelectPath(itemId: string): void;
   source: ReviewTreeSource;
+  /** Added and deleted lines per row, files and directories alike. */
+  stats: TreeStatIndex;
 }
 
 export const ReviewFileTree = memo(function ReviewFileTree({
@@ -83,6 +121,7 @@ export const ReviewFileTree = memo(function ReviewFileTree({
   onModelReady,
   onSelectPath,
   source,
+  stats,
 }: ReviewFileTreeProps) {
   // useFileTree reads its options once, through a state initializer, so the
   // first path list must be captured the same way, and the selection callback
@@ -111,6 +150,37 @@ export const ReviewFileTree = memo(function ReviewFileTree({
     }
   );
 
+  // The tree reads its options once, so this keeps its identity for the life of
+  // the model and reads the current stats from the render it belongs to. It runs
+  // once per visible row per paint, which is why it does no work beyond a map
+  // lookup: the sums were taken in one pass when the diff was parsed.
+  const renderRowDecoration = useStableCallback(
+    ({ item }: FileTreeRowDecorationContext): FileTreeRowDecoration | null => {
+      const stat = stats.byPath.get(item.path);
+      if (stat == null) return null;
+      const added = `+${String(stat.addedLines)}`;
+      const deleted = `-${String(stat.deletedLines)}`;
+      return {
+        // `text` is the plain form the decoration type requires. `parts` is
+        // what the tree draws, one span per number, so each keeps its own
+        // colour and its own column.
+        text: `${added} ${deleted}`,
+        parts: [
+          { text: added, color: 'var(--app-added)' },
+          { text: deleted, color: 'var(--app-removed)' },
+        ],
+        // A directory says how many files it counts, which is the one thing the
+        // row does not already show. A file's own numbers need no title.
+        title:
+          item.kind === 'directory'
+            ? `${String(stat.fileCount)} ${
+                stat.fileCount === 1 ? 'file' : 'files'
+              }, ${added} ${deleted}`
+            : undefined,
+      };
+    }
+  );
+
   const { model } = useFileTree({
     ...BASE_OPTIONS,
     paths: initialPaths,
@@ -118,6 +188,7 @@ export const ReviewFileTree = memo(function ReviewFileTree({
     sort: PRESERVE_PATCH_ORDER,
     itemHeight: ITEM_HEIGHT,
     onSelectionChange: handleSelectionChange,
+    renderRowDecoration,
   });
 
   const pathByItemId = useMemo(() => {
@@ -162,11 +233,16 @@ export const ReviewFileTree = memo(function ReviewFileTree({
   }, [model, onModelReady]);
 
   const style = useMemo(
-    () => ({
-      ...themeToTreeStyles(colorScheme === 'dark' ? pierreDark : pierreLight),
-      ...STYLE_OVERRIDES,
-    }),
-    [colorScheme]
+    () =>
+      ({
+        ...themeToTreeStyles(colorScheme === 'dark' ? pierreDark : pierreLight),
+        ...STYLE_OVERRIDES,
+        // One extra character for the sign. `ch` is the width of a zero, and
+        // the lane sets tabular figures, so every digit measures the same.
+        '--reviewer-tree-add-column': `${String(stats.addedDigits + 1)}ch`,
+        '--reviewer-tree-delete-column': `${String(stats.deletedDigits + 1)}ch`,
+      }) as CSSProperties,
+    [colorScheme, stats.addedDigits, stats.deletedDigits]
   );
 
   return (

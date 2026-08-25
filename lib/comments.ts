@@ -8,6 +8,8 @@ export interface ThreadComment {
   githubId?: number;
   author: string;
   authorAvatarUrl?: string;
+  /** True when GitHub reports the author as an app rather than a person. */
+  authorIsBot?: boolean;
   body: string;
   createdAt?: string;
   /** URL of this message on github.com, when it has one. */
@@ -101,6 +103,9 @@ export interface CommentListEntry {
   key: string;
   /** The author who opened the thread. */
   author: string;
+  authorAvatarUrl?: string;
+  /** Decides whether the People or the Bots filter keeps this thread. */
+  authorIsBot: boolean;
   /** The root message, for the preview line. */
   body: string;
   replyCount: number;
@@ -127,6 +132,7 @@ export interface CommentPayload {
   path: string;
   author: string;
   authorAvatarUrl?: string;
+  authorIsBot?: boolean;
   body: string;
   /** 1-based line on `side`. */
   line: number;
@@ -138,6 +144,12 @@ export interface CommentPayload {
   htmlUrl?: string;
   /** The comment this one replies to. Absent for the root of a thread. */
   replyToId?: number;
+  /**
+   * The thread this comment belongs to, stated outright. Only the browser
+   * store writes it: a comment kept in this browser has no GitHub id, so
+   * there is no id for a reply to point at. GitHub never sends this.
+   */
+  threadKey?: string;
 }
 
 /** GitHub calls the new file RIGHT and the old file LEFT. */

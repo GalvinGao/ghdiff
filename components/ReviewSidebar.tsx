@@ -4,6 +4,7 @@ import { IconComment, IconFileTree, IconSearch, IconX } from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
 import { useEffect, useRef, useState } from 'react';
 
+import { CommentAuthorFilterBar } from '@/components/CommentAuthorFilterBar';
 import { CommentsList } from '@/components/CommentsList';
 import { FilterMenu } from '@/components/FilterMenu';
 import { ReviewFileTree } from '@/components/ReviewFileTree';
@@ -16,6 +17,10 @@ import {
 } from '@/components/ui/Segmented';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { CommentStore } from '@/hooks/useReviewComments';
+import type {
+  CommentAuthorCounts,
+  CommentAuthorFilter,
+} from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import { countComments, countThreads } from '@/lib/commentSections';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
@@ -24,6 +29,7 @@ import {
   type ReviewFilterState,
   type ReviewTreeSource,
 } from '@/lib/reviewFilter';
+import type { TreeStatIndex } from '@/lib/treeStats';
 
 type Tab = 'files' | 'comments';
 
@@ -32,24 +38,33 @@ interface ReviewSidebarProps {
   activeItemId?: string;
   /** The thread the diff has selected, which the comment list follows. */
   activeThreadKey?: string;
+  authorCounts: CommentAuthorCounts;
+  authorFilter: CommentAuthorFilter;
   availableStatuses: ReadonlySet<GitStatus>;
   colorScheme: ColorScheme;
+  /** Already narrowed by `authorFilter`. This is what the list shows. */
   commentSections: readonly CommentListSection[];
   commentStore: CommentStore;
   entries: readonly ReviewFileEntry[];
   filter: ReviewFilterState;
   hiddenCount: number;
+  onAuthorFilterChange(next: CommentAuthorFilter): void;
   onFilterChange(next: ReviewFilterState): void;
   onSelectComment(comment: CommentListEntry): void;
   onSelectItem(itemId: string): void;
+  /** The files on screen, not the whole patch. */
   stats: ReviewDiffStats;
+  /** Total files in the patch, so the footer can say what is hidden. */
+  totalFileCount: number;
   treeSource: ReviewTreeSource;
-  visibleFileCount: number;
+  treeStats: TreeStatIndex;
 }
 
 export function ReviewSidebar({
   activeItemId,
   activeThreadKey,
+  authorCounts,
+  authorFilter,
   availableStatuses,
   colorScheme,
   commentSections,
@@ -57,12 +72,14 @@ export function ReviewSidebar({
   entries,
   filter,
   hiddenCount,
+  onAuthorFilterChange,
   onFilterChange,
   onSelectComment,
   onSelectItem,
   stats,
+  totalFileCount,
   treeSource,
-  visibleFileCount,
+  treeStats,
 }: ReviewSidebarProps) {
   const [tab, setTab] = useState<Tab>('files');
   // The field is shown on demand, and closing it clears the query. A path
@@ -87,7 +104,7 @@ export function ReviewSidebar({
           <SegmentedItem value="files">
             <IconFileTree size={13} />
             Files
-            <SegmentedCount>{visibleFileCount}</SegmentedCount>
+            <SegmentedCount>{stats.fileCount}</SegmentedCount>
           </SegmentedItem>
           <SegmentedItem
             value="comments"
@@ -164,6 +181,7 @@ export function ReviewSidebar({
               colorScheme={colorScheme}
               onSelectPath={onSelectItem}
               source={treeSource}
+              stats={treeStats}
             />
           )}
         </div>
@@ -182,11 +200,57 @@ export function ReviewSidebar({
         </div>
       </div>
 
-      <dl className="border-line text-ink-muted flex items-center gap-3 border-t px-3 py-2 text-xs tabular-nums">
-        <div className="flex gap-1">
-          <dt className="sr-only">Files</dt>
-          <dd>{stats.fileCount} files</dd>
-        </div>
+      {/* One strip, and it belongs to whichever tab is open: the files tab has
+          a size to report and the comments tab has a filter to set, and neither
+          has anything to say about the other. */}
+      <div className="border-line flex h-9 shrink-0 items-center border-t px-2">
+        {tab === 'files' ? (
+          <FileTotals
+            hiddenCount={hiddenCount}
+            stats={stats}
+            totalFileCount={totalFileCount}
+          />
+        ) : (
+          <CommentAuthorFilterBar
+            counts={authorCounts}
+            onChange={onAuthorFilterChange}
+            value={authorFilter}
+          />
+        )}
+      </div>
+    </aside>
+  );
+}
+
+/**
+ * The size of the review on screen. The count is the count of the files the
+ * tree lists above it, and it says so when a filter is holding some back: a
+ * footer that reported the whole patch while the tree showed a third of it made
+ * the two panes disagree.
+ */
+function FileTotals({
+  hiddenCount,
+  stats,
+  totalFileCount,
+}: {
+  hiddenCount: number;
+  stats: ReviewDiffStats;
+  totalFileCount: number;
+}) {
+  return (
+    <dl className="text-ink-muted flex w-full min-w-0 items-baseline gap-2 px-1 text-[11px] tabular-nums">
+      <div className="flex min-w-0 gap-1 truncate">
+        <dt className="sr-only">Files</dt>
+        <dd>
+          {stats.fileCount} {stats.fileCount === 1 ? 'file' : 'files'}
+          {hiddenCount > 0 && (
+            <span className="text-ink-faint"> of {totalFileCount}</span>
+          )}
+        </dd>
+      </div>
+      {/* Pushed to the right edge, in the same order and the same two colours
+          the tree uses on every row above. */}
+      <div className="ml-auto flex shrink-0 gap-2">
         <div className="flex gap-1">
           <dt className="sr-only">Added lines</dt>
           <dd className="text-added">+{stats.addedLines}</dd>
@@ -195,8 +259,8 @@ export function ReviewSidebar({
           <dt className="sr-only">Deleted lines</dt>
           <dd className="text-removed">-{stats.deletedLines}</dd>
         </div>
-      </dl>
-    </aside>
+      </div>
+    </dl>
   );
 }
 

@@ -1,11 +1,13 @@
 'use client';
 
+import { IconReply } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { CommentBody } from '@/components/CommentBody';
 import { CommentExpansion } from '@/components/CommentExpansion';
 import { ConfirmInline } from '@/components/ConfirmInline';
 import { Button } from '@/components/ui/Button';
+import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { measureThread } from '@/lib/commentHeight';
 import {
@@ -19,6 +21,9 @@ interface CommentThreadCardProps {
   itemId: string;
   metadata: CommentMetadata;
   onDelete(itemId: string, key: string): void;
+  onReply(itemId: string, key: string, body: string): void;
+  /** Where a reply would go, which decides whether one can be written. */
+  store: CommentStore;
 }
 
 /**
@@ -33,6 +38,12 @@ interface CommentThreadCardProps {
  * so a card that grew would relay out the virtualized list. Reading the thread
  * happens in an overlay instead. See lib/commentHeight.ts.
  *
+ * A reply is the one thing that re-measures the card, because it adds a message
+ * to the thread the height was taken from. That is one relayout for one
+ * deliberate act, and it is the same relayout that posting the first comment on
+ * a line already costs. Nothing else here changes size: the card still never
+ * grows on its own, and reading it still costs the diff nothing.
+ *
  * The whole card is the control. There is no expand button: a preview this
  * small is not for reading, so clicking anywhere in it opens the thread.
  */
@@ -40,6 +51,8 @@ export function CommentThreadCard({
   itemId,
   metadata,
   onDelete,
+  onReply,
+  store,
 }: CommentThreadCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   // The element the overlay grows from. Captured in the handler, because a ref
@@ -55,12 +68,25 @@ export function CommentThreadCard({
   const open = useCallback(() => setAnchor(cardRef.current), []);
   const close = useCallback(() => setAnchor(null), []);
 
+  /**
+   * Whether an event belongs to the card rather than to the expanded layer.
+   * The layer is a portal, so its DOM sits on document.body, but React still
+   * bubbles its events through this component. Without this test, typing a
+   * space into the reply box would be read as "open the thread".
+   */
+  const isOwnEvent = useCallback((target: EventTarget | null): boolean => {
+    return target instanceof Node && cardRef.current?.contains(target) === true;
+  }, []);
+
   if (!isCommentThread(metadata)) return null;
 
   const comments: ThreadComment[] = metadata.comments;
   const root = comments[0];
   const replyCount = comments.length - 1;
   const participants = threadParticipants(metadata);
+  // GitHub files a reply under the thread of the comment it answers, so the
+  // root has to exist there first.
+  const canReply = store === 'local' || root.githubId != null;
 
   return (
     <div
@@ -70,6 +96,7 @@ export function CommentThreadCard({
       aria-expanded={anchor != null}
       aria-label={`Open thread by ${root.author}`}
       onClick={(event) => {
+        if (!isOwnEvent(event.target)) return;
         // A link or a button inside the card keeps its own behaviour.
         if (
           event.target instanceof Element &&
@@ -80,6 +107,7 @@ export function CommentThreadCard({
         open();
       }}
       onKeyDown={(event) => {
+        if (!isOwnEvent(event.target)) return;
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           open();
@@ -140,7 +168,13 @@ export function CommentThreadCard({
       )}
 
       {anchor != null && (
-        <CommentExpansion anchor={anchor} onClose={close}>
+        <CommentExpansion
+          anchor={anchor}
+          // The layer re-measures when the thread gains a message, so a reply
+          // pushes the panel taller instead of being scrolled out of sight.
+          measureKey={comments.length}
+          onClose={close}
+        >
           <div className="mb-2 flex items-center gap-2">
             <span className="text-ink text-sm font-semibold">
               {comments.length === 1
@@ -198,9 +232,90 @@ export function CommentThreadCard({
               </li>
             ))}
           </ol>
+
+          {canReply ? (
+            <ReplyForm
+              onSubmit={(body) => onReply(itemId, metadata.key, body)}
+              pending={metadata.pending === true}
+              store={store}
+            />
+          ) : (
+            <p className="border-line text-ink-faint mt-3 border-t pt-3 text-[11px]">
+              This comment has not reached GitHub yet, so it cannot take a
+              reply.
+            </p>
+          )}
         </CommentExpansion>
       )}
     </div>
+  );
+}
+
+/**
+ * The reply box at the foot of an open thread.
+ *
+ * It is always open rather than hidden behind a Reply button. Answering a
+ * comment is the reason the thread was expanded most of the time, and a review
+ * is a long sequence of that one act, so the box costs one click less every
+ * time. It clears itself on submit, because the message it sent is already in
+ * the list above it.
+ */
+function ReplyForm({
+  onSubmit,
+  pending,
+  store,
+}: {
+  onSubmit(body: string): void;
+  pending: boolean;
+  store: CommentStore;
+}) {
+  const [body, setBody] = useState('');
+  const canSend = body.trim().length > 0 && !pending;
+
+  const send = () => {
+    if (!canSend) return;
+    onSubmit(body);
+    setBody('');
+  };
+
+  return (
+    <form
+      className="border-line mt-3 border-t pt-3 font-sans"
+      onSubmit={(event) => {
+        event.preventDefault();
+        send();
+      }}
+    >
+      <textarea
+        value={body}
+        rows={2}
+        placeholder={
+          store === 'github' ? 'Reply on GitHub' : 'Reply in this browser'
+        }
+        className={cn(
+          'border-line bg-canvas text-ink placeholder:text-ink-faint w-full resize-y rounded-md border p-2 text-sm',
+          'focus-visible:border-accent focus-visible:outline-none'
+        )}
+        onChange={(event) => setBody(event.target.value)}
+        onKeyDown={(event) => {
+          // Cmd or Ctrl with Enter sends, which matches GitHub. Escape is left
+          // to the layer, which closes on it.
+          if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+            event.preventDefault();
+            send();
+          }
+        }}
+      />
+      <div className="mt-2 flex items-center gap-2">
+        <Button disabled={!canSend} size="sm" type="submit" variant="solid">
+          <IconReply size={13} />
+          {pending ? 'Sending…' : 'Reply'}
+        </Button>
+        <span className="text-ink-faint ml-auto text-[11px]">
+          Cmd or Ctrl with Enter
+        </span>
+      </div>
+    </form>
   );
 }
 

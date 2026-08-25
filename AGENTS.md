@@ -52,12 +52,13 @@ app/
   page.tsx                 home: the open pull requests, and a box for any GitHub URL
   gh/[...segments]/        mirrors github.com paths: /gh/owner/repo/pull/123
   api/diff/                one unified diff
-  api/comments/            GitHub pull request review comments: read, post, delete
+  api/comments/            GitHub pull request review comments: read, post, reply, delete
   api/github/pull/         one pull request's own details, for the header card
   api/github/pulls/        open pull requests for the watched repositories
   api/github/viewer/       who the token belongs to
 components/                the left bar, the review surface, and their chrome
-hooks/                     client state: token, color mode, patch, comments, pulls
+hooks/                     client state: token, color mode, patch, comments,
+                           pulls, sidebar width
 lib/                       pure domain logic, unit tested
 lib/server/                server-only: the GitHub client
 ```
@@ -151,6 +152,11 @@ portaled fixed-position layer that grows from the card's own rectangle, so the
 card in the diff is untouched. A clipped body is `overflow: hidden`, which also
 makes a late-loading image harmless. Never let a card grow in place.
 
+A reply is the one thing that re-measures a card, because it adds a message to
+the thread the height was taken from. That is one relayout for one deliberate
+act, and it is the same relayout posting the first comment on a line already
+costs. Everything else stays fixed.
+
 **A comment body is untrusted, and the schema is what makes it safe.**
 `CommentBody` parses raw HTML with `rehype-raw` and then filters it with
 `rehype-sanitize` on its **default** schema, which follows GitHub's own
@@ -182,6 +188,51 @@ background, and the top layer, so a dialog opened from inside a portaled menu is
 not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
 every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
+
+**A sidebar drag renders nothing.** `hooks/useSidebarWidth.ts` writes every
+pointermove straight onto `--reviewer-sidebar-width` on the layout element, and
+tells React once, on pointerup. The grid column and the handle's own `left` both
+read that property, so the pane and the seam travel together while the
+`CodeView` beside them is neither re-rendered nor re-measured. The drag's active
+look comes from a `data-resizing` attribute on the handle for the same reason.
+Two widths are kept apart on purpose: the width the reviewer chose, which goes
+to browser storage, and the width on screen, which a window too narrow for both
+panes squeezes. Widening the window gives the choice back, and a browser tab
+reporting a viewport of zero — which happens while a page loads and while a tab
+is hidden — is ignored rather than treated as a layout to shrink into.
+
+**A file's diff stats belong to the tree's decoration lane.** `@pierre/trees`
+draws `renderRowDecoration` after the name and before the git badge, so the
+numbers land in a lane whose right edge does not move with the row's
+indentation. `lib/treeStats.ts` sums each directory from its descendants and
+reports the widest number in the diff; `ReviewFileTree` turns that into two
+fixed column widths, so the additions of every row end on one pixel and the
+deletions on another. The lane is `flex: 1 0 auto`: it grows into the space a
+short name leaves and never shrinks, so a long name truncates and the figures
+stay whole. **A directory row is keyed with a trailing slash**, because that is
+how the tree names its own rows.
+
+**A thread's opening author decides whether the sidebar lists it.** A review bot
+writes most of the comments on a busy repository, so `lib/commentAuthors.ts`
+splits them into People and Bots and the strip at the foot of the panel holds
+one kind at a time. GitHub types an App's account as `Bot` and `/api/comments`
+forwards that; `isBotLogin` is the fallback for a comment kept in browser
+storage, which keeps the login and nothing else. A bot answering a person leaves
+the thread under People.
+
+**A path in the comment list is trimmed from its start.** The end of a path
+identifies the file, and a column of `components/CommentThre…` against
+`components/CommentsLi…` says nothing. `dir="rtl"` moves the ellipsis to the
+other end while the letters stay left to right, and a leading U+200E keeps a
+path that opens on a dot or a slash from being reordered around it. The hover
+layer that shows the whole path wraps at U+200B after each separator, so it
+breaks between directories rather than through one.
+
+**The footer strip belongs to the tab that is open.** The files tab has a size
+to report and the comments tab has a filter to set, and neither has anything to
+say about the other. The size it reports is `applyReviewFilter`'s own `stats`,
+not the patch's: a footer that counted the whole patch while the tree listed a
+third of it made the two panes disagree.
 
 ## Tests
 

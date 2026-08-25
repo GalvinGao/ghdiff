@@ -44,8 +44,9 @@ const data: ReviewData = {
   items: PATHS.map(([path]) => ({
     id: path,
     type: 'diff' as const,
-    // The filter only reads ids, so a stub fileDiff is enough here.
-    fileDiff: { name: path } as never,
+    // The filter reads the id and the unified line count, so a stub with
+    // those two is enough here.
+    fileDiff: { name: path, unifiedLineCount: 1 } as never,
     version: 0,
   })),
   stats: {
@@ -169,6 +170,32 @@ describe('applyReviewFilter', () => {
     });
     assert.equal(result.entries.length, 0);
     assert.equal(result.hiddenCount, PATHS.length);
+    assert.deepEqual(result.stats, {
+      addedLines: 0,
+      deletedLines: 0,
+      fileCount: 0,
+      totalLines: 0,
+    });
+  });
+
+  it('reports the stats of the whole patch when nothing is filtered', () => {
+    const result = applyReviewFilter(data, EMPTY_FILTER_STATE);
+    assert.deepEqual(result.stats, {
+      addedLines: PATHS.length,
+      deletedLines: 0,
+      fileCount: PATHS.length,
+      totalLines: PATHS.length,
+    });
+  });
+
+  it('reports the stats of the files it kept, not of the patch', () => {
+    const result = applyReviewFilter(data, {
+      ...EMPTY_FILTER_STATE,
+      query: 'src/',
+    });
+    assert.equal(result.stats.fileCount, 3);
+    assert.equal(result.stats.addedLines, 3);
+    assert.equal(result.stats.totalLines, 3);
   });
 });
 
