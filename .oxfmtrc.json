@@ -1,0 +1,43 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "proseWrap": "always",
+  "experimentalSortImports": {
+    "groups": [
+      ["value-builtin", "value-external", "type-builtin", "type-external"],
+      [
+        "value-internal",
+        "type-internal",
+        "value-parent",
+        "type-parent",
+        "value-sibling",
+        "type-sibling",
+        "value-index",
+        "type-index"
+      ],
+      "unknown"
+    ],
+    "ignoreCase": true,
+    "internalPattern": ["@/"],
+    "newlinesBetween": true,
+    "order": "asc",
+    "sortSideEffects": false
+  },
+  "experimentalTailwindcss": {},
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+    ".vercel",
+    "pnpm-lock.yaml",
+    "next-env.d.ts",
+    "*.patch",
+    "*.diff"
+  ]
+}
