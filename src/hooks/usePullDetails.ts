@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { withGitHubToken } from './useGitHubToken';
 import type { PullDetails } from '@/lib/pullDetails';
+import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 
 export interface PullDetailsState {
   data?: PullDetails;
@@ -37,28 +37,16 @@ export function usePullDetails(options: {
     setLoading(true);
     setError(undefined);
 
-    const query = new URLSearchParams({
-      owner,
-      repo,
-      number: String(number),
-    });
     try {
-      const response = await fetch(
-        `/api/github/pull?${query.toString()}`,
-        withGitHubToken(token, { signal: controller.signal })
+      setData(
+        await rpc.pulls.get(
+          { number, owner, repo },
+          { context: { token }, signal: controller.signal }
+        )
       );
-      const body = (await response.json()) as PullDetails & { error?: string };
-      if (!response.ok) {
-        throw new Error(body.error ?? `GitHub answered ${response.status}.`);
-      }
-      setData(body);
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : 'Could not read that pull request.'
-      );
+      setError(rpcErrorMessage(cause, 'Could not read that pull request.'));
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }

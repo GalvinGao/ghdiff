@@ -11,12 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
-import { Route as ApiCommentsRouteImport } from './routes/api/comments'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
 import { Route as GhSplatRouteImport } from './routes/gh/$'
-import { Route as ApiGithubPullRouteImport } from './routes/api/github/pull'
-import { Route as ApiGithubPullsRouteImport } from './routes/api/github/pulls'
-import { Route as ApiGithubViewerRouteImport } from './routes/api/github/viewer'
+import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -26,11 +23,6 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCommentsRoute = ApiCommentsRouteImport.update({
-  id: '/api/comments',
-  path: '/api/comments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDiffRoute = ApiDiffRouteImport.update({
@@ -43,95 +35,48 @@ const GhSplatRoute = GhSplatRouteImport.update({
   path: '/gh/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiGithubPullRoute = ApiGithubPullRouteImport.update({
-  id: '/api/github/pull',
-  path: '/api/github/pull',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGithubPullsRoute = ApiGithubPullsRouteImport.update({
-  id: '/api/github/pulls',
-  path: '/api/github/pulls',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGithubViewerRoute = ApiGithubViewerRouteImport.update({
-  id: '/api/github/viewer',
-  path: '/api/github/viewer',
+const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
+  id: '/api/rpc/$',
+  path: '/api/rpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/api/comments': typeof ApiCommentsRoute
   '/api/diff': typeof ApiDiffRoute
   '/gh/$': typeof GhSplatRoute
-  '/api/github/pull': typeof ApiGithubPullRoute
-  '/api/github/pulls': typeof ApiGithubPullsRoute
-  '/api/github/viewer': typeof ApiGithubViewerRoute
+  '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/api/comments': typeof ApiCommentsRoute
   '/api/diff': typeof ApiDiffRoute
   '/gh/$': typeof GhSplatRoute
-  '/api/github/pull': typeof ApiGithubPullRoute
-  '/api/github/pulls': typeof ApiGithubPullsRoute
-  '/api/github/viewer': typeof ApiGithubViewerRoute
+  '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/api/comments': typeof ApiCommentsRoute
   '/api/diff': typeof ApiDiffRoute
   '/gh/$': typeof GhSplatRoute
-  '/api/github/pull': typeof ApiGithubPullRoute
-  '/api/github/pulls': typeof ApiGithubPullsRoute
-  '/api/github/viewer': typeof ApiGithubViewerRoute
+  '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/$'
-    | '/api/comments'
-    | '/api/diff'
-    | '/gh/$'
-    | '/api/github/pull'
-    | '/api/github/pulls'
-    | '/api/github/viewer'
+  fullPaths: '/' | '/$' | '/api/diff' | '/gh/$' | '/api/rpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/$'
-    | '/api/comments'
-    | '/api/diff'
-    | '/gh/$'
-    | '/api/github/pull'
-    | '/api/github/pulls'
-    | '/api/github/viewer'
-  id:
-    | '__root__'
-    | '/'
-    | '/$'
-    | '/api/comments'
-    | '/api/diff'
-    | '/gh/$'
-    | '/api/github/pull'
-    | '/api/github/pulls'
-    | '/api/github/viewer'
+  to: '/' | '/$' | '/api/diff' | '/gh/$' | '/api/rpc/$'
+  id: '__root__' | '/' | '/$' | '/api/diff' | '/gh/$' | '/api/rpc/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
-  ApiCommentsRoute: typeof ApiCommentsRoute
   ApiDiffRoute: typeof ApiDiffRoute
   GhSplatRoute: typeof GhSplatRoute
-  ApiGithubPullRoute: typeof ApiGithubPullRoute
-  ApiGithubPullsRoute: typeof ApiGithubPullsRoute
-  ApiGithubViewerRoute: typeof ApiGithubViewerRoute
+  ApiRpcSplatRoute: typeof ApiRpcSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -150,13 +95,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/comments': {
-      id: '/api/comments'
-      path: '/api/comments'
-      fullPath: '/api/comments'
-      preLoaderRoute: typeof ApiCommentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/diff': {
       id: '/api/diff'
       path: '/api/diff'
@@ -171,25 +109,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GhSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/github/pull': {
-      id: '/api/github/pull'
-      path: '/api/github/pull'
-      fullPath: '/api/github/pull'
-      preLoaderRoute: typeof ApiGithubPullRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/github/pulls': {
-      id: '/api/github/pulls'
-      path: '/api/github/pulls'
-      fullPath: '/api/github/pulls'
-      preLoaderRoute: typeof ApiGithubPullsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/github/viewer': {
-      id: '/api/github/viewer'
-      path: '/api/github/viewer'
-      fullPath: '/api/github/viewer'
-      preLoaderRoute: typeof ApiGithubViewerRouteImport
+    '/api/rpc/$': {
+      id: '/api/rpc/$'
+      path: '/api/rpc/$'
+      fullPath: '/api/rpc/$'
+      preLoaderRoute: typeof ApiRpcSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -198,12 +122,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
-  ApiCommentsRoute: ApiCommentsRoute,
   ApiDiffRoute: ApiDiffRoute,
   GhSplatRoute: GhSplatRoute,
-  ApiGithubPullRoute: ApiGithubPullRoute,
-  ApiGithubPullsRoute: ApiGithubPullsRoute,
-  ApiGithubViewerRoute: ApiGithubViewerRoute,
+  ApiRpcSplatRoute: ApiRpcSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

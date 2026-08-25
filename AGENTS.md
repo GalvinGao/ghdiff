@@ -49,15 +49,15 @@ src/
     index.tsx              home: the open pull requests, and a box for any GitHub URL
     $.tsx                  mirrors github.com paths: /owner/repo/pull/123
     gh/$.tsx               the old /gh prefix, redirected to the route above
-    api/diff.ts            one unified diff
-    api/comments.ts        GitHub pull request review comments: read, post, reply, delete
-    api/github/pull.ts     one pull request's own details, for the header card
-    api/github/pulls.ts    open pull requests for the watched repositories
-    api/github/viewer.ts   who the token belongs to
+    api/diff.ts            one unified diff, as text/plain
+    api/rpc/$.ts           the oRPC handler: every JSON call the app makes
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: token, color mode, patch, comments,
                            pulls, sidebar width, the URL fragment
   lib/                     pure domain logic, unit tested
+  lib/rpc/contract.ts      the API, stated once: shared by both sides
+  lib/rpc/router.ts        the Worker's half of it, server-only
+  lib/rpc/client.ts        the browser's half of it
   lib/server/              server-only: the GitHub client
 ```
 
@@ -144,12 +144,42 @@ between repositories and between authors, and the rule is drawn from the index
 rather than `:first-child`, because an author group is never the first child of
 its section — the repository heading is.
 
-**The review and the check axes need a token.** `/api/github/pulls` asks GraphQL
-for `reviewDecision` and the head commit's `statusCheckRollup`, which REST does
-not carry. GraphQL refuses an anonymous caller, so a caller with no token gets
-the REST list and `PullSummary.status` stays **absent** — not `none`. Absent
-means "never asked", and `PullRow` leaves the square off the row rather than
-claim there is no review and no CI. It keeps the lane the square sits in, so the
+**The API is one contract, and both sides read it.** `src/lib/rpc/contract.ts`
+names every procedure, its input and its output, and imports nothing from a
+server and nothing from a component. `router.ts` implements it and `client.ts`
+calls it, so a field renamed in the contract fails to compile on both sides at
+once. That split is also what keeps `@/lib/server/github` out of the client
+bundle: the client is built from the **contract**, never from the router, so no
+import path leads from a hook to the GitHub client.
+
+An input carries a zod schema, because it arrives from a browser and is not
+trusted. An output carries `type<T>()`, which is a type and no runtime check:
+`PullSummary`, `PullDetails` and `CommentPayload` each already have one home in
+`src/lib`, and a second description of them in zod would be a copy free to
+drift. Add a procedure by adding it to the contract first; the two
+implementations will not compile until they agree with it.
+
+**The diff is not a procedure.** `/api/diff` stays a plain route that answers
+`text/plain`, because a patch runs to tens of megabytes — oven-sh/bun#30412 is
+43 MB — and the route hands GitHub's own body straight to the browser. An RPC
+envelope would make the Worker read all of it into memory and JSON-escape it
+first, on a runtime with neither the memory nor the CPU time to spare. It is
+also the one call whose HTTP status the client reads directly, for
+`describeReviewFailure`.
+
+**A repository answers with at most 100 open pull requests.**
+`MAX_PULLS_PER_REPO` in `src/lib/rpc/router.ts` is 100 because that is the
+largest single page GitHub gives: REST caps `per_page` there and GraphQL caps
+`first`. Both queries sort by most recently updated, so what a busier repository
+loses is what nobody has touched. Raising it past 100 buys nothing without
+pagination.
+
+**The review and the check axes need a token.** `pulls.list` asks GraphQL for
+`reviewDecision` and the head commit's `statusCheckRollup`, which REST does not
+carry. GraphQL refuses an anonymous caller, so a caller with no token gets the
+REST list and `PullSummary.status` stays **absent** — not `none`. Absent means
+"never asked", and `PullRow` leaves the square off the row rather than claim
+there is no review and no CI. It keeps the lane the square sits in, so the
 number after it starts on the same pixel either way.
 
 **A spent quota is one status, and the panel asks for a token.** GitHub reports
@@ -422,13 +452,15 @@ secret.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.9 MiB gzipped, against a 3 MiB limit on the Workers
-free plan and 10 MiB on the paid one. Almost all of it is shiki:
-`@pierre/diffs`'s own entry imports the bare `shiki` specifier, which carries
-the lazy loader for all 300-odd grammars, so importing anything from that
-package pulls the whole registry into whichever bundle it lands in. The server
-never highlights, so none of those chunks is ever evaluated there. Headroom on
-the free plan is thin, and any new dependency in the server graph eats into it.
+The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 140 KiB of headroom is
+left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
+it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
+which carries the lazy loader for all 300-odd grammars, so importing anything
+from that package pulls the whole registry into whichever bundle it lands in.
+The server never highlights, so none of those chunks is ever evaluated there.
+Headroom on the free plan is thin, and any new dependency in the server graph
+eats into it.
 
 ## Tests
 

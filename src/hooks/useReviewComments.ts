@@ -1,7 +1,6 @@
 import type { DiffLineAnnotation, SelectedLineRange } from '@pierre/diffs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { withGitHubToken } from './useGitHubToken';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
 import {
   commentPayloadRangeFields,
@@ -17,6 +16,7 @@ import {
   reviewTargetKey,
   supportsGitHubComments,
 } from '@/lib/reviewTarget';
+import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { localCommentsStorageKey } from '@/lib/storageKeys';
 
 // Where a comment lives depends on the target. A GitHub pull request keeps its
@@ -131,18 +131,9 @@ export function useReviewComments(options: {
   // whenever the RSC payload is read again. Every loader below depends on these
   // derived strings instead, which compare by value.
   const storageKey = localCommentsStorageKey(reviewTargetKey(target));
-  const pullQuery =
-    target.kind === 'github-pull'
-      ? new URLSearchParams({
-          owner: target.owner,
-          repo: target.repo,
-          number: String(target.number),
-        }).toString()
-      : undefined;
-  const pullRepo =
-    target.kind === 'github-pull'
-      ? `${target.owner}/${target.repo}`
-      : undefined;
+  const pullOwner = target.kind === 'github-pull' ? target.owner : undefined;
+  const pullRepo = target.kind === 'github-pull' ? target.repo : undefined;
+  const pullNumber = target.kind === 'github-pull' ? target.number : undefined;
 
   const [state, setState] = useState<CommentState>(EMPTY_STATE);
   const [loading, setLoading] = useState(false);
@@ -250,7 +241,7 @@ export function useReviewComments(options: {
       place(readStoredJson<StoredLocalComment[]>(storageKey, []));
       return;
     }
-    if (pullQuery == null) return;
+    if (pullOwner == null || pullRepo == null || pullNumber == null) return;
 
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -259,32 +250,32 @@ export function useReviewComments(options: {
     setError(undefined);
 
     try {
-      const response = await fetch(
-        `/api/comments?${pullQuery}`,
-        withGitHubToken(token, { signal: controller.signal })
+      const comments = await rpc.comments.list(
+        { number: pullNumber, owner: pullOwner, repo: pullRepo },
+        { context: { token }, signal: controller.signal }
       );
-      const body = (await response.json()) as {
-        comments?: CommentPayload[];
-        error?: string;
-      };
-      if (!response.ok) {
-        throw new Error(body.error ?? `Request failed (${response.status}).`);
-      }
       place(
-        (body.comments ?? []).map((payload) => ({
+        comments.map((payload) => ({
           ...payload,
           key: `github-${payload.githubId ?? nextKeyRef.current++}`,
         }))
       );
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(
-        cause instanceof Error ? cause.message : 'Could not load comments.'
-      );
+      setError(rpcErrorMessage(cause, 'Could not load comments.'));
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [itemIdByPath, pullQuery, ready, storageKey, store, token]);
+  }, [
+    itemIdByPath,
+    pullNumber,
+    pullOwner,
+    pullRepo,
+    ready,
+    storageKey,
+    store,
+    token,
+  ]);
 
   useEffect(() => {
     void load();
@@ -316,27 +307,20 @@ export function useReviewComments(options: {
   );
 
   const postToGitHub = useCallback(
-    async (itemId: string, key: string, body: string) => {
-      if (pullQuery == null) return;
+    async (
+      itemId: string,
+      key: string,
+      input: {
+        body: string;
+        path: string;
+      } & Pick<CommentPayload, 'line' | 'side' | 'startLine' | 'startSide'>
+    ) => {
+      if (pullOwner == null || pullRepo == null || pullNumber == null) return;
       try {
-        const response = await fetch(
-          `/api/comments?${pullQuery}`,
-          withGitHubToken(token, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body,
-          })
+        const comment = await rpc.comments.create(
+          { number: pullNumber, owner: pullOwner, repo: pullRepo, ...input },
+          { context: { token } }
         );
-        const payload = (await response.json()) as {
-          comment?: CommentPayload;
-          error?: string;
-        };
-        if (!response.ok || payload.comment == null) {
-          throw new Error(
-            payload.error ?? `GitHub rejected the comment (${response.status}).`
-          );
-        }
-        const comment = payload.comment;
         replace(itemId, key, (metadata) => ({
           ...metadata,
           kind: 'thread',
@@ -361,14 +345,14 @@ export function useReviewComments(options: {
         replace(itemId, key, (metadata) => ({
           ...metadata,
           pending: false,
-          error:
-            cause instanceof Error
-              ? cause.message
-              : 'Could not post that comment to GitHub.',
+          error: rpcErrorMessage(
+            cause,
+            'Could not post that comment to GitHub.'
+          ),
         }));
       }
     },
-    [pullQuery, replace, token]
+    [pullNumber, pullOwner, pullRepo, replace, token]
   );
 
   const postReply = useCallback(
@@ -379,26 +363,18 @@ export function useReviewComments(options: {
       replyToId: number,
       body: string
     ) => {
-      if (pullQuery == null) return;
+      if (pullOwner == null || pullRepo == null || pullNumber == null) return;
       try {
-        const response = await fetch(
-          `/api/comments?${pullQuery}`,
-          withGitHubToken(token, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ body, replyToId }),
-          })
+        const comment = await rpc.comments.create(
+          {
+            body,
+            number: pullNumber,
+            owner: pullOwner,
+            repo: pullRepo,
+            replyToId,
+          },
+          { context: { token } }
         );
-        const payload = (await response.json()) as {
-          comment?: CommentPayload;
-          error?: string;
-        };
-        if (!response.ok || payload.comment == null) {
-          throw new Error(
-            payload.error ?? `GitHub rejected the reply (${response.status}).`
-          );
-        }
-        const comment = payload.comment;
         // The optimistic message becomes the real one, in place. Its position
         // is already right: GitHub sorts replies by creation time and this is
         // the newest, so the thread does not reorder under the reader.
@@ -427,14 +403,11 @@ export function useReviewComments(options: {
         replace(itemId, key, (metadata) => ({
           ...metadata,
           pending: false,
-          error:
-            cause instanceof Error
-              ? cause.message
-              : 'Could not post that reply to GitHub.',
+          error: rpcErrorMessage(cause, 'Could not post that reply to GitHub.'),
         }));
       }
     },
-    [pullQuery, replace, token]
+    [pullNumber, pullOwner, pullRepo, replace, token]
   );
 
   const saveDraft = useCallback(
@@ -468,15 +441,11 @@ export function useReviewComments(options: {
       if (store !== 'github') return;
       const path = pathByItemId.get(itemId);
       if (path == null) return;
-      void postToGitHub(
-        itemId,
-        key,
-        JSON.stringify({
-          body: trimmed,
-          path,
-          ...commentPayloadRangeFields(range),
-        })
-      );
+      void postToGitHub(itemId, key, {
+        body: trimmed,
+        path,
+        ...commentPayloadRangeFields(range),
+      });
     },
     [pathByItemId, postToGitHub, replace, state.byItemId, store, viewerLogin]
   );
@@ -536,29 +505,23 @@ export function useReviewComments(options: {
 
       replace(itemId, key, () => undefined);
 
-      if (store !== 'github' || githubIds.length === 0 || pullRepo == null) {
+      if (
+        store !== 'github' ||
+        githubIds.length === 0 ||
+        pullOwner == null ||
+        pullRepo == null
+      ) {
         return;
       }
-      const [owner, repo] = pullRepo.split('/');
       const remove = async () => {
         try {
           // Newest first, because GitHub refuses to delete a comment that
           // still has replies pointing at it.
           for (const githubId of [...githubIds].reverse()) {
-            const query = new URLSearchParams({
-              owner,
-              repo,
-              commentId: String(githubId),
-            });
-            const response = await fetch(
-              `/api/comments?${query.toString()}`,
-              withGitHubToken(token, { method: 'DELETE' })
+            await rpc.comments.remove(
+              { commentId: githubId, owner: pullOwner, repo: pullRepo },
+              { context: { token } }
             );
-            if (!response.ok) {
-              throw new Error(
-                `GitHub refused the delete (${response.status}).`
-              );
-            }
           }
         } catch {
           setError('Could not delete that thread on GitHub. Reload to check.');
@@ -566,7 +529,7 @@ export function useReviewComments(options: {
       };
       void remove();
     },
-    [pullRepo, replace, state.byItemId, store, token]
+    [pullOwner, pullRepo, replace, state.byItemId, store, token]
   );
 
   const reload = useCallback(() => {
