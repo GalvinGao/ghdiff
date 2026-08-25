@@ -13,6 +13,9 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },
+  "dependencies": {
+    "evlog": "^2.27.0"
+  },
   "devDependencies": {
     "@j178/prek": "^0.4.14",
     "oxfmt": "^0.64.0",
