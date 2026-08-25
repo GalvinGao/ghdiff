@@ -148,6 +148,13 @@ export const ReviewFileTree = memo(function ReviewFileTree({
     const path = pathByItemId.get(activeItemId);
     if (path == null || path === selectedPathRef.current) return;
     appliedPathRef.current = path;
+    // The rows that were selected are cleared first. `select()` ADDS to the
+    // selection, so scrolling the diff used to leave every file it had passed
+    // lit up, and the tree filled with a trail of already-read files. It also
+    // stopped the click handler above, which only answers a selection of one.
+    for (const selected of model.getSelectedPaths()) {
+      if (selected !== path) model.getItem(selected)?.deselect();
+    }
     model.getItem(path)?.select();
     model.scrollToPath(path, { offset: 'nearest' });
   }, [activeItemId, model, pathByItemId]);

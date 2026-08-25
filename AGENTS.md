@@ -118,6 +118,20 @@ descriptions full of holes. Widening that schema means deciding a tag is safe
 against a body any GitHub user can write, so do not widen it without saying here
 why the addition cannot carry script or a navigation.
 
+**One row in the tree, not a trail.** `FileTreeItemHandle.select()` **adds** to
+the selection, and the diff's scroll selects a row on every file it passes. So
+`ReviewFileTree` deselects `getSelectedPaths()` before it selects the new row.
+Without that the tree fills with every file already read, and
+`onSelectionChange` stops answering a click, because it only acts on a selection
+of one.
+
+**A file whose name is its type needs `lang`.** `getFiletypeFromFileName` reads
+the text after the last dot of the whole path, so `docker/Dockerfile` and
+`.env.local` both resolve to plain text. `lib/diffLanguage.ts` answers for those
+two families and `buildReviewData` sets the answer on the item as `lang`, which
+the renderer prefers over its own guess. Add a family there, with its cases in
+`lib/diffLanguage.test.ts`.
+
 **A modal is the platform's `dialog`.** `components/ui/Dialog.tsx` drives
 `showModal()` from React state, which brings the focus trap, Escape, the inert
 background, and the top layer, so a dialog opened from inside a portaled menu is

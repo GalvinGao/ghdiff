@@ -55,7 +55,9 @@ export function PullRequestList({
   return (
     <>
       {data.groups.map((group) => (
-        <div key={group.kind} className="pb-1">
+        // The gap belongs between the groups. On the last one it would be a
+        // second bottom padding under the menu's own.
+        <div key={group.kind} className="pb-1 last:pb-0">
           <div className="flex items-baseline gap-2 px-2 pt-2 pb-1">
             <SectionLabel>
               {group.kind === 'yours' ? 'Yours — self review' : 'Others'}

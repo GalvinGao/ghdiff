@@ -7,6 +7,7 @@ import {
 import type { GitStatus, GitStatusEntry } from '@pierre/trees';
 
 import type { CommentMetadata } from './comments.ts';
+import { diffLanguage } from './diffLanguage.ts';
 
 export interface ReviewDiffStats {
   addedLines: number;
@@ -122,8 +123,16 @@ export function buildReviewData(
       const treePath = prefix == null ? path : `${prefix}/${path}`;
       const itemId = uniqueItemId(usedItemIds, treePath);
       const { added, deleted } = countHunkLines(fileDiff);
+      // Set only for a name the library's extension table cannot read. Every
+      // other file keeps `lang` unset, which is what lets the library answer.
+      const lang = diffLanguage(path);
 
-      items.push({ id: itemId, type: 'diff', fileDiff, version: 0 });
+      items.push({
+        id: itemId,
+        type: 'diff',
+        fileDiff: lang == null ? fileDiff : { ...fileDiff, lang },
+        version: 0,
+      });
       entries.push({
         itemId,
         path,

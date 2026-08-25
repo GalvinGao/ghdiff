@@ -96,10 +96,14 @@ body {
 }
 
 /* Both, not just body. A rubber-band scroll exposes the area behind the page,
-   and an unpainted html element shows through it as a hole in the app. */
+   and an unpainted html element shows through it as a hole in the app.
+   `overscroll-behavior: none` then stops the bounce itself: this app is a shell
+   whose panes scroll, and a scroll that reaches the end of a pane must not
+   drag the shell off its own background. */
 html,
 body {
   background-color: var(--app-canvas);
+  overscroll-behavior: none;
 }
 
 body {

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { ViewerIdentity } from '@/components/ViewerIdentity';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
 import { cn } from '@/lib/cn';
 
@@ -31,7 +32,7 @@ export function GitHubTokenForm({
   token: GitHubTokenState;
 }) {
   const [value, setValue] = useState('');
-  const signedIn = token.viewer != null;
+  const viewer = token.viewer;
 
   return (
     <div className={cn('min-w-0', className)}>
@@ -39,14 +40,13 @@ export function GitHubTokenForm({
         <SectionLabel className="mb-1.5 block">{heading}</SectionLabel>
       )}
 
-      {signedIn ? (
-        <p className="text-ink-muted text-sm">
-          Signed in as{' '}
-          <strong className="text-ink font-medium">
-            {token.viewer?.login}
-          </strong>
-          . Comments you leave go to GitHub under that account.
-        </p>
+      {viewer != null ? (
+        <>
+          <ViewerIdentity viewer={viewer} />
+          <p className="text-ink-faint mt-2 text-xs">
+            Comments you leave go to GitHub under this account.
+          </p>
+        </>
       ) : (
         <p className="text-ink-faint text-xs">
           A GitHub personal access token with the <code>repo</code> scope. It
@@ -59,7 +59,7 @@ export function GitHubTokenForm({
         <p className="text-removed mt-2 text-xs">{token.viewerError}</p>
       )}
 
-      {!signedIn && (
+      {viewer == null && (
         <form
           className="mt-2 flex gap-2"
           onSubmit={(event) => {
@@ -89,7 +89,7 @@ export function GitHubTokenForm({
           className="mt-2"
           onClick={() => token.clearToken()}
         >
-          {signedIn ? 'Sign out' : 'Remove token'}
+          {viewer != null ? 'Sign out' : 'Remove token'}
         </Button>
       )}
     </div>
