@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/cn';
+import { commentPreviewText } from '@/lib/commentHeight';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 
 interface CommentsListProps {
@@ -61,8 +62,11 @@ export function CommentsList({
                       <span className="text-removed text-[11px]">failed</span>
                     )}
                   </span>
+                  {/* One plain line per row. Rendering markdown here would
+                      cost a parse for every comment in the review and read as
+                      noise at this size; the card in the diff renders it. */}
                   <span className="text-ink-muted mt-0.5 line-clamp-2 block text-sm">
-                    {comment.body}
+                    {commentPreviewText(comment.body)}
                   </span>
                 </button>
               </li>

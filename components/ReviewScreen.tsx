@@ -20,6 +20,7 @@ import { useGitHubToken } from '@/hooks/useGitHubToken';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
 import { useWatchedRepos } from '@/hooks/useWatchedRepos';
+import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
 import {
@@ -40,6 +41,7 @@ const DEFAULT_CONTROLS: ViewerControls = {
 
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const colorMode = useColorMode();
+  const workersReady = useWorkerPoolReady();
   const token = useGitHubToken();
   const watched = useWatchedRepos();
   const [controls, setControls] = useState<ViewerControls>(DEFAULT_CONTROLS);
@@ -157,7 +159,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         watched={watched}
       />
 
-      {patch.state === 'ready' ? (
+      {patch.state === 'ready' && workersReady ? (
         <div className="grid min-h-0 flex-1 grid-cols-[19rem_minmax(0,1fr)] overflow-hidden">
           <ReviewSidebar
             availableStatuses={statuses}
@@ -192,7 +194,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         <StatusPanel
           error={patch.error}
           onRetry={patch.retry}
-          state={patch.state}
+          state={patch.state === 'ready' ? 'starting' : patch.state}
           target={target}
         />
       )}
@@ -225,7 +227,7 @@ function StatusPanel({
 }: {
   error?: string;
   onRetry(): void;
-  state: 'fetching' | 'parsing' | 'error';
+  state: 'fetching' | 'parsing' | 'error' | 'starting';
   target: ReviewTarget;
 }) {
   return (
@@ -249,7 +251,11 @@ function StatusPanel({
           </>
         ) : (
           <p className="text-ink-muted mt-2 text-sm">
-            {state === 'fetching' ? 'Loading the diff…' : 'Parsing the diff…'}
+            {state === 'fetching'
+              ? 'Loading the diff…'
+              : state === 'parsing'
+                ? 'Parsing the diff…'
+                : 'Starting the highlighters…'}
           </p>
         )}
       </div>

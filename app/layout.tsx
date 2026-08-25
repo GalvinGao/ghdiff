@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 
 import { ColorModeScript } from '@/components/ColorModeScript';
+import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -24,7 +25,9 @@ export default function RootLayout({
       <head>
         <ColorModeScript />
       </head>
-      <body className="flex h-dvh flex-col">{children}</body>
+      <body className="flex h-dvh flex-col">
+        <WorkerPoolProvider>{children}</WorkerPoolProvider>
+      </body>
     </html>
   );
 }

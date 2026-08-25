@@ -101,6 +101,20 @@ read again. `useReviewComments` derives `storageKey`, `pullQuery`, and
 **Bump the version when annotations change.** `CodeView` keys an item update off
 `id` and `version`. `ReviewScreen` uses the comment revision as the version.
 
+**Highlighting runs in workers.** `WorkerPoolProvider` wraps the whole app, and
+the viewer waits for `useWorkerPoolReady`. Shiki on the main thread was the
+whole cause of scroll stutter: on troph-team/lilja#584 it gave a p99 frame of
+135 ms with 9% of frames dropped, and the pool took that to a p99 of 17 ms with
+none dropped. Do not mount a `CodeView` outside the provider.
+
+**A comment card never changes height.** `@pierre/diffs` watches each annotation
+with a `ResizeObserver` and relays out the virtualized list when one resizes, so
+`lib/commentHeight.ts` picks a height from the text before the first paint and
+the card keeps it. Reading a long comment happens in `CommentExpansion`, a
+portaled fixed-position layer that grows from the card's own rectangle, so the
+card in the diff is untouched. A clipped body is `overflow: hidden`, which also
+makes a late-loading image harmless. Never let a card grow in place.
+
 ## Tests
 
 `pnpm test` runs the Node test runner with `--experimental-strip-types`. There
