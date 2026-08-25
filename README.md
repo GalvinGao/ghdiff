@@ -1,7 +1,7 @@
 # ghdiff
 
 A code review surface built on [`@pierre/diffs`](https://diffs.com) and
-`@pierre/trees`, served at ghdiff.com.
+`@pierre/trees`, served at [ghdiff.com](https://ghdiff.com).
 
 ghdiff shows one diff at a time: a GitHub pull request, commit, or compare
 range. It filters the file list by preset path rules, and a line comment on a
