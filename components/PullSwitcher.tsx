@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { Spinner } from '@/components/ui/Spinner';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { usePullSwitcher } from '@/hooks/usePullSwitcher';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
@@ -79,6 +80,9 @@ export function PullSwitcher({
         >
           <div className="flex items-center gap-2 px-2 pt-1.5">
             <SectionLabel>Open pull requests</SectionLabel>
+            {/* The menu asks GitHub again on every open, so the list on screen
+                is the one from last time until the answer lands. */}
+            {state.loading && <Spinner label="Loading the pull requests" />}
             <Button
               size="sm"
               variant="quiet"

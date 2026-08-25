@@ -71,7 +71,14 @@ export function usePullSwitcher(options: {
       return undefined;
     }
     void load();
-    return () => controllerRef.current?.abort();
+    return () => {
+      controllerRef.current?.abort();
+      // `load` leaves `loading` alone when its request is aborted, because the
+      // request that aborted it owns the flag from then on. Nothing follows
+      // this abort, so the flag is cleared here. Otherwise it stayed true for
+      // good, and the indicator beside the list turned for ever.
+      setLoading(false);
+    };
   }, [active, load, repoKey]);
 
   const reload = useCallback(() => {

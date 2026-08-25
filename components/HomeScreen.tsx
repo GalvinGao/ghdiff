@@ -9,6 +9,7 @@ import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { PullRequestList } from '@/components/PullRequestList';
 import { Button } from '@/components/ui/Button';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { Spinner } from '@/components/ui/Spinner';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useColorMode } from '@/hooks/useColorMode';
 import { useGitHubToken } from '@/hooks/useGitHubToken';
@@ -129,6 +130,7 @@ export function HomeScreen() {
 
         <div className="mt-10 flex items-center gap-2">
           <SectionLabel>Open pull requests</SectionLabel>
+          {pulls.loading && <Spinner label="Loading the pull requests" />}
           <Button
             className="ml-auto"
             size="sm"
