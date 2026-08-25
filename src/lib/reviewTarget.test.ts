@@ -7,6 +7,7 @@ import {
   parseGitHubInput,
   reviewTargetFromQuery,
   reviewTargetKey,
+  reviewTargetDisplayPath,
   reviewTargetQuery,
   reviewTargetSplat,
   supportsGitHubComments,
@@ -152,6 +153,37 @@ describe('round trips', () => {
         target
       );
     }
+  });
+
+  it('shortens a commit SHA for display and leaves the rest alone', () => {
+    assert.equal(
+      reviewTargetDisplayPath({
+        kind: 'github-commit',
+        owner: 'gekichumai',
+        repo: 'dxrating',
+        sha: '637a9c80f69d3222d1c3aed3ae8f4aefdb613bc9',
+      }),
+      'gekichumai/dxrating/commit/637a9c8'
+    );
+    assert.equal(
+      reviewTargetDisplayPath({
+        kind: 'github-pull',
+        owner: 'oven-sh',
+        repo: 'bun',
+        number: 30412,
+      }),
+      'oven-sh/bun/pull/30412'
+    );
+    assert.equal(
+      reviewTargetDisplayPath({
+        kind: 'github-compare',
+        owner: 'ghostty-org',
+        repo: 'ghostty',
+        base: 'v1.3.0',
+        head: 'v1.3.1',
+      }),
+      'ghostty-org/ghostty/compare/v1.3.0...v1.3.1'
+    );
   });
 
   it('leaves a slash in a branch name alone', () => {

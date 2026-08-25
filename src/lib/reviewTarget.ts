@@ -86,6 +86,19 @@ export function reviewTargetSplat(target: ReviewTarget): string {
   }
 }
 
+/**
+ * The path a reviewer would type, for showing rather than for routing. It is
+ * `reviewTargetSplat` with a commit SHA cut to seven characters: a row that
+ * prints all forty spends its width on a hash nobody reads, and the link under
+ * it still carries the whole one.
+ */
+export function reviewTargetDisplayPath(target: ReviewTarget): string {
+  if (target.kind === 'github-commit') {
+    return `${target.owner}/${target.repo}/commit/${target.sha.slice(0, 7)}`;
+  }
+  return reviewTargetSplat(target);
+}
+
 /** The query the `/api/diff` route expects for this target. */
 export function reviewTargetQuery(target: ReviewTarget): URLSearchParams {
   switch (target.kind) {

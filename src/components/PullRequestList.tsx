@@ -62,8 +62,7 @@ export function PullRequestList({
     <>
       {repos.length === 0 ? (
         <p className="text-ink-muted px-2 py-3 text-sm">
-          Add a repository to watch. ghdiff then lists its open pull requests
-          here.
+          Watch a repository to see its open pull requests.
         </p>
       ) : loading && data == null ? (
         <PullListSkeleton />
@@ -148,8 +147,12 @@ export function PullRequestList({
 
       {/* `data.viewer`, not the browser's token: a single-user deployment can
           put the token in `GITHUB_TOKEN`, and the server resolves a viewer from
-          it that the browser knows nothing about. */}
-      {data != null && data.viewer == null && (
+          it that the browser knows nothing about.
+
+          Only under rows. The note names what a row would gain — the status
+          square, and the mark on the reviewer's own pull requests — so under an
+          empty list it asks for a token and promises nothing. */}
+      {groups.length > 0 && data != null && data.viewer == null && (
         <p className="text-ink-faint border-line mt-1 border-t px-2 py-1.5 text-xs">
           Add a GitHub token to see review and check state, and to mark your own
           pull requests.
