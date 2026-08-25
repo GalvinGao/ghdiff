@@ -287,7 +287,7 @@ the old one.
 ```
 
 The file part differs. GitHub writes the SHA-256 of the path, which a reader
-cannot read and nobody can type; reviewer writes the item id, which is the path,
+cannot read and nobody can type; ghdiff writes the item id, which is the path,
 and separates the line part with a `:`. Because a path can end in something that
 reads as a line part, and can hold a `:`, `lookupDiffAnchor` tries each reading
 against the files of the diff on screen rather than trusting the text. A
@@ -295,12 +295,12 @@ github.com anchor is tried last and resolved by digesting every path, so a link
 pasted from a pull request works and is then rewritten in place into the
 readable form.
 
-Reviewer writes the fragment when the reviewer opens a file, which keeps a
-history entry, and when the selection moves, which replaces one: a drag reports
-every line it crosses. Scrolling writes nothing, the way github.com writes
-nothing. A fragment typed into the address bar raises `hashchange` and nothing
-else, and TanStack Router listens for `popstate` alone, so `useDiffAnchor`
-forwards that event to the router itself.
+ghdiff writes the fragment when the reviewer opens a file, which keeps a history
+entry, and when the selection moves, which replaces one: a drag reports every
+line it crosses. Scrolling writes nothing, the way github.com writes nothing. A
+fragment typed into the address bar raises `hashchange` and nothing else, and
+TanStack Router listens for `popstate` alone, so `useDiffAnchor` forwards that
+event to the router itself.
 
 **A range anchor takes more than one frame.** `CodeView.scrollTo` resolves a
 range through `getLinePosition`, which answers only for a file the viewer has

@@ -5,7 +5,7 @@ import type { ReviewFileEntry } from './reviewData.ts';
 // The fragment that names a place in a diff.
 //
 // github.com writes one of these on every file row and every line number of a
-// pull request, and reviewer answers the same grammar: a file part, then an
+// pull request, and ghdiff answers the same grammar: a file part, then an
 // optional line part of one or two points, each point a side letter and a line
 // number. `R` is the right column, which is the new file; `L` is the left
 // column, which is the old one.
@@ -19,7 +19,7 @@ import type { ReviewFileEntry } from './reviewData.ts';
 //   #diff-<64 hex digits>R42-R58            github.com's own form, read only
 //
 // The one difference is the file part. GitHub writes the SHA-256 of the path,
-// which tells a reader nothing and cannot be typed; reviewer writes the item
+// which tells a reader nothing and cannot be typed; ghdiff writes the item
 // id, which is the path itself, and puts a `:` in front of the line part. A
 // fragment may hold a `/` and a `:` unescaped, so the address bar shows the
 // path as it is written on disk.
@@ -186,7 +186,7 @@ function toHex(buffer: ArrayBuffer): string {
  *
  * A browser exposes `crypto.subtle` on a secure origin only. Somewhere it is
  * absent the map comes back empty, and a github.com anchor simply does not
- * resolve; every anchor reviewer writes itself still does.
+ * resolve; every anchor ghdiff writes itself still does.
  */
 export async function buildGitHubDigestIndex(
   entries: readonly ReviewFileEntry[]
