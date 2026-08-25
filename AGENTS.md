@@ -67,6 +67,14 @@ lib/server/                server-only: the GitHub client
 viewer and the paths for the tree from one pass. Never filter one without the
 other.
 
+**The path search is the filter's query, not the tree's search.**
+`@pierre/trees` has a search box of its own, and it is off (`search: false`). It
+rendered inside the tree's scroll region, below the sidebar's own controls, and
+it narrowed the tree while the diff kept every file. `PathSearchField` in
+`ReviewSidebar` writes `filter.query` instead, which `applyReviewFilter` tests
+along with the preset and the statuses. Closing the field clears the query, so
+no hidden control can hide files.
+
 **Presets are pure predicates over a path.** Add a rule to `FILTER_PRESETS` in
 `lib/filterRules.ts` and add its cases to `lib/filterRules.test.ts`. Do not put
 path parsing in a component.

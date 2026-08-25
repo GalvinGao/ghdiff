@@ -1,15 +1,14 @@
 'use client';
 
-import { IconComment, IconFileTree, IconSearch } from '@pierre/icons';
-import type { FileTree as FileTreeModel } from '@pierre/trees';
+import { IconComment, IconFileTree, IconSearch, IconX } from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
-import { useFileTreeSearch } from '@pierre/trees/react';
-import { useCallback, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { CommentsList } from '@/components/CommentsList';
 import { FilterMenu } from '@/components/FilterMenu';
 import { ReviewFileTree } from '@/components/ReviewFileTree';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import {
   Segmented,
   SegmentedCount,
@@ -66,11 +65,13 @@ export function ReviewSidebar({
   visibleFileCount,
 }: ReviewSidebarProps) {
   const [tab, setTab] = useState<Tab>('files');
-  const [model, setModel] = useState<FileTreeModel | null>(null);
-  const handleModelReady = useCallback(
-    (next: FileTreeModel | null) => setModel(next),
-    []
-  );
+  // The field is shown on demand, and closing it clears the query. A path
+  // filter that hides files from a closed field would hide them for good.
+  const [searching, setSearching] = useState(false);
+  const closeSearch = () => {
+    setSearching(false);
+    if (filter.query.length > 0) onFilterChange({ ...filter, query: '' });
+  };
 
   const commentCount = countComments(commentSections);
   const threadCount = countThreads(commentSections);
@@ -98,11 +99,34 @@ export function ReviewSidebar({
             <SegmentedCount>{threadCount}</SegmentedCount>
           </SegmentedItem>
         </Segmented>
-        {tab === 'files' && model != null && <TreeSearchToggle model={model} />}
+        {tab === 'files' && (
+          <Button
+            aria-label={searching ? 'Hide the path search' : 'Search by path'}
+            aria-pressed={searching}
+            className="ml-auto"
+            size="icon-sm"
+            title="Search by path"
+            variant="chrome"
+            onClick={() => (searching ? closeSearch() : setSearching(true))}
+          >
+            <IconSearch size={14} />
+          </Button>
+        )}
       </div>
 
       {tab === 'files' && (
-        <div className="border-line border-b px-2 pb-2">
+        // The search field and the rules button are one block, directly under
+        // the control that opens the field. The tree's own search box sat
+        // below this border, inside the scroll region, two rows from its
+        // toggle, and it narrowed the tree while the diff kept every file.
+        <div className="border-line space-y-1.5 border-b px-2 pb-2">
+          {searching && (
+            <PathSearchField
+              value={filter.query}
+              onChange={(query) => onFilterChange({ ...filter, query })}
+              onClose={closeSearch}
+            />
+          )}
           <FilterMenu
             availableStatuses={availableStatuses}
             entries={entries}
@@ -138,7 +162,6 @@ export function ReviewSidebar({
             <ReviewFileTree
               activeItemId={activeItemId}
               colorScheme={colorScheme}
-              onModelReady={handleModelReady}
               onSelectPath={onSelectItem}
               source={treeSource}
             />
@@ -177,22 +200,60 @@ export function ReviewSidebar({
   );
 }
 
-function TreeSearchToggle({ model }: { model: FileTreeModel }) {
-  const search = useFileTreeSearch(model);
+/**
+ * The path query, which is one of the three tests in `applyReviewFilter`. So it
+ * takes a file out of the tree and out of the diff together, the way a preset
+ * does, instead of only marking rows in the tree.
+ */
+function PathSearchField({
+  onChange,
+  onClose,
+  value,
+}: {
+  onChange(query: string): void;
+  onClose(): void;
+  value: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // A press on the magnifier opens this field, and a field is opened to be
+  // typed in.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
-    <Button
-      aria-label={search.isOpen ? 'Hide file search' : 'Search files'}
-      aria-pressed={search.isOpen}
-      className="ml-auto"
-      size="icon-sm"
-      title="Search files"
-      variant="chrome"
-      // The tree's search input closes on blur, so focus must not move here
-      // before the click handler runs.
-      onPointerDown={(event) => event.preventDefault()}
-      onClick={() => (search.isOpen ? search.close() : search.open())}
-    >
-      <IconSearch size={14} />
-    </Button>
+    <div className="relative">
+      <IconSearch
+        className="text-ink-faint pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
+        size={12}
+      />
+      <Input
+        ref={inputRef}
+        aria-label="Search files by path"
+        autoComplete="off"
+        className="h-7 pr-7 pl-7 text-xs"
+        placeholder="Path contains…"
+        spellCheck={false}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') onClose();
+        }}
+      />
+      {value.length > 0 && (
+        <button
+          aria-label="Clear the path search"
+          className="text-ink-faint hover:text-ink absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 cursor-pointer items-center justify-center"
+          type="button"
+          onClick={() => {
+            onChange('');
+            inputRef.current?.focus();
+          }}
+        >
+          <IconX size={12} />
+        </button>
+      )}
+    </div>
   );
 }

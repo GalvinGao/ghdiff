@@ -23,18 +23,9 @@ import type { ReviewTreeSource } from '@/lib/reviewFilter';
 
 const ITEM_HEIGHT = 24;
 
-// Hide the tree's own search box until the sidebar toggle opens it, and drop
-// the folder dot: every file in this tree changed, so the dot says nothing.
+// Drop the folder dot: every file in this tree changed, so the dot says
+// nothing.
 const TREE_CSS = `
-  [data-file-tree-search-container][data-open='false'] {
-    display: none;
-  }
-  [data-file-tree-search-container] {
-    margin-right: 4px;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--trees-theme-border, #8883);
-  }
   [data-item-contains-git-change='true'] > [data-item-section='git'] {
     display: none;
   }
@@ -54,7 +45,11 @@ const BASE_OPTIONS = {
   id: 'reviewer-file-tree',
   initialExpansion: 'open',
   presorted: true,
-  search: true,
+  // The sidebar's own field owns the search: it writes the filter's path
+  // query, which takes a file out of the diff as well as out of the tree. The
+  // tree's box only narrowed the tree, and it rendered inside the scroll
+  // region, below the sidebar's own controls.
+  search: false,
   stickyFolders: true,
   unsafeCSS: TREE_CSS,
 } as const satisfies Omit<FileTreeOptions, 'paths' | 'preparedInput'>;
@@ -76,7 +71,8 @@ interface ReviewFileTreeProps {
    */
   activeItemId?: string;
   colorScheme: ColorScheme;
-  onModelReady(model: FileTreeModel | null): void;
+  /** For a caller that has to drive the tree itself. Nothing does today. */
+  onModelReady?(model: FileTreeModel | null): void;
   onSelectPath(itemId: string): void;
   source: ReviewTreeSource;
 }
@@ -160,6 +156,7 @@ export const ReviewFileTree = memo(function ReviewFileTree({
   }, [activeItemId, model, pathByItemId]);
 
   useEffect(() => {
+    if (onModelReady == null) return undefined;
     onModelReady(model);
     return () => onModelReady(null);
   }, [model, onModelReady]);
