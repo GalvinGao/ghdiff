@@ -6,7 +6,7 @@ import {
 } from '@pierre/diffs';
 import type { CodeViewHandle } from '@pierre/diffs/react';
 import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { ReviewHeader } from '@/components/ReviewHeader';
@@ -20,6 +20,7 @@ import {
 import { SidebarResizeHandle } from '@/components/SidebarResizeHandle';
 import { Button } from '@/components/ui/Button';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
+import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useStoredJson } from '@/hooks/useLocalStorage';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
@@ -49,6 +50,12 @@ import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
 import { COMMENT_AUTHOR_FILTER_STORAGE_KEY } from '@/lib/storageKeys';
 import { buildTreeStatIndex } from '@/lib/treeStats';
 
+// Frames a range anchor is given to resolve. The scroll to the file is what
+// renders it, and the range can only be measured once it has been. Four frames
+// is long enough for that and short enough that a reviewer who starts scrolling
+// straight away is not fought for it.
+const ANCHOR_RANGE_ATTEMPTS = 4;
+
 const DEFAULT_CONTROLS: ViewerControls = {
   diffStyle: 'split',
   diffIndicators: 'bars',
@@ -72,6 +79,8 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<CodeViewHandle<CommentMetadata> | null>(null);
+  // The frame waiting to try a range anchor again. See handleApplyAnchor.
+  const anchorFramesRef = useRef<number | null>(null);
   // Destructured, so nothing reads a property of the state object while this
   // component renders.
   const {
@@ -171,7 +180,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   );
 
   const itemIds = useMemo(() => items.map((item) => item.id), [items]);
-  const active = useActiveDiffItem(itemIds);
+  // Destructured: every jump handler below states the file it lands on, and a
+  // handler that changed identity on each render would re-render the tree and
+  // the viewer with it.
+  const {
+    activeItemId,
+    onScroll: onDiffScroll,
+    select: selectActiveItem,
+  } = useActiveDiffItem(itemIds);
 
   // The selected lines are the truth about which thread the reviewer is on, so
   // the row in the sidebar lights up whether they clicked it there or landed on
@@ -189,38 +205,128 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     return undefined;
   }, [commentSections, selectedLines]);
 
-  const handleSelectItem = useCallback((itemId: string) => {
-    const viewer = viewerRef.current;
-    if (viewer == null) return;
-    const item = viewer.getItem(itemId);
-    if (item?.collapsed === true) {
-      viewer.updateItem({
-        ...item,
-        collapsed: false,
-        version: (item.version ?? 0) + 1,
-      });
-    }
-    viewer.scrollTo({
-      type: 'item',
-      id: itemId,
-      align: 'start',
-      behavior: 'smooth',
-    });
-  }, []);
+  useEffect(
+    () => () => {
+      if (anchorFramesRef.current != null) {
+        cancelAnimationFrame(anchorFramesRef.current);
+      }
+    },
+    []
+  );
 
-  const handleSelectComment = useCallback((comment: CommentListEntry) => {
-    const viewer = viewerRef.current;
-    if (viewer == null) return;
-    viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
-    viewer.scrollTo({
-      type: 'line',
-      id: comment.itemId,
-      lineNumber: comment.range.end,
-      side: comment.range.endSide ?? comment.range.side ?? comment.side,
-      align: 'center',
-      behavior: 'smooth-auto',
-    });
-  }, []);
+  // Puts the reviewer where the URL fragment says. A fragment that names lines
+  // highlights them; one that names only a file takes the highlight away, so
+  // the address and the diff never disagree about what is marked.
+  const handleApplyAnchor = useCallback(
+    (anchored: DiffAnchorTarget | null) => {
+      const viewer = viewerRef.current;
+      if (anchorFramesRef.current != null) {
+        cancelAnimationFrame(anchorFramesRef.current);
+        anchorFramesRef.current = null;
+      }
+      if (viewer == null) return;
+      if (anchored == null) {
+        clearViewerSelection(viewer, setSelectedLines);
+        return;
+      }
+      expandItem(viewer, anchored.itemId);
+      const { itemId, range } = anchored;
+      selectActiveItem(itemId);
+      if (range == null) {
+        clearViewerSelection(viewer, setSelectedLines);
+      } else {
+        // The viewer reports this back through onSelectedLinesChange, which is
+        // what puts it into this component's state.
+        viewer.setSelectedLines({ id: itemId, range });
+      }
+
+      // The file first, always. Its top is in the viewer's own layout, so this
+      // one lands whatever is on screen.
+      viewer.scrollTo({
+        type: 'item',
+        id: itemId,
+        align: 'start',
+        behavior: 'instant',
+      });
+      if (range == null) return;
+
+      // Then the lines. A range resolves through `getLinePosition`, which answers
+      // only for a file the viewer has already rendered, and the file a fragment
+      // names is almost always far off screen when the fragment arrives. An
+      // unresolvable range is dropped in silence, so the scroll above is what
+      // renders the file and these frames are what catch it once it has. Each
+      // attempt asks for the same place, so the one that lands is the only one
+      // that moves anything.
+      //
+      // `start`, not `center`: the viewer puts a range aligned to the start
+      // directly under its own sticky header, so the file at the top of the
+      // screen is the file the fragment names. A centred range leaves the file
+      // above it owning the top, and the tree, which reads the top, would then
+      // mark a file the reviewer was not sent to.
+      let attempts = 0;
+      const step = () => {
+        anchorFramesRef.current = null;
+        viewer.scrollTo({
+          type: 'range',
+          id: itemId,
+          range,
+          align: 'start',
+          behavior: 'instant',
+        });
+        attempts += 1;
+        if (attempts < ANCHOR_RANGE_ATTEMPTS) {
+          anchorFramesRef.current = requestAnimationFrame(step);
+        }
+      };
+      anchorFramesRef.current = requestAnimationFrame(step);
+    },
+    [selectActiveItem]
+  );
+
+  const anchor = useDiffAnchor({
+    entries: patch.data.entries,
+    ready: patch.state === 'ready' && workersReady,
+    onApply: handleApplyAnchor,
+  });
+
+  const handleSelectItem = useCallback(
+    (itemId: string) => {
+      const viewer = viewerRef.current;
+      if (viewer == null) return;
+      expandItem(viewer, itemId);
+      selectActiveItem(itemId);
+      // The address is what the reviewer can send to somebody else, so opening
+      // a file goes into it and into the history.
+      anchor.openItem(itemId);
+      // That fragment names no lines, so the last highlight goes with it.
+      clearViewerSelection(viewer, setSelectedLines);
+      viewer.scrollTo({
+        type: 'item',
+        id: itemId,
+        align: 'start',
+        behavior: 'smooth',
+      });
+    },
+    [anchor, selectActiveItem]
+  );
+
+  const handleSelectComment = useCallback(
+    (comment: CommentListEntry) => {
+      const viewer = viewerRef.current;
+      if (viewer == null) return;
+      selectActiveItem(comment.itemId);
+      viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
+      viewer.scrollTo({
+        type: 'line',
+        id: comment.itemId,
+        lineNumber: comment.range.end,
+        side: comment.range.endSide ?? comment.range.side ?? comment.side,
+        align: 'center',
+        behavior: 'smooth-auto',
+      });
+    },
+    [selectActiveItem]
+  );
 
   const handleCreateDraft = useCallback(
     (itemId: string, range: SelectedLineRange) => {
@@ -234,8 +340,9 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       setSelectedLines((current) =>
         isSameSelection(current, next) ? current : next
       );
+      anchor.syncSelection(next);
     },
-    []
+    [anchor]
   );
 
   return (
@@ -266,7 +373,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           }}
         >
           <ReviewSidebar
-            activeItemId={active.activeItemId}
+            activeItemId={activeItemId}
             activeThreadKey={activeThreadKey}
             authorCounts={authorCounts}
             authorFilter={authorMode}
@@ -301,7 +408,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             onDeleteComment={comments.removeComment}
             onReplyToThread={comments.replyToThread}
             onSaveDraft={comments.saveDraft}
-            onScroll={active.onScroll}
+            onScroll={onDiffScroll}
             onSelectedLinesChange={handleSelectedLinesChange}
             scrollRef={scrollRef}
             selectedLines={selectedLines}
@@ -333,6 +440,36 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       )}
     </>
   );
+}
+
+/** A collapsed file cannot be scrolled to, so open it before going there. */
+function expandItem(
+  viewer: CodeViewHandle<CommentMetadata>,
+  itemId: string
+): void {
+  const item = viewer.getItem(itemId);
+  if (item?.collapsed !== true) return;
+  viewer.updateItem({
+    ...item,
+    collapsed: false,
+    version: (item.version ?? 0) + 1,
+  });
+}
+
+/**
+ * Takes the highlight off the diff.
+ *
+ * The viewer reports a selection it was given, but not one it was told to
+ * drop: `applySelectedLines` clears the item it is leaving with `notify` off.
+ * So the state that mirrors the selection has to be set here, or the sidebar
+ * would go on marking a thread the diff no longer has selected.
+ */
+function clearViewerSelection(
+  viewer: CodeViewHandle<CommentMetadata>,
+  setSelectedLines: (selection: CodeViewLineSelection | null) => void
+): void {
+  viewer.clearSelectedLines();
+  setSelectedLines(null);
 }
 
 /**

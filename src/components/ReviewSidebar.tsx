@@ -191,6 +191,7 @@ export function ReviewSidebar({
         >
           <CommentsList
             activeKey={activeThreadKey}
+            onSelectFile={onSelectItem}
             onSelectThread={onSelectComment}
             sections={commentSections}
             store={commentStore}

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { withGitHubToken } from './useGitHubToken';
 import {
   formatWatchedRepo,
   type OpenPullsData,
+  parseWatchedRepo,
   type WatchedRepo,
 } from '@/lib/pulls';
+import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 
 export interface OpenPullsState {
   data?: OpenPullsData;
@@ -15,6 +16,14 @@ export interface OpenPullsState {
 }
 
 const EMPTY_DATA: OpenPullsData = { pulls: [], failures: [] };
+
+/** The watch list back out of the joined key the hook depends on. */
+function reposFromKey(key: string): WatchedRepo[] {
+  return key
+    .split(',')
+    .map((entry) => parseWatchedRepo(entry))
+    .filter((entry): entry is WatchedRepo => entry != null);
+}
 
 /**
  * The open pull requests of the watched repositories. The left bar is on every
@@ -38,6 +47,10 @@ export function useOpenPulls(options: {
   // request in flight so a slow answer cannot overwrite a newer one.
   const controllerRef = useRef<AbortController | null>(null);
 
+  // The watch list travels as one comma-joined string and the request is built
+  // back out of it. The array's identity changes on every render of whatever
+  // owns it, and a `useCallback` that depended on the array would rebuild, and
+  // re-request, each time. The string compares by value.
   const repoKey = repos.map(formatWatchedRepo).join(',');
 
   const load = useCallback(async () => {
@@ -48,19 +61,15 @@ export function useOpenPulls(options: {
     setError(undefined);
 
     try {
-      const response = await fetch(
-        `/api/github/pulls?repos=${encodeURIComponent(repoKey)}`,
-        withGitHubToken(token, { signal: controller.signal })
+      setData(
+        await rpc.pulls.list(
+          { repos: reposFromKey(repoKey) },
+          { context: { token }, signal: controller.signal }
+        )
       );
-      if (!response.ok) {
-        throw new Error(`GitHub request failed (${response.status}).`);
-      }
-      setData((await response.json()) as OpenPullsData);
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(
-        cause instanceof Error ? cause.message : 'Could not load pull requests.'
-      );
+      setError(rpcErrorMessage(cause, 'Could not load pull requests.'));
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }

@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { readStoredString, writeStoredString } from './useLocalStorage';
+import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { GITHUB_TOKEN_STORAGE_KEY } from '@/lib/storageKeys';
+import type { GitHubViewer } from '@/lib/viewer';
 
-export interface GitHubViewer {
-  login: string;
-  avatarUrl?: string;
-  name?: string | null;
-}
+export type { GitHubViewer };
 
 export interface GitHubTokenState {
   token?: string;
@@ -56,23 +54,16 @@ export function useGitHubToken(): GitHubTokenState {
 
     const check = async () => {
       try {
-        const response = await fetch('/api/github/viewer', {
-          cache: 'no-store',
-          headers: { authorization: `Bearer ${token}` },
+        const result = await rpc.viewer.get(undefined, {
+          context: { token },
           signal: controller.signal,
         });
-        const body = (await response.json()) as {
-          viewer: GitHubViewer | null;
-          error?: string;
-        };
-        setViewer(body.viewer ?? undefined);
-        setViewerError(body.error);
+        setViewer(result.viewer);
+        setViewerError(undefined);
       } catch (cause) {
         if (controller.signal.aborted) return;
         setViewer(undefined);
-        setViewerError(
-          cause instanceof Error ? cause.message : 'Could not check that token.'
-        );
+        setViewerError(rpcErrorMessage(cause, 'Could not check that token.'));
       } finally {
         if (!controller.signal.aborted) setChecking(false);
       }
@@ -111,7 +102,11 @@ export function useGitHubToken(): GitHubTokenState {
   };
 }
 
-/** Adds the token to a fetch, when there is one. */
+/**
+ * Adds the token to a fetch, when there is one. Only `useReviewPatch` needs
+ * this now: every other call goes through the RPC client, which puts the token
+ * on the header itself.
+ */
 export function withGitHubToken(
   token: string | undefined,
   init?: RequestInit

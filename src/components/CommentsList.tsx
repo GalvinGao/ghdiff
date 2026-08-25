@@ -8,6 +8,8 @@ import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 interface CommentsListProps {
   /** The thread the diff has selected. Its row is marked as the current one. */
   activeKey?: string;
+  /** The heading of a group is the file's name, so it opens that file. */
+  onSelectFile(itemId: string): void;
   onSelectThread(thread: CommentListEntry): void;
   sections: readonly CommentListSection[];
   store: 'github' | 'local';
@@ -52,6 +54,7 @@ const REVEAL_SLACK = 1;
 
 export function CommentsList({
   activeKey,
+  onSelectFile,
   onSelectThread,
   sections,
   store,
@@ -87,7 +90,10 @@ export function CommentsList({
     <div className="cv-scrollbar h-full min-h-0 overflow-x-hidden overflow-y-auto pb-4">
       {sections.map((section) => (
         <section key={section.itemId} className="min-w-0">
-          <SectionHeading path={section.path} />
+          <SectionHeading
+            path={section.path}
+            onSelect={() => onSelectFile(section.itemId)}
+          />
           <ul className="min-w-0">
             {section.threads.map((thread) => (
               <li key={thread.key} className="min-w-0">
@@ -164,7 +170,9 @@ interface RevealFrame {
 }
 
 /**
- * The file a group of threads belongs to.
+ * The file a group of threads belongs to, and the control that opens it. A name
+ * on screen that matches a file in the diff goes to that file, here as in the
+ * tree, and the address bar says so afterwards.
  *
  * The path is trimmed from its start, not its end. The end of a path is the
  * part that identifies the file, and a column of `components/CommentThre…`
@@ -177,9 +185,15 @@ interface RevealFrame {
  * The pointer over the row reveals the rest of the path on the row's own line.
  * See PathReveal.
  */
-function SectionHeading({ path }: { path: string }) {
+function SectionHeading({
+  onSelect,
+  path,
+}: {
+  onSelect(): void;
+  path: string;
+}) {
   const rowRef = useRef<HTMLHeadingElement>(null);
-  const textRef = useRef<HTMLSpanElement>(null);
+  const textRef = useRef<HTMLButtonElement>(null);
   const [frame, setFrame] = useState<RevealFrame | null>(null);
   const close = useCallback(() => setFrame(null), []);
 
@@ -212,13 +226,19 @@ function SectionHeading({ path }: { path: string }) {
       onMouseMove={open}
       onMouseLeave={close}
     >
-      <span
+      <button
         ref={textRef}
         dir="rtl"
-        className="text-ink-faint block truncate text-left font-mono text-[11px]"
+        type="button"
+        aria-label={`Go to ${path}`}
+        onClick={onSelect}
+        className={cn(
+          'text-ink-faint hover:text-ink block w-full cursor-pointer truncate text-left font-mono text-[11px]',
+          'focus-visible:ring-accent rounded-xs focus-visible:ring-1 focus-visible:outline-none'
+        )}
       >
         {LRM + path}
-      </span>
+      </button>
       {frame != null && (
         <PathReveal frame={frame} onClose={close} path={path} />
       )}

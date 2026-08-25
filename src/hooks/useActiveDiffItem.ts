@@ -1,5 +1,5 @@
 import { useStableCallback } from '@pierre/diffs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Which file the diff is scrolled to.
@@ -7,6 +7,11 @@ import { useEffect, useRef, useState } from 'react';
  * The reviewer scrolls the diff, and the file list has to say where they are.
  * The viewer reports its scroll offset and can give the top of any item, so the
  * file being read is the last one whose top has passed the anchor line.
+ *
+ * A scroll the viewer was told to make raises no such report, so a jump — a row
+ * in the tree, a thread in the comment list, a fragment in the URL — names its
+ * own file through `select`. Without that the file list would go on marking
+ * whichever file the reviewer last scrolled past.
  */
 
 /** As much as a sticky file header, so the file whose header is stuck wins. */
@@ -20,6 +25,8 @@ interface ItemTopReader {
 export interface ActiveDiffItemState {
   activeItemId: string | undefined;
   onScroll(scrollTop: number, viewer: ItemTopReader): void;
+  /** States the file outright, for a jump the viewer does not report. */
+  select(itemId: string): void;
 }
 
 export function useActiveDiffItem(
@@ -71,5 +78,15 @@ export function useActiveDiffItem(
     }
   );
 
-  return { activeItemId, onScroll };
+  // The measurement already scheduled read the offset the diff had before the
+  // jump, so it is dropped rather than allowed to answer for the new one.
+  const select = useCallback((itemId: string) => {
+    if (frameRef.current != null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    setActiveItemId((current) => (current === itemId ? current : itemId));
+  }, []);
+
+  return { activeItemId, onScroll, select };
 }
