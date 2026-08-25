@@ -18,18 +18,24 @@ export interface ReviewPatchState {
   data: ReviewData;
   state: PatchLoadState;
   error?: string;
+  /**
+   * The status the request failed with, kept beside the message because the
+   * message alone cannot say which failures the reviewer can act on. Absent
+   * when the request never came back at all.
+   */
+  status?: number;
   /** What the diff source could not carry, when it said so. */
   notice?: string;
   retry(): void;
 }
 
 /** The route sets this when a fallback source left something out. */
-const NOTICE_HEADER = 'x-reviewer-notice';
+const NOTICE_HEADER = 'x-ghdiff-notice';
 
 /**
  * Fetches the patch for a target and parses it into review data.
  *
- * Reviewer loads the whole patch before it renders, unlike diffs-hub, which
+ * ghdiff loads the whole patch before it renders, unlike diffs-hub, which
  * streams file diffs into the viewer as they arrive. Holding the whole diff in
  * one array is what lets a filter change be a pure array pass.
  */
@@ -47,6 +53,7 @@ export function useReviewPatch(options: {
   const [data, setData] = useState<ReviewData>(EMPTY_REVIEW_DATA);
   const [state, setState] = useState<PatchLoadState>('fetching');
   const [error, setError] = useState<string | undefined>(undefined);
+  const [status, setStatus] = useState<number | undefined>(undefined);
   const [notice, setNotice] = useState<string | undefined>(undefined);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -60,6 +67,7 @@ export function useReviewPatch(options: {
     controllerRef.current = controller;
     setData(EMPTY_REVIEW_DATA);
     setError(undefined);
+    setStatus(undefined);
     setNotice(undefined);
     setState('fetching');
 
@@ -71,6 +79,7 @@ export function useReviewPatch(options: {
       const body = await response.text();
       setNotice(response.headers.get(NOTICE_HEADER) ?? undefined);
       if (!response.ok) {
+        setStatus(response.status);
         throw new Error(
           body.trim().length > 0
             ? body.trim()
@@ -105,5 +114,5 @@ export function useReviewPatch(options: {
     void load();
   }, [load]);
 
-  return { data, state, error, notice, retry };
+  return { data, state, error, status, notice, retry };
 }

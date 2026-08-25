@@ -6,7 +6,7 @@
 // review half means the author pushed after somebody asked for changes. This
 // module is that model, and `PullStatusMark` is that painting. The vocabulary is
 // deliberately the same, so a colour means the same thing in the tab strip and
-// in reviewer's own list.
+// in ghdiff's own list.
 
 /** GitHub's `reviewDecision`, narrowed to the three outcomes worth a colour. */
 export type ReviewState = 'approved' | 'changes' | 'none';

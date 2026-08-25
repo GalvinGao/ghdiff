@@ -1,6 +1,11 @@
 import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
+import { useEffect, useState } from 'react';
 
+import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { Button } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog';
+import type { GitHubTokenState } from '@/hooks/useGitHubToken';
+import { describeReviewFailure } from '@/lib/reviewFailure';
 import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
 
 export type ReviewLoadState = 'fetching' | 'parsing' | 'starting' | 'error';
@@ -27,19 +32,43 @@ const COPY: Record<
  * What fills the review pane before the diff can. It says which of the three
  * waits is happening, because they fail for different reasons, and it offers a
  * button rather than a line of underlined text when one of them breaks.
+ *
+ * Which button it leads with is `describeReviewFailure`'s answer. A rate limit
+ * with no token is the one failure "Try again" cannot mend, so that panel asks
+ * for a token instead and keeps the retry as the second control on the row.
  */
 export function ReviewStatusPanel({
   error,
   onRetry,
   state,
+  status,
   target,
+  token,
 }: {
   error?: string;
   onRetry(): void;
   state: ReviewLoadState;
+  /** The status the diff request failed with, when it failed with one. */
+  status?: number;
   target: ReviewTarget;
+  token: GitHubTokenState;
 }) {
   const isError = state === 'error';
+  const [asking, setAsking] = useState(false);
+  const failure = describeReviewFailure({
+    hasToken: token.hasToken,
+    message: error,
+    status,
+  });
+
+  // A token GitHub answers for is the end of this errand, and the diff is
+  // already reloading behind the dialog: `useReviewPatch` depends on the token,
+  // so saving one starts the request that this panel was standing in for. A
+  // token GitHub rejects leaves the dialog open, with the reason inside it.
+  useEffect(() => {
+    if (asking && token.viewer != null) setAsking(false);
+  }, [asking, token.viewer]);
+
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center p-8">
       <section
@@ -62,22 +91,35 @@ export function ReviewStatusPanel({
           />
         )}
         <h2 className="text-ink text-sm font-medium">
-          {isError ? 'Could not load that diff' : COPY[state].title}
+          {isError ? failure.title : COPY[state].title}
         </h2>
         <p className="text-ink-muted mt-1 text-sm text-pretty">
-          {isError
-            ? (error ?? 'The request for this diff did not come back.')
-            : COPY[state].message}
+          {isError ? failure.message : COPY[state].message}
         </p>
         <p className="text-ink-faint mt-3 truncate font-mono text-xs">
           {describeReviewTarget(target)}
         </p>
         {isError && (
-          <Button className="mt-4" variant="outline" onClick={onRetry}>
-            Try again
-          </Button>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            {failure.action === 'add-token' && (
+              <Button variant="solid" onClick={() => setAsking(true)}>
+                Add token
+              </Button>
+            )}
+            <Button variant="outline" onClick={onRetry}>
+              Try again
+            </Button>
+          </div>
         )}
       </section>
+
+      <Dialog
+        onClose={() => setAsking(false)}
+        open={asking}
+        title="GitHub token"
+      >
+        <GitHubTokenForm token={token} />
+      </Dialog>
     </div>
   );
 }

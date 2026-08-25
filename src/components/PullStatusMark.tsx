@@ -11,7 +11,7 @@ import {
 
 // The review and the checks, as one small square split down the middle: the left
 // half is the review and the right half is the checks. GalvinGao/floodgate
-// paints this into the favicon of every pull request tab, and reviewer paints
+// paints this into the favicon of every pull request tab, and ghdiff paints
 // the same square beside every row, so the two read as one language.
 //
 // The white "+" over the review half carries floodgate's own meaning: somebody

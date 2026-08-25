@@ -70,7 +70,7 @@ export function describeReviewTarget(target: ReviewTarget): string {
 }
 
 /**
- * The splat for the `/gh/$` route, which is everything after `/gh/`. The router
+ * The splat for the `/$` route, which is the whole path. The router
  * percent-encodes each segment on the way out and decodes it on the way back,
  * so this function writes the path plainly and `gitHubTargetFromSegments`
  * reads it back.
@@ -84,6 +84,19 @@ export function reviewTargetSplat(target: ReviewTarget): string {
     case 'github-compare':
       return `${target.owner}/${target.repo}/compare/${target.base}...${target.head}`;
   }
+}
+
+/**
+ * The path a reviewer would type, for showing rather than for routing. It is
+ * `reviewTargetSplat` with a commit SHA cut to seven characters: a row that
+ * prints all forty spends its width on a hash nobody reads, and the link under
+ * it still carries the whole one.
+ */
+export function reviewTargetDisplayPath(target: ReviewTarget): string {
+  if (target.kind === 'github-commit') {
+    return `${target.owner}/${target.repo}/commit/${target.sha.slice(0, 7)}`;
+  }
+  return reviewTargetSplat(target);
 }
 
 /** The query the `/api/diff` route expects for this target. */
@@ -150,7 +163,7 @@ export function reviewTargetFromQuery(
 }
 
 /**
- * Rebuilds a GitHub target from the `/gh/...` route segments, which mirror
+ * Rebuilds a GitHub target from the route's path segments, which mirror
  * github.com's own paths.
  */
 export function gitHubTargetFromSegments(

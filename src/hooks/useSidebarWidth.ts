@@ -39,7 +39,7 @@ const VIEWER_MIN_WIDTH = 360;
 /** One arrow key press. */
 const KEY_STEP = 16;
 
-export const SIDEBAR_WIDTH_PROPERTY = '--reviewer-sidebar-width';
+export const SIDEBAR_WIDTH_PROPERTY = '--ghdiff-sidebar-width';
 
 export interface SidebarWidthState {
   /**

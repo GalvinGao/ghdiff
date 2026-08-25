@@ -1,11 +1,22 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { buttonClass } from '@/components/ui/buttonClass';
 import { Input } from '@/components/ui/Input';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ViewerIdentity } from '@/components/ViewerIdentity';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
 import { cn } from '@/lib/cn';
+import {
+  ACCESS_LABEL,
+  fineGrainedTokenUrl,
+  TOKEN_PERMISSIONS,
+} from '@/lib/githubToken';
+
+// The link and the list under it are the same four permissions, built once in
+// `src/lib/githubToken.ts`. Computed here rather than per render: the URL never
+// changes.
+const TOKEN_URL = fineGrainedTokenUrl();
 
 /**
  * The token form itself, with no surface of its own. The header shows it inside
@@ -46,11 +57,47 @@ export function GitHubTokenForm({
           </p>
         </>
       ) : (
-        <p className="text-ink-faint text-xs">
-          A GitHub personal access token with the <code>repo</code> scope. It
-          stays in this browser and travels on each request. Reviewer needs it
-          to read a private diff and to post a comment.
-        </p>
+        <>
+          <p className="text-ink-faint text-xs">
+            A GitHub personal access token. It stays in this browser and travels
+            on each request. ghdiff needs it to read a private diff and to post
+            a comment.
+          </p>
+
+          <a
+            className={buttonClass({
+              className: 'mt-2 w-full justify-center',
+              size: 'sm',
+              variant: 'outline',
+            })}
+            href={TOKEN_URL}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Create a fine-grained token
+          </a>
+
+          {/* One row per permission, because the list is read against
+              GitHub's own form: a sentence of four permissions has to be
+              re-read once per checkbox. */}
+          <p className="text-ink-faint mt-2 text-xs">
+            The link ticks these for you. Choose the repositories you review:
+          </p>
+          <ul className="mt-1 text-xs">
+            {TOKEN_PERMISSIONS.map(({ access, name }) => (
+              <li
+                key={name}
+                className="flex items-baseline justify-between gap-2 py-0.5"
+              >
+                <span className="text-ink-muted">{name}</span>
+                <span className="text-ink-faint">{ACCESS_LABEL[access]}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-ink-faint mt-1 text-xs">
+            A classic token with the <code>repo</code> scope works too.
+          </p>
+        </>
       )}
 
       {token.viewerError != null && (
@@ -69,12 +116,12 @@ export function GitHubTokenForm({
           <Input
             type="password"
             value={value}
-            placeholder="ghp_…"
+            placeholder="github_pat_…"
             autoComplete="off"
             aria-label="GitHub personal access token"
             onChange={(event) => setValue(event.target.value)}
           />
-          <Button type="submit" variant="solid" size="md">
+          <Button type="submit" variant="outline" size="md">
             Save
           </Button>
         </form>

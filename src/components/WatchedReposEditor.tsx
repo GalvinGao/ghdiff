@@ -20,7 +20,7 @@ export function WatchedReposEditor({
   return (
     <div>
       <p className="text-ink-faint mb-2 text-xs">
-        Reviewer lists the open pull requests of these repositories. The list
+        ghdiff lists the open pull requests of these repositories. The list
         stays in this browser.
       </p>
 

@@ -37,7 +37,7 @@ export interface PullSummary {
   headRef: string;
   baseRef: string;
   /**
-   * The review and check axes. Absent when reviewer read the list without a
+   * The review and check axes. Absent when ghdiff read the list without a
    * token: GitHub's REST list carries neither, so the mark stays off the row
    * rather than claim "not reviewed, no checks" about a pull request it never
    * asked about.

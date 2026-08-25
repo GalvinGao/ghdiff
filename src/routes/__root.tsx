@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { ColorModeScript } from '@/components/ColorModeScript';
 import { NotFound } from '@/components/NotFound';
+import { WatchedReposScript } from '@/components/WatchedReposScript';
 import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import appCss from '@/globals.css?url';
 
@@ -12,11 +13,11 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'reviewer' },
+      { title: 'ghdiff' },
       {
         name: 'description',
         content:
-          'Review a GitHub pull request, commit, or compare range, with preset file filters and comments that sync to GitHub.',
+          'Open any GitHub pull request, commit, or compare range by swapping github.com for ghdiff.com. Narrow the file list with preset path rules, and write line comments that land back on GitHub.',
       },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
@@ -31,6 +32,7 @@ function RootDocument({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <ColorModeScript />
+        <WatchedReposScript />
       </head>
       <body className="flex h-dvh flex-col">
         <WorkerPoolProvider>

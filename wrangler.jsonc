@@ -1,6 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "reviewer",
+  "name": "ghdiff",
+  // Named here rather than passed to the deploy action, so a local
+  // `pnpm deploy` and the CI deploy cannot reach different accounts. An
+  // account id identifies; it authorises nothing on its own.
+  "account_id": "bee683f3b5473a422feaa41e040ac176",
   "compatibility_date": "2026-08-25",
   // AsyncLocalStorage backs the request-scoped logger, and `process.env`
   // carries GITHUB_TOKEN. Both come from nodejs_compat.

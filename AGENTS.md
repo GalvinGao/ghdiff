@@ -1,13 +1,13 @@
-# reviewer
+# ghdiff
 
 A code review surface built on [`@pierre/diffs`](https://diffs.com) and
-`@pierre/trees`. It renders one unified diff, filters the file list by preset
-path rules, and carries line comments back to GitHub.
+`@pierre/trees`, served at ghdiff.com. It renders one unified diff, filters the
+file list by preset path rules, and carries line comments back to GitHub.
 
 `diffs-hub` in the `pierrecomputer/pierre` monorepo is the reference
-implementation. Reviewer differs from it in three ways that matter:
+implementation. ghdiff differs from it in three ways that matter:
 
-| Concern        | diffs-hub                                          | reviewer                                                  |
+| Concern        | diffs-hub                                          | ghdiff                                                    |
 | -------------- | -------------------------------------------------- | --------------------------------------------------------- |
 | File filter    | git status only                                    | preset path rules **and** git status **and** a path query |
 | Filter reach   | the file tree                                      | the file tree **and** the diff scroll region              |
@@ -47,7 +47,8 @@ src/
   routes/
     __root.tsx             the document, then AppShell: the left bar, then the page
     index.tsx              home: the open pull requests, and a box for any GitHub URL
-    gh/$.tsx               mirrors github.com paths: /gh/owner/repo/pull/123
+    $.tsx                  mirrors github.com paths: /owner/repo/pull/123
+    gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff
     api/comments.ts        GitHub pull request review comments: read, post, reply, delete
     api/github/pull.ts     one pull request's own details, for the header card
@@ -72,6 +73,46 @@ pull requests never unmounts it, so the list is fetched once per session. The
 bar reads the pull request on screen out of `useLocation()` rather than being
 told, which is what lets it sit above the home page, a review, and a 404 alike.
 
+**A review URL is github.com's own path, at the root.** `src/routes/$.tsx` is a
+splat over the whole path, so `ghdiff.com/owner/repo/pull/123` is the github.com
+URL with the host swapped and nothing else. Every static route — `/` and each
+`/api/...` handler — outranks the splat, so adding a static route is safe and
+adding a top-level _page_ route is what would shadow a repository owner of that
+name. `src/routes/gh/$.tsx` is the old prefix and holds no component: its loader
+throws a `redirect`, which keeps every link already written alive. `PullRail`
+reads through a leading `gh` segment for the one navigation the redirect takes.
+
+**The left bar is not there when it has nothing to list.** `PullRail` returns
+`null` while the watch list is empty, because an empty column beside a diff is a
+promise the app cannot keep. The test is
+`watched.hydrated && repos.length === 0` and not `repos.length` alone: browser
+storage is read after mount, so an unread watch list looks empty, and hiding the
+bar on that reading would unmount it and re-mount it on every load. With the bar
+away, `ReviewHeader` takes its `showBrand` prop and carries the way home, so no
+screen is a dead end.
+
+**The first paint of that bar is settled in the document head.** `hydrated` is
+false for one paint, and the server already sent the bar's markup, so a reviewer
+who watches nothing saw the column arrive and then leave. `WatchedReposScript`
+reads the same key before the body is parsed and writes `data-watching` on the
+document; `html[data-watching='no'] [data-app-rail]` in `src/globals.css` keeps
+that paint empty, and React's answer lands after it and agrees. Every reading
+that leaves `useWatchedRepos` empty has to reach `'no'` there — no key, a value
+that is not an array, and storage that throws alike — or the flash returns the
+other way round. `PullRequestList` takes `hydrated` for the same reason: an
+empty `repos` before the read is the default, not an answer, so it draws
+`PullListSkeleton` and does not tell a reviewer who watches five that they watch
+none.
+
+**The accent is ink, not a hue.** `--app-accent` is near-black in the light
+scheme and near-white in the dark one, and `--app-accent-ink` is its opposite,
+so the one filled control on a screen is the app's only colour and every other
+colour on screen belongs to the diff. That is also why `--app-accent-hover`
+exists: a `brightness` filter moves near-black and near-white by nothing, so the
+`solid` variant in `src/components/ui/buttonClass.ts` names a second tone
+instead. A link inside a comment body is `text-accent` and reads as body text;
+its underline is what marks it.
+
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
 `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and `useOpenPulls` once,
 above the bar and the page. Each of those reads browser storage, and a hook that
@@ -87,12 +128,52 @@ object to ask for, so a stack is read off the branches: one open pull request
 whose base branch is another open pull request's head branch is stacked on it.
 Stacks are built inside an author group, so two people never share one chain.
 
+**A stack is a block, and both bar widths draw it.** A chain of more than one
+pull request sits on a background of its own under `PullStackBadge`, the layers
+glyph and the count. A pull request that stands alone gets neither, so the
+background means one thing. The narrow bar draws the same block around the same
+squares: which pull requests were chained, and whose they were, were the two
+things collapsing the bar used to throw away. The block is an **inset ring**,
+not a border — a border would indent the rows inside it by a pixel, and a
+stacked row's square must land where a plain row's square lands.
+
+**A group boundary is a rule, not a heading.** A heading sits closer to the rows
+under it than the rows sit to each other, which is what a heading is for and why
+it cannot also be the boundary: two authors read as one run. Both lists rule off
+between repositories and between authors, and the rule is drawn from the index
+rather than `:first-child`, because an author group is never the first child of
+its section — the repository heading is.
+
 **The review and the check axes need a token.** `/api/github/pulls` asks GraphQL
 for `reviewDecision` and the head commit's `statusCheckRollup`, which REST does
-not carry. GraphQL refuses an anonymous caller, so a reviewer with no token gets
+not carry. GraphQL refuses an anonymous caller, so a caller with no token gets
 the REST list and `PullSummary.status` stays **absent** — not `none`. Absent
-means "never asked", and `PullStatusIcon` leaves the square off the row rather
-than claim there is no review and no CI.
+means "never asked", and `PullRow` leaves the square off the row rather than
+claim there is no review and no CI. It keeps the lane the square sits in, so the
+number after it starts on the same pixel either way.
+
+**A spent quota is one status, and the panel asks for a token.** GitHub reports
+the primary rate limit as 403 on `api.github.com` and as 429 on the web diff
+host, and a 403 is also its answer to an invisible repository and to a request
+that names no user agent. `rateLimitedStatus` in `src/lib/rateLimit.ts` reads
+`retry-after` and `x-ratelimit-remaining: 0` to tell those apart, and every
+throw in `src/lib/server/github.ts` reports 429 for a quota that is gone, so
+nothing downstream has to ask which 403 it holds. `describeReviewFailure` in
+`src/lib/reviewFailure.ts` then turns that status into the panel's copy and its
+button: an anonymous browser over the limit leads with **Add token**, because
+"Try again" against a spent anonymous quota does nothing for the rest of the
+hour while a token takes the ceiling from 60 requests to 5000 on the next one. A
+token that is itself over quota gets the retry alone — there is no second token
+to add. `ReviewStatusPanel` opens `GitHubTokenForm` in a dialog for that button,
+and closes it once GitHub answers for the token, because `useReviewPatch`
+depends on the token and has already started the reload behind it.
+
+**The square is the only glyph on a row.** The lifecycle octicon that stood
+beside it repeated what the list already says — every pull request in the list
+is open — and it took half the leading lane from the one glyph that carries new
+information. `PullStateIcon` survives for `PullDetailsCard`, where the state is
+named in words next to it. The one thing the square cannot carry is draft, so a
+draft row gets a `Draft` chip and an open row pays nothing for it.
 
 **The status square is GalvinGao/floodgate's, deliberately.** Left half review,
 right half checks, white `+` when the author pushed after somebody asked for
@@ -133,7 +214,7 @@ into a union of annotation shapes the viewer rejects. `kind` discriminates
 instead.
 
 **Client hooks depend on strings, not on the target object.** The target comes
-from the `/gh/$` loader, so its identity changes on every re-run of that loader.
+from the `/$` loader, so its identity changes on every re-run of that loader.
 `useReviewComments` derives `storageKey`, `pullQuery`, and `pullRepo` and
 depends on those.
 
@@ -260,7 +341,7 @@ every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
 
 **A sidebar drag renders nothing.** `src/hooks/useSidebarWidth.ts` writes every
-pointermove straight onto `--reviewer-sidebar-width` on the layout element, and
+pointermove straight onto `--ghdiff-sidebar-width` on the layout element, and
 tells React once, on pointerup. The grid column and the handle's own `left` both
 read that property, so the pane and the seam travel together while the
 `CodeView` beside them is neither re-rendered nor re-measured. The drag's active
@@ -282,6 +363,25 @@ short name leaves and never shrinks, so a long name truncates and the figures
 stay whole. **A directory row is keyed with a trailing slash**, because that is
 how the tree names its own rows.
 
+**Every row keeps the git badge's lane, badge or no badge.** The lane is the
+library's, it is the last thing on a row, and `display: none` gave a directory
+row its 12px and its flex gap back — so a directory's figures ended 17px right
+of every file's. The stylesheet hides the folder dot inside the lane instead.
+The lane also holds the regular font weight: a column measured in `ch` is the
+width of a zero, and a directory row's heavier zero is a pixel wider.
+
+**Whether that lane exists at all is the diff's answer, not ours.**
+`@pierre/trees` resolves an empty git status list to nothing and leaves the lane
+off every row, and `gitStatusEntries` skips `modified` — so a diff whose every
+file is modified has no lane, and a diff with one added file has it on all of
+them. `treeStatLaneInset(gitLaneActive)` is why the footer follows: it is the
+scroll region's stable scrollbar gutter, the row's margin and padding, and then
+the lane and its gap only when the lane is there. The two library defaults in
+that sum are pinned as overrides in the same file, so a default that moved could
+not take the footer out of the tree's columns without touching the number beside
+it. A footer padded for a lane that no row has sits 17px inside the figures it
+totals, which is the same error as the directory row, from the other side.
+
 **A thread's opening author decides whether the sidebar lists it.** A review bot
 writes most of the comments on a busy repository, so `src/lib/commentAuthors.ts`
 splits them into People and Bots and the strip at the foot of the panel holds
@@ -302,7 +402,12 @@ breaks between directories rather than through one.
 to report and the comments tab has a filter to set, and neither has anything to
 say about the other. The size it reports is `applyReviewFilter`'s own `stats`,
 not the patch's: a footer that counted the whole patch while the tree listed a
-third of it made the two panes disagree.
+third of it made the two panes disagree. Its two figures are the last row of the
+tree's own columns, so it takes `treeStatLaneInset`, the tree's 5px gap, and the
+tree's column widths as a **minimum** — a patch with two top-level directories
+has a total wider than either of them, and a fixed width would spill. The right
+padding belongs to each tab rather than the strip, because the filter bar runs
+to the edge and the totals stop where the tree's figures stop.
 
 ## The Worker
 
@@ -353,6 +458,18 @@ Put it in `.dev.vars` for `pnpm dev` and `pnpm preview`, and in a Worker secret
   run packages the Worker exactly as a deploy would and needs no Cloudflare
   credentials, so a change workerd cannot run fails the pull request instead of
   the deploy.
+
+A third job, **deploy**, waits on both and runs only on a push to `main`. It
+builds again before it calls `cloudflare/wrangler-action`, because
+`wrangler deploy` builds nothing: the Vite build writes
+`.wrangler/deploy/config.json`, which redirects wrangler to the generated
+`dist/server/wrangler.json`, and wrangler errors without that file. The account
+id is in `wrangler.jsonc`, so `CLOUDFLARE_API_TOKEN` is the only secret the job
+carries. The workflow cancels a superseded run only on a pull request, and the
+deploy job holds a concurrency group of its own, so no deploy is killed halfway.
+
+GitHub Actions reserves every secret name that opens with `GITHUB_`. A Worker
+`GITHUB_TOKEN` therefore cannot travel as a repository secret of the same name.
 
 ## Lint rules that are off, and why
 

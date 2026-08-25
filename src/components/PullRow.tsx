@@ -1,10 +1,29 @@
 import { IconCheck } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
-import { PullStatusIcon } from '@/components/PullStatusIcon';
+import { pullStateLabel } from '@/components/PullStateIcon';
+import { PullStatusMark } from '@/components/PullStatusMark';
 import { cn } from '@/lib/cn';
 import type { PullSummary } from '@/lib/pulls';
+import { describePullStatus } from '@/lib/pullStatus';
 import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
+
+// The leading lane of a row holds the status square, and nothing else. The
+// lifecycle octicon that stood beside it repeated what the list already says —
+// every pull request the list holds is open — and it took half the lane from the
+// one glyph that carries new information.
+//
+// The lane keeps its width when it has no square to hold. A reviewer with no
+// token never had the review and the check axes fetched, and a row that closed
+// the gap would start its number under the previous row's title.
+const MARK_SIZE = 13;
+/** `gap-1.5`: what stands between the lane and the number. */
+const MARK_GAP = 6;
+/**
+ * Where `#123` starts, and so where the head branch starts on the line below.
+ * The two lines are one column, not two ragged ones.
+ */
+const TEXT_INSET = MARK_SIZE + MARK_GAP;
 
 /** True when this row is the pull request already under review. */
 export function isCurrentPull(
@@ -39,7 +58,7 @@ export function PullRow({
   const isCurrent = isCurrentPull(pull, current);
   return (
     <Link
-      to="/gh/$"
+      to="/$"
       params={{
         _splat: reviewTargetSplat({
           kind: 'github-pull',
@@ -54,13 +73,30 @@ export function PullRow({
         'hover:bg-raised focus-visible:bg-raised block rounded-md px-2 py-1.5 text-sm outline-none',
         isCurrent && 'bg-raised'
       )}
-      title={`${pull.title}\n${pull.headRef} into ${pull.baseRef}`}
+      title={`${pull.title}\n${pullStateLabel(pull.state)}${
+        pull.status == null ? '' : ` · ${describePullStatus(pull.status)}`
+      }\n${pull.headRef} into ${pull.baseRef}`}
     >
       <span className="flex min-w-0 items-center gap-1.5">
-        <PullStatusIcon state={pull.state} status={pull.status} />
+        <span
+          className="flex shrink-0 items-center justify-center"
+          style={{ width: MARK_SIZE }}
+        >
+          {pull.status != null && (
+            <PullStatusMark size={MARK_SIZE} status={pull.status} />
+          )}
+        </span>
         <span className="text-ink-faint shrink-0 font-mono text-xs tabular-nums">
           #{pull.number}
         </span>
+        {/* The one piece of lifecycle the square cannot carry. It rides a chip
+            rather than a glyph of its own, so an open pull request — which is
+            almost every row — pays nothing for it. */}
+        {pull.state === 'draft' && (
+          <span className="border-line text-ink-faint shrink-0 rounded border px-1 text-[10px] leading-4">
+            Draft
+          </span>
+        )}
         <span
           className={cn(
             'text-ink min-w-0 flex-1 truncate',
@@ -75,7 +111,10 @@ export function PullRow({
           </span>
         )}
       </span>
-      <span className="text-ink-faint block truncate pl-1 font-mono text-[11px]">
+      <span
+        className="text-ink-faint block truncate font-mono text-[11px]"
+        style={{ paddingLeft: TEXT_INSET }}
+      >
         {pull.headRef}
       </span>
     </Link>

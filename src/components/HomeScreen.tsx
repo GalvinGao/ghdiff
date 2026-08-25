@@ -1,15 +1,18 @@
-import { IconArrow } from '@pierre/icons';
+import { IconArrow, IconBrandGithub } from '@pierre/icons';
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
+import { ExampleTargets } from '@/components/ExampleTargets';
 import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { PullRequestList } from '@/components/PullRequestList';
 import { RepoPicker } from '@/components/RepoPicker';
 import { Button } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { Spinner } from '@/components/ui/Spinner';
+import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { formatWatchedRepo } from '@/lib/pulls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
@@ -28,6 +31,7 @@ export function HomeScreen() {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [editingRepos, setEditingRepos] = useState(false);
+  const [editingToken, setEditingToken] = useState(false);
   const [repoFilter, setRepoFilter] = useState<string | undefined>(undefined);
 
   // A repository can leave the watch list while it is the one selected, and a
@@ -52,8 +56,11 @@ export function HomeScreen() {
     return result;
   }, [pulls.data]);
 
+  const viewer = token.viewer;
+
   const list = (
     <PullRequestList
+      hydrated={watched.hydrated}
       repoFilter={activeFilter}
       repos={watched.repos}
       showRepoHeadings={activeFilter == null}
@@ -76,23 +83,33 @@ export function HomeScreen() {
 
       <div className="m-auto w-full max-w-2xl px-6 py-14">
         <h1 className="text-ink text-2xl font-semibold tracking-tight">
-          reviewer
+          ghdiff.com
         </h1>
-        <p className="text-ink-muted mt-1.5 text-sm text-pretty">
-          Review a GitHub pull request, commit, or compare range. Filter the
-          file list by preset rules, and leave comments that go back to GitHub.
-        </p>
+        {/* One line per thing the app does. Three clauses in one paragraph read
+            as a sentence to get through; three lines read as a list. */}
+        <div className="text-ink-muted mt-1.5 space-y-0.5 text-sm">
+          <p>Open any GitHub pull request, commit, or compare range.</p>
+          <p>Narrow the file list with preset path rules.</p>
+          <p>Read and leave comments.</p>
+        </div>
 
-        {/* Any github.com path works with `/gh` in front of it, which is worth
-            showing rather than describing. */}
+        {/* The whole instruction is the host swap, which is worth showing
+            rather than describing. Square corners, because these two lines are
+            a diff and a diff has none. */}
         <div className="text-ink-muted mt-6 flex flex-col gap-px font-mono text-xs leading-6">
-          <code className="border-removed truncate rounded-l border-l-2 pl-2">
-            <span className="text-removed">- github.com</span>
-            /owner/repo/pull/123
+          <code className="border-removed truncate border-l-2 pl-2">
+            <span className="text-removed">{'- '}</span>
+            <span className="bg-removed/15 text-removed rounded-xs px-0.5 font-semibold">
+              github
+            </span>
+            .com/owner/repo/pull/123
           </code>
-          <code className="border-added truncate rounded-l border-l-2 pl-2">
-            <span className="text-added">+ /gh</span>
-            /owner/repo/pull/123
+          <code className="border-added truncate border-l-2 pl-2">
+            <span className="text-added">{'+ '}</span>
+            <span className="bg-added/15 text-added rounded-xs px-0.5 font-semibold">
+              ghdiff
+            </span>
+            .com/owner/repo/pull/123
           </code>
         </div>
 
@@ -110,7 +127,7 @@ export function HomeScreen() {
               }
               setError(undefined);
               void navigate({
-                to: '/gh/$',
+                to: '/$',
                 params: { _splat: reviewTargetSplat(target) },
               });
             }}
@@ -129,14 +146,16 @@ export function HomeScreen() {
                 if (error != null) setError(undefined);
               }}
             />
+            {/* The page's primary action, so it is filled and it is named.
+                A bare glyph left the one thing to do here looking like a hint. */}
             <Button
-              aria-label="Open this diff"
               disabled={input.trim().length === 0}
-              size="icon-sm"
+              size="md"
               title="Open this diff"
               type="submit"
-              variant="quiet"
+              variant="solid"
             >
+              Review
               <IconArrow className="rotate-180" size={15} />
             </Button>
           </form>
@@ -145,11 +164,46 @@ export function HomeScreen() {
               {error}
             </p>
           )}
-          <GitHubTokenForm
-            className="border-line border-t px-4 py-3"
-            heading="Private GitHub access"
-            token={token}
-          />
+          {/* The form itself is a heading, a paragraph, a link, four
+              permissions and a field, and none of that is the reader's next
+              move on this page — pasting a URL is. So the card keeps one strip
+              that says what it opens, the width of the row above it and
+              clickable across all of it, and the form fills a dialog. */}
+          {/* The rule is the wrapper's. `quiet` already sets a transparent
+              border on all four sides of the button, so colouring one of them
+              from here would fight it. */}
+          <div className="border-line border-t">
+            <Button
+              className="h-10 w-full justify-center rounded-none"
+              size="md"
+              variant="quiet"
+              onClick={() => setEditingToken(true)}
+            >
+              {viewer != null ? (
+                <>
+                  <ViewerAvatar size={18} viewer={viewer} />
+                  <span className="min-w-0 truncate">
+                    {viewerDisplayName(viewer)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Set up private GitHub access
+                  <IconArrow className="rotate-180" size={14} />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Nothing on this page moves until somebody pastes a URL, and a
+            reviewer arriving with no pull request of their own to read has no
+            way to find out what the surface does. These are that way in. */}
+        <div className="mt-10">
+          <SectionLabel>Examples</SectionLabel>
+        </div>
+        <div className={`${CARD} mt-2 p-1`}>
+          <ExampleTargets />
         </div>
 
         <div className="mt-10 flex items-center gap-2">
@@ -185,6 +239,15 @@ export function HomeScreen() {
           )}
         </div>
 
+        <Dialog
+          className="p-4"
+          open={editingToken}
+          title="Private GitHub access"
+          onClose={() => setEditingToken(false)}
+        >
+          <GitHubTokenForm token={token} />
+        </Dialog>
+
         <WatchedReposDialog
           open={editingRepos}
           watched={watched}
@@ -195,7 +258,7 @@ export function HomeScreen() {
         />
 
         <p className="text-ink-faint mt-10 text-xs">
-          The diff is{' '}
+          Diffs via{' '}
           <a
             className="hover:text-ink underline"
             href="https://diffs.com"
@@ -204,7 +267,7 @@ export function HomeScreen() {
           >
             CodeView
           </a>{' '}
-          and the file list is{' '}
+          and file list via{' '}
           <a
             className="hover:text-ink underline"
             href="https://trees.software"
@@ -213,7 +276,20 @@ export function HomeScreen() {
           >
             FileTree
           </a>
-          , both by Pierre.
+          .
+        </p>
+        <p className="mt-1">
+          {/* The mark, not a word: this line names a repository, and the line
+              above it names two libraries the same size in the same colour. */}
+          <a
+            className="text-ink-faint hover:text-ink inline-flex items-center gap-1.5 text-xs"
+            href="https://github.com/GalvinGao/ghdiff"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <IconBrandGithub aria-hidden="true" size={13} />
+            <span className="underline">Source on GitHub</span>
+          </a>
         </p>
       </div>
     </main>

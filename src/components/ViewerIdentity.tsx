@@ -1,7 +1,7 @@
 import type { GitHubViewer } from '@/hooks/useGitHubToken';
 import { cn } from '@/lib/cn';
 
-// Who the token belongs to. Every comment reviewer posts carries this account,
+// Who the token belongs to. Every comment ghdiff posts carries this account,
 // so the header says whose it is before anything is typed, and the menu behind
 // it says it in full. A login on its own is a word in a toolbar; the picture is
 // what makes it read as an account.

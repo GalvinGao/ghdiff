@@ -29,7 +29,7 @@ import {
 // above githubWebDiff for why the web host leads and the API follows.
 
 /** Set when the fallback could not carry the whole diff. */
-const SYNTHESIS_NOTICE_HEADER = 'x-reviewer-notice';
+const SYNTHESIS_NOTICE_HEADER = 'x-ghdiff-notice';
 
 function textResponse(body: string, status: number): Response {
   return new Response(body, {
