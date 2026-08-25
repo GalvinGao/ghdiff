@@ -87,12 +87,36 @@ object to ask for, so a stack is read off the branches: one open pull request
 whose base branch is another open pull request's head branch is stacked on it.
 Stacks are built inside an author group, so two people never share one chain.
 
+**A stack is a block, and both bar widths draw it.** A chain of more than one
+pull request sits on a background of its own under `PullStackBadge`, the layers
+glyph and the count. A pull request that stands alone gets neither, so the
+background means one thing. The narrow bar draws the same block around the same
+squares: which pull requests were chained, and whose they were, were the two
+things collapsing the bar used to throw away. The block is an **inset ring**,
+not a border — a border would indent the rows inside it by a pixel, and a
+stacked row's square must land where a plain row's square lands.
+
+**A group boundary is a rule, not a heading.** A heading sits closer to the rows
+under it than the rows sit to each other, which is what a heading is for and why
+it cannot also be the boundary: two authors read as one run. Both lists rule off
+between repositories and between authors, and the rule is drawn from the index
+rather than `:first-child`, because an author group is never the first child of
+its section — the repository heading is.
+
 **The review and the check axes need a token.** `/api/github/pulls` asks GraphQL
 for `reviewDecision` and the head commit's `statusCheckRollup`, which REST does
 not carry. GraphQL refuses an anonymous caller, so a reviewer with no token gets
 the REST list and `PullSummary.status` stays **absent** — not `none`. Absent
-means "never asked", and `PullStatusIcon` leaves the square off the row rather
-than claim there is no review and no CI.
+means "never asked", and `PullRow` leaves the square off the row rather than
+claim there is no review and no CI. It keeps the lane the square sits in, so the
+number after it starts on the same pixel either way.
+
+**The square is the only glyph on a row.** The lifecycle octicon that stood
+beside it repeated what the list already says — every pull request in the list
+is open — and it took half the leading lane from the one glyph that carries new
+information. `PullStateIcon` survives for `PullDetailsCard`, where the state is
+named in words next to it. The one thing the square cannot carry is draft, so a
+draft row gets a `Draft` chip and an open row pays nothing for it.
 
 **The status square is GalvinGao/floodgate's, deliberately.** Left half review,
 right half checks, white `+` when the author pushed after somebody asked for
@@ -235,6 +259,25 @@ short name leaves and never shrinks, so a long name truncates and the figures
 stay whole. **A directory row is keyed with a trailing slash**, because that is
 how the tree names its own rows.
 
+**Every row keeps the git badge's lane, badge or no badge.** The lane is the
+library's, it is the last thing on a row, and `display: none` gave a directory
+row its 12px and its flex gap back — so a directory's figures ended 17px right
+of every file's. The stylesheet hides the folder dot inside the lane instead.
+The lane also holds the regular font weight: a column measured in `ch` is the
+width of a zero, and a directory row's heavier zero is a pixel wider.
+
+**Whether that lane exists at all is the diff's answer, not ours.**
+`@pierre/trees` resolves an empty git status list to nothing and leaves the lane
+off every row, and `gitStatusEntries` skips `modified` — so a diff whose every
+file is modified has no lane, and a diff with one added file has it on all of
+them. `treeStatLaneInset(gitLaneActive)` is why the footer follows: it is the
+scroll region's stable scrollbar gutter, the row's margin and padding, and then
+the lane and its gap only when the lane is there. The two library defaults in
+that sum are pinned as overrides in the same file, so a default that moved could
+not take the footer out of the tree's columns without touching the number beside
+it. A footer padded for a lane that no row has sits 17px inside the figures it
+totals, which is the same error as the directory row, from the other side.
+
 **A thread's opening author decides whether the sidebar lists it.** A review bot
 writes most of the comments on a busy repository, so `src/lib/commentAuthors.ts`
 splits them into People and Bots and the strip at the foot of the panel holds
@@ -255,7 +298,12 @@ breaks between directories rather than through one.
 to report and the comments tab has a filter to set, and neither has anything to
 say about the other. The size it reports is `applyReviewFilter`'s own `stats`,
 not the patch's: a footer that counted the whole patch while the tree listed a
-third of it made the two panes disagree.
+third of it made the two panes disagree. Its two figures are the last row of the
+tree's own columns, so it takes `treeStatLaneInset`, the tree's 5px gap, and the
+tree's column widths as a **minimum** — a patch with two top-level directories
+has a total wider than either of them, and a fixed width would spill. The right
+padding belongs to each tab rather than the strip, because the filter bar runs
+to the edge and the totals stop where the tree's figures stop.
 
 ## The Worker
 
