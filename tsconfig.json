@@ -10,6 +10,9 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    // `import appCss from '@/globals.css?url'` is a Vite import, and
+    // `import.meta.env` is Vite's.
+    "types": ["vite/client"],
     // Test files import siblings with an explicit .ts extension so that
     // `node --test --experimental-strip-types` can resolve them without a
     // bundler.
@@ -23,21 +26,10 @@
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": ["node_modules", ".next"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist", ".tanstack", ".wrangler"]
 }

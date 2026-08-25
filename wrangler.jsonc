@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "reviewer",
+  "compatibility_date": "2026-08-25",
+  // AsyncLocalStorage backs the request-scoped logger, and `process.env`
+  // carries GITHUB_TOKEN. Both come from nodejs_compat.
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true,
+  },
+}

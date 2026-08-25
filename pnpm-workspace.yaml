@@ -1,5 +1,5 @@
-# No workspace packages: reviewer is a single Next.js application at the repo
-# root. This file exists only to hold pnpm settings, which pnpm 11 reads from
+# No workspace packages: reviewer is a single application at the repo root.
+# This file exists only to hold pnpm settings, which pnpm 11 reads from
 # here instead of from package.json.
 
 # @pierre/trees pins @pierre/theming 1.0.0 and @pierre/diffs pins 1.0.1. Two
@@ -11,3 +11,10 @@ overrides:
 
 minimumReleaseAgeExclude:
   - '@pierre/diffs@1.3.6'
+
+# workerd and esbuild each install a platform binary from a postinstall script.
+# workerd is the Cloudflare Workers runtime that `vite dev` and `wrangler` run
+# the server on, so the build must run.
+allowBuilds:
+  esbuild: true
+  workerd: true

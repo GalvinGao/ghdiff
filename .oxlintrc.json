@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["import", "react", "nextjs", "promise", "node", "typescript"],
+  "plugins": ["import", "react", "promise", "node", "typescript"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -26,16 +26,22 @@
         "destructuring": "all"
       }
     ],
-    "nextjs/no-img-element": "off",
     "typescript/no-explicit-any": "warn",
     "react/react-in-jsx-scope": "off",
-    "import/no-unassigned-import": "off",
-    "react/set-state-in-effect": "off"
+    "react/set-state-in-effect": "off",
+    "no-underscore-dangle": [
+      "warn",
+      {
+        "allow": ["_splat"]
+      }
+    ]
   },
   "ignorePatterns": [
-    "**/.next/**",
-    "**/dist/**",
     "**/node_modules/**",
-    "next-env.d.ts"
+    "**/dist/**",
+    "**/.tanstack/**",
+    "**/.wrangler/**",
+    "src/routeTree.gen.ts",
+    "worker-configuration.d.ts"
   ]
 }

@@ -32,11 +32,11 @@
   "ignorePatterns": [
     "node_modules",
     "dist",
-    "build",
-    ".next",
-    ".vercel",
+    ".tanstack",
+    ".wrangler",
     "pnpm-lock.yaml",
-    "next-env.d.ts",
+    "src/routeTree.gen.ts",
+    "worker-configuration.d.ts",
     "*.patch",
     "*.diff"
   ]

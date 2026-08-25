@@ -11,18 +11,12 @@ concurrency:
 
 jobs:
   check:
+    name: Lint, types, and tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       - name: oxlint
         run: pnpm lint
@@ -36,7 +30,30 @@ jobs:
       - name: Test
         run: pnpm test
 
+  build:
+    name: Build and Workers dry run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup
+
+      # Builds the client bundle and the Worker. The build must not need a
+      # GitHub token: the browser holds it and sends it per request.
       - name: Build
-        # Local git review must stay off in a production build, and the build
-        # must not need a GitHub token.
         run: pnpm build
+
+      # `vite build` regenerates the route tree. If the build changed it, the
+      # committed copy was stale.
+      - name: Route tree is up to date
+        run: |
+          if [ -n "$(git status --porcelain -- src/routeTree.gen.ts)" ]; then
+            echo 'src/routeTree.gen.ts is stale. Run `pnpm build` and commit it.'
+            git --no-pager diff -- src/routeTree.gen.ts
+            exit 1
+          fi
+
+      # Packages the Worker exactly as a deploy would, and fails on anything
+      # workerd cannot run. Needs no Cloudflare credentials.
+      - name: Wrangler dry run
+        run: pnpm exec wrangler deploy --dry-run

@@ -1,0 +1,17 @@
+name: Setup
+description: Installs pnpm, Node, and the locked dependencies.
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v5
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version-file: .node-version
+        cache: pnpm
+
+    # workerd installs a platform binary from a postinstall script. Without it
+    # `vite build` has no Workers runtime to build the server for.
+    - run: pnpm install --frozen-lockfile
+      shell: bash

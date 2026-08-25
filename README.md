@@ -31,6 +31,29 @@ pnpm dev
 Open http://localhost:3000, add a GitHub personal access token with the `repo`
 scope, and paste a pull request URL. The token stays in your browser.
 
+Reviewer is a [TanStack Start](https://tanstack.com/start) app on Vite, and it
+runs on Cloudflare Workers. `pnpm dev` and `pnpm preview` both serve the server
+on workerd through `@cloudflare/vite-plugin`, so the development runtime and the
+deployed runtime are the same one.
+
+## Deploy
+
+```bash
+pnpm dlx wrangler login
+pnpm build
+pnpm deploy
+```
+
+`wrangler.jsonc` names the Worker `reviewer` and turns on `nodejs_compat`, which
+the request logger and `process.env` both need. To give a single-user deployment
+its own token, set it as a Worker secret:
+
+```bash
+pnpm exec wrangler secret put GITHUB_TOKEN
+```
+
+For local development the same variable goes in `.dev.vars`, which git ignores.
+
 ## Environment
 
 | Variable       | Effect                                    |
@@ -40,8 +63,8 @@ scope, and paste a pull request URL. The token stays in your browser.
 ## Commands
 
 ```bash
-pnpm dev          pnpm build        pnpm start
-pnpm test         pnpm typecheck
+pnpm dev          pnpm build        pnpm preview      pnpm deploy
+pnpm test         pnpm typecheck    pnpm cf-typegen
 pnpm lint         pnpm fmt          pnpm fmt:check
 ```
 
