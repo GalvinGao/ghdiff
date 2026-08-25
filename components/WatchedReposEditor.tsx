@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { SectionLabel } from '@/components/ui/SectionLabel';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
 import { formatWatchedRepo } from '@/lib/pullSwitcher';
 
@@ -23,9 +24,7 @@ export function WatchedReposEditor({
   return (
     <div className="p-2">
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-ink-faint text-[11px] font-semibold tracking-wide uppercase">
-          Watched repositories
-        </span>
+        <SectionLabel>Watched repositories</SectionLabel>
         <Button
           size="sm"
           variant="outline"

@@ -21,23 +21,43 @@
   --color-pr-draft: var(--app-pr-draft);
   --color-pr-merged: var(--app-pr-merged);
   --color-pr-closed: var(--app-pr-closed);
-  --font-mono:
-    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --font-sans: var(--app-font-sans);
+  --font-mono: var(--app-font-mono);
 }
 
 :root {
+  /* The two faces @pierre/diffs renders with: its file headers use the first
+     and its code uses the second. The chrome around the diff is set in the
+     same two, or a path in the sidebar and the same path in a file header are
+     different typefaces one above the other. Both schemes share them. */
+  --app-font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans',
+    'Liberation Sans', Arial, sans-serif;
+  --app-font-mono:
+    'SF Mono', Monaco, Consolas, 'Ubuntu Mono', 'Liberation Mono',
+    'Courier New', monospace;
+}
+
+/* The diff and the tree paint themselves from the pierre theme, and the chrome
+   painted here has to sit flush against both. So `canvas` is the theme's
+   `editor.background` and `surface` is its `sideBar.background`, to the byte:
+   the diff meets the header on one continuous colour, and the tree meets the
+   sidebar on another. `raised` is the one tone this app adds, for a menu or a
+   comment card that has to lift off whichever surface it lands on. */
+:root {
   color-scheme: light;
-  --app-canvas: #fdfdfc;
-  --app-surface: #f5f5f3;
+  --app-canvas: #ffffff;
+  --app-surface: #f5f5f5;
   --app-raised: #ffffff;
-  --app-line: #e2e1dd;
-  --app-ink: #1b1b19;
-  --app-ink-muted: #6b6a65;
-  --app-ink-faint: #9a9992;
-  --app-accent: #2f6fed;
+  --app-line: #e5e5e5;
+  --app-ink: #0a0a0a;
+  --app-ink-muted: #525252;
+  --app-ink-faint: #737373;
+  --app-accent: #0072e0;
   --app-accent-ink: #ffffff;
-  --app-added: #17845f;
-  --app-removed: #c8453b;
+  --app-added: #1a7f37;
+  --app-removed: #cf222e;
+  --app-tree-selected: color-mix(in srgb, var(--app-accent) 14%, transparent);
 
   /* GitHub Primer state colors, light mode: fgColor-open, fgColor-muted,
      fgColor-done, fgColor-closed. A pull request state should read the same
@@ -50,17 +70,18 @@
 
 [data-color-scheme='dark'] {
   color-scheme: dark;
-  --app-canvas: #131314;
-  --app-surface: #1a1a1c;
-  --app-raised: #212124;
-  --app-line: #2e2e32;
-  --app-ink: #ececec;
-  --app-ink-muted: #9d9da3;
-  --app-ink-faint: #6e6e75;
-  --app-accent: #5b8cff;
-  --app-accent-ink: #0b0b0c;
-  --app-added: #3fce9d;
-  --app-removed: #ff6f66;
+  --app-canvas: #0a0a0a;
+  --app-surface: #171717;
+  --app-raised: #1f1f1f;
+  --app-line: #262626;
+  --app-ink: #fafafa;
+  --app-ink-muted: #a3a3a3;
+  --app-ink-faint: #787878;
+  --app-accent: #009fff;
+  --app-accent-ink: #06131f;
+  --app-added: #3fb950;
+  --app-removed: #f85149;
+  --app-tree-selected: color-mix(in srgb, var(--app-accent) 26%, transparent);
 
   /* GitHub Primer state colors, dark mode. */
   --app-pr-open: #3fb950;
@@ -74,9 +95,16 @@ body {
   height: 100%;
 }
 
+/* Both, not just body. A rubber-band scroll exposes the area behind the page,
+   and an unpainted html element shows through it as a hole in the app. */
+html,
 body {
   background-color: var(--app-canvas);
+}
+
+body {
   color: var(--app-ink);
+  font-family: var(--app-font-sans);
   -webkit-font-smoothing: antialiased;
 }
 

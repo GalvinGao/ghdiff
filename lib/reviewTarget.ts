@@ -1,9 +1,9 @@
 // What reviewer is looking at.
 //
-// Every target resolves to one unified diff. A GitHub pull request is the only
-// target that can carry comments upstream, because it is the only one GitHub
-// has a review-comment thread for. Everything else keeps comments in the
-// browser.
+// Every target is a place on GitHub that resolves to one unified diff. A pull
+// request is the only one that can carry comments upstream, because it is the
+// only one GitHub has a review-comment thread for. A commit and a compare range
+// keep their comments in the browser.
 
 export interface GitHubRepoRef {
   owner: string;
@@ -26,36 +26,13 @@ export interface GitHubCompareTarget extends GitHubRepoRef {
   head: string;
 }
 
-/**
- * A diff taken from a git repository on this machine. `head` accepts a ref, or
- * the two working-tree sentinels below.
- */
-export interface LocalTarget {
-  kind: 'local';
-  repoPath: string;
-  base: string;
-  head: string;
-}
-
 export type ReviewTarget =
   | GitHubPullTarget
   | GitHubCommitTarget
-  | GitHubCompareTarget
-  | LocalTarget;
-
-export type GitHubTarget = Exclude<ReviewTarget, LocalTarget>;
-
-/** Compare `base` against the working tree, including unstaged edits. */
-export const LOCAL_HEAD_WORKTREE = 'WORKTREE';
-/** Compare `base` against the index. */
-export const LOCAL_HEAD_STAGED = 'STAGED';
+  | GitHubCompareTarget;
 
 const OWNER_REPO_PATTERN = /^[A-Za-z0-9._-]+$/;
 const SHA_PATTERN = /^[0-9a-f]{7,40}$/i;
-
-export function isGitHubTarget(target: ReviewTarget): target is GitHubTarget {
-  return target.kind !== 'local';
-}
 
 /**
  * True when comments on this target belong to a GitHub review thread. Only a
@@ -77,8 +54,6 @@ export function reviewTargetKey(target: ReviewTarget): string {
       return `github:${target.owner}/${target.repo}@${target.sha}`;
     case 'github-compare':
       return `github:${target.owner}/${target.repo}:${target.base}...${target.head}`;
-    case 'local':
-      return `local:${target.repoPath}:${target.base}...${target.head}`;
   }
 }
 
@@ -91,20 +66,7 @@ export function describeReviewTarget(target: ReviewTarget): string {
       return `${target.owner}/${target.repo} @ ${target.sha.slice(0, 7)}`;
     case 'github-compare':
       return `${target.owner}/${target.repo} ${target.base}...${target.head}`;
-    case 'local':
-      return `${basename(target.repoPath)} ${target.base}...${describeLocalHead(target.head)}`;
   }
-}
-
-export function describeLocalHead(head: string): string {
-  if (head === LOCAL_HEAD_WORKTREE) return 'working tree';
-  if (head === LOCAL_HEAD_STAGED) return 'index';
-  return head;
-}
-
-function basename(path: string): string {
-  const parts = path.split('/').filter((part) => part.length > 0);
-  return parts.length === 0 ? path : parts[parts.length - 1];
 }
 
 /** The in-app route that shows this target. */
@@ -118,14 +80,6 @@ export function reviewTargetHref(target: ReviewTarget): string {
       return `/gh/${target.owner}/${target.repo}/compare/${encodeURIComponent(
         `${target.base}...${target.head}`
       )}`;
-    case 'local': {
-      const params = new URLSearchParams({
-        repo: target.repoPath,
-        base: target.base,
-        head: target.head,
-      });
-      return `/local?${params.toString()}`;
-    }
   }
 }
 
@@ -154,13 +108,6 @@ export function reviewTargetQuery(target: ReviewTarget): URLSearchParams {
         base: target.base,
         head: target.head,
       });
-    case 'local':
-      return new URLSearchParams({
-        kind: target.kind,
-        repo: target.repoPath,
-        base: target.base,
-        head: target.head,
-      });
   }
 }
 
@@ -169,14 +116,6 @@ export function reviewTargetFromQuery(
   params: URLSearchParams
 ): ReviewTarget | undefined {
   const kind = params.get('kind');
-  if (kind === 'local') {
-    const repoPath = params.get('repo');
-    const base = params.get('base');
-    const head = params.get('head');
-    if (repoPath == null || base == null || head == null) return undefined;
-    return { kind, repoPath, base, head };
-  }
-
   const owner = params.get('owner');
   const repo = params.get('repo');
   if (
@@ -213,7 +152,7 @@ export function reviewTargetFromQuery(
  */
 export function gitHubTargetFromSegments(
   segments: readonly string[]
-): GitHubTarget | undefined {
+): ReviewTarget | undefined {
   const [owner, repo, kind, ...rest] = segments;
   if (
     owner == null ||
@@ -259,7 +198,7 @@ function parseCompareRange(
  * Parses whatever the user pasted into the open-a-review box: a github.com
  * URL, or the `owner/repo#123` shorthand.
  */
-export function parseGitHubInput(input: string): GitHubTarget | undefined {
+export function parseGitHubInput(input: string): ReviewTarget | undefined {
   const trimmed = input.trim();
   if (trimmed.length === 0) return undefined;
 

@@ -5,6 +5,8 @@ import { commentPreviewText } from '@/lib/commentHeight';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 
 interface CommentsListProps {
+  /** The thread the diff has selected. Its row is marked as the current one. */
+  activeKey?: string;
   onSelectThread(thread: CommentListEntry): void;
   sections: readonly CommentListSection[];
   store: 'github' | 'local';
@@ -19,6 +21,7 @@ interface CommentsListProps {
 const ROW_HEIGHT = 52;
 
 export function CommentsList({
+  activeKey,
   onSelectThread,
   sections,
   store,
@@ -53,12 +56,17 @@ export function CommentsList({
               <li key={thread.key} className="min-w-0">
                 <button
                   type="button"
+                  aria-current={thread.key === activeKey ? 'true' : undefined}
                   onClick={() => onSelectThread(thread)}
                   style={{ height: ROW_HEIGHT }}
                   className={cn(
                     'flex w-full min-w-0 flex-col justify-center gap-0.5 overflow-hidden px-3 text-left',
                     'hover:bg-raised focus-visible:bg-raised',
-                    'focus-visible:ring-accent focus-visible:ring-inset focus-visible:ring-2 focus-visible:outline-none'
+                    'focus-visible:ring-accent focus-visible:ring-inset focus-visible:ring-2 focus-visible:outline-none',
+                    // The thread the diff is showing. A bar on the leading edge
+                    // rather than a border, so the row does not shift.
+                    thread.key === activeKey &&
+                      'bg-raised shadow-[inset_2px_0_0_var(--app-accent)]'
                   )}
                 >
                   <span className="flex min-w-0 items-baseline gap-1.5">

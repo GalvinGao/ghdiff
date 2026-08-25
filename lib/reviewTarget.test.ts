@@ -127,7 +127,6 @@ describe('round trips', () => {
       base: 'main',
       head: 'feature/x',
     },
-    { kind: 'local', repoPath: '/repos/a/b', base: 'main', head: 'HEAD' },
   ] as const;
 
   for (const target of targets) {
@@ -147,7 +146,6 @@ describe('round trips', () => {
 
   it('recovers a github target from its own href', () => {
     for (const target of targets) {
-      if (target.kind === 'local') continue;
       const path = reviewTargetHref(target).replace(/^\/gh\//, '');
       assert.deepEqual(gitHubTargetFromSegments(path.split('/')), target);
     }
@@ -176,10 +174,11 @@ describe('supportsGitHubComments', () => {
     );
     assert.equal(
       supportsGitHubComments({
-        kind: 'local',
-        repoPath: '/x',
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
         base: 'main',
-        head: 'HEAD',
+        head: 'topic',
       }),
       false
     );

@@ -131,12 +131,15 @@ export interface GitHubPullRequest {
   html_url: string;
   created_at: string;
   updated_at: string;
+  /** Only the single-pull endpoint returns this; a list omits it. */
+  body?: string | null;
   user: GitHubUser | null;
   head: { sha: string; ref: string };
   base: { ref: string };
   additions?: number;
   deletions?: number;
   changed_files?: number;
+  commits?: number;
 }
 
 export interface GitHubReviewComment {

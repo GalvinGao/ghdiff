@@ -1,5 +1,6 @@
 'use client';
 
+import { IconComment, IconFileTree, IconSearch } from '@pierre/icons';
 import type { FileTree as FileTreeModel } from '@pierre/trees';
 import type { GitStatus } from '@pierre/trees';
 import { useFileTreeSearch } from '@pierre/trees/react';
@@ -9,17 +10,29 @@ import { CommentsList } from '@/components/CommentsList';
 import { FilterMenu } from '@/components/FilterMenu';
 import { ReviewFileTree } from '@/components/ReviewFileTree';
 import { Button } from '@/components/ui/Button';
+import {
+  Segmented,
+  SegmentedCount,
+  SegmentedItem,
+} from '@/components/ui/Segmented';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { CommentStore } from '@/hooks/useReviewComments';
-import { cn } from '@/lib/cn';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import { countComments, countThreads } from '@/lib/commentSections';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
-import type { ReviewFilterState, ReviewTreeSource } from '@/lib/reviewFilter';
+import {
+  EMPTY_FILTER_STATE,
+  type ReviewFilterState,
+  type ReviewTreeSource,
+} from '@/lib/reviewFilter';
 
 type Tab = 'files' | 'comments';
 
 interface ReviewSidebarProps {
+  /** The file the diff is scrolled to, which the tree follows. */
+  activeItemId?: string;
+  /** The thread the diff has selected, which the comment list follows. */
+  activeThreadKey?: string;
   availableStatuses: ReadonlySet<GitStatus>;
   colorScheme: ColorScheme;
   commentSections: readonly CommentListSection[];
@@ -36,6 +49,8 @@ interface ReviewSidebarProps {
 }
 
 export function ReviewSidebar({
+  activeItemId,
+  activeThreadKey,
   availableStatuses,
   colorScheme,
   commentSections,
@@ -63,20 +78,26 @@ export function ReviewSidebar({
   return (
     <aside className="border-line bg-surface flex h-full min-h-0 flex-col border-r">
       <div className="flex items-center gap-1 px-2 pt-2 pb-1">
-        <TabButton
-          active={tab === 'files'}
-          count={visibleFileCount}
-          label="Files"
-          onClick={() => setTab('files')}
-        />
-        <TabButton
-          active={tab === 'comments'}
-          // Threads are what the list shows; the message total is the title.
-          count={threadCount}
-          label="Comments"
-          title={`${threadCount} threads, ${commentCount} comments`}
-          onClick={() => setTab('comments')}
-        />
+        <Segmented
+          aria-label="Sidebar sections"
+          onValueChange={(value) => setTab(value as Tab)}
+          value={tab}
+        >
+          <SegmentedItem value="files">
+            <IconFileTree size={13} />
+            Files
+            <SegmentedCount>{visibleFileCount}</SegmentedCount>
+          </SegmentedItem>
+          <SegmentedItem
+            value="comments"
+            // Threads are what the list shows; the message total is the title.
+            title={`${threadCount} threads, ${commentCount} comments`}
+          >
+            <IconComment size={13} />
+            Comments
+            <SegmentedCount>{threadCount}</SegmentedCount>
+          </SegmentedItem>
+        </Segmented>
         {tab === 'files' && model != null && <TreeSearchToggle model={model} />}
       </div>
 
@@ -97,14 +118,25 @@ export function ReviewSidebar({
           role="region"
           aria-label="Files"
           hidden={tab !== 'files'}
-          className="h-full min-h-0 pl-1"
+          className="h-full min-h-0"
         >
           {treeSource.paths.length === 0 ? (
-            <p className="text-ink-muted px-2 py-3 text-sm">
-              Every file is hidden by the current filter.
-            </p>
+            <div className="px-3 py-3">
+              <p className="text-ink-muted text-sm">
+                Every file is hidden by the current filter.
+              </p>
+              <Button
+                className="mt-2"
+                size="sm"
+                variant="outline"
+                onClick={() => onFilterChange(EMPTY_FILTER_STATE)}
+              >
+                Clear every filter
+              </Button>
+            </div>
           ) : (
             <ReviewFileTree
+              activeItemId={activeItemId}
               colorScheme={colorScheme}
               onModelReady={handleModelReady}
               onSelectPath={onSelectItem}
@@ -119,6 +151,7 @@ export function ReviewSidebar({
           className="h-full min-h-0"
         >
           <CommentsList
+            activeKey={activeThreadKey}
             onSelectThread={onSelectComment}
             sections={commentSections}
             store={commentStore}
@@ -144,49 +177,22 @@ export function ReviewSidebar({
   );
 }
 
-function TabButton({
-  active,
-  count,
-  label,
-  onClick,
-  title,
-}: {
-  active: boolean;
-  count: number;
-  label: string;
-  onClick(): void;
-  title?: string;
-}) {
-  return (
-    <Button
-      size="sm"
-      variant={active ? 'solid' : 'outline'}
-      aria-pressed={active}
-      onClick={onClick}
-      title={title}
-    >
-      {label}
-      <span className={cn('tabular-nums', !active && 'text-ink-faint')}>
-        {count}
-      </span>
-    </Button>
-  );
-}
-
 function TreeSearchToggle({ model }: { model: FileTreeModel }) {
   const search = useFileTreeSearch(model);
   return (
     <Button
-      size="sm"
-      variant="outline"
-      className="ml-auto"
+      aria-label={search.isOpen ? 'Hide file search' : 'Search files'}
       aria-pressed={search.isOpen}
+      className="ml-auto"
+      size="icon-sm"
+      title="Search files"
+      variant="chrome"
       // The tree's search input closes on blur, so focus must not move here
       // before the click handler runs.
       onPointerDown={(event) => event.preventDefault()}
       onClick={() => (search.isOpen ? search.close() : search.open())}
     >
-      Search
+      <IconSearch size={14} />
     </Button>
   );
 }

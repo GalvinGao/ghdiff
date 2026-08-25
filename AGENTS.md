@@ -30,7 +30,6 @@ implementation. Reviewer differs from it in three ways that matter:
 | Filter reach   | the file tree                                      | the file tree **and** the diff scroll region              |
 | Comments       | client state, discarded on reload                  | GitHub pull request review comments                       |
 | Item ownership | `initialItems` plus an imperative handle, streamed | controlled `items`, whole patch in state                  |
-| Diff source    | GitHub URLs                                        | GitHub URLs **and** a local git range                     |
 
 ## Commands
 
@@ -49,18 +48,17 @@ npx prek run --all-files
 
 ```
 app/
-  page.tsx                 home: pull request switcher, GitHub box, local git form
+  page.tsx                 home: the open pull requests, and a box for any GitHub URL
   gh/[...segments]/        mirrors github.com paths: /gh/owner/repo/pull/123
-  local/                   ?repo=&base=&head=
-  api/diff/                one unified diff, GitHub or local git
+  api/diff/                one unified diff
   api/comments/            GitHub pull request review comments: read, post, delete
+  api/github/pull/         one pull request's own details, for the header card
   api/github/pulls/        open pull requests for the watched repositories
   api/github/viewer/       who the token belongs to
-  api/local/repo/          branches and defaults for a local repository
 components/                the review surface and its chrome
 hooks/                     client state: token, color mode, patch, comments, switcher
 lib/                       pure domain logic, unit tested
-lib/server/                server-only: GitHub client, local git runner
+lib/server/                server-only: the GitHub client
 ```
 
 ## Rules this project holds to
@@ -76,12 +74,6 @@ path parsing in a component.
 **The token never reaches the server's disk.** The browser holds the personal
 access token and sends it on the `Authorization` header of each request.
 `GITHUB_TOKEN` is honoured as a fallback for a single-user deployment.
-
-**Local git is guarded three ways.** It is off on a deployed host unless
-`REVIEWER_LOCAL_GIT=on`, every repository must sit under
-`REVIEWER_LOCAL_GIT_ROOT` (the home directory by default), and every ref passes
-`git rev-parse` before it joins the command line. `git` is spawned with an argv
-array and no shell. Keep all three.
 
 **Comments belong to their target.** A GitHub pull request is the only target
 with an upstream review thread, so only `supportsGitHubComments` targets post to
@@ -125,17 +117,15 @@ checked in a browser.
 
 ## Environment
 
-| Variable                  | Effect                                                                        |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`            | Fallback token when the browser has none.                                     |
-| `REVIEWER_LOCAL_GIT`      | `on` or `off`. Default: on in development, off in production.                 |
-| `REVIEWER_LOCAL_GIT_ROOT` | Every local repository must sit under this path. Default: the home directory. |
+| Variable       | Effect                                    |
+| -------------- | ----------------------------------------- |
+| `GITHUB_TOKEN` | Fallback token when the browser has none. |
 
 ## Lint rules that are off, and why
 
-- `react/set-state-in-effect` — this app synchronizes React with three external
-  systems (GitHub, local git, browser storage). Reading browser storage after
-  mount is also what keeps the server markup and the first client render equal.
+- `react/set-state-in-effect` — this app synchronizes React with two external
+  systems (GitHub and browser storage). Reading browser storage after mount is
+  also what keeps the server markup and the first client render equal.
 - `react/react-in-jsx-scope` — React 19 uses the automatic JSX runtime.
 - `import/no-unassigned-import` — `import './globals.css'` is how Next loads a
   stylesheet.

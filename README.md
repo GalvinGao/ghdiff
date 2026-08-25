@@ -4,8 +4,8 @@ A code review surface built on [`@pierre/diffs`](https://diffs.com) and
 `@pierre/trees`.
 
 Reviewer shows one diff at a time: a GitHub pull request, commit, or compare
-range, or a range in a git repository on this machine. It filters the file list
-by preset path rules, and a line comment on a pull request goes back to GitHub.
+range. It filters the file list by preset path rules, and a line comment on a
+pull request goes back to GitHub.
 
 ## What it adds over diffs-hub
 
@@ -33,11 +33,9 @@ scope, and paste a pull request URL. The token stays in your browser.
 
 ## Environment
 
-| Variable                  | Effect                                                                        |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`            | Fallback token when the browser has none.                                     |
-| `REVIEWER_LOCAL_GIT`      | `on` or `off`. Default: on in development, off in production.                 |
-| `REVIEWER_LOCAL_GIT_ROOT` | Every local repository must sit under this path. Default: the home directory. |
+| Variable       | Effect                                    |
+| -------------- | ----------------------------------------- |
+| `GITHUB_TOKEN` | Fallback token when the browser has none. |
 
 ## Commands
 

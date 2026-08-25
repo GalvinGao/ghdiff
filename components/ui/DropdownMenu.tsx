@@ -49,23 +49,57 @@ export function DropdownMenuItem({
 export function DropdownMenuCheckboxItem({
   children,
   className,
+  indicator = 'box',
   ...props
-}: ComponentProps<typeof Primitive.CheckboxItem>) {
+}: ComponentProps<typeof Primitive.CheckboxItem> & {
+  /**
+   * `switch` for a setting that takes effect the moment it is thrown, with the
+   * control on the trailing edge where a settings list expects it. It stays a
+   * menu checkbox item underneath, so the arrow keys and Enter still work; a
+   * real switch element nested in here would be a control inside a control.
+   */
+  indicator?: 'box' | 'switch';
+}) {
+  const checked = props.checked === true;
   return (
     <Primitive.CheckboxItem
       className={cn(
         'flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none select-none',
-        'data-[highlighted]:bg-surface',
+        'data-[highlighted]:bg-surface data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className
       )}
       {...props}
     >
-      <span className="border-line flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border">
-        <Primitive.ItemIndicator>
-          <span className="bg-accent size-2 rounded-[1px]" />
-        </Primitive.ItemIndicator>
-      </span>
-      {children}
+      {indicator === 'box' ? (
+        <>
+          <span className="border-line flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border">
+            <Primitive.ItemIndicator>
+              <span className="bg-accent size-2 rounded-[1px]" />
+            </Primitive.ItemIndicator>
+          </span>
+          {children}
+        </>
+      ) : (
+        <>
+          <span className="min-w-0 flex-1">{children}</span>
+          <span
+            aria-hidden="true"
+            className={cn(
+              'relative flex h-4 w-7 shrink-0 items-center rounded-full border transition-colors',
+              checked ? 'border-accent bg-accent' : 'border-line bg-surface'
+            )}
+          >
+            <span
+              className={cn(
+                'size-3 rounded-full transition-transform',
+                checked
+                  ? 'bg-accent-ink translate-x-3.5'
+                  : 'bg-ink-faint translate-x-0.5'
+              )}
+            />
+          </span>
+        </>
+      )}
     </Primitive.CheckboxItem>
   );
 }

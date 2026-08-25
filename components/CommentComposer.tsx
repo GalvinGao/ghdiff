@@ -36,7 +36,9 @@ export function CommentComposer({
 
   return (
     <form
-      className="border-accent/40 bg-raised m-2 rounded-lg border p-3 font-sans shadow-sm"
+      // Capped to match the thread card, so writing a comment and reading one
+      // happen at the same measure.
+      className="border-accent/40 bg-raised m-2 max-w-[42rem] rounded-lg border p-3 font-sans shadow-sm"
       onSubmit={(event) => {
         event.preventDefault();
         if (canSave) onSave(itemId, metadata.key, body);

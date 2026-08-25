@@ -1,5 +1,6 @@
 'use client';
 
+import { IconFilter, IconXSquircle } from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
 import { useMemo } from 'react';
 
@@ -94,25 +95,38 @@ export function FilterMenu({
   );
 
   return (
-    <DropdownMenu>
+    // modal={false}, so a filter can be judged against the diff it is filtering
+    // instead of freezing it behind the menu.
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
+        {/* A filter that is hiding files must be obvious, but this sits above
+            the file tree all review long: an accent border and an accent count
+            say it without a saturated bar across the panel. */}
         <Button
-          variant={active ? 'solid' : 'outline'}
+          variant="outline"
           size="sm"
           aria-label="Filter files"
-          aria-pressed={active}
-          className="gap-1.5"
+          className={cn('w-full', active && 'border-accent/70')}
         >
-          <FilterGlyph />
-          <span>{activeLabel(state)}</span>
+          <IconFilter
+            className={active ? 'text-accent' : 'text-ink-faint'}
+            size={13}
+          />
+          <span className="truncate">{activeLabel(state)}</span>
           {hiddenCount > 0 && (
-            <span className="text-ink-faint tabular-nums">
+            <span className="text-accent ml-auto shrink-0 tabular-nums">
               {hiddenCount} hidden
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[27rem]">
+      {/* The menu is as wide as the control that opened it, which is the width
+          of the sidebar. It reaches over the diff only when the sidebar is
+          narrower than the rows can survive. */}
+      <DropdownMenuContent
+        align="start"
+        className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-64"
+      >
         <DropdownMenuLabel>File rules</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={state.presetId}
@@ -133,13 +147,16 @@ export function FilterMenu({
                 }
               >
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline gap-3">
+                  {/* Wraps rather than widens: at a narrow width the counts
+                      drop to their own line instead of pushing the menu out
+                      over the diff. */}
+                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
                     <span className="text-ink font-medium whitespace-nowrap">
                       {preset.label}
                     </span>
                     <PresetStatLine className="ml-auto" stat={stat} />
                   </span>
-                  <span className="text-ink-faint block text-xs whitespace-nowrap">
+                  <span className="text-ink-faint mt-0.5 block text-xs">
                     {preset.description}
                   </span>
                 </span>
@@ -187,6 +204,7 @@ export function FilterMenu({
           disabled={!active}
           onSelect={() => onChange(EMPTY_FILTER_STATE)}
         >
+          <IconXSquircle className="opacity-60" size={14} />
           Clear every filter
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -228,16 +246,4 @@ function activeLabel(state: ReviewFilterState): string {
     return `${base} · ${state.statuses.size} status`;
   }
   return base;
-}
-
-function FilterGlyph() {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      aria-hidden="true"
-      className={cn('size-3.5 fill-none stroke-current stroke-[1.4]')}
-    >
-      <path d="M2.5 4h11M4.5 8h7M6.5 12h3" strokeLinecap="round" />
-    </svg>
-  );
 }

@@ -7,7 +7,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'reviewer',
   description:
-    'Review a GitHub pull request or a local git range, with preset file filters and comments that sync to GitHub.',
+    'Review a GitHub pull request, commit, or compare range, with preset file filters and comments that sync to GitHub.',
 };
 
 export const viewport: Viewport = {

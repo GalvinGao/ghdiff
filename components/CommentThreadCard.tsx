@@ -88,6 +88,10 @@ export function CommentThreadCard({
       className={cn(
         'border-line bg-raised text-ink m-2 cursor-pointer rounded-lg border p-2.5',
         'text-left shadow-sm transition-colors',
+        // A comment is prose, and prose is unreadable across the full width of a
+        // split diff. This cap keeps a line near 90 characters, which is still
+        // wide enough that lib/commentHeight.ts's one-line bucket holds.
+        'max-w-[42rem]',
         'hover:border-accent/50 hover:bg-surface',
         'focus-visible:ring-accent focus-visible:ring-2 focus-visible:outline-none',
         // The diff sets a monospace family on its annotation slot. Prose is

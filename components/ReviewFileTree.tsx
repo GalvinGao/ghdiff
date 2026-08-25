@@ -9,7 +9,14 @@ import {
   themeToTreeStyles,
 } from '@pierre/trees';
 import { FileTree, useFileTree } from '@pierre/trees/react';
-import { type CSSProperties, memo, useEffect, useMemo, useState } from 'react';
+import {
+  type CSSProperties,
+  memo,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { ReviewTreeSource } from '@/lib/reviewFilter';
@@ -52,12 +59,22 @@ const BASE_OPTIONS = {
   unsafeCSS: TREE_CSS,
 } as const satisfies Omit<FileTreeOptions, 'paths' | 'preparedInput'>;
 
-const DENSITY: CSSProperties = {
+// The theme's own selection colour is a near-invisible wash of the sidebar in
+// dark mode, so the row under the reviewer's attention is painted with the
+// app's accent instead. The rest of the overrides are layout only.
+const STYLE_OVERRIDES: CSSProperties = {
   '--trees-density-override': 0.85,
   '--trees-padding-inline-override': 8,
+  '--trees-selected-bg-override': 'var(--app-tree-selected)',
+  '--trees-selected-fg-override': 'var(--app-ink)',
 } as CSSProperties;
 
 interface ReviewFileTreeProps {
+  /**
+   * The item the diff is scrolled to. The tree selects and reveals it, so the
+   * file list always says where the reviewer is.
+   */
+  activeItemId?: string;
   colorScheme: ColorScheme;
   onModelReady(model: FileTreeModel | null): void;
   onSelectPath(itemId: string): void;
@@ -65,6 +82,7 @@ interface ReviewFileTreeProps {
 }
 
 export const ReviewFileTree = memo(function ReviewFileTree({
+  activeItemId,
   colorScheme,
   onModelReady,
   onSelectPath,
@@ -75,10 +93,24 @@ export const ReviewFileTree = memo(function ReviewFileTree({
   // must stay stable while it still reads the current source.
   const [initialPaths] = useState(() => source.paths);
   const [initialGitStatus] = useState(() => source.gitStatus);
+  // The path the tree currently shows as selected, and the one selection this
+  // component asked for itself. A selection it asked for must not travel back
+  // out as if the reviewer had clicked the row.
+  const selectedPathRef = useRef<string | null>(null);
+  const appliedPathRef = useRef<string | null>(null);
+
   const handleSelectionChange = useStableCallback(
     (selectedPaths: readonly string[]) => {
       if (selectedPaths.length !== 1) return;
-      const itemId = source.itemIdByPath.get(selectedPaths[0]);
+      const path = selectedPaths[0];
+      selectedPathRef.current = path;
+      // The selection this component just made, coming back. Scrolling the diff
+      // must not be read as a click on the row it lit up, or the diff would be
+      // told to scroll to where it already is. The path is not cleared here: a
+      // click on a row that is already selected raises no event at all, so
+      // there is nothing this can swallow.
+      if (path === appliedPathRef.current) return;
+      const itemId = source.itemIdByPath.get(path);
       if (itemId != null) onSelectPath(itemId);
     }
   );
@@ -92,12 +124,33 @@ export const ReviewFileTree = memo(function ReviewFileTree({
     onSelectionChange: handleSelectionChange,
   });
 
+  const pathByItemId = useMemo(() => {
+    const result = new Map<string, string>();
+    for (const [path, itemId] of source.itemIdByPath) result.set(itemId, path);
+    return result;
+  }, [source]);
+
   // A filter change rewrites the whole path list, so the model resets. The list
-  // is bounded by the diff, not by a stream, so a reset is cheap here.
+  // is bounded by the diff, not by a stream, so a reset is cheap here. A reset
+  // also throws away the selection, so the record of what is selected goes with
+  // it and the effect below puts the row back.
   useEffect(() => {
     model.resetPaths(source.paths);
     model.setGitStatus(source.gitStatus);
+    selectedPathRef.current = null;
   }, [model, source]);
+
+  // The one place the selection is written. It runs again after every reset,
+  // because a new source brings a new path map, so the row for the file on
+  // screen survives a filter change instead of being cleared by it.
+  useEffect(() => {
+    if (activeItemId == null) return;
+    const path = pathByItemId.get(activeItemId);
+    if (path == null || path === selectedPathRef.current) return;
+    appliedPathRef.current = path;
+    model.getItem(path)?.select();
+    model.scrollToPath(path, { offset: 'nearest' });
+  }, [activeItemId, model, pathByItemId]);
 
   useEffect(() => {
     onModelReady(model);
@@ -107,14 +160,14 @@ export const ReviewFileTree = memo(function ReviewFileTree({
   const style = useMemo(
     () => ({
       ...themeToTreeStyles(colorScheme === 'dark' ? pierreDark : pierreLight),
-      ...DENSITY,
+      ...STYLE_OVERRIDES,
     }),
     [colorScheme]
   );
 
   return (
     <FileTree
-      className="h-full min-h-0 overflow-auto overscroll-contain"
+      className="h-full min-h-0 overflow-auto overscroll-none"
       model={model}
       style={style}
     />

@@ -1,6 +1,5 @@
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
-  type GitHubTarget,
   type ReviewTarget,
   reviewTargetFromQuery,
   reviewTargetKey,
@@ -21,16 +20,11 @@ import {
   pullFilesFetch,
   synthesizePatch,
 } from '@/lib/server/githubPatch';
-import {
-  LocalGitError,
-  readLocalDiff,
-  resolveRepoPath,
-} from '@/lib/server/localGit';
 
 // Returns the unified diff for one review target as text/plain.
 //
-// A GitHub target is tried three ways, cheapest and most complete first. See
-// the note above githubWebDiff for why the web host leads and the API follows.
+// A target is tried three ways, cheapest and most complete first. See the note
+// above githubWebDiff for why the web host leads and the API follows.
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +38,7 @@ function textResponse(body: string, status: number): Response {
   });
 }
 
-function webPath(target: GitHubTarget): string {
+function webPath(target: ReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
       return `/${target.owner}/${target.repo}/pull/${target.number}`;
@@ -57,7 +51,7 @@ function webPath(target: GitHubTarget): string {
   }
 }
 
-function apiPath(target: GitHubTarget): string {
+function apiPath(target: ReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
       return `/repos/${target.owner}/${target.repo}/pulls/${target.number}`;
@@ -70,7 +64,7 @@ function apiPath(target: GitHubTarget): string {
   }
 }
 
-function filesFetch(target: GitHubTarget) {
+function filesFetch(target: ReviewTarget) {
   switch (target.kind) {
     case 'github-pull':
       return pullFilesFetch(target.owner, target.repo, target.number);
@@ -114,12 +108,9 @@ export const GET = withEvlog(async (request: Request): Promise<Response> => {
   log.set({ target: reviewTargetKey(target), targetKind: target.kind });
 
   try {
-    if (target.kind === 'local') {
-      return await localResponse(target, log);
-    }
     return await gitHubResponse(target, request, log);
   } catch (error) {
-    if (error instanceof GitHubError || error instanceof LocalGitError) {
+    if (error instanceof GitHubError) {
       log.set({ outcome: 'error', status: error.status });
       return textResponse(error.message, error.status);
     }
@@ -128,22 +119,8 @@ export const GET = withEvlog(async (request: Request): Promise<Response> => {
   }
 });
 
-async function localResponse(
-  target: Extract<ReviewTarget, { kind: 'local' }>,
-  log: ReturnType<typeof requestLog>
-): Promise<Response> {
-  const repoPath = await resolveRepoPath(target.repoPath);
-  const patch = await readLocalDiff({
-    repoPath,
-    base: target.base,
-    head: target.head,
-  });
-  log.set({ outcome: 'ok', source: 'local', bytes: patch.length });
-  return textResponse(patch, 200);
-}
-
 async function gitHubResponse(
-  target: GitHubTarget,
+  target: ReviewTarget,
   request: Request,
   log: ReturnType<typeof requestLog>
 ): Promise<Response> {

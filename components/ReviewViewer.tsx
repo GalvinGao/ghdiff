@@ -26,6 +26,11 @@ export interface ViewerControls {
   backgrounds: boolean;
 }
 
+/** The one method the scroll handler needs from the viewer it is handed. */
+interface ItemTopReader {
+  getTopForItem(id: string): number | undefined;
+}
+
 interface ReviewViewerProps {
   className?: string;
   controls: ViewerControls;
@@ -34,6 +39,8 @@ interface ReviewViewerProps {
   onCreateDraft(itemId: string, range: SelectedLineRange): void;
   onDeleteComment(itemId: string, key: string): void;
   onSaveDraft(itemId: string, key: string, body: string): void;
+  /** Reports the scroll offset, so the file tree can follow the diff. */
+  onScroll(scrollTop: number, viewer: ItemTopReader): void;
   onSelectedLinesChange(selection: CodeViewLineSelection | null): void;
   scrollRef: RefObject<HTMLDivElement | null>;
   selectedLines: CodeViewLineSelection | null;
@@ -51,6 +58,7 @@ export const ReviewViewer = memo(function ReviewViewer({
   onCreateDraft,
   onDeleteComment,
   onSaveDraft,
+  onScroll,
   onSelectedLinesChange,
   scrollRef,
   selectedLines,
@@ -93,9 +101,14 @@ export const ReviewViewer = memo(function ReviewViewer({
       items={items}
       options={options}
       selectedLines={selectedLines}
+      onScroll={onScroll}
       onSelectedLinesChange={onSelectedLinesChange}
       className={cn(
-        'cv-scrollbar relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto overscroll-contain',
+        'cv-scrollbar bg-canvas relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto',
+        // `none`, not `contain`: contain stops the scroll from chaining to the
+        // page but still lets this element bounce, and the bounce exposes an
+        // unpainted strip at the end of the diff.
+        'overscroll-none',
         '[contain:strict] [overflow-anchor:none]',
         className
       )}

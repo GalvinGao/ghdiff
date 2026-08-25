@@ -1,26 +1,33 @@
 'use client';
 
-import type {
-  CodeViewDiffItem,
-  CodeViewLineSelection,
-  SelectedLineRange,
+import {
+  areSelectionsEqual,
+  type CodeViewDiffItem,
+  type CodeViewLineSelection,
+  type SelectedLineRange,
 } from '@pierre/diffs';
 import type { CodeViewHandle } from '@pierre/diffs/react';
+import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
+import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
 import {
   isSameSelection,
   ReviewViewer,
   type ViewerControls,
 } from '@/components/ReviewViewer';
+import { Button } from '@/components/ui/Button';
+import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
 import { useColorMode } from '@/hooks/useColorMode';
 import { useGitHubToken } from '@/hooks/useGitHubToken';
+import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
 import { useWatchedRepos } from '@/hooks/useWatchedRepos';
 import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
+import { cn } from '@/lib/cn';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
 import {
@@ -48,6 +55,10 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
+  // The comment failure the reviewer has already read and waved away.
+  const [dismissedError, setDismissedError] = useState<string | undefined>(
+    undefined
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<CodeViewHandle<CommentMetadata> | null>(null);
 
@@ -55,6 +66,15 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     target,
     token: token.token,
     tokenReady: token.hydrated,
+  });
+  // Depends on the three parts, not on the target: a server component hands the
+  // target down, so its identity changes on every read of the RSC payload.
+  const pullTarget = target.kind === 'github-pull' ? target : undefined;
+  const pull = usePullDetails({
+    number: pullTarget?.number,
+    owner: pullTarget?.owner,
+    repo: pullTarget?.repo,
+    token: token.token,
   });
   const comments = useReviewComments({
     target,
@@ -98,6 +118,25 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     () => availableStatuses(patch.data.entries),
     [patch.data.entries]
   );
+
+  const itemIds = useMemo(() => items.map((item) => item.id), [items]);
+  const active = useActiveDiffItem(itemIds);
+
+  // The selected lines are the truth about which thread the reviewer is on, so
+  // the row in the sidebar lights up whether they clicked it there or landed on
+  // the same lines in the diff.
+  const activeThreadKey = useMemo(() => {
+    if (selectedLines == null) return undefined;
+    for (const section of commentSections) {
+      if (section.itemId !== selectedLines.id) continue;
+      for (const thread of section.threads) {
+        if (areSelectionsEqual(thread.range, selectedLines.range)) {
+          return thread.key;
+        }
+      }
+    }
+    return undefined;
+  }, [commentSections, selectedLines]);
 
   const handleSelectItem = useCallback((itemId: string) => {
     const viewer = viewerRef.current;
@@ -153,15 +192,19 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       <ReviewHeader
         colorMode={colorMode}
         controls={controls}
+        currentPull={pullTarget}
         onControlsChange={setControls}
+        pull={pullTarget == null ? undefined : pull}
         switcherLabel={describeReviewTarget(target)}
         token={token}
         watched={watched}
       />
 
       {patch.state === 'ready' && workersReady ? (
-        <div className="grid min-h-0 flex-1 grid-cols-[19rem_minmax(0,1fr)] overflow-hidden">
+        <div className="bg-canvas grid min-h-0 flex-1 grid-cols-[19rem_minmax(0,1fr)] overflow-hidden">
           <ReviewSidebar
+            activeItemId={active.activeItemId}
+            activeThreadKey={activeThreadKey}
             availableStatuses={statuses}
             colorScheme={colorMode.scheme}
             commentSections={commentSections}
@@ -183,6 +226,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             onCreateDraft={handleCreateDraft}
             onDeleteComment={comments.removeComment}
             onSaveDraft={comments.saveDraft}
+            onScroll={active.onScroll}
             onSelectedLinesChange={handleSelectedLinesChange}
             scrollRef={scrollRef}
             selectedLines={selectedLines}
@@ -191,7 +235,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           />
         </div>
       ) : (
-        <StatusPanel
+        <ReviewStatusPanel
           error={patch.error}
           onRetry={patch.retry}
           state={patch.state === 'ready' ? 'starting' : patch.state}
@@ -200,65 +244,66 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       )}
 
       {patch.notice != null && (
-        <p
-          role="status"
-          className="border-line text-ink-muted shrink-0 border-t px-3 py-1.5 text-xs"
-        >
-          {patch.notice}
-        </p>
+        <ReviewNotice tone="muted">{patch.notice}</ReviewNotice>
       )}
-      {comments.error != null && (
-        <p
-          role="status"
-          className="border-line text-removed shrink-0 border-t px-3 py-1.5 text-xs"
+      {comments.error != null && comments.error !== dismissedError && (
+        <ReviewNotice
+          onDismiss={() => setDismissedError(comments.error)}
+          tone="error"
         >
           {comments.error}
-        </p>
+        </ReviewNotice>
       )}
     </>
   );
 }
 
-function StatusPanel({
-  error,
-  onRetry,
-  state,
-  target,
+/**
+ * A line along the bottom of the surface. A failure to post a comment must be
+ * said out loud, and must then be dismissable: the diff is still usable, and
+ * the strip would otherwise sit there for the rest of the review.
+ */
+function ReviewNotice({
+  children,
+  onDismiss,
+  tone,
 }: {
-  error?: string;
-  onRetry(): void;
-  state: 'fetching' | 'parsing' | 'error' | 'starting';
-  target: ReviewTarget;
+  children: string;
+  onDismiss?(): void;
+  tone: 'muted' | 'error';
 }) {
   return (
-    <div className="flex min-h-0 flex-1 items-center justify-center p-8">
-      <div className="max-w-md text-center">
-        <p className="text-ink-faint font-mono text-xs">
-          {describeReviewTarget(target)}
-        </p>
-        {state === 'error' ? (
-          <>
-            <p className="text-removed mt-2 text-sm">
-              {error ?? 'Could not load that diff.'}
-            </p>
-            <button
-              type="button"
-              onClick={onRetry}
-              className="text-accent mt-3 cursor-pointer text-sm underline"
-            >
-              Try again
-            </button>
-          </>
-        ) : (
-          <p className="text-ink-muted mt-2 text-sm">
-            {state === 'fetching'
-              ? 'Loading the diff…'
-              : state === 'parsing'
-                ? 'Parsing the diff…'
-                : 'Starting the highlighters…'}
-          </p>
+    <div
+      role="status"
+      className="border-line flex shrink-0 items-center gap-2 border-t px-3 py-1.5"
+    >
+      {tone === 'error' && (
+        <IconCiWarningFill
+          aria-hidden="true"
+          className="text-removed shrink-0"
+          size={13}
+        />
+      )}
+      <p
+        className={cn(
+          'min-w-0 flex-1 truncate text-xs',
+          tone === 'error' ? 'text-removed' : 'text-ink-muted'
         )}
-      </div>
+        title={children}
+      >
+        {children}
+      </p>
+      {onDismiss != null && (
+        <Button
+          aria-label="Dismiss"
+          size="icon-sm"
+          title="Dismiss"
+          variant="quiet"
+          onClick={onDismiss}
+        >
+          <IconXSquircle size={13} />
+        </Button>
+      )}
     </div>
   );
 }
