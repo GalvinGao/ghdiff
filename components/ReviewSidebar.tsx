@@ -13,6 +13,7 @@ import type { ColorScheme } from '@/hooks/useColorMode';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
+import { countComments, countThreads } from '@/lib/commentSections';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
 import type { ReviewFilterState, ReviewTreeSource } from '@/lib/reviewFilter';
 
@@ -56,10 +57,8 @@ export function ReviewSidebar({
     []
   );
 
-  let commentCount = 0;
-  for (const section of commentSections) {
-    commentCount += section.comments.length;
-  }
+  const commentCount = countComments(commentSections);
+  const threadCount = countThreads(commentSections);
 
   return (
     <aside className="border-line bg-surface flex h-full min-h-0 flex-col border-r">
@@ -72,8 +71,10 @@ export function ReviewSidebar({
         />
         <TabButton
           active={tab === 'comments'}
-          count={commentCount}
+          // Threads are what the list shows; the message total is the title.
+          count={threadCount}
           label="Comments"
+          title={`${threadCount} threads, ${commentCount} comments`}
           onClick={() => setTab('comments')}
         />
         {tab === 'files' && model != null && <TreeSearchToggle model={model} />}
@@ -118,7 +119,7 @@ export function ReviewSidebar({
           className="h-full min-h-0"
         >
           <CommentsList
-            onSelectComment={onSelectComment}
+            onSelectThread={onSelectComment}
             sections={commentSections}
             store={commentStore}
           />
@@ -148,22 +149,26 @@ function TabButton({
   count,
   label,
   onClick,
+  title,
 }: {
   active: boolean;
   count: number;
   label: string;
   onClick(): void;
+  title?: string;
 }) {
   return (
     <Button
       size="sm"
-      variant={active ? 'outline' : 'ghost'}
+      variant={active ? 'solid' : 'outline'}
       aria-pressed={active}
       onClick={onClick}
-      className={cn(active && 'bg-raised text-ink')}
+      title={title}
     >
       {label}
-      <span className="text-ink-faint tabular-nums">{count}</span>
+      <span className={cn('tabular-nums', !active && 'text-ink-faint')}>
+        {count}
+      </span>
     </Button>
   );
 }
@@ -173,7 +178,7 @@ function TreeSearchToggle({ model }: { model: FileTreeModel }) {
   return (
     <Button
       size="sm"
-      variant="ghost"
+      variant="outline"
       className="ml-auto"
       aria-pressed={search.isOpen}
       // The tree's search input closes on blur, so focus must not move here

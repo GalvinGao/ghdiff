@@ -1,15 +1,16 @@
-// How tall a collapsed comment card is.
+// How tall a collapsed thread card is.
 //
 // @pierre/diffs observes each annotation element with a ResizeObserver and
-// relays out the virtualized list when one changes size. So a comment card must
-// pick its height ONCE, from the text, and never change it: the expanded view
-// lives in an overlay outside the CodeView's layout instead of growing in
-// place. That keeps the diff's layout work constant no matter what a comment
-// contains, and it makes a loading image harmless, because the container
-// clips rather than grows.
+// relays out the virtualized list when one changes size. So a card must pick
+// its height ONCE, from the text, and never change it: the expanded view lives
+// in an overlay outside the CodeView's layout instead of growing in place.
+// That keeps the diff's layout work constant no matter what a thread contains,
+// and it makes a loading image harmless, because the container clips rather
+// than grows.
 //
-// The buckets come from the raw body, with no DOM measurement, so the height is
-// known before the first paint.
+// The buckets come from the raw text, with no DOM measurement, so the height is
+// known before the first paint. They are deliberately small: the card is a
+// preview that invites a click, not the place a conversation is read.
 
 export type CommentSize = 'one-line' | 'short' | 'tall';
 
@@ -19,11 +20,11 @@ export interface CommentSizeSpec {
   bodyHeight: number;
 }
 
-const ONE_LINE = 22;
-const SHORT = 66;
-const TALL = 132;
+const ONE_LINE = 20;
+const SHORT = 44;
+const TALL = 76;
 
-/** A fence, table, list, or image needs room, whatever the character count. */
+/** A fence, table, list, quote, heading, or image needs room. */
 const BLOCK_MARKDOWN = /(^|\n)\s*(```|~~~|\||[-*+]\s|\d+\.\s|>|#{1,6}\s)|!\[/;
 
 export function measureCommentBody(body: string): CommentSizeSpec {
@@ -43,9 +44,23 @@ export function measureCommentBody(body: string): CommentSizeSpec {
 }
 
 /**
- * Plain text for a preview line. The sidebar shows one line per comment, where
- * rendered markdown would be noise, so the marks are stripped rather than
- * rendered.
+ * The collapsed height for a whole thread. A thread with replies is always
+ * clipped, because the card shows the opening message and says how many
+ * answers follow, so it takes the tall bucket and stops there.
+ */
+export function measureThread(bodies: readonly string[]): CommentSizeSpec {
+  if (bodies.length === 0) {
+    return { size: 'one-line', bodyHeight: ONE_LINE };
+  }
+  const root = measureCommentBody(bodies[0]);
+  if (bodies.length === 1) return root;
+  return { size: 'tall', bodyHeight: Math.max(root.bodyHeight, SHORT) };
+}
+
+/**
+ * Plain text for a preview line. The sidebar shows a fixed-height row per
+ * thread, where rendered markdown would be noise, so the marks are stripped
+ * rather than rendered.
  */
 export function commentPreviewText(body: string): string {
   return body

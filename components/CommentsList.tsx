@@ -5,13 +5,21 @@ import { commentPreviewText } from '@/lib/commentHeight';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 
 interface CommentsListProps {
-  onSelectComment(comment: CommentListEntry): void;
+  onSelectThread(thread: CommentListEntry): void;
   sections: readonly CommentListSection[];
   store: 'github' | 'local';
 }
 
+// One fixed-height row per thread.
+//
+// A row used to grow with its comment, so a review with long comments turned the
+// panel into a wall of text that had to be scrolled to count. Every row is now
+// the same height, which makes the list scannable and its scrolling cheap. The
+// full text is one click away in the diff.
+const ROW_HEIGHT = 52;
+
 export function CommentsList({
-  onSelectComment,
+  onSelectThread,
   sections,
   store,
 }: CommentsListProps) {
@@ -29,44 +37,55 @@ export function CommentsList({
   }
 
   return (
-    <div className="cv-scrollbar h-full min-h-0 overflow-y-auto px-1 pb-4">
+    // overflow-x-hidden, because a long path or an unbroken token in a preview
+    // must never give the panel a horizontal scrollbar.
+    <div className="cv-scrollbar h-full min-h-0 overflow-x-hidden overflow-y-auto pb-4">
       {sections.map((section) => (
-        <section key={section.itemId} className="mb-3">
-          <h3 className="text-ink-faint sticky top-0 bg-[var(--app-surface)] px-2 py-1 font-mono text-xs">
+        <section key={section.itemId} className="min-w-0">
+          <h3
+            className="text-ink-faint bg-surface sticky top-0 z-10 truncate px-3 py-1 font-mono text-[11px]"
+            title={section.path}
+          >
             {section.path}
           </h3>
-          <ul>
-            {section.comments.map((comment) => (
-              <li key={comment.key}>
+          <ul className="min-w-0">
+            {section.threads.map((thread) => (
+              <li key={thread.key} className="min-w-0">
                 <button
                   type="button"
-                  onClick={() => onSelectComment(comment)}
+                  onClick={() => onSelectThread(thread)}
+                  style={{ height: ROW_HEIGHT }}
                   className={cn(
-                    'hover:bg-raised w-full rounded-md px-2 py-1.5 text-left',
-                    'focus-visible:ring-accent focus-visible:ring-2 focus-visible:outline-none'
+                    'flex w-full min-w-0 flex-col justify-center gap-0.5 overflow-hidden px-3 text-left',
+                    'hover:bg-raised focus-visible:bg-raised',
+                    'focus-visible:ring-accent focus-visible:ring-inset focus-visible:ring-2 focus-visible:outline-none'
                   )}
                 >
-                  <span className="flex items-baseline gap-2">
-                    <span className="text-ink-faint font-mono text-[11px] tabular-nums">
-                      {lineLabel(comment)}
+                  <span className="flex min-w-0 items-baseline gap-1.5">
+                    <span className="text-ink-faint shrink-0 font-mono text-[11px] tabular-nums">
+                      {lineLabel(thread)}
                     </span>
                     <span className="text-ink truncate text-xs font-medium">
-                      {comment.author}
+                      {thread.author}
                     </span>
-                    {comment.pending === true && (
-                      <span className="text-ink-faint text-[11px]">
+                    {thread.replyCount > 0 && (
+                      <span className="bg-surface text-ink-muted shrink-0 rounded-full px-1.5 text-[10px] tabular-nums">
+                        +{thread.replyCount}
+                      </span>
+                    )}
+                    {thread.pending === true && (
+                      <span className="text-ink-faint shrink-0 text-[10px]">
                         posting
                       </span>
                     )}
-                    {comment.error != null && (
-                      <span className="text-removed text-[11px]">failed</span>
+                    {thread.error != null && (
+                      <span className="text-removed shrink-0 text-[10px]">
+                        failed
+                      </span>
                     )}
                   </span>
-                  {/* One plain line per row. Rendering markdown here would
-                      cost a parse for every comment in the review and read as
-                      noise at this size; the card in the diff renders it. */}
-                  <span className="text-ink-muted mt-0.5 line-clamp-2 block text-sm">
-                    {commentPreviewText(comment.body)}
+                  <span className="text-ink-muted min-w-0 truncate text-xs">
+                    {commentPreviewText(thread.body)}
                   </span>
                 </button>
               </li>
@@ -78,11 +97,11 @@ export function CommentsList({
   );
 }
 
-function lineLabel(comment: CommentListEntry): string {
-  if (comment.lineType === 'context') {
-    return `L${comment.lineNumber}`;
+function lineLabel(thread: CommentListEntry): string {
+  if (thread.lineType === 'context') {
+    return `L${thread.lineNumber}`;
   }
-  return comment.side === 'additions'
-    ? `+${comment.lineNumber}`
-    : `-${comment.lineNumber}`;
+  return thread.side === 'additions'
+    ? `+${thread.lineNumber}`
+    : `-${thread.lineNumber}`;
 }

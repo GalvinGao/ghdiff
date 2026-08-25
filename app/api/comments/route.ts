@@ -80,6 +80,7 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
         : annotationSideFromGitHub(comment.start_side),
     createdAt: comment.created_at,
     htmlUrl: comment.html_url,
+    replyToId: comment.in_reply_to_id,
   };
 }
 

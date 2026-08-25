@@ -97,7 +97,7 @@ export function FilterMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant={active ? 'outline' : 'ghost'}
+          variant={active ? 'solid' : 'outline'}
           size="sm"
           aria-label="Filter files"
           aria-pressed={active}

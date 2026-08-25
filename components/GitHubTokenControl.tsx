@@ -21,7 +21,7 @@ export function GitHubTokenControl({ token }: { token: GitHubTokenState }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="outline" size="sm">
           {token.viewer != null
             ? token.viewer.login
             : token.hasToken

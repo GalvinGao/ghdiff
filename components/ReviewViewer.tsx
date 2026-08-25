@@ -13,8 +13,8 @@ import {
 import { CodeView, type CodeViewHandle } from '@pierre/diffs/react';
 import { memo, type RefObject, useMemo } from 'react';
 
-import { CommentCard } from '@/components/CommentCard';
 import { CommentComposer } from '@/components/CommentComposer';
+import { CommentThreadCard } from '@/components/CommentThreadCard';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
 
@@ -114,7 +114,7 @@ export const ReviewViewer = memo(function ReviewViewer({
           );
         }
         return (
-          <CommentCard
+          <CommentThreadCard
             itemId={item.id}
             metadata={diffAnnotation.metadata}
             onDelete={onDeleteComment}

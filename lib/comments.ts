@@ -1,39 +1,58 @@
 import type { AnnotationSide, SelectedLineRange } from '@pierre/diffs';
 
-/**
- * One comment on one diff line range.
- *
- * This is a single interface rather than a draft-or-saved union on purpose.
- * `DiffLineAnnotation<T>` resolves its metadata through a conditional type, and
- * a union `T` would distribute into a union of annotation shapes that the
- * viewer will not accept. `kind` discriminates, and the two aliases below name
- * the fields each kind guarantees.
- */
-export interface CommentMetadata {
-  kind: 'draft' | 'saved';
-  /** Client-side identity, unique for the life of the page. */
+/** One message inside a thread. */
+export interface ThreadComment {
+  /** Stable key within the page. */
   key: string;
-  body: string;
-  range: SelectedLineRange;
-  /** Set once the comment is saved. */
-  author?: string;
-  authorAvatarUrl?: string;
   /** GitHub review-comment id. Absent for a browser-only comment. */
   githubId?: number;
+  author: string;
+  authorAvatarUrl?: string;
+  body: string;
   createdAt?: string;
-  /** URL of the comment on github.com, when it has one. */
+  /** URL of this message on github.com, when it has one. */
   htmlUrl?: string;
-  /** True while the comment is on its way to GitHub. */
+}
+
+/**
+ * One comment thread on one diff line range.
+ *
+ * A thread is the unit, not a message: GitHub returns a root comment and its
+ * replies as separate rows, and stacking each one as its own card buried the
+ * diff. One card holds the whole conversation.
+ *
+ * This is a single interface rather than a draft-or-thread union on purpose.
+ * `DiffLineAnnotation<T>` resolves its metadata through a conditional type, and
+ * a union `T` would distribute into a union of annotation shapes the viewer
+ * rejects. `kind` discriminates, and the two aliases below name the fields each
+ * kind guarantees.
+ */
+export interface CommentMetadata {
+  kind: 'draft' | 'thread';
+  /** Identifies the thread, or the draft being composed. */
+  key: string;
+  range: SelectedLineRange;
+  /** Draft only: the text being typed. */
+  draftBody?: string;
+  /** Thread only: the root first, then replies oldest first. */
+  comments?: ThreadComment[];
+  /** True while the thread's newest message is on its way to GitHub. */
   pending?: boolean;
-  /** Set when the upstream write failed, so the UI can offer a retry. */
+  /** Set when the upstream write failed, so the UI can say so. */
   error?: string;
 }
 
-/** A comment the user is still typing. It has no upstream identity yet. */
-export type DraftComment = CommentMetadata & { kind: 'draft' };
+/** A comment being typed. It has no upstream identity yet. */
+export type DraftComment = CommentMetadata & {
+  kind: 'draft';
+  draftBody: string;
+};
 
-/** A comment that exists in its store, either GitHub or browser storage. */
-export type SavedComment = CommentMetadata & { kind: 'saved'; author: string };
+/** A thread that exists in its store, either GitHub or browser storage. */
+export type CommentThread = CommentMetadata & {
+  kind: 'thread';
+  comments: ThreadComment[];
+};
 
 export function isDraftComment(
   metadata: CommentMetadata
@@ -41,41 +60,65 @@ export function isDraftComment(
   return metadata.kind === 'draft';
 }
 
-export function isSavedComment(
+export function isCommentThread(
   metadata: CommentMetadata
-): metadata is SavedComment {
-  return metadata.kind === 'saved' && metadata.author != null;
+): metadata is CommentThread {
+  return (
+    metadata.kind === 'thread' &&
+    metadata.comments != null &&
+    metadata.comments.length > 0
+  );
+}
+
+/** The message that opened the thread. */
+export function threadRoot(thread: CommentThread): ThreadComment {
+  return thread.comments[0];
+}
+
+/** Distinct authors, in the order they first spoke. */
+export function threadParticipants(thread: CommentThread): string[] {
+  const seen = new Set<string>();
+  const authors: string[] = [];
+  for (const comment of thread.comments) {
+    if (seen.has(comment.author)) continue;
+    seen.add(comment.author);
+    authors.push(comment.author);
+  }
+  return authors;
 }
 
 /**
- * Whether the line the comment is anchored to is a real addition or deletion,
- * or an unchanged context line. The sidebar uses this so it does not print a
+ * Whether the line the thread is anchored to is a real addition or deletion, or
+ * an unchanged context line. The sidebar reads this so it does not print a
  * misleading `+` or `-` in front of a context line number.
  */
 export type CommentLineType = 'change' | 'context';
 
-/** One comment as the sidebar lists it. */
+/** One thread as the sidebar lists it. */
 export interface CommentListEntry {
   itemId: string;
   path: string;
   key: string;
+  /** The author who opened the thread. */
   author: string;
+  /** The root message, for the preview line. */
   body: string;
+  replyCount: number;
+  participants: string[];
   lineNumber: number;
   lineType: CommentLineType;
   side: AnnotationSide;
   range: SelectedLineRange;
   pending?: boolean;
   error?: string;
-  htmlUrl?: string;
 }
 
-/** The sidebar groups comments by file, in diff order. */
+/** The sidebar groups threads by file, in diff order. */
 export interface CommentListSection {
   itemId: string;
   path: string;
   fileOrder: number;
-  comments: CommentListEntry[];
+  threads: CommentListEntry[];
 }
 
 /** Wire shape shared by `/api/comments` and the client. */
@@ -93,6 +136,8 @@ export interface CommentPayload {
   startSide?: AnnotationSide;
   createdAt?: string;
   htmlUrl?: string;
+  /** The comment this one replies to. Absent for the root of a thread. */
+  replyToId?: number;
 }
 
 /** GitHub calls the new file RIGHT and the old file LEFT. */

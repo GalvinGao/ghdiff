@@ -18,7 +18,7 @@ export function CommentComposer({
   onCancel,
   onSave,
 }: CommentComposerProps) {
-  const [body, setBody] = useState(metadata.body);
+  const [body, setBody] = useState(metadata.draftBody);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function CommentComposer({
 
   return (
     <form
-      className="border-accent/40 bg-raised m-2 rounded-lg border p-3 shadow-sm"
+      className="border-accent/40 bg-raised m-2 rounded-lg border p-3 font-sans shadow-sm"
       onSubmit={(event) => {
         event.preventDefault();
         if (canSave) onSave(itemId, metadata.key, body);
@@ -68,7 +68,7 @@ export function CommentComposer({
           Comment
         </Button>
         <Button
-          variant="ghost"
+          variant="quiet"
           size="sm"
           onClick={() => onCancel(itemId, metadata.key)}
         >

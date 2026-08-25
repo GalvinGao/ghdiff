@@ -9,9 +9,10 @@ import {
   commentPayloadRangeFields,
   type CommentMetadata,
   type CommentPayload,
-  isSavedComment,
+  isCommentThread,
   rangeFromCommentPayload,
 } from '@/lib/comments';
+import { groupCommentThreads, threadComments } from '@/lib/commentThreads';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import {
   type ReviewTarget,
@@ -62,28 +63,26 @@ interface StoredLocalComment extends CommentPayload {
   key: string;
 }
 
-function annotationFromPayload(
-  payload: CommentPayload,
-  key: string
+/** One annotation per thread, anchored where the thread's root sits. */
+function annotationFromThread(
+  key: string,
+  payloads: readonly CommentPayload[],
+  comments: ReturnType<typeof threadComments>
 ): Annotation {
+  const root = payloads[0];
   return {
-    side: payload.side,
-    lineNumber: payload.line,
+    side: root.side,
+    lineNumber: root.line,
     metadata: {
-      kind: 'saved',
+      kind: 'thread',
       key,
-      githubId: payload.githubId,
-      author: payload.author,
-      authorAvatarUrl: payload.authorAvatarUrl,
-      body: payload.body,
-      range: rangeFromCommentPayload(payload),
-      createdAt: payload.createdAt,
-      htmlUrl: payload.htmlUrl,
+      range: rangeFromCommentPayload(root),
+      comments,
     },
   };
 }
 
-/** Flattens saved comments back into the browser-storage row shape. */
+/** Flattens every message of every thread back into browser-storage rows. */
 function toStoredRows(
   state: CommentState,
   pathByItemId: ReadonlyMap<string, string>
@@ -94,15 +93,18 @@ function toStoredRows(
     if (path == null) continue;
     for (const annotation of list) {
       const metadata = annotation.metadata;
-      if (!isSavedComment(metadata)) continue;
-      rows.push({
-        key: metadata.key,
-        path,
-        author: metadata.author,
-        body: metadata.body,
-        createdAt: metadata.createdAt,
-        ...commentPayloadRangeFields(metadata.range),
-      });
+      if (!isCommentThread(metadata)) continue;
+      const range = commentPayloadRangeFields(metadata.range);
+      for (const comment of metadata.comments) {
+        rows.push({
+          key: comment.key,
+          path,
+          author: comment.author,
+          body: comment.body,
+          createdAt: comment.createdAt,
+          ...range,
+        });
+      }
     }
   }
   return rows;
@@ -210,15 +212,32 @@ export function useReviewComments(options: {
     if (!ready) return;
 
     const place = (rows: readonly StoredLocalComment[]) => {
+      // Group first, so a reply lands in its root's card instead of stacking
+      // as a separate annotation on the same line.
       const byItemId = new Map<string, Annotation[]>();
+      const byPath = new Map<string, CommentPayload[]>();
       for (const row of rows) {
-        const itemId = itemIdByPath.get(row.path);
+        const list = byPath.get(row.path) ?? [];
+        list.push(row);
+        byPath.set(row.path, list);
+      }
+
+      for (const [path, payloads] of byPath) {
+        const itemId = itemIdByPath.get(path);
         // A comment on a path absent from this diff is dropped. That happens
         // after a force push rewrites the branch under the comment.
         if (itemId == null) continue;
-        const list = byItemId.get(itemId) ?? [];
-        list.push(annotationFromPayload(row, row.key));
-        byItemId.set(itemId, list);
+        const annotations = byItemId.get(itemId) ?? [];
+        for (const thread of groupCommentThreads(payloads)) {
+          annotations.push(
+            annotationFromThread(
+              thread.key,
+              thread.comments,
+              threadComments(thread)
+            )
+          );
+        }
+        byItemId.set(itemId, annotations);
       }
       setState((current) => ({ byItemId, revision: current.revision + 1 }));
     };
@@ -284,7 +303,7 @@ export function useReviewComments(options: {
           {
             side,
             lineNumber: range.end,
-            metadata: { kind: 'draft', key, body: '', range },
+            metadata: { kind: 'draft', key, draftBody: '', range },
           },
         ]);
       });
@@ -316,14 +335,20 @@ export function useReviewComments(options: {
         const comment = payload.comment;
         replace(itemId, key, (metadata) => ({
           ...metadata,
-          kind: 'saved',
-          author: comment.author,
-          authorAvatarUrl: comment.authorAvatarUrl,
-          body: comment.body,
+          kind: 'thread',
           range: rangeFromCommentPayload(comment),
-          githubId: comment.githubId,
-          createdAt: comment.createdAt,
-          htmlUrl: comment.htmlUrl,
+          comments: [
+            {
+              key: `gh-${comment.githubId ?? key}`,
+              githubId: comment.githubId,
+              author: comment.author,
+              authorAvatarUrl: comment.authorAvatarUrl,
+              body: comment.body,
+              createdAt: comment.createdAt,
+              htmlUrl: comment.htmlUrl,
+            },
+          ],
+          draftBody: undefined,
           pending: false,
           error: undefined,
         }));
@@ -352,13 +377,20 @@ export function useReviewComments(options: {
       if (existing == null) return;
       const range = existing.metadata.range;
 
+      // Shown at once as a thread of one, then reconciled with what GitHub
+      // returns. Reviewer posts a new top-level comment; it does not reply.
       replace(itemId, key, () => ({
-        kind: 'saved',
+        kind: 'thread',
         key,
-        author: viewerLogin ?? 'you',
-        body: trimmed,
         range,
-        createdAt: new Date().toISOString(),
+        comments: [
+          {
+            key: `pending-${key}`,
+            author: viewerLogin ?? 'you',
+            body: trimmed,
+            createdAt: new Date().toISOString(),
+          },
+        ],
         pending: store === 'github',
       }));
 
@@ -383,31 +415,43 @@ export function useReviewComments(options: {
       const metadata = state.byItemId
         .get(itemId)
         ?.find((annotation) => annotation.metadata.key === key)?.metadata;
-      const githubId =
-        metadata != null && isSavedComment(metadata)
-          ? metadata.githubId
-          : undefined;
+      // Deleting a thread deletes every message reviewer knows about it. A
+      // reply left behind on GitHub would reappear as its own thread.
+      const githubIds =
+        metadata != null && isCommentThread(metadata)
+          ? metadata.comments
+              .map((comment) => comment.githubId)
+              .filter((id): id is number => id != null)
+          : [];
 
       replace(itemId, key, () => undefined);
 
-      if (store !== 'github' || githubId == null || pullRepo == null) return;
+      if (store !== 'github' || githubIds.length === 0 || pullRepo == null) {
+        return;
+      }
       const [owner, repo] = pullRepo.split('/');
-      const query = new URLSearchParams({
-        owner,
-        repo,
-        commentId: String(githubId),
-      });
       const remove = async () => {
         try {
-          const response = await fetch(
-            `/api/comments?${query.toString()}`,
-            withGitHubToken(token, { method: 'DELETE' })
-          );
-          if (!response.ok) {
-            throw new Error(`GitHub refused the delete (${response.status}).`);
+          // Newest first, because GitHub refuses to delete a comment that
+          // still has replies pointing at it.
+          for (const githubId of [...githubIds].reverse()) {
+            const query = new URLSearchParams({
+              owner,
+              repo,
+              commentId: String(githubId),
+            });
+            const response = await fetch(
+              `/api/comments?${query.toString()}`,
+              withGitHubToken(token, { method: 'DELETE' })
+            );
+            if (!response.ok) {
+              throw new Error(
+                `GitHub refused the delete (${response.status}).`
+              );
+            }
           }
         } catch {
-          setError('Could not delete that comment on GitHub. Reload to check.');
+          setError('Could not delete that thread on GitHub. Reload to check.');
         }
       };
       void remove();

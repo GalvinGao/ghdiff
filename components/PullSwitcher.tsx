@@ -76,7 +76,7 @@ export function PullSwitcher({
               </span>
               <Button
                 size="sm"
-                variant="ghost"
+                variant="outline"
                 className="ml-auto"
                 onClick={() => setEditing(true)}
               >

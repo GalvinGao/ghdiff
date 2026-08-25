@@ -26,7 +26,12 @@ export function WatchedReposEditor({
         <span className="text-ink-faint text-[11px] font-semibold tracking-wide uppercase">
           Watched repositories
         </span>
-        <Button size="sm" variant="ghost" className="ml-auto" onClick={onDone}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="ml-auto"
+          onClick={onDone}
+        >
           Done
         </Button>
       </div>

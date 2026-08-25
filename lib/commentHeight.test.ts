@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { commentPreviewText, measureCommentBody } from './commentHeight.ts';
+import {
+  commentPreviewText,
+  measureCommentBody,
+  measureThread,
+} from './commentHeight.ts';
 
 describe('measureCommentBody', () => {
   it('gives a one-line comment one line', () => {
@@ -85,5 +89,30 @@ describe('commentPreviewText', () => {
 
   it('collapses whitespace', () => {
     assert.equal(commentPreviewText('a\n\n\n   b'), 'a b');
+  });
+});
+
+describe('measureThread', () => {
+  it('uses the bucket of the root for a thread of one', () => {
+    assert.deepEqual(
+      measureThread(['nit: typo']),
+      measureCommentBody('nit: typo')
+    );
+  });
+
+  it('takes the tall bucket once there is a reply', () => {
+    assert.equal(measureThread(['nit: typo', 'fixed']).size, 'tall');
+  });
+
+  it('never shrinks below the root when replies exist', () => {
+    const root = 'word '.repeat(120);
+    assert.ok(
+      measureThread([root, 'ok']).bodyHeight >=
+        measureCommentBody(root).bodyHeight
+    );
+  });
+
+  it('handles a thread with no messages', () => {
+    assert.ok(measureThread([]).bodyHeight > 0);
   });
 });

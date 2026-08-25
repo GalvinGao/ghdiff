@@ -4,14 +4,15 @@ import { classifyCommentLineType } from './commentLine.ts';
 import {
   type CommentListSection,
   type CommentMetadata,
-  isSavedComment,
+  isCommentThread,
+  threadParticipants,
+  threadRoot,
 } from './comments.ts';
 import type { ReviewFileEntry } from './reviewData.ts';
 
 /**
- * Builds the sidebar comment list: saved comments only, grouped by file in diff
- * order, and by line inside each file. Drafts stay out because they have no
- * body yet.
+ * Builds the sidebar list: one row per thread, grouped by file in diff order
+ * and by line inside each file. Drafts stay out because they have no body yet.
  */
 export function buildCommentSections(
   items: readonly CodeViewDiffItem<CommentMetadata>[],
@@ -30,50 +31,62 @@ export function buildCommentSections(
     const entry = entryByItemId.get(item.id);
     if (entry == null) continue;
 
-    const comments = annotations
-      .filter((annotation) => isSavedComment(annotation.metadata))
-      .map((annotation) => {
+    const threads = annotations
+      .flatMap((annotation) => {
         const metadata = annotation.metadata;
-        if (!isSavedComment(metadata)) {
-          throw new Error('Unreachable: the filter above kept saved comments.');
-        }
-        return {
-          itemId: item.id,
-          path: entry.path,
-          key: metadata.key,
-          author: metadata.author,
-          body: metadata.body,
-          lineNumber: annotation.lineNumber,
-          lineType: classifyCommentLineType(
-            item.fileDiff,
-            annotation.side,
-            annotation.lineNumber
-          ),
-          side: annotation.side,
-          range: metadata.range,
-          pending: metadata.pending,
-          error: metadata.error,
-          htmlUrl: metadata.htmlUrl,
-        };
+        if (!isCommentThread(metadata)) return [];
+        const root = threadRoot(metadata);
+        return [
+          {
+            itemId: item.id,
+            path: entry.path,
+            key: metadata.key,
+            author: root.author,
+            body: root.body,
+            replyCount: metadata.comments.length - 1,
+            participants: threadParticipants(metadata),
+            lineNumber: annotation.lineNumber,
+            lineType: classifyCommentLineType(
+              item.fileDiff,
+              annotation.side,
+              annotation.lineNumber
+            ),
+            side: annotation.side,
+            range: metadata.range,
+            pending: metadata.pending,
+            error: metadata.error,
+          },
+        ];
       })
       .sort((a, b) => a.lineNumber - b.lineNumber);
 
-    if (comments.length === 0) continue;
+    if (threads.length === 0) continue;
     sections.push({
       itemId: item.id,
       path: entry.path,
       fileOrder: entry.fileOrder,
-      comments,
+      threads,
     });
   }
 
   return sections.sort((a, b) => a.fileOrder - b.fileOrder);
 }
 
+/** Total messages across every thread, which is what the tab badge counts. */
 export function countComments(sections: readonly CommentListSection[]): number {
   let total = 0;
   for (const section of sections) {
-    total += section.comments.length;
+    for (const thread of section.threads) {
+      total += 1 + thread.replyCount;
+    }
+  }
+  return total;
+}
+
+export function countThreads(sections: readonly CommentListSection[]): number {
+  let total = 0;
+  for (const section of sections) {
+    total += section.threads.length;
   }
   return total;
 }
