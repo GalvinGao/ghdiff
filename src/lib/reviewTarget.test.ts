@@ -40,10 +40,10 @@ describe('parseGitHubInput', () => {
   });
 
   it('parses the owner/repo#number shorthand', () => {
-    assert.deepEqual(parseGitHubInput('GalvinGao/reviewer#7'), {
+    assert.deepEqual(parseGitHubInput('GalvinGao/ghdiff#7'), {
       kind: 'github-pull',
       owner: 'GalvinGao',
-      repo: 'reviewer',
+      repo: 'ghdiff',
       number: 7,
     });
   });

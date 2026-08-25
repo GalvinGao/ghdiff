@@ -7,7 +7,9 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # A superseded pull request run is waste. A superseded push to main holds the
+  # deploy job, and killing a deploy halfway is worse than letting it finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -57,3 +59,32 @@ jobs:
       # workerd cannot run. Needs no Cloudflare credentials.
       - name: Wrangler dry run
         run: pnpm exec wrangler deploy --dry-run
+
+  # Only after both jobs above are green, and only for a push to main. A pull
+  # request gets the dry run and nothing else.
+  deploy:
+    name: Deploy to Cloudflare Workers
+    needs: [check, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Its own group, so two pushes in a row queue instead of racing for the same
+    # Worker.
+    concurrency:
+      group: deploy-workers
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup
+
+      # `wrangler deploy` builds nothing. The Vite build writes
+      # `.wrangler/deploy/config.json`, which redirects wrangler to the
+      # generated `dist/server/wrangler.json`, and wrangler errors without it.
+      - name: Build
+        run: pnpm build
+
+      # The account is named in wrangler.jsonc, so the token is the only secret
+      # this job needs.
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

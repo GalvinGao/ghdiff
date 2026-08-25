@@ -52,11 +52,27 @@ deployed runtime are the same one.
 
 ## Deploy
 
+CI deploys every push to `main`, after the lint, type, test, and build jobs all
+pass. `.github/workflows/ci.yml` holds the job. It needs one repository secret:
+
+| Secret                 | Where it comes from                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN` | A Cloudflare API token from the **Edit Cloudflare Workers** template, on account GalvinGao |
+
+`wrangler.jsonc` names the account, so the token is the only secret the job
+carries.
+
+To deploy from your own machine instead:
+
 ```bash
 pnpm dlx wrangler login
 pnpm build
 pnpm deploy
 ```
+
+`pnpm build` is not optional. It writes `.wrangler/deploy/config.json`, which
+sends wrangler to the generated `dist/server/wrangler.json`. `wrangler deploy`
+builds nothing and fails without it.
 
 `wrangler.jsonc` names the Worker `ghdiff` and turns on `nodejs_compat`, which
 the request logger and `process.env` both need. To give a single-user deployment
@@ -65,6 +81,10 @@ its own token, set it as a Worker secret:
 ```bash
 pnpm exec wrangler secret put GITHUB_TOKEN
 ```
+
+GitHub Actions reserves every secret name that opens with `GITHUB_`, so CI
+cannot carry this one under its own name. Set it with the command above, or add
+a repository secret under another name and map it in the job's `env`.
 
 For local development the same variable goes in `.dev.vars`, which git ignores.
 

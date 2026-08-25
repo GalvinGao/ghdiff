@@ -383,6 +383,18 @@ Put it in `.dev.vars` for `pnpm dev` and `pnpm preview`, and in a Worker secret
   credentials, so a change workerd cannot run fails the pull request instead of
   the deploy.
 
+A third job, **deploy**, waits on both and runs only on a push to `main`. It
+builds again before it calls `cloudflare/wrangler-action`, because
+`wrangler deploy` builds nothing: the Vite build writes
+`.wrangler/deploy/config.json`, which redirects wrangler to the generated
+`dist/server/wrangler.json`, and wrangler errors without that file. The account
+id is in `wrangler.jsonc`, so `CLOUDFLARE_API_TOKEN` is the only secret the job
+carries. The workflow cancels a superseded run only on a pull request, and the
+deploy job holds a concurrency group of its own, so no deploy is killed halfway.
+
+GitHub Actions reserves every secret name that opens with `GITHUB_`. A Worker
+`GITHUB_TOKEN` therefore cannot travel as a repository secret of the same name.
+
 ## Lint rules that are off, and why
 
 - `react/set-state-in-effect` — this app synchronizes React with two external

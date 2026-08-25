@@ -238,7 +238,7 @@ export function HomeScreen() {
         <p className="text-ink-faint mt-1 text-xs">
           <a
             className="hover:text-ink underline"
-            href="https://github.com/GalvinGao/reviewer"
+            href="https://github.com/GalvinGao/ghdiff"
             rel="noreferrer"
             target="_blank"
           >
