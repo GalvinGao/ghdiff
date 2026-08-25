@@ -12,11 +12,13 @@ import { useMemo, useState } from 'react';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullRequestList } from '@/components/PullRequestList';
 import { isCurrentPull } from '@/components/PullRow';
+import { PullStackBadge } from '@/components/PullStackBadge';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useStoredJson } from '@/hooks/useLocalStorage';
+import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { cn } from '@/lib/cn';
 import { flattenStacks, groupPullsByRepo, type PullSummary } from '@/lib/pulls';
 import {
@@ -88,7 +90,7 @@ export function PullRail() {
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {collapsed ? (
-            <CollapsedMarks current={current} />
+            <CollapsedMarks current={current} state={pulls} />
           ) : (
             <div className="px-1 pb-2">
               <PullRequestList
@@ -143,55 +145,116 @@ export function PullRail() {
   );
 }
 
+/** One author's pull requests in the narrow bar: their stacks, in bar order. */
+interface CollapsedGroup {
+  key: string;
+  stacks: { key: string; pulls: PullSummary[] }[];
+}
+
 /**
  * The collapsed bar. Every open pull request keeps its square, in the same
  * order, so the column still answers the question the bar exists for: is
  * anything red.
+ *
+ * It also keeps the two groupings the wide bar draws with words. A stack sits on
+ * a block of its own under the layers badge, and a rule separates one author
+ * from the next. Without them the narrow bar was one undivided column of
+ * squares: which pull requests were chained, and whose they were, were the two
+ * things collapsing the bar threw away.
  */
-function CollapsedMarks({ current }: { current?: GitHubPullTarget }) {
-  const { pulls } = useAppData();
-  const ordered = useMemo<PullSummary[]>(() => {
-    if (pulls.data == null) return [];
-    return groupPullsByRepo(pulls.data.pulls, pulls.data.viewer).flatMap(
+function CollapsedMarks({
+  current,
+  state,
+}: {
+  current?: GitHubPullTarget;
+  state: OpenPullsState;
+}) {
+  const groups = useMemo<CollapsedGroup[]>(() => {
+    if (state.data == null) return [];
+    return groupPullsByRepo(state.data.pulls, state.data.viewer).flatMap(
       (group) =>
-        group.authors.flatMap((author) =>
-          flattenStacks(author.stacks).map((node) => node.pull)
-        )
+        group.authors.map((author) => ({
+          key: `${group.key}/${author.author}`,
+          stacks: author.stacks.map((root) => ({
+            key: `${group.key}#${String(root.pull.number)}`,
+            pulls: flattenStacks([root]).map((node) => node.pull),
+          })),
+        }))
     );
-  }, [pulls.data]);
+  }, [state.data]);
 
   return (
-    <div className="flex flex-col items-center gap-1 py-2">
-      {ordered.map((pull) => {
-        const isCurrent = isCurrentPull(pull, current);
-        const label = `${pull.owner}/${pull.repo} #${pull.number} — ${pull.title}`;
-        return (
-          <Link
-            key={`${pull.owner}/${pull.repo}#${pull.number}`}
-            href={reviewTargetHref({
-              kind: 'github-pull',
-              owner: pull.owner,
-              repo: pull.repo,
-              number: pull.number,
-            })}
-            aria-current={isCurrent ? 'page' : undefined}
-            aria-label={label}
-            className={cn(
-              'flex size-7 items-center justify-center rounded-md outline-none',
-              'hover:bg-raised focus-visible:bg-raised',
-              isCurrent && 'ring-accent bg-raised ring-2'
-            )}
-            title={label}
-          >
-            {pull.status == null ? (
-              <span className="bg-status-neutral size-2 rounded-full" />
+    <div className="py-1">
+      {groups.map((group, groupIndex) => (
+        <div
+          key={group.key}
+          className={cn(
+            'border-line flex flex-col items-center gap-1 px-1 py-1',
+            groupIndex > 0 && 'border-t'
+          )}
+        >
+          {group.stacks.map((stack) =>
+            stack.pulls.length === 1 ? (
+              <CollapsedMark
+                key={stack.key}
+                current={current}
+                pull={stack.pulls[0]}
+              />
             ) : (
-              <PullStatusMark status={pull.status} />
-            )}
-          </Link>
-        );
-      })}
+              <div
+                key={stack.key}
+                className="bg-raised/50 inset-ring-line/70 flex w-full flex-col items-center gap-1 rounded-md py-1 inset-ring"
+              >
+                <PullStackBadge size={stack.pulls.length} />
+                {stack.pulls.map((pull) => (
+                  <CollapsedMark
+                    key={`${pull.owner}/${pull.repo}#${pull.number}`}
+                    current={current}
+                    pull={pull}
+                  />
+                ))}
+              </div>
+            )
+          )}
+        </div>
+      ))}
     </div>
+  );
+}
+
+/** One square in the collapsed bar. */
+function CollapsedMark({
+  current,
+  pull,
+}: {
+  current?: GitHubPullTarget;
+  pull: PullSummary;
+}) {
+  const isCurrent = isCurrentPull(pull, current);
+  const label = `${pull.owner}/${pull.repo} #${pull.number} — ${pull.title}`;
+  return (
+    <Link
+      href={reviewTargetHref({
+        kind: 'github-pull',
+        owner: pull.owner,
+        repo: pull.repo,
+        number: pull.number,
+      })}
+      aria-current={isCurrent ? 'page' : undefined}
+      aria-label={label}
+      className={cn(
+        'flex size-7 shrink-0 items-center justify-center rounded-md outline-none',
+        'hover:bg-raised focus-visible:bg-raised',
+        isCurrent && 'ring-accent bg-raised ring-2'
+      )}
+      title={label}
+    >
+      {pull.status == null ? (
+        <span className="bg-status-neutral size-2 rounded-full" />
+      ) : (
+        <PullStatusMark status={pull.status} />
+      )}
+    </Link>
   );
 }
 

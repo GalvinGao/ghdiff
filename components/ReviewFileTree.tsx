@@ -26,8 +26,35 @@ import type { TreeStatIndex } from '@/lib/treeStats';
 
 const ITEM_HEIGHT = 24;
 
-// Drop the folder dot: every file in this tree changed, so the dot says
-// nothing.
+// The tree's density, and the trailing geometry that follows from it.
+//
+// A row's figures do not end at the row's edge. Four things stand between them
+// and the sidebar's inner border: the scroll region holds a stable gutter for
+// its scrollbar, the row keeps a margin and a padding, and the last lane on the
+// row is the git badge's, one flex gap further out. The two library defaults
+// are pinned as overrides below rather than assumed, so this sum is true by
+// construction.
+//
+// `ReviewSidebar` reserves the same distance under the tree, which is what puts
+// the footer's totals in the tree's own two columns instead of a third column
+// of their own.
+const TREE_DENSITY = 0.85;
+const SCROLLBAR_GUTTER = 6;
+const GIT_LANE_WIDTH = 12;
+export const TREE_STAT_LANE_INSET =
+  SCROLLBAR_GUTTER +
+  // --trees-item-margin-x, --trees-item-padding-x, --trees-item-row-gap
+  2 * TREE_DENSITY +
+  8 * TREE_DENSITY +
+  GIT_LANE_WIDTH +
+  6 * TREE_DENSITY;
+
+// Drop the folder dot, and keep the lane it sat in. Every file in this tree
+// changed, so the dot says nothing, but the lane after the numbers is where a
+// file's A or D badge goes. `display: none` on the lane gave a folder row its
+// 12px back, and the row's flex gap with it, so a folder's figures ended 17px
+// to the right of every file's — the one thing a column of numbers must not do.
+// Hiding the dot alone leaves the lane standing on every row.
 //
 // The rest of this stylesheet is the diff-stat lane. Two columns, each as wide
 // as the widest number in this diff and each right-aligned, so every `+` figure
@@ -37,7 +64,7 @@ const ITEM_HEIGHT = 24;
 // short filename leaves, and never shrinks, so a long filename truncates and
 // the numbers stay whole.
 const TREE_CSS = `
-  [data-item-contains-git-change='true'] > [data-item-section='git'] {
+  [data-item-contains-git-change='true'] > [data-item-section='git'] > * {
     display: none;
   }
   [data-item-type='folder'] {
@@ -47,6 +74,11 @@ const TREE_CSS = `
     flex: 1 0 auto;
     padding-left: 10px;
     font-size: 11px;
+    /* The columns below are measured in \`ch\`, which is the width of a zero in
+       the element's own font. A folder row sets a heavier weight, whose zero is
+       a pixel wider, so the lane holds the regular weight and both columns
+       measure the same on every row. */
+    font-weight: 400;
     font-variant-numeric: tabular-nums;
   }
   [data-item-section='decoration'] > span {
@@ -94,8 +126,13 @@ const BASE_OPTIONS = {
 // dark mode, so the row under the reviewer's attention is painted with the
 // app's accent instead. The rest of the overrides are layout only.
 const STYLE_OVERRIDES: CSSProperties = {
-  '--trees-density-override': 0.85,
+  '--trees-density-override': TREE_DENSITY,
   '--trees-padding-inline-override': 8,
+  // Both are the library's own defaults. They are set here because
+  // TREE_STAT_LANE_INSET counts them, and a default that moved would take the
+  // footer's totals out of the tree's columns without touching this file.
+  '--trees-git-lane-width-override': `${String(GIT_LANE_WIDTH)}px`,
+  '--trees-scrollbar-gutter-override': `${String(SCROLLBAR_GUTTER)}px`,
   '--trees-selected-bg-override': 'var(--app-tree-selected)',
   '--trees-selected-fg-override': 'var(--app-ink)',
 } as CSSProperties;

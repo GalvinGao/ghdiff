@@ -7,7 +7,10 @@ import { useEffect, useRef, useState } from 'react';
 import { CommentAuthorFilterBar } from '@/components/CommentAuthorFilterBar';
 import { CommentsList } from '@/components/CommentsList';
 import { FilterMenu } from '@/components/FilterMenu';
-import { ReviewFileTree } from '@/components/ReviewFileTree';
+import {
+  ReviewFileTree,
+  TREE_STAT_LANE_INSET,
+} from '@/components/ReviewFileTree';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
@@ -202,20 +205,25 @@ export function ReviewSidebar({
 
       {/* One strip, and it belongs to whichever tab is open: the files tab has
           a size to report and the comments tab has a filter to set, and neither
-          has anything to say about the other. */}
-      <div className="border-line flex h-9 shrink-0 items-center border-t px-2">
+          has anything to say about the other. The right edge is each tab's own:
+          the filter bar runs to the padding, and the totals stop where the
+          tree's figures stop. */}
+      <div className="border-line flex h-9 shrink-0 items-center border-t pl-2">
         {tab === 'files' ? (
           <FileTotals
             hiddenCount={hiddenCount}
             stats={stats}
             totalFileCount={totalFileCount}
+            treeStats={treeStats}
           />
         ) : (
-          <CommentAuthorFilterBar
-            counts={authorCounts}
-            onChange={onAuthorFilterChange}
-            value={authorFilter}
-          />
+          <div className="flex min-w-0 flex-1 pr-2">
+            <CommentAuthorFilterBar
+              counts={authorCounts}
+              onChange={onAuthorFilterChange}
+              value={authorFilter}
+            />
+          </div>
         )}
       </div>
     </aside>
@@ -227,18 +235,36 @@ export function ReviewSidebar({
  * tree lists above it, and it says so when a filter is holding some back: a
  * footer that reported the whole patch while the tree showed a third of it made
  * the two panes disagree.
+ *
+ * The two figures are the last row of the tree's own two columns, so they keep
+ * the tree's trailing inset and the tree's gap rather than running out to the
+ * edge of the strip. Nothing else in the sidebar prints a number against a
+ * column of numbers, and a total that missed the column it totals read as a
+ * third figure rather than the sum of the two above it.
  */
 function FileTotals({
   hiddenCount,
   stats,
   totalFileCount,
+  treeStats,
 }: {
   hiddenCount: number;
   stats: ReviewDiffStats;
   totalFileCount: number;
+  treeStats: TreeStatIndex;
 }) {
+  // A minimum, not a width. The tree's columns are sized for the widest row,
+  // and a patch with two top-level directories has a total wider than either of
+  // them, which a fixed width would spill out of. Growing keeps the deleted
+  // figure against the same right edge and moves the added one left, which is
+  // the truth: that total needs the room.
+  const addColumn = { minWidth: `${String(treeStats.addedDigits + 1)}ch` };
+  const deleteColumn = { minWidth: `${String(treeStats.deletedDigits + 1)}ch` };
   return (
-    <dl className="text-ink-muted flex w-full min-w-0 items-baseline gap-2 px-1 text-[11px] tabular-nums">
+    <dl
+      className="text-ink-muted flex w-full min-w-0 items-baseline gap-2 pl-1 text-[11px] tabular-nums"
+      style={{ paddingRight: TREE_STAT_LANE_INSET }}
+    >
       <div className="flex min-w-0 gap-1 truncate">
         <dt className="sr-only">Files</dt>
         <dd>
@@ -248,16 +274,23 @@ function FileTotals({
           )}
         </dd>
       </div>
-      {/* Pushed to the right edge, in the same order and the same two colours
-          the tree uses on every row above. */}
-      <div className="ml-auto flex shrink-0 gap-2">
-        <div className="flex gap-1">
+      {/* The tree's own two columns, in the same order, the same two colours,
+          the same widths and the same 5px gap it puts between them on every row
+          above. The widths are the tree's, not these two numbers': a total
+          sized to its own digits would sit a pixel or two off the column it
+          totals. */}
+      <div className="ml-auto flex shrink-0 gap-[5px]">
+        <div className="flex">
           <dt className="sr-only">Added lines</dt>
-          <dd className="text-added">+{stats.addedLines}</dd>
+          <dd className="text-added text-right" style={addColumn}>
+            +{stats.addedLines}
+          </dd>
         </div>
-        <div className="flex gap-1">
+        <div className="flex">
           <dt className="sr-only">Deleted lines</dt>
-          <dd className="text-removed">-{stats.deletedLines}</dd>
+          <dd className="text-removed text-right" style={deleteColumn}>
+            -{stats.deletedLines}
+          </dd>
         </div>
       </div>
     </dl>
