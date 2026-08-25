@@ -7,24 +7,16 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ViewerIdentity } from '@/components/ViewerIdentity';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
 import { cn } from '@/lib/cn';
+import {
+  ACCESS_LABEL,
+  fineGrainedTokenUrl,
+  TOKEN_PERMISSIONS,
+} from '@/lib/githubToken';
 
-// GitHub's page for a new fine-grained token. A fine-grained token takes no
-// query parameter that would preselect its permissions, unlike a classic one,
-// so the link opens the page bare and the four permissions are named below it.
-const FINE_GRAINED_TOKEN_URL =
-  'https://github.com/settings/personal-access-tokens/new';
-
-// Every permission ghdiff asks for, and no more. Metadata is mandatory on any
-// fine-grained token and GitHub grants it without being asked, so it is not
-// listed. Contents reads the diff of a commit or a compare range, Pull requests
-// reads a pull request's diff and writes its comments, and the last two are the
-// check half of the status square, which GraphQL reports as `statusCheckRollup`.
-const TOKEN_PERMISSIONS: { access: string; name: string }[] = [
-  { access: 'Read-only', name: 'Contents' },
-  { access: 'Read and write', name: 'Pull requests' },
-  { access: 'Read-only', name: 'Commit statuses' },
-  { access: 'Read-only', name: 'Checks' },
-];
+// The link and the list under it are the same four permissions, built once in
+// `src/lib/githubToken.ts`. Computed here rather than per render: the URL never
+// changes.
+const TOKEN_URL = fineGrainedTokenUrl();
 
 /**
  * The token form itself, with no surface of its own. The header shows it inside
@@ -78,18 +70,18 @@ export function GitHubTokenForm({
               size: 'sm',
               variant: 'outline',
             })}
-            href={FINE_GRAINED_TOKEN_URL}
+            href={TOKEN_URL}
             rel="noreferrer"
             target="_blank"
           >
             Create a fine-grained token
           </a>
 
-          {/* The permissions are a list to copy onto GitHub's page, so each one
-              is a row: a sentence of four permissions has to be re-read once per
-              checkbox. */}
+          {/* One row per permission, because the list is read against
+              GitHub's own form: a sentence of four permissions has to be
+              re-read once per checkbox. */}
           <p className="text-ink-faint mt-2 text-xs">
-            Grant these repository permissions, on the repositories you review:
+            The link ticks these for you. Choose the repositories you review:
           </p>
           <ul className="mt-1 text-xs">
             {TOKEN_PERMISSIONS.map(({ access, name }) => (
@@ -98,7 +90,7 @@ export function GitHubTokenForm({
                 className="flex items-baseline justify-between gap-2 py-0.5"
               >
                 <span className="text-ink-muted">{name}</span>
-                <span className="text-ink-faint">{access}</span>
+                <span className="text-ink-faint">{ACCESS_LABEL[access]}</span>
               </li>
             ))}
           </ul>
