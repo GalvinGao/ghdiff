@@ -157,3 +157,45 @@ export function encodeRefForPath(ref: string): string {
   // Branch names can hold a slash, which must survive as a path segment.
   return ref.split('/').map(encodeURIComponent).join('/');
 }
+
+// --- Where a diff actually comes from ---------------------------------------
+//
+// The API's unified-diff media type caps a pull request at 300 files and
+// 20000 lines, then answers 406. The web host that serves github.com's own
+// `.diff` links has no such cap: it returned 43 MB and 2188 files for
+// oven-sh/bun#30412, which the API refuses outright. So the web URL is the
+// primary source and the API is the fallback, which is what diffs-hub does.
+//
+// github.com redirects a `.diff` request to patch-diff.githubusercontent.com
+// with a signed URL. Only the first hop needs the token: fetch drops the
+// Authorization header on a cross-origin redirect, and the signed target does
+// not want it.
+
+const GITHUB_WEB_HOST = 'https://github.com';
+
+export interface GitHubDiffTargetPath {
+  /** Path on github.com, without the .diff suffix. */
+  webPath: string;
+  /** Path on api.github.com for the diff media type. */
+  apiPath: string;
+}
+
+/** Fetches the web `.diff` URL. Throws GitHubError on a non-2xx response. */
+export async function githubWebDiff(
+  webPath: string,
+  token: string | undefined
+): Promise<Response> {
+  const webHeaders: Record<string, string> = { accept: 'text/plain' };
+  if (token != null) {
+    webHeaders.authorization = `Bearer ${token}`;
+  }
+  const response = await fetch(`${GITHUB_WEB_HOST}${webPath}.diff`, {
+    cache: 'no-store',
+    headers: webHeaders,
+    redirect: 'follow',
+  });
+  if (!response.ok) {
+    throw new GitHubError(response.status, await readErrorMessage(response));
+  }
+  return response;
+}

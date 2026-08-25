@@ -58,24 +58,43 @@ export function availableStatuses(
   return new Set(entries.map((entry) => entry.status));
 }
 
+/** What one preset would leave on screen. */
+export interface PresetStat {
+  files: number;
+  addedLines: number;
+  deletedLines: number;
+}
+
+export const EMPTY_PRESET_STAT: PresetStat = {
+  files: 0,
+  addedLines: 0,
+  deletedLines: 0,
+};
+
 /**
- * How many files each preset would keep. The menu shows these counts so the
- * user can see that "Tests only" is worth picking before picking it.
+ * The size of the review each preset would leave: files, and the lines added
+ * and deleted across them. The menu shows these so the reviewer can judge the
+ * cost of a preset before picking it, which a bare file count cannot convey.
+ * Forty-five files at plus nine thousand lines is a different afternoon from
+ * forty-five files at plus ninety.
  */
-export function presetMatchCounts(
+export function presetStats(
   entries: readonly ReviewFileEntry[],
   presetIds: readonly FilterPresetId[]
-): Map<FilterPresetId, number> {
-  const counts = new Map<FilterPresetId, number>();
+): Map<FilterPresetId, PresetStat> {
+  const stats = new Map<FilterPresetId, PresetStat>();
   for (const id of presetIds) {
     const preset = getFilterPreset(id);
-    let count = 0;
+    const stat: PresetStat = { files: 0, addedLines: 0, deletedLines: 0 };
     for (const entry of entries) {
-      if (preset.matches(entry.path)) count++;
+      if (!preset.matches(entry.path)) continue;
+      stat.files++;
+      stat.addedLines += entry.addedLines;
+      stat.deletedLines += entry.deletedLines;
     }
-    counts.set(id, count);
+    stats.set(id, stat);
   }
-  return counts;
+  return stats;
 }
 
 export function applyReviewFilter(

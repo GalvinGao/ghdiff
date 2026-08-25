@@ -20,8 +20,13 @@ export interface ReviewPatchState {
   data: ReviewData;
   state: PatchLoadState;
   error?: string;
+  /** What the diff source could not carry, when it said so. */
+  notice?: string;
   retry(): void;
 }
+
+/** The route sets this when a fallback source left something out. */
+const NOTICE_HEADER = 'x-reviewer-notice';
 
 /**
  * Fetches the patch for a target and parses it into review data.
@@ -33,22 +38,31 @@ export interface ReviewPatchState {
 export function useReviewPatch(options: {
   target: ReviewTarget;
   token?: string;
+  /**
+   * False until the stored token has been read. Loading before then sends one
+   * unauthenticated request, which a private repository answers with 404, and
+   * the reviewer sees an error flash before the real load.
+   */
+  tokenReady: boolean;
 }): ReviewPatchState {
-  const { target, token } = options;
+  const { target, token, tokenReady } = options;
   const [data, setData] = useState<ReviewData>(EMPTY_REVIEW_DATA);
   const [state, setState] = useState<PatchLoadState>('fetching');
   const [error, setError] = useState<string | undefined>(undefined);
+  const [notice, setNotice] = useState<string | undefined>(undefined);
   const controllerRef = useRef<AbortController | null>(null);
 
   const query = reviewTargetQuery(target).toString();
   const cacheKey = reviewTargetKey(target);
 
   const load = useCallback(async () => {
+    if (!tokenReady) return;
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
     setData(EMPTY_REVIEW_DATA);
     setError(undefined);
+    setNotice(undefined);
     setState('fetching');
 
     try {
@@ -57,6 +71,7 @@ export function useReviewPatch(options: {
         withGitHubToken(token, { signal: controller.signal })
       );
       const body = await response.text();
+      setNotice(response.headers.get(NOTICE_HEADER) ?? undefined);
       if (!response.ok) {
         throw new Error(
           body.trim().length > 0
@@ -81,7 +96,7 @@ export function useReviewPatch(options: {
       );
       setState('error');
     }
-  }, [cacheKey, query, token]);
+  }, [cacheKey, query, token, tokenReady]);
 
   useEffect(() => {
     void load();
@@ -92,5 +107,5 @@ export function useReviewPatch(options: {
     void load();
   }, [load]);
 
-  return { data, state, error, retry };
+  return { data, state, error, notice, retry };
 }

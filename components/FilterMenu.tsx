@@ -24,8 +24,10 @@ import {
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import {
   EMPTY_FILTER_STATE,
+  EMPTY_PRESET_STAT,
   isFilterActive,
-  presetMatchCounts,
+  type PresetStat,
+  presetStats,
   type ReviewFilterState,
 } from '@/lib/reviewFilter';
 
@@ -82,8 +84,8 @@ export function FilterMenu({
     () => FILTER_PRESETS.map((preset) => preset.id),
     []
   );
-  const counts = useMemo(
-    () => presetMatchCounts(entries, presetIds),
+  const stats = useMemo(
+    () => presetStats(entries, presetIds),
     [entries, presetIds]
   );
   const active = isFilterActive(state);
@@ -110,7 +112,7 @@ export function FilterMenu({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-72">
+      <DropdownMenuContent align="start" className="w-[27rem]">
         <DropdownMenuLabel>File rules</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={state.presetId}
@@ -119,23 +121,25 @@ export function FilterMenu({
           }
         >
           {FILTER_PRESETS.map((preset) => {
-            const count = counts.get(preset.id) ?? 0;
+            const stat = stats.get(preset.id) ?? EMPTY_PRESET_STAT;
             return (
               <DropdownMenuRadioItem
                 key={preset.id}
                 value={preset.id}
                 // A preset that would empty the list is offered but marked, so
                 // the reviewer does not pick it and see a blank pane.
-                disabled={count === 0 && preset.id !== DEFAULT_FILTER_PRESET_ID}
+                disabled={
+                  stat.files === 0 && preset.id !== DEFAULT_FILTER_PRESET_ID
+                }
               >
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline gap-2">
-                    <span className="text-ink font-medium">{preset.label}</span>
-                    <span className="text-ink-faint ml-auto text-xs tabular-nums">
-                      {count}
+                  <span className="flex items-baseline gap-3">
+                    <span className="text-ink font-medium whitespace-nowrap">
+                      {preset.label}
                     </span>
+                    <PresetStatLine className="ml-auto" stat={stat} />
                   </span>
-                  <span className="text-ink-faint block text-xs">
+                  <span className="text-ink-faint block text-xs whitespace-nowrap">
                     {preset.description}
                   </span>
                 </span>
@@ -187,6 +191,33 @@ export function FilterMenu({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/**
+ * Files, then lines added and deleted. It sits on one line and never wraps, so
+ * the rows stay scannable as a column of numbers.
+ */
+function PresetStatLine({
+  className,
+  stat,
+}: {
+  className?: string;
+  stat: PresetStat;
+}) {
+  return (
+    <span
+      className={cn(
+        'flex shrink-0 items-baseline gap-2 text-xs tabular-nums whitespace-nowrap',
+        className
+      )}
+    >
+      <span className="text-ink-faint">
+        {stat.files} {stat.files === 1 ? 'file' : 'files'}
+      </span>
+      <span className="text-added">+{stat.addedLines}</span>
+      <span className="text-removed">-{stat.deletedLines}</span>
+    </span>
   );
 }
 

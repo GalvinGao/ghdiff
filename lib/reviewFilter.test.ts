@@ -7,7 +7,7 @@ import {
   availableStatuses,
   EMPTY_FILTER_STATE,
   isFilterActive,
-  presetMatchCounts,
+  presetStats,
   type ReviewFilterState,
 } from './reviewFilter.ts';
 
@@ -207,15 +207,36 @@ describe('availableStatuses', () => {
   });
 });
 
-describe('presetMatchCounts', () => {
-  it('counts what each preset would keep', () => {
-    const counts = presetMatchCounts(data.entries, [
-      'all',
-      'tests',
-      'without-tests',
-    ]);
-    assert.equal(counts.get('all'), PATHS.length);
-    assert.equal(counts.get('tests'), 2);
-    assert.equal(counts.get('without-tests'), PATHS.length - 2);
+describe('presetStats', () => {
+  it('counts the files each preset would keep', () => {
+    const stats = presetStats(data.entries, ['all', 'tests', 'without-tests']);
+    assert.equal(stats.get('all')?.files, PATHS.length);
+    assert.equal(stats.get('tests')?.files, 2);
+    assert.equal(stats.get('without-tests')?.files, PATHS.length - 2);
+  });
+
+  it('sums the added and deleted lines of the files it keeps', () => {
+    const stats = presetStats(data.entries, ['all', 'tests']);
+    // Every stub entry carries one added line and no deleted lines.
+    assert.equal(stats.get('all')?.addedLines, PATHS.length);
+    assert.equal(stats.get('all')?.deletedLines, 0);
+    assert.equal(stats.get('tests')?.addedLines, 2);
+  });
+
+  it('counts only the files a narrow preset keeps', () => {
+    // README.md is the one docs file in the fixture.
+    assert.deepEqual(presetStats(data.entries, ['docs']).get('docs'), {
+      files: 1,
+      addedLines: 1,
+      deletedLines: 0,
+    });
+  });
+
+  it('reports zeroes when there are no files at all', () => {
+    assert.deepEqual(presetStats([], ['all', 'tests']).get('tests'), {
+      files: 0,
+      addedLines: 0,
+      deletedLines: 0,
+    });
   });
 });

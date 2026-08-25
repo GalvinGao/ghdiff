@@ -49,7 +49,11 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<CodeViewHandle<CommentMetadata> | null>(null);
 
-  const patch = useReviewPatch({ target, token: token.token });
+  const patch = useReviewPatch({
+    target,
+    token: token.token,
+    tokenReady: token.hydrated,
+  });
   const comments = useReviewComments({
     target,
     entries: patch.data.entries,
@@ -193,6 +197,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         />
       )}
 
+      {patch.notice != null && (
+        <p
+          role="status"
+          className="border-line text-ink-muted shrink-0 border-t px-3 py-1.5 text-xs"
+        >
+          {patch.notice}
+        </p>
+      )}
       {comments.error != null && (
         <p
           role="status"
