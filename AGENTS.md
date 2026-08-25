@@ -139,6 +139,22 @@ means "never asked", and `PullRow` leaves the square off the row rather than
 claim there is no review and no CI. It keeps the lane the square sits in, so the
 number after it starts on the same pixel either way.
 
+**A spent quota is one status, and the panel asks for a token.** GitHub reports
+the primary rate limit as 403 on `api.github.com` and as 429 on the web diff
+host, and a 403 is also its answer to an invisible repository and to a request
+that names no user agent. `rateLimitedStatus` in `src/lib/rateLimit.ts` reads
+`retry-after` and `x-ratelimit-remaining: 0` to tell those apart, and every
+throw in `src/lib/server/github.ts` reports 429 for a quota that is gone, so
+nothing downstream has to ask which 403 it holds. `describeReviewFailure` in
+`src/lib/reviewFailure.ts` then turns that status into the panel's copy and its
+button: an anonymous browser over the limit leads with **Add token**, because
+"Try again" against a spent anonymous quota does nothing for the rest of the
+hour while a token takes the ceiling from 60 requests to 5000 on the next one. A
+token that is itself over quota gets the retry alone — there is no second token
+to add. `ReviewStatusPanel` opens `GitHubTokenForm` in a dialog for that button,
+and closes it once GitHub answers for the token, because `useReviewPatch`
+depends on the token and has already started the reload behind it.
+
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list
 is open — and it took half the leading lane from the one glyph that carries new
