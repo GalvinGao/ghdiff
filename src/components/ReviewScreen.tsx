@@ -314,7 +314,9 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           error={patch.error}
           onRetry={patch.retry}
           state={patch.state === 'ready' ? 'starting' : patch.state}
+          status={patch.status}
           target={target}
+          token={token}
         />
       )}
 

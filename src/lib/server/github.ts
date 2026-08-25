@@ -5,6 +5,8 @@
 // same way diffs-hub does. GITHUB_TOKEN is honoured as a fallback so a
 // single-user deployment can skip the browser step.
 
+import { rateLimitedStatus } from '../rateLimit.ts';
+
 const GITHUB_API_ROOT = 'https://api.github.com';
 const GITHUB_API_VERSION = '2022-11-28';
 // GitHub answers 403 "Request forbidden by administrative rules" to a request
@@ -77,7 +79,10 @@ export async function githubJson<T>(
     headers: { ...headers(token, JSON_MEDIA_TYPE), ...init?.headers },
   });
   if (!response.ok) {
-    throw new GitHubError(response.status, await readErrorMessage(response));
+    throw new GitHubError(
+      rateLimitedStatus(response.status, response.headers),
+      await readErrorMessage(response)
+    );
   }
   return (await response.json()) as T;
 }
@@ -98,7 +103,10 @@ export async function githubWrite<T>(
     body: body == null ? undefined : JSON.stringify(body),
   });
   if (!response.ok) {
-    throw new GitHubError(response.status, await readErrorMessage(response));
+    throw new GitHubError(
+      rateLimitedStatus(response.status, response.headers),
+      await readErrorMessage(response)
+    );
   }
   if (response.status === 204) {
     return undefined;
@@ -133,7 +141,10 @@ export async function githubGraphQL<T>(
     body: JSON.stringify({ query, variables }),
   });
   if (!response.ok) {
-    throw new GitHubError(response.status, await readErrorMessage(response));
+    throw new GitHubError(
+      rateLimitedStatus(response.status, response.headers),
+      await readErrorMessage(response)
+    );
   }
   const body = (await response.json()) as {
     data?: T | null;
@@ -163,7 +174,10 @@ export async function githubDiff(
     headers: headers(token, DIFF_MEDIA_TYPE),
   });
   if (!response.ok) {
-    throw new GitHubError(response.status, await readErrorMessage(response));
+    throw new GitHubError(
+      rateLimitedStatus(response.status, response.headers),
+      await readErrorMessage(response)
+    );
   }
   return response;
 }
@@ -257,7 +271,10 @@ export async function githubWebDiff(
     redirect: 'follow',
   });
   if (!response.ok) {
-    throw new GitHubError(response.status, await readErrorMessage(response));
+    throw new GitHubError(
+      rateLimitedStatus(response.status, response.headers),
+      await readErrorMessage(response)
+    );
   }
   return response;
 }
