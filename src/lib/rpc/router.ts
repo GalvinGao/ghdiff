@@ -25,6 +25,7 @@ import {
   githubJson,
   githubWrite,
 } from '@/lib/server/github';
+import { readServedCount } from '@/lib/server/servedCount';
 
 // The Worker's half of the contract. Nothing here is imported by the browser:
 // the client is built from `contract`, which holds no implementation, so this
@@ -363,9 +364,22 @@ const removeComment = os.comments.remove.handler(async ({ context, input }) => {
   }
 });
 
+/**
+ * The counter behind the footer's "Served" line. It is the one procedure that
+ * asks nothing of GitHub, so it neither reads the token nor reports a GitHub
+ * failure: a store that cannot answer throws, the browser catches it, and the
+ * footer prints no figure at all.
+ */
+const getServedCount = os.stats.served.handler(async () => {
+  const count = await readServedCount();
+  requestLog().set({ outcome: 'ok', served: count });
+  return { count };
+});
+
 export const router = os.router({
   viewer: { get: getViewer },
   pulls: { list: listPulls, get: getPull },
+  stats: { served: getServedCount },
   reviews: {
     mine: getMyReview,
     submit: submitReview,

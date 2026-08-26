@@ -77,6 +77,15 @@ export const contract = {
       .output(type<SubmittedReview>()),
   },
 
+  stats: {
+    /**
+     * How many diffs this deployment has served, for the footer's own line. It
+     * takes no input and no token: it is one number about the app itself, and
+     * every reviewer sees the same one.
+     */
+    served: oc.output(type<{ count: number }>()),
+  },
+
   comments: {
     list: oc.input(pullRef).output(type<CommentPayload[]>()),
 
