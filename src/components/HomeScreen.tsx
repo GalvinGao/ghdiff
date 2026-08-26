@@ -1,11 +1,10 @@
 import { IconArrow, IconBrandGithub, IconBrandTwitterX } from '@pierre/icons';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { type MouseEvent, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { ExampleTargets } from '@/components/ExampleTargets';
-import { GitHubTextLink } from '@/components/GitHubLink';
 import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
@@ -14,7 +13,8 @@ import { UserscriptInstall } from '@/components/UserscriptInstall';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
 import { useServedCount } from '@/hooks/useServedCount';
-import { commitUrl, GHDIFF_REPO, repoUrl } from '@/lib/githubUrls';
+import { cn } from '@/lib/cn';
+import { GHDIFF_REPO, repoUrl } from '@/lib/githubUrls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
 import { formatServedCount } from '@/lib/servedCount';
 
@@ -290,18 +290,35 @@ export function HomeScreen() {
  * The build writes the sha in; the browser cannot ask a Worker what it was
  * built from. A build with no repository around it writes an empty string, and
  * this then draws nothing rather than link to a commit that may not exist.
+ *
+ * The sha opens that commit in ghdiff and not on github.com, because ghdiff is
+ * what a reviewer came here for and this commit is a diff like any other. It is
+ * a `Link` and it stays in this tab, which is the one place in the app where
+ * that is right: `GitHubTextLink` opens a new tab to keep a reviewer's scroll,
+ * filter and fragment, and the home page has none of the three to lose.
  */
 function BuildCommit() {
   const sha = import.meta.env.VITE_COMMIT_SHA;
   if (sha.length === 0) return null;
   return (
-    <GitHubTextLink
-      className="text-ink-faint font-mono text-xs"
-      href={commitUrl(GHDIFF_REPO, sha)}
-      title={`Open the commit this build was made from, ${sha}, on GitHub`}
+    <Link
+      className={cn(
+        'text-ink-faint font-mono text-xs',
+        'hover:text-ink hover:underline hover:decoration-dotted hover:underline-offset-2',
+        'focus-visible:ring-accent rounded-xs focus-visible:ring-1 focus-visible:outline-none'
+      )}
+      params={{
+        _splat: reviewTargetSplat({
+          kind: 'github-commit',
+          ...GHDIFF_REPO,
+          sha,
+        }),
+      }}
+      title={`Review the commit this build was made from, ${sha}, in ghdiff`}
+      to="/$"
     >
       {sha.slice(0, 7)}
-    </GitHubTextLink>
+    </Link>
   );
 }
 
