@@ -189,6 +189,15 @@ rather than link to a commit that may not exist. `GHDIFF_REPO` in
 `src/lib/githubUrls.ts` is this repository, so the two links in that footer
 cannot name different ones.
 
+That row reads as two pairs. **Source on GitHub** and **@imgggalvin** are
+addresses off this site — the project, then the person who writes it — and the
+sha and the served figure after them are about this deployment. Each of the two
+links carries its own mark, and the X mark is drawn a pixel smaller than the
+GitHub one: it fills its own box corner to corner where the GitHub mark keeps a
+margin inside one, so equal boxes would not weigh the same. The X address is
+written where it is used and not in `src/lib/githubUrls.ts`, which holds
+github.com and nothing else.
+
 **A control that is only a glyph says what it is.**
 `src/components/ui/Tooltip.tsx` is CSS and no JavaScript, the way `Dialog` is
 the platform's own `<dialog>`: the browser already tracks hover and focus, and a
