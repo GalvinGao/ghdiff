@@ -374,9 +374,11 @@ repositories, and an organization behind SAML has to authorize the token — and
 its button reads **Update token**. `ReviewFailureAction` names the dialog and
 not the wording on the button; the panel takes that word from `token.hasToken`.
 
-The copy there is deliberately spoken rather than written. Every other line in
-this app is composed; an error panel is read by somebody who is stuck, and a
-sentence they have to parse twice costs them more than it tells them.
+Every message in this panel is deliberately spoken rather than written, the rate
+limit's two included. The rest of this app is composed; an error panel is read
+by somebody who is stuck, and a sentence they have to parse twice costs them
+more than it tells them. So each one names the likely cause, names the next
+step, and stops.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list

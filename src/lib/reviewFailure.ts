@@ -54,14 +54,14 @@ export function describeReviewFailure(input: {
       ? {
           action: 'retry',
           message:
-            "This token's hourly quota is spent. GitHub refills it within the hour.",
-          title: 'GitHub is rate limiting this token',
+            'Your token ran out of GitHub requests for the hour. Wait a bit for it to refill, then try again.',
+          title: "You've hit your token limit",
         }
       : {
           action: 'add-token',
           message:
-            'GitHub gives one small hourly quota to every unauthenticated address, and this one is spent. A personal access token carries a quota of its own, and a much larger one.',
-          title: 'GitHub is rate limiting this browser',
+            'GitHub limits requests without a token to 60 per hour. Add a token to get 5,000 requests per hour.',
+          title: "You've hit GitHub's rate limit",
         };
   }
 
