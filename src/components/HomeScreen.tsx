@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { Spinner } from '@/components/ui/Spinner';
+import { UserscriptInstall } from '@/components/UserscriptInstall';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { formatWatchedRepo } from '@/lib/pulls';
@@ -194,6 +195,16 @@ export function HomeScreen() {
               )}
             </Button>
           </div>
+        </div>
+
+        {/* Pasting a URL is the page's own answer, and this is the answer for
+            the reviewer who never leaves github.com. It follows the form
+            because it is the same move, made by a button instead. */}
+        <div className="mt-10">
+          <SectionLabel>Userscript</SectionLabel>
+        </div>
+        <div className={`${CARD} mt-2`}>
+          <UserscriptInstall />
         </div>
 
         {/* Nothing on this page moves until somebody pastes a URL, and a
