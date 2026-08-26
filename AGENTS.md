@@ -366,12 +366,17 @@ depends on the token and has already started the reload behind it.
 Not Found is the other failure with a fix, and the one that does not look like
 it has one. GitHub answers 404 both for a diff that is not there and for a diff
 the caller may not see, deliberately: an answer that told the two apart would
-confirm that a private repository exists. So the panel names both readings and
-offers the token either way — **Add token** to a browser that has none, and
-**Change token** to one whose token cannot reach the repository, since a
-fine-grained token has to list the repository and an organization behind SSO has
-to authorize the token as well. `ReviewFailureAction` names the dialog and not
-the wording on the button; the panel takes that word from `token.hasToken`.
+confirm that a private repository exists. So the panel guesses out loud and
+offers the token either way. A browser with no token is told the repository is
+probably private and asked for one. A browser whose token cannot reach the
+repository is told the two usual reasons — a fine-grained token lists its
+repositories, and an organization behind SAML has to authorize the token — and
+its button reads **Update token**. `ReviewFailureAction` names the dialog and
+not the wording on the button; the panel takes that word from `token.hasToken`.
+
+The copy there is deliberately spoken rather than written. Every other line in
+this app is composed; an error panel is read by somebody who is stuck, and a
+sentence they have to parse twice costs them more than it tells them.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list

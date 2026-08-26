@@ -46,7 +46,7 @@ describe('describeReviewFailure', () => {
       status: 404,
     });
     assert.equal(failure.action, 'add-token');
-    assert.match(failure.message, /SSO/);
+    assert.match(failure.message, /SAML/);
   });
 
   it('keeps the message from the server for every other status', () => {

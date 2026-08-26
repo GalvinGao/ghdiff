@@ -73,14 +73,14 @@ export function describeReviewFailure(input: {
       ? {
           action: 'add-token',
           message:
-            'GitHub answers the same way for a diff that is not there and for one this token cannot read. A fine-grained token has to list this repository, and an organization that requires SSO has to authorize the token as well.',
-          title: "Not found, or out of this token's reach",
+            'Your token might not include this repo, or it may need SAML authorization. Try updating your token.',
+          title: 'Check your token permissions',
         }
       : {
           action: 'add-token',
           message:
-            'GitHub answers the same way for a diff that is not there and for one this browser is not allowed to see, so a private repository looks like this. A personal access token with access to it tells the two apart.',
-          title: 'Not found, or private',
+            "If this repo is private, GitHub won't show it without a personal access token. Add a token to view the diff.",
+          title: 'This repository might be private',
         };
   }
 

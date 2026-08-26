@@ -104,11 +104,11 @@ export function ReviewStatusPanel({
           <div className="mt-4 flex items-center justify-center gap-2">
             {failure.action === 'add-token' && (
               // The same dialog either way, and the word for what it is about
-              // to do. A reviewer a 404 sends here usually has a token already
-              // — one that cannot reach this repository — and `Add token`
-              // would read as an offer they had taken up.
+              // to do. A reviewer a 404 sends here usually has a token already,
+              // one that cannot reach this repository, and `Add token` would
+              // read as an offer they had taken up.
               <Button variant="solid" onClick={() => setAsking(true)}>
-                {token.hasToken ? 'Change token' : 'Add token'}
+                {token.hasToken ? 'Update token' : 'Add token'}
               </Button>
             )}
             <Button variant="outline" onClick={onRetry}>
