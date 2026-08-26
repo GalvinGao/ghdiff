@@ -403,7 +403,7 @@ export function useReviewComments(options: {
         replace(itemId, key, (metadata) => ({
           ...metadata,
           pending: false,
-          error: rpcErrorMessage(cause, 'Could not post that reply to GitHub.'),
+          error: rpcErrorMessage(cause, 'Could not post this reply to GitHub.'),
         }));
       }
     },

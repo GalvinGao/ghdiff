@@ -112,7 +112,7 @@ const getViewer = os.viewer.get.handler(async ({ context }) => {
     };
   } catch (error) {
     log.set({ outcome: 'error' });
-    return fail(error, 'Token check failed.');
+    return fail(error, 'Could not verify this token.');
   }
 });
 
@@ -150,7 +150,7 @@ const listPulls = os.pulls.list.handler(async ({ context, input }) => {
           message:
             error instanceof GitHubError
               ? error.message
-              : 'Could not read that repository.',
+              : 'Could not load this repository.',
         });
       }
     })
@@ -173,7 +173,7 @@ const getPull = os.pulls.get.handler(async ({ context, input }) => {
     log.set({ outcome: 'ok', state: details.state });
     return details;
   } catch (error) {
-    return fail(error, 'Could not read that pull request.');
+    return fail(error, 'Could not load this pull request.');
   }
 });
 
@@ -210,7 +210,7 @@ const getMyReview = os.reviews.mine.handler(async ({ context, input }) => {
       },
     };
   } catch (error) {
-    return fail(error, 'Could not read your review of that pull request.');
+    return fail(error, 'Could not load your review of this pull request.');
   }
 });
 
@@ -251,7 +251,7 @@ const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
   } catch (error) {
     // GitHub's own words are worth more than ours here: it is the one that
     // knows a reviewer cannot approve their own pull request.
-    return fail(error, 'That review was not submitted.');
+    return fail(error, 'Could not submit this review.');
   }
 });
 
@@ -267,7 +267,7 @@ const listComments = os.comments.list.handler(async ({ context, input }) => {
     log.set({ outcome: 'ok', count: comments.length });
     return comments.map(toPayload);
   } catch (error) {
-    return fail(error, 'Could not read those comments.');
+    return fail(error, 'Could not load comments.');
   }
 });
 
@@ -302,7 +302,7 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
     if (input.path == null || input.line == null) {
       throw new ORPCError('BAD_REQUEST', {
         status: 400,
-        message: 'That comment is missing a path or a line.',
+        message: 'This comment is missing a file or line number.',
       });
     }
 
@@ -342,7 +342,7 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
     return toPayload(created);
   } catch (error) {
     if (error instanceof ORPCError) throw error;
-    return fail(error, 'That comment request failed.');
+    return fail(error, 'Could not post this comment.');
   }
 });
 
@@ -360,7 +360,7 @@ const removeComment = os.comments.remove.handler(async ({ context, input }) => {
     log.set({ outcome: 'deleted' });
     return { ok: true as const };
   } catch (error) {
-    return fail(error, 'That delete failed.');
+    return fail(error, 'Could not delete this comment.');
   }
 });
 

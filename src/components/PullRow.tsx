@@ -106,7 +106,7 @@ export function PullRow({
           {pull.title}
         </span>
         {isCurrent && (
-          <span className="text-accent shrink-0" title="Under review now">
+          <span className="text-accent shrink-0" title="Currently viewing">
             <IconCheck size={14} />
           </span>
         )}

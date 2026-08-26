@@ -17,7 +17,7 @@ export const Route = createRootRoute({
       {
         name: 'description',
         content:
-          'Open any GitHub pull request, commit, or compare range by swapping github.com for ghdiff.com. Narrow the file list with preset path rules, and write line comments that land back on GitHub.',
+          'Open any GitHub pull request, commit, or compare range by swapping github.com for ghdiff.com. Narrow the file list with preset path rules, and post line comments back to GitHub.',
       },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],

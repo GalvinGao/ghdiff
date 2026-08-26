@@ -162,7 +162,7 @@ export function ReviewSidebar({
           {treeSource.paths.length === 0 ? (
             <div className="px-3 py-3">
               <p className="text-ink-muted text-sm">
-                Every file is hidden by the current filter.
+                The current filter hides all files.
               </p>
               <Button
                 className="mt-2"
@@ -170,7 +170,7 @@ export function ReviewSidebar({
                 variant="outline"
                 onClick={() => onFilterChange(EMPTY_FILTER_STATE)}
               >
-                Clear every filter
+                Clear filters
               </Button>
             </div>
           ) : (

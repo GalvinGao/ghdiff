@@ -177,7 +177,7 @@ export function HomeScreen() {
                 </>
               ) : (
                 <>
-                  Set up private GitHub access
+                  Add a GitHub token
                   <IconArrow className="rotate-180" size={14} />
                 </>
               )}
@@ -221,7 +221,7 @@ export function HomeScreen() {
         <Dialog
           className="p-4"
           open={editingToken}
-          title="Private GitHub access"
+          title="GitHub token"
           onClose={() => setEditingToken(false)}
         >
           <GitHubTokenForm token={token} />

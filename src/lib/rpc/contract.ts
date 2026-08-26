@@ -21,7 +21,9 @@ import type { GitHubViewer } from '@/lib/viewer';
 /** GitHub's own rule for an owner or a repository name. */
 const NAME = /^[A-Za-z0-9._-]+$/;
 
-const name = z.string().regex(NAME, 'That is not a GitHub name.');
+const name = z
+  .string()
+  .regex(NAME, 'Enter a valid GitHub username or repository name.');
 
 const repoRef = z.object({ owner: name, repo: name });
 
@@ -97,7 +99,7 @@ export const contract = {
     create: oc
       .input(
         pullRef.extend({
-          body: z.string().trim().min(1, 'That comment has no body.'),
+          body: z.string().trim().min(1, 'Comment cannot be empty.'),
           replyToId: z.int().positive().optional(),
           path: z.string().min(1).optional(),
           line: z.int().positive().optional(),

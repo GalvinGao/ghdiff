@@ -34,7 +34,7 @@ export function PullDetailsCard({
             : 'text-ink-muted p-3 text-sm'
         }
       >
-        {error ?? (loading ? 'Reading the pull request…' : 'No details yet.')}
+        {error ?? (loading ? 'Loading pull request…' : 'No details yet.')}
       </p>
     );
   }

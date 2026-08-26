@@ -63,7 +63,7 @@ export function useGitHubToken(): GitHubTokenState {
       } catch (cause) {
         if (controller.signal.aborted) return;
         setViewer(undefined);
-        setViewerError(rpcErrorMessage(cause, 'Could not check that token.'));
+        setViewerError(rpcErrorMessage(cause, 'Could not verify this token.'));
       } finally {
         if (!controller.signal.aborted) setChecking(false);
       }

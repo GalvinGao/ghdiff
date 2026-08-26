@@ -398,11 +398,14 @@ repositories, and an organization behind SAML has to authorize the token — and
 its button reads **Update token**. `ReviewFailureAction` names the dialog and
 not the wording on the button; the panel takes that word from `token.hasToken`.
 
-Every message in this panel is deliberately spoken rather than written, the rate
-limit's two included. The rest of this app is composed; an error panel is read
-by somebody who is stuck, and a sentence they have to parse twice costs them
-more than it tells them. So each one names the likely cause, names the next
-step, and stops.
+**Copy on screen is spoken, not written.** Every line a reviewer reads — the
+error panels, the empty states, the token form, the buttons, the server's own
+failures — says the likely cause and the next step and then stops. The comments
+in this repository are composed prose and stay that way; the interface is not. A
+reviewer meets a message when something has gone wrong, or when they do not yet
+know what to do, and a sentence they have to parse twice costs them more than it
+tells them. `agy -p` wrote the current wording against that brief. Write a new
+message the same way, not in the register of the code around it.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list
@@ -522,6 +525,22 @@ bodies — an attached screenshot is an `<img>` with a width — so dropping it 
 descriptions full of holes. Widening that schema means deciding a tag is safe
 against a body any GitHub user can write, so do not widen it without saying here
 why the addition cannot carry script or a navigation.
+
+**A task list's box is drawn, not a real checkbox.** A `- [x]` reaches
+`CommentBody` as `<input type="checkbox" checked disabled>`, and a native
+control is the wrong answer to it twice over: the browser paints one in the
+platform's own blue, which is the single colour this app never uses, and it
+offers a press that can change nothing — the body belongs to GitHub, and ghdiff
+posts no edit of it. `disabled` settles the press alone and leaves the paint, so
+`TaskMarker` draws the box instead, in the tones the rest of a body already
+uses. It hangs in the bullet's own lane: the box is 1em wide with 0.4em after it
+and -1.4em before it, so its advance is zero and the item's first line and every
+wrapped line start on the list's own content edge. That pull is stated on the
+`li` and not on the box, because a checkbox written as raw HTML outside a list
+has no bullet lane to hang in, and the `li` drops its marker in the same breath
+so an item carries one box and not a bullet as well. The box has no `<title>`:
+one tooltip per box would follow the pointer down a whole checklist, and
+`role="img"` with `aria-label` names the state and draws nothing.
 
 **The address names the file and the lines.** `src/lib/diffAnchor.ts` owns the
 fragment and `src/hooks/useDiffAnchor.ts` owns the two directions. The grammar

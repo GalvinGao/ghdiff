@@ -24,7 +24,7 @@ const COPY: Record<
   },
   starting: {
     title: 'Starting the highlighters',
-    message: 'Warming the workers that colour the code.',
+    message: 'Background workers are getting ready to color your code.',
   },
 };
 
