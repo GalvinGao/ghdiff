@@ -59,9 +59,8 @@ export function GitHubTokenForm({
       ) : (
         <>
           <p className="text-ink-faint text-xs">
-            A GitHub personal access token. It stays in this browser and travels
-            on each request. ghdiff needs it to read a private diff and to post
-            a comment.
+            ghdiff needs a GitHub personal access token to read private diffs
+            and post comments. Your token stays in this browser.
           </p>
 
           <a
@@ -81,7 +80,8 @@ export function GitHubTokenForm({
               GitHub's own form: a sentence of four permissions has to be
               re-read once per checkbox. */}
           <p className="text-ink-faint mt-2 text-xs">
-            The link ticks these for you. Choose the repositories you review:
+            The link pre-selects these for you. Choose the repositories you
+            review:
           </p>
           <ul className="mt-1 text-xs">
             {TOKEN_PERMISSIONS.map(({ access, name }) => (

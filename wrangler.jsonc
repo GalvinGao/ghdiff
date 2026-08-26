@@ -10,6 +10,19 @@
   // carries GITHUB_TOKEN. Both come from nodejs_compat.
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // This app's own key-value store. It holds one key today, the "Served"
+  // counter in the home page's footer, and it is named for the app rather than
+  // for that counter so the next thing that needs a key has a place to go. KV
+  // is the right store for what is there: the figure is read far more often
+  // than it is written, an approximate answer is an acceptable answer, and a
+  // Durable Object would add a second runtime object to a Worker with little
+  // room left in it.
+  "kv_namespaces": [
+    {
+      "binding": "GHDIFF",
+      "id": "a6dcaed15a1340b6848116ff1b5a17e2",
+    },
+  ],
   "observability": {
     "enabled": true,
   },

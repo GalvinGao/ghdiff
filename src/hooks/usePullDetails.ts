@@ -46,7 +46,7 @@ export function usePullDetails(options: {
       );
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(rpcErrorMessage(cause, 'Could not read that pull request.'));
+      setError(rpcErrorMessage(cause, 'Could not load this pull request.'));
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }

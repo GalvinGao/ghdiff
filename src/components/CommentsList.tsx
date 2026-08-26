@@ -77,8 +77,8 @@ export function CommentsList({
         <p>No comments here.</p>
         <p className="text-ink-faint mt-1 text-xs">
           {store === 'github'
-            ? 'A comment you leave here becomes a pull request review comment on GitHub.'
-            : 'This target has no GitHub review thread, so comments stay in this browser.'}
+            ? 'Comments you leave here are posted to GitHub.'
+            : 'GitHub has no review thread for commits or compare ranges. Comments stay in this browser.'}
         </p>
       </div>
     );

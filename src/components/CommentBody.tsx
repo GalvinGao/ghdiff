@@ -25,6 +25,56 @@ import { cn } from '@/lib/cn';
 // The component map is a module constant, and the whole render is memoized on
 // the body string, so scrolling the diff past a comment costs no reparse.
 
+function isTaskItem(className: string | undefined): boolean {
+  return className != null && className.split(' ').includes('task-list-item');
+}
+
+// A `- [x]` in a body reaches this file as `<input type="checkbox" checked
+// disabled>`, and a real control is the wrong answer to it twice over. The
+// browser paints one in the platform's own blue, which is the single colour
+// this app never uses, and it offers a press that can change nothing: the body
+// belongs to GitHub, and ghdiff posts no edit of it. `disabled` settles the
+// press alone and leaves the paint. So the box is drawn here instead, in the
+// same tones the rest of a comment body uses — the fill of an inline code span,
+// the line of a table's border — and it is an image, not a control.
+//
+// It carries no `<title>`: the box is one of many down a checklist, and a
+// browser tooltip on each of them would follow the pointer across the whole
+// description. `role="img"` with `aria-label` names the state for a screen
+// reader and draws nothing.
+function TaskMarker({ checked }: { checked: boolean }) {
+  const label = checked ? 'Done' : 'Not done';
+  return (
+    <svg
+      aria-label={label}
+      className="mr-[0.4em] inline-block h-[1em] w-[1em] align-middle"
+      data-task-marker=""
+      role="img"
+      viewBox="0 0 16 16"
+    >
+      <rect
+        fill="var(--app-surface)"
+        height={13}
+        rx={3.5}
+        stroke="var(--app-ink-faint)"
+        width={13}
+        x={1.5}
+        y={1.5}
+      />
+      {checked && (
+        <path
+          d="M4.6 8.2 7 10.6l4.4-5"
+          fill="none"
+          stroke="var(--app-ink)"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.8}
+        />
+      )}
+    </svg>
+  );
+}
+
 const COMPONENTS: Components = {
   p: ({ children }) => <p className="my-1 first:mt-0 last:mb-0">{children}</p>,
   a: ({ children, href }) => (
@@ -43,7 +93,21 @@ const COMPONENTS: Components = {
   ol: ({ children }) => (
     <ol className="my-1 list-decimal pl-5 first:mt-0 last:mb-0">{children}</ol>
   ),
-  li: ({ children }) => <li className="my-0.5">{children}</li>,
+  // A task list item drops its bullet — the box `TaskMarker` draws is the one
+  // marker it gets — and hangs that box in the bullet's own space, so its first
+  // line and every wrapped line start on the list's own content edge. The pull
+  // is stated here rather than on the marker, because a checkbox written as raw
+  // HTML outside a list has no bullet lane to hang in.
+  li: ({ children, className }) => (
+    <li
+      className={cn(
+        'my-0.5',
+        isTaskItem(className) && 'list-none [&_[data-task-marker]]:-ml-[1.4em]'
+      )}
+    >
+      {children}
+    </li>
+  ),
   code: ({ className, children }) => {
     // react-markdown gives a fenced block a language class and puts it inside
     // <pre>; an inline span has neither.
@@ -120,14 +184,7 @@ const COMPONENTS: Components = {
     />
   ),
   input: ({ checked, type }) =>
-    type === 'checkbox' ? (
-      <input
-        type="checkbox"
-        checked={checked === true}
-        readOnly
-        className="mr-1 align-middle"
-      />
-    ) : null,
+    type === 'checkbox' ? <TaskMarker checked={checked === true} /> : null,
 };
 
 const REMARK_PLUGINS = [remarkGfm];

@@ -13,8 +13,10 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { UserscriptInstall } from '@/components/UserscriptInstall';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
+import { useServedCount } from '@/hooks/useServedCount';
 import { commitUrl, GHDIFF_REPO, repoUrl } from '@/lib/githubUrls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
+import { formatServedCount } from '@/lib/servedCount';
 
 // The home page carries no chrome of its own. There is no diff on screen yet, so
 // a header with a token button and view settings would be a toolbar for
@@ -175,7 +177,7 @@ export function HomeScreen() {
                 </>
               ) : (
                 <>
-                  Set up private GitHub access
+                  Add a GitHub token
                   <IconArrow className="rotate-180" size={14} />
                 </>
               )}
@@ -219,7 +221,7 @@ export function HomeScreen() {
         <Dialog
           className="p-4"
           open={editingToken}
-          title="Private GitHub access"
+          title="GitHub token"
           onClose={() => setEditingToken(false)}
         >
           <GitHubTokenForm token={token} />
@@ -259,6 +261,7 @@ export function HomeScreen() {
             <span className="underline">Source on GitHub</span>
           </a>
           <BuildCommit />
+          <ServedCount />
         </p>
       </div>
     </main>
@@ -285,5 +288,24 @@ function BuildCommit() {
     >
       {sha.slice(0, 7)}
     </GitHubTextLink>
+  );
+}
+
+/**
+ * How many diffs this deployment has served, beside the commit it was built
+ * from. The two belong on one line: both are facts about this deployment
+ * rather than about the diff a reviewer came for.
+ *
+ * Nothing is drawn until the figure arrives, and nothing is drawn for zero. A
+ * counter is the last thing on the page that should announce a failure, and
+ * "Served 0 diffs" is what a store that has not answered yet would say.
+ */
+function ServedCount() {
+  const count = useServedCount();
+  if (count == null || count === 0) return null;
+  return (
+    <span className="text-ink-faint text-xs">
+      Served {formatServedCount(count)} {count === 1 ? 'diff' : 'diffs'}
+    </span>
   );
 }

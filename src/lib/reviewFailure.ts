@@ -33,7 +33,8 @@ export interface ReviewFailure {
   title: string;
 }
 
-const FALLBACK_MESSAGE = 'The request for this diff did not come back.';
+const FALLBACK_MESSAGE =
+  "The server didn't respond. Your connection might be offline, or the request timed out.";
 
 const NOT_FOUND = 404;
 
@@ -87,6 +88,6 @@ export function describeReviewFailure(input: {
   return {
     action: 'retry',
     message: message ?? FALLBACK_MESSAGE,
-    title: 'Could not load that diff',
+    title: 'Could not load the diff',
   };
 }

@@ -27,10 +27,10 @@ export function UserscriptInstall() {
   return (
     <div className="flex items-center gap-3 px-4 py-3">
       <div className="min-w-0 flex-1">
-        <p className="text-ink text-sm">A ghdiff button on github.com</p>
+        <p className="text-ink text-sm">Add a ghdiff button to github.com</p>
         <p className="text-ink-muted mt-0.5 text-xs">
-          In the pull request tab bar, beside Files changed. Requires a user
-          script manager such as{' '}
+          This adds a button to the pull request tab bar, next to Files changed.
+          It requires a userscript manager such as{' '}
           <a
             className="text-accent underline underline-offset-2"
             href={TAMPERMONKEY_URL}

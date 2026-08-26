@@ -22,6 +22,7 @@ import {
   pullFilesFetch,
   synthesizePatch,
 } from '@/lib/server/githubPatch';
+import { recordServe } from '@/lib/server/servedCount';
 
 // Returns the unified diff for one review target as text/plain.
 //
@@ -109,7 +110,12 @@ const getDiff = withEvlog(
     log.set({ target: reviewTargetKey(target), targetKind: target.kind });
 
     try {
-      return await gitHubResponse(target, request, log);
+      const response = await gitHubResponse(target, request, log);
+      // One serve, counted. `gitHubResponse` returns only when a source
+      // answered, so a 404 or a spent quota is not a serve. The write itself
+      // happens after this response has gone.
+      recordServe();
+      return response;
     } catch (error) {
       if (error instanceof GitHubError) {
         log.set({ outcome: 'error', status: error.status });

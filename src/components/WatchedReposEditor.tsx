@@ -20,8 +20,8 @@ export function WatchedReposEditor({
   return (
     <div>
       <p className="text-ink-faint mb-2 text-xs">
-        ghdiff lists the open pull requests of these repositories. The list
-        stays in this browser.
+        ghdiff lists open pull requests for these repositories. The list stays
+        in this browser.
       </p>
 
       <form
@@ -32,7 +32,7 @@ export function WatchedReposEditor({
             setInput('');
             setError(undefined);
           } else {
-            setError('Give a repository as owner/repo.');
+            setError('Enter a repository as owner/repo.');
           }
         }}
       >

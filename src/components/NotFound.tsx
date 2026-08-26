@@ -13,7 +13,7 @@ export function NotFound() {
           size={20}
         />
         <h1 className="text-ink text-sm font-medium">
-          ghdiff cannot read that address
+          ghdiff cannot read that URL
         </h1>
         <p className="text-ink-muted mt-1 text-sm text-pretty">
           A review needs a GitHub pull request, a commit, or a compare range.
