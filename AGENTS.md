@@ -499,6 +499,22 @@ descriptions full of holes. Widening that schema means deciding a tag is safe
 against a body any GitHub user can write, so do not widen it without saying here
 why the addition cannot carry script or a navigation.
 
+**A task list's box is drawn, not a real checkbox.** A `- [x]` reaches
+`CommentBody` as `<input type="checkbox" checked disabled>`, and a native
+control is the wrong answer to it twice over: the browser paints one in the
+platform's own blue, which is the single colour this app never uses, and it
+offers a press that can change nothing — the body belongs to GitHub, and ghdiff
+posts no edit of it. `disabled` settles the press alone and leaves the paint, so
+`TaskMarker` draws the box instead, in the tones the rest of a body already
+uses. It hangs in the bullet's own lane: the box is 1em wide with 0.4em after it
+and -1.4em before it, so its advance is zero and the item's first line and every
+wrapped line start on the list's own content edge. That pull is stated on the
+`li` and not on the box, because a checkbox written as raw HTML outside a list
+has no bullet lane to hang in, and the `li` drops its marker in the same breath
+so an item carries one box and not a bullet as well. The box has no `<title>`:
+one tooltip per box would follow the pointer down a whole checklist, and
+`role="img"` with `aria-label` names the state and draws nothing.
+
 **The address names the file and the lines.** `src/lib/diffAnchor.ts` owns the
 fragment and `src/hooks/useDiffAnchor.ts` owns the two directions. The grammar
 follows github.com's: a file part, then an optional line part of one or two
