@@ -60,11 +60,20 @@ src/
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
   lib/server/              server-only: the GitHub client
+public/
+  ghdiff.user.js           the userscript, copied to dist/client as it is
 ```
 
 A route file holds one `Route` export. A page route sets `component`; an API
 route sets `server.handlers` and no component, which is what keeps it off the
 client. `@/*` resolves to `./src/*`, for both tsc and Vite.
+
+`public/` is Vite's own directory and this app has one file in it. Nothing
+bundles that file: the build copies it to `dist/client`, wrangler uploads it
+with the rest of the assets, and Cloudflare answers `/ghdiff.user.js` from the
+asset store before the Worker runs — which is why the splat route does not catch
+it. oxlint and oxfmt both read it, so it is plain JavaScript the two tools
+accept.
 
 ## Rules this project holds to
 
@@ -82,6 +91,37 @@ adding a top-level _page_ route is what would shadow a repository owner of that
 name. `src/routes/gh/$.tsx` is the old prefix and holds no component: its loader
 throws a `redirect`, which keeps every link already written alive. `PullRail`
 reads through a leading `gh` segment for the one navigation the redirect takes.
+
+**The userscript makes that host swap a button, and the tab bar is where it
+goes.** `public/ghdiff.user.js` adds one link to github.com, beside **Files
+changed** in the pull request's own tab row. That row is the one part of the
+page that both of GitHub's headers still draw and that the conversation and the
+diff share, so a single insertion point covers all four combinations:
+`nav[aria-label="Pull request navigation"]` is the React header and
+`.tabnav-tabs` is the one it has not replaced yet. Neither selector is a
+contract, so `findTabListByFilesTab` says what the row _is_ — the row that holds
+the link to this pull request's own `/files` page — and finds it again when the
+names change. The title-row actions were the other candidate and lost: GitHub
+puts the review state, **Code** and **Preview** there, and it needs a second
+selector for the same button.
+
+The script matches every page on github.com and not the pull request paths
+alone, because GitHub moves between its own pages without reloading the
+document, and a userscript manager starts a script once per document. So a
+`MutationObserver` re-appends the button that React's next render drops, and a
+50 ms timer — not `requestAnimationFrame`, which a background tab never runs —
+turns a diff's thousands of mutations into one `sync` at a time. The button
+carries the fragment over only when it is github.com's own `#diff-<64 hex>` form
+with an optional line part, which is the one fragment `lookupDiffAnchor` can
+resolve.
+
+`UserscriptInstall` offers it from the home page, under the form and above the
+examples, with the address written out for a manager that takes one instead of a
+click. Its Install control is a plain `<a>` and never a `Link`: a client-side
+navigation makes no request, and the request is the whole point. Bump `@version`
+in the script when it changes, or nobody who installed it gets the change —
+`@updateURL` is what every manager re-reads, and the version is what it
+compares.
 
 **The left bar is not there when it has nothing to list.** `PullRail` returns
 `null` while the watch list is empty, because an empty column beside a diff is a
