@@ -374,11 +374,14 @@ repositories, and an organization behind SAML has to authorize the token — and
 its button reads **Update token**. `ReviewFailureAction` names the dialog and
 not the wording on the button; the panel takes that word from `token.hasToken`.
 
-Every message in this panel is deliberately spoken rather than written, the rate
-limit's two included. The rest of this app is composed; an error panel is read
-by somebody who is stuck, and a sentence they have to parse twice costs them
-more than it tells them. So each one names the likely cause, names the next
-step, and stops.
+**Copy on screen is spoken, not written.** Every line a reviewer reads — the
+error panels, the empty states, the token form, the buttons, the server's own
+failures — says the likely cause and the next step and then stops. The comments
+in this repository are composed prose and stay that way; the interface is not. A
+reviewer meets a message when something has gone wrong, or when they do not yet
+know what to do, and a sentence they have to parse twice costs them more than it
+tells them. `agy -p` wrote the current wording against that brief. Write a new
+message the same way, not in the register of the code around it.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list

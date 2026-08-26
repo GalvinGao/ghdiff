@@ -203,7 +203,7 @@ export function FilterMenu({
           onSelect={() => onChange(EMPTY_FILTER_STATE)}
         >
           <IconXSquircle className="opacity-60" size={14} />
-          Clear every filter
+          Clear filters
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -57,12 +57,12 @@ describe('describeReviewFailure', () => {
     });
     assert.equal(failure.action, 'retry');
     assert.equal(failure.message, 'Something broke upstream.');
-    assert.equal(failure.title, 'Could not load that diff');
+    assert.equal(failure.title, 'Could not load the diff');
   });
 
   it('speaks for a request that never came back', () => {
     const failure = describeReviewFailure({ hasToken: false });
     assert.equal(failure.action, 'retry');
-    assert.match(failure.message, /did not come back/);
+    assert.match(failure.message, /didn't respond/);
   });
 });

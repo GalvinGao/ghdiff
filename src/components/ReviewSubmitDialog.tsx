@@ -60,9 +60,9 @@ export function ReviewSubmitDialog({
   return (
     <Dialog onClose={onClose} open={open} title="Submit a review">
       <p className="text-ink-muted text-xs">
-        On <span className="text-ink font-medium">{targetLabel}</span>. This is
-        a review of the whole pull request. A comment on a line is posted where
-        you write it.
+        This is a review of the whole pull request for{' '}
+        <span className="text-ink font-medium">{targetLabel}</span>. Line
+        comments are posted where you write them.
       </p>
 
       {/* Why the button that opened this says `Approved` rather than `Review`.
@@ -104,7 +104,7 @@ export function ReviewSubmitDialog({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {!canSubmitReview('COMMENT', body) && (
           <p className="text-ink-faint text-xs">
-            A note is required to request changes or to comment.
+            Add a note to request changes or comment.
           </p>
         )}
         <div className="ml-auto flex items-center gap-2">
