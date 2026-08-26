@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "cubic-bezier(0.3, 1.15, 0.45, 1)",
+        "reason": "User asked for a slightly springy rail toggle; <1% overshoot, deliberate",
+        "createdAt": "2026-08-26T11:43:56.375Z"
+      }
+    ]
+  }
+}

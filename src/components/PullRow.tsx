@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 
 import { pullStateLabel } from '@/components/PullStateIcon';
 import { PullStatusMark } from '@/components/PullStatusMark';
+import { railPullFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
 import type { PullSummary } from '@/lib/pulls';
 import { describePullStatus } from '@/lib/pullStatus';
@@ -78,8 +79,15 @@ export function PullRow({
       }\n${pull.headRef} into ${pull.baseRef}`}
     >
       <span className="flex min-w-0 items-center gap-1.5">
+        {/* The flip mark pairs this lane with the same pull request's square
+            in the collapsed bar, so toggling the bar flies one square between
+            the two layouts (hooks/useRailFlip.ts). An empty lane is not
+            marked: a flight needs a square to fly. */}
         <span
           className="flex shrink-0 items-center justify-center"
+          data-rail-flip={
+            pull.status == null ? undefined : railPullFlipKey(pull)
+          }
           style={{ width: MARK_SIZE }}
         >
           {pull.status != null && (

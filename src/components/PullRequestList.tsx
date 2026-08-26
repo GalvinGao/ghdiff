@@ -5,6 +5,7 @@ import { PullRow } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
+import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
 import { repoPullsUrl, repoUrl } from '@/lib/githubUrls';
 import {
@@ -235,7 +236,15 @@ function PullStack({
               <span className="text-ink-faint text-[10px] leading-none font-medium">
                 Stack
               </span>
-              <PullStackBadge size={size} />
+              {/* The same badge the collapsed bar puts at the top of this
+                  stack's block, marked with the same key, so a toggle flies
+                  one badge between the two places (hooks/useRailFlip.ts). */}
+              <span
+                className="flex"
+                data-rail-flip={railStackFlipKey(node.pull)}
+              >
+                <PullStackBadge size={size} />
+              </span>
             </div>
             <PullChain
               current={current}
