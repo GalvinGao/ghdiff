@@ -23,14 +23,23 @@ export function ExampleTargets() {
           <Link
             to="/$"
             params={{ _splat: reviewTargetSplat(example.target) }}
-            className="hover:bg-raised focus-visible:bg-raised flex items-baseline gap-3 rounded-md px-2 py-1.5 outline-none"
+            // `surface` and not `raised`: the card this list sits in is
+            // `raised` itself, so a row that hovered to `raised` hovered to
+            // the colour already under it and nothing happened. This is the
+            // same pair the `outline` button uses, for the same reason.
+            className="group hover:bg-surface focus-visible:bg-surface flex items-baseline gap-3 rounded-md px-2 py-1.5 outline-none"
             title={`${example.title} — ${example.note}`}
           >
             <span className="text-ink min-w-0 flex-1 truncate">
               <span className="text-ink-faint">/</span>
               {reviewTargetDisplayPath(example.target)}
             </span>
-            <span className="text-ink-faint shrink-0 text-[11px] tabular-nums">
+            {/* The tone lifts with the row. `raised` and `surface` are eight
+                values apart, which is the whole distance this app has between
+                a card and the page under it, so the background alone is a
+                hover a reader can miss. The figures moving with it is what
+                makes the row answer the pointer. */}
+            <span className="text-ink-faint group-hover:text-ink-muted group-focus-visible:text-ink-muted shrink-0 text-[11px] tabular-nums transition-colors">
               {example.scale}
             </span>
           </Link>

@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { reviewTone } from './pullStatus.ts';
 import {
   canSubmitReview,
   describeSubmittedReview,
   REVIEW_EVENTS,
   reviewEventSpec,
+  reviewVerdict,
 } from './reviewDecision.ts';
 
 describe('REVIEW_EVENTS', () => {
@@ -63,5 +65,45 @@ describe('describeSubmittedReview', () => {
       describeSubmittedReview({ ...review, state: 'DISMISSED' }),
       'GitHub recorded your review.'
     );
+  });
+});
+
+describe('reviewVerdict', () => {
+  const review = { id: 7, state: 'APPROVED' };
+
+  it('reads the three verdicts that stand', () => {
+    assert.deepEqual(reviewVerdict(review), {
+      verdict: 'approved',
+      label: 'Approved',
+      tone: 'success',
+    });
+    assert.deepEqual(reviewVerdict({ ...review, state: 'CHANGES_REQUESTED' }), {
+      verdict: 'changes',
+      label: 'Changes requested',
+      tone: 'failure',
+    });
+    assert.deepEqual(reviewVerdict({ ...review, state: 'COMMENTED' }), {
+      verdict: 'commented',
+      label: 'Commented',
+      tone: 'neutral',
+    });
+  });
+
+  it('paints a verdict the colour the status square paints it', () => {
+    assert.equal(reviewVerdict(review)?.tone, reviewTone('approved'));
+    assert.equal(
+      reviewVerdict({ ...review, state: 'CHANGES_REQUESTED' })?.tone,
+      reviewTone('changes')
+    );
+  });
+
+  it('answers with nothing for a review that decides nothing', () => {
+    // A draft the reviewer has not sent, and one GitHub has taken back.
+    assert.equal(reviewVerdict({ ...review, state: 'PENDING' }), undefined);
+    assert.equal(reviewVerdict({ ...review, state: 'DISMISSED' }), undefined);
+  });
+
+  it('answers with nothing when there is no review at all', () => {
+    assert.equal(reviewVerdict(undefined), undefined);
   });
 });

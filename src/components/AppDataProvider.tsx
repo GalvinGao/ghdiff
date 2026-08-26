@@ -1,4 +1,10 @@
-import { createContext, type ReactNode, useContext, useMemo } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react';
 
 import { type ColorModeState, useColorMode } from '@/hooks/useColorMode';
 import { type GitHubTokenState, useGitHubToken } from '@/hooks/useGitHubToken';
@@ -35,6 +41,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     repos: watched.repos,
     token: token.token,
   });
+
+  // The document's own answer to whether the left bar is there.
+  // `WatchedReposScript` writes it before the first paint and `globals.css`
+  // hides the bar on 'no', and from then on it belongs to the watch list. A
+  // reviewer who watches their first repository is exactly the reader that rule
+  // was hiding the bar from, and a stale 'no' goes on hiding it until the next
+  // load. The read of storage is what settles the attribute, so nothing is
+  // written before `hydrated`.
+  const watching = watched.hydrated ? watched.repos.length > 0 : undefined;
+  useEffect(() => {
+    if (watching == null) return;
+    document.documentElement.dataset.watching = watching ? 'yes' : 'no';
+  }, [watching]);
 
   const value = useMemo<AppData>(
     () => ({ colorMode, pulls, token, watched }),

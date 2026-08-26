@@ -53,6 +53,15 @@ export const contract = {
 
   reviews: {
     /**
+     * The verdict the caller has already left on this pull request, so the
+     * header can say what it is rather than offer to take a first one. It
+     * answers with no review for a caller who has never reviewed, and for one
+     * with no token: the viewer is the token's own, so an anonymous caller has
+     * no review to look up.
+     */
+    mine: oc.input(pullRef).output(type<{ review?: SubmittedReview }>()),
+
+    /**
      * A verdict on the pull request as a whole. The three events are GitHub's
      * own spelling, and the body is optional here rather than conditional:
      * `canSubmitReview` holds the button until a verdict that needs words has

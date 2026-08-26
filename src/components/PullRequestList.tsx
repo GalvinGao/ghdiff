@@ -22,11 +22,7 @@ interface PullRequestListProps {
   /** Whether `repos` is the stored watch list yet, or still the empty default. */
   hydrated: boolean;
   onNavigate?(): void;
-  /** One `owner/repo`, or undefined for every watched repository. */
-  repoFilter?: string;
   repos: readonly WatchedRepo[];
-  /** False when the caller has already named the repository above the list. */
-  showRepoHeadings?: boolean;
   state: OpenPullsState;
 }
 
@@ -35,31 +31,22 @@ interface PullRequestListProps {
  * who wrote them, then which stack they belong to. Anything still level with
  * something else goes by pull request number, newest first.
  *
- * The left bar and the home page both render this, and neither owns the loading,
- * empty, and failure states.
+ * The left bar renders this, and does not own the loading, empty, and failure
+ * states.
  */
 export function PullRequestList({
   current,
   hydrated,
   onNavigate,
-  repoFilter,
   repos,
-  showRepoHeadings = true,
   state,
 }: PullRequestListProps) {
   const { data, error, loading } = state;
 
   const groups = useMemo(() => {
     if (data == null) return [];
-    const pulls =
-      repoFilter == null
-        ? data.pulls
-        : data.pulls.filter(
-            (pull) =>
-              formatWatchedRepo(pull).toLowerCase() === repoFilter.toLowerCase()
-          );
-    return groupPullsByRepo(pulls, data.viewer);
-  }, [data, repoFilter]);
+    return groupPullsByRepo(data.pulls, data.viewer);
+  }, [data]);
 
   const failures = data?.failures ?? [];
 
@@ -75,7 +62,13 @@ export function PullRequestList({
         <p className="text-ink-muted px-2 py-3 text-sm">
           Watch a repository to see its open pull requests.
         </p>
-      ) : loading && data == null ? (
+      ) : loading && groups.length === 0 ? (
+        // Nothing to show and an answer on the way: the first load, and the
+        // moment after the first repository is watched, when `data` is the
+        // empty answer the hook gives an empty watch list. Saying "no open
+        // pull requests in it" there is a wrong answer to a question GitHub
+        // has not answered yet. A reload with rows already on screen keeps
+        // them, because `groups` is not empty.
         <PullListSkeleton />
       ) : error != null ? (
         <p className="text-removed px-2 py-3 text-sm">{error}</p>
@@ -85,8 +78,7 @@ export function PullRequestList({
         // over the top of it would be a second, wrong answer.
         failures.length === 0 && (
           <p className="text-ink-muted px-2 py-3 text-sm">
-            No open pull requests in{' '}
-            {repoFilter ?? repos.map(formatWatchedRepo).join(', ')}.
+            No open pull requests in {repos.map(formatWatchedRepo).join(', ')}.
           </p>
         )
       ) : (
@@ -113,26 +105,24 @@ export function PullRequestList({
                 goes to the rows it counted: GitHub's own open pull requests
                 for it. Both are the answer to "what is this", so both are the
                 text itself rather than a glyph beside it. */}
-            {showRepoHeadings && (
-              <div className="flex items-baseline gap-2 px-2 pt-2 pb-1">
-                <SectionLabel className="min-w-0">
-                  <GitHubTextLink
-                    className="block truncate"
-                    href={repoUrl(group)}
-                    title={`Open ${group.owner}/${group.repo} on GitHub`}
-                  >
-                    {group.owner}/{group.repo}
-                  </GitHubTextLink>
-                </SectionLabel>
+            <div className="flex items-baseline gap-2 px-2 pt-2 pb-1">
+              <SectionLabel className="min-w-0">
                 <GitHubTextLink
-                  className="text-ink-faint ml-auto shrink-0 text-xs tabular-nums"
-                  href={repoPullsUrl(group)}
-                  title={`Open the ${String(group.count)} open pull requests on GitHub`}
+                  className="block truncate"
+                  href={repoUrl(group)}
+                  title={`Open ${group.owner}/${group.repo} on GitHub`}
                 >
-                  {group.count}
+                  {group.owner}/{group.repo}
                 </GitHubTextLink>
-              </div>
-            )}
+              </SectionLabel>
+              <GitHubTextLink
+                className="text-ink-faint ml-auto shrink-0 text-xs tabular-nums"
+                href={repoPullsUrl(group)}
+                title={`Open the ${String(group.count)} open pull requests on GitHub`}
+              >
+                {group.count}
+              </GitHubTextLink>
+            </div>
             {group.authors.map((author, authorIndex) => (
               <div
                 key={author.author}
@@ -234,7 +224,17 @@ function PullStack({
             key={node.pull.number}
             className="bg-raised/50 inset-ring-line/70 my-1 rounded-md py-0.5 inset-ring"
           >
-            <div className="flex justify-end px-2 pt-0.5">
+            {/* The block's caption: what it is on the left, how big it is on
+                the right. The count alone left the reader to work out what a
+                background and a layers glyph meant, and it sat against an empty
+                half-row. The word is the badge's own size and colour, so the
+                two read as one quiet line above the rows rather than as a
+                heading over them. The collapsed bar gets the badge and no word:
+                it is the width of one square. */}
+            <div className="flex items-center justify-between gap-2 px-2 pt-0.5">
+              <span className="text-ink-faint text-[10px] leading-none font-medium">
+                Stack
+              </span>
               <PullStackBadge size={size} />
             </div>
             <PullChain

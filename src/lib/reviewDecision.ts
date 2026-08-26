@@ -7,6 +7,8 @@
 // comments this app writes are posted as they are written, so there is never a
 // pending batch for a verdict to carry.
 
+import type { StatusTone } from './pullStatus.ts';
+
 /** GitHub's `event`, verbatim. */
 export type ReviewEvent = 'APPROVE' | 'COMMENT' | 'REQUEST_CHANGES';
 
@@ -65,6 +67,50 @@ export function reviewEventSpec(event: ReviewEvent): ReviewEventSpec {
  */
 export function canSubmitReview(event: ReviewEvent, body: string): boolean {
   return !reviewEventSpec(event).requiresBody || body.trim().length > 0;
+}
+
+/**
+ * A verdict already on record, narrowed to the three that still stand. The
+ * vocabulary is `ReviewState`'s, plus the one axis a pull request's own
+ * `reviewDecision` never carries: a review that is only a remark.
+ */
+export type ReviewVerdict = 'approved' | 'changes' | 'commented';
+
+export interface ReviewVerdictSpec {
+  verdict: ReviewVerdict;
+  /** What the header's button says once this verdict is on record. */
+  label: string;
+  /**
+   * The colour, in the vocabulary the status square paints with. The square in
+   * the left bar and this button answer the same question about the same pull
+   * request, so green there and green here have to mean one thing.
+   */
+  tone: StatusTone;
+}
+
+const VERDICTS: Record<string, ReviewVerdictSpec> = {
+  APPROVED: { verdict: 'approved', label: 'Approved', tone: 'success' },
+  CHANGES_REQUESTED: {
+    verdict: 'changes',
+    label: 'Changes requested',
+    tone: 'failure',
+  },
+  COMMENTED: { verdict: 'commented', label: 'Commented', tone: 'neutral' },
+};
+
+/**
+ * The verdict a recorded review stands for, or nothing when it stands for none.
+ *
+ * GitHub has two states that are not verdicts and this reads both as nothing.
+ * `PENDING` is a review the reviewer started on github.com and has not sent, so
+ * there is no decision to report. `DISMISSED` is one GitHub has taken back, so
+ * the decision it held no longer counts.
+ */
+export function reviewVerdict(
+  review: SubmittedReview | undefined
+): ReviewVerdictSpec | undefined {
+  if (review == null) return undefined;
+  return VERDICTS[review.state];
 }
 
 /** What GitHub answers with, and what the app keeps of it. */

@@ -45,7 +45,7 @@ export function ReviewSubmitDialog({
   targetLabel: string;
 }) {
   const [body, setBody] = useState('');
-  const { error, pending, reset, submit, submitted } = review;
+  const { error, latest, pending, reset, submit, submitted } = review;
 
   // A dialog opening again is a new verdict. The words of the last one, and the
   // failure of the one before that, belong to a decision already made.
@@ -64,6 +64,15 @@ export function ReviewSubmitDialog({
         a review of the whole pull request. A comment on a line is posted where
         you write it.
       </p>
+
+      {/* Why the button that opened this says `Approved` rather than `Review`.
+          GitHub keeps every review and follows the newest, so a second one is
+          the way to change a decision rather than a duplicate of it. */}
+      {latest != null && (
+        <p className="text-ink-muted mt-2 text-xs">
+          {describeSubmittedReview(latest)} A new one takes its place.
+        </p>
+      )}
 
       <textarea
         aria-label="Review body"
