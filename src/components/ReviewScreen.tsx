@@ -9,6 +9,7 @@ import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
+import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
 import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
@@ -17,7 +18,6 @@ import {
   ReviewViewer,
   type ViewerControls,
 } from '@/components/ReviewViewer';
-import { SidebarResizeHandle } from '@/components/SidebarResizeHandle';
 import { Button } from '@/components/ui/Button';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
 import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
@@ -26,6 +26,8 @@ import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
 import {
+  SIDEBAR_MAX_WIDTH,
+  SIDEBAR_MIN_WIDTH,
   SIDEBAR_WIDTH_PROPERTY,
   useSidebarWidth,
 } from '@/hooks/useSidebarWidth';
@@ -84,7 +86,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // Destructured, so nothing reads a property of the state object while this
   // component renders.
   const {
-    attachContainer: attachLayout,
+    attach: attachLayout,
     onHandleKeyDown: onSidebarHandleKeyDown,
     onHandlePointerDown: onSidebarHandlePointerDown,
     reset: resetSidebarWidth,
@@ -393,10 +395,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             treeSource={filtered.treeSource}
             treeStats={treeStats}
           />
-          <SidebarResizeHandle
+          <PaneResizeHandle
+            label="Sidebar width"
+            max={SIDEBAR_MAX_WIDTH}
+            min={SIDEBAR_MIN_WIDTH}
             onKeyDown={onSidebarHandleKeyDown}
             onPointerDown={onSidebarHandlePointerDown}
             onReset={resetSidebarWidth}
+            style={{ left: `calc(var(${SIDEBAR_WIDTH_PROPERTY}) - 4px)` }}
             width={sidebarWidth}
           />
           <ReviewViewer

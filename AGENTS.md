@@ -53,7 +53,7 @@ src/
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: token, color mode, patch, comments,
-                           pulls, sidebar width, the URL fragment
+                           pulls, pane widths, the URL fragment
   lib/                     pure domain logic, unit tested
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
@@ -291,6 +291,21 @@ the thread the height was taken from. That is one relayout for one deliberate
 act, and it is the same relayout posting the first comment on a line already
 costs. Everything else stays fixed.
 
+**That layer is measured in the box it is about to have.** How tall a comment is
+is a question about the column it is read in, and the panel opens two or three
+times wider than the card. So `CommentExpansion` writes the target width and the
+largest allowed height onto the panel, reads the height of the box that holds
+the comments, and puts the panel back — all inside one layout effect, so the
+browser paints none of it and the panel still travels from the card's rectangle.
+Three things in that sequence are load-bearing. The panel's own transition is
+turned off around it, or the box read back is the box it started from and the
+answer is the card's tall wrap. The height goes on with the width, or the scroll
+region carries a scrollbar it is about to lose and every paragraph wraps eight
+pixels early. And what is measured is the padded box inside the scroll region,
+never the region: the region is `h-full` of a panel still the height of the
+card, so its `scrollHeight` can never report less than the card, which is what
+used to leave a band of empty panel under the last line.
+
 **A comment body is untrusted, and the schema is what makes it safe.**
 `CommentBody` parses raw HTML with `rehype-raw` and then filters it with
 `rehype-sanitize` on its **default** schema, which follows GitHub's own
@@ -370,10 +385,10 @@ not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
 every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
 
-**A sidebar drag renders nothing.** `src/hooks/useSidebarWidth.ts` writes every
-pointermove straight onto `--ghdiff-sidebar-width` on the layout element, and
-tells React once, on pointerup. The grid column and the handle's own `left` both
-read that property, so the pane and the seam travel together while the
+**A pane drag renders nothing.** `src/hooks/usePaneWidth.ts` writes every
+pointermove straight onto one custom property of the element that carries it,
+and tells React once, on pointerup. The layout and the handle's own placement
+both read that property, so the pane and the seam travel together while the
 `CodeView` beside them is neither re-rendered nor re-measured. The drag's active
 look comes from a `data-resizing` attribute on the handle for the same reason.
 Two widths are kept apart on purpose: the width the reviewer chose, which goes
@@ -381,6 +396,18 @@ to browser storage, and the width on screen, which a window too narrow for both
 panes squeezes. Widening the window gives the choice back, and a browser tab
 reporting a viewport of zero — which happens while a page loads and while a tab
 is hidden — is ignored rather than treated as a layout to shrink into.
+
+**Two panes drag, and `room` is the whole of what separates them.**
+`useSidebarWidth` is `room: 'self'`: the review sidebar is a grid column inside
+the element that carries `--ghdiff-sidebar-width`, so that element is both what
+the drag writes to and what says how much room there is. `useRailWidth` is
+`room: 'parent'`: the left bar **is** the element the drag resizes, so its room
+is its parent's width — measuring itself would chase its own tail, and the
+ResizeObserver would answer its own drag. What each pane leaves behind is
+`reserve`: the diff's minimum for the sidebar, and the sidebar's minimum plus
+the diff's for the bar, so a bar dragged to its widest still leaves a review
+screen that fits. The collapsed bar has no handle: it is the width of one
+square, and a square is not a thing to resize.
 
 **A file's diff stats belong to the tree's decoration lane.** `@pierre/trees`
 draws `renderRowDecoration` after the name and before the git badge, so the

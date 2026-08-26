@@ -69,7 +69,8 @@ export function CommentExpansion({
   // CodeView, so it costs the diff nothing.
   useLayoutEffect(() => {
     const content = contentRef.current;
-    if (content == null) return undefined;
+    const panel = panelRef.current;
+    if (content == null || panel == null) return undefined;
 
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
@@ -77,12 +78,45 @@ export function CommentExpansion({
       Math.max(from.width, MIN_WIDTH),
       viewportWidth - MARGIN * 2
     );
-    // scrollHeight is the full content height, because the panel clips it.
-    const wanted = content.scrollHeight + MARGIN * 2;
-    const height = Math.min(
-      Math.max(wanted, from.height),
-      viewportHeight - MARGIN * 2
-    );
+    // How tall the comments are is a question about the box they are read in,
+    // so the panel is given the box it is about to have and asked afterwards.
+    // Every write here is undone before the effect returns, so the browser
+    // paints none of it and the panel still travels from the card's rectangle.
+    //
+    // The height of that box matters as much as its width. Measured in a panel
+    // still as short as the card, the scroll region carries a scrollbar it is
+    // about to lose, every paragraph wraps eight pixels early, and the panel
+    // ends up sized for lines that will not be there.
+    //
+    // The box that holds the comments is what answers. The scroll region around
+    // it cannot: it is `h-full` of a panel that still has the card's height, so
+    // its `scrollHeight` never reports less than the card, and the card is the
+    // height of these same words in a column a third as wide. That floor is
+    // what left a band of empty panel under the last line.
+    //
+    // The panel is sized border box, so its border is added back here. Without
+    // it the scroll region ends up two pixels short of its own content and
+    // grows a scrollbar for them.
+    const border = panel.offsetHeight - panel.clientHeight;
+    const maxHeight = viewportHeight - MARGIN * 2;
+    const startWidth = panel.style.width;
+    const startHeight = panel.style.height;
+    // The panel transitions its own width and height, and a transition is
+    // exactly what must not be running for this: a box read back while one is
+    // under way is the box it started from, which is the card's, and the answer
+    // would be the tall wrap this measurement exists to avoid. Turning it off,
+    // writing, reading, and putting the panel back is one uninterrupted script
+    // turn, so nothing is left for a transition to animate afterwards.
+    panel.style.transition = 'none';
+    panel.style.width = `${String(width)}px`;
+    panel.style.height = `${String(maxHeight)}px`;
+    const wanted = content.getBoundingClientRect().height + border;
+    panel.style.width = startWidth;
+    panel.style.height = startHeight;
+    // Settle the restored box before the transition comes back.
+    void panel.offsetHeight;
+    panel.style.transition = '';
+    const height = Math.min(wanted, maxHeight);
     const left = Math.min(
       Math.max(from.left, MARGIN),
       viewportWidth - width - MARGIN
@@ -153,11 +187,12 @@ export function CommentExpansion({
         opacity: to == null ? 0.9 : 1,
       }}
     >
-      <div
-        ref={contentRef}
-        className="cv-scrollbar h-full overflow-y-auto overscroll-contain p-3"
-      >
-        {children}
+      {/* The padding is on the measured box rather than on the scroll region,
+          so one rectangle holds the whole of what the panel has to fit. */}
+      <div className="cv-scrollbar h-full overflow-y-auto overscroll-contain">
+        <div ref={contentRef} className="p-3">
+          {children}
+        </div>
       </div>
     </div>,
     document.body

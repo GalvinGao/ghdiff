@@ -1,54 +1,63 @@
 import type {
+  CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
   PointerEvent as ReactPointerEvent,
 } from 'react';
 
-import {
-  SIDEBAR_MAX_WIDTH,
-  SIDEBAR_MIN_WIDTH,
-  SIDEBAR_WIDTH_PROPERTY,
-} from '@/hooks/useSidebarWidth';
 import { cn } from '@/lib/cn';
 
-// The seam between the sidebar and the diff.
+// The seam at the edge of a resizable pane.
 //
-// It sits over the sidebar's own right border rather than taking a column of
-// its own, so nothing moves when it is grabbed and the two panes still meet on
-// one line. The line is one pixel and the grab area is eight, which is the
-// smallest target a pointer finds without aiming for it.
+// It sits over the pane's own right border rather than taking a column of its
+// own, so nothing moves when it is grabbed and the two panes still meet on one
+// line. The line is one pixel and the grab area is eight, which is the smallest
+// target a pointer finds without aiming for it.
 //
-// It takes the four values it needs one by one, rather than the whole state
-// object, so the drag's internals stay inside the hook.
+// It takes the values it needs one by one, rather than a whole state object, so
+// the drag's internals stay inside the hook. `style` is how it is placed,
+// because the two panes anchor it differently: the sidebar is a grid column and
+// names its width property, while the left bar is the element itself and hangs
+// the handle off its own right edge.
 
-interface SidebarResizeHandleProps {
+interface PaneResizeHandleProps {
+  /** Names the pane whose width this sets, for a screen reader. */
+  label: string;
+  max: number;
+  min: number;
   onKeyDown(event: ReactKeyboardEvent<HTMLElement>): void;
   onPointerDown(event: ReactPointerEvent<HTMLElement>): void;
   onReset(): void;
+  /** Where the seam sits. One of `left` or `right`, and nothing else. */
+  style: CSSProperties;
   width: number;
 }
 
-export function SidebarResizeHandle({
+export function PaneResizeHandle({
+  label,
+  max,
+  min,
   onKeyDown,
   onPointerDown,
   onReset,
+  style,
   width,
-}: SidebarResizeHandleProps) {
+}: PaneResizeHandleProps) {
   return (
     <div
       // A separator is what this is, and the value it reports is the width of
       // the pane before it.
       role="separator"
       aria-orientation="vertical"
-      aria-label="Sidebar width"
+      aria-label={label}
       aria-valuenow={width}
-      aria-valuemin={SIDEBAR_MIN_WIDTH}
-      aria-valuemax={SIDEBAR_MAX_WIDTH}
+      aria-valuemin={min}
+      aria-valuemax={max}
       tabIndex={0}
       title="Drag to resize. Double click to reset."
       onPointerDown={onPointerDown}
       onKeyDown={onKeyDown}
       onDoubleClick={onReset}
-      style={{ left: `calc(var(${SIDEBAR_WIDTH_PROPERTY}) - 4px)` }}
+      style={style}
       className={cn(
         'group absolute inset-y-0 z-20 w-2 cursor-col-resize touch-none select-none',
         'focus-visible:outline-none'
