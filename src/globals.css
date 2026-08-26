@@ -157,6 +157,33 @@ html[data-watching='no'] [data-app-rail] {
   scrollbar-color: var(--app-line) transparent;
 }
 
+/* The left bar mid-toggle: an inert, opaque copy of the layout being left,
+   fading over the one arriving while the status squares fly between the two
+   (hooks/useRailFlip.ts). The duration arrives inline from RAIL_TRANSITION_MS
+   and the curve here must stay RAIL_TRANSITION_EASING, so the fade, the flying
+   squares, and the bar's own width all travel as one motion. The squares are
+   hidden on the copy: the real ones, lifted above it for the flight, own those
+   pixels, and a copy underneath would trail each flight as an afterimage.
+   Under reduced motion the copy is never rendered at all. */
+[data-rail-ghost] {
+  animation-fill-mode: forwards;
+  animation-name: rail-ghost-fade;
+  /* RAIL_TRANSITION_EASING. The spring in the curve crests past 1, opacity
+     clamps at zero there, so the fade completes just before the width's
+     settle — the chrome is quiet while the squares land. */
+  animation-timing-function: cubic-bezier(0.3, 1.15, 0.45, 1);
+}
+
+[data-rail-ghost] [data-rail-flip] {
+  visibility: hidden;
+}
+
+@keyframes rail-ghost-fade {
+  to {
+    opacity: 0;
+  }
+}
+
 /* Two small entrances, defined here rather than pulled in with
    tw-animate-css: `animate-in` is not a Tailwind v4 utility, and two
    keyframes do not earn a dependency. */

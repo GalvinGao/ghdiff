@@ -689,6 +689,27 @@ tree, a thread in the comment list, a fragment in the URL — calls `select` as
 well, or the file list goes on marking whichever file the reviewer last scrolled
 past.
 
+**And it keeps that name until the diff gets there.** A smooth jump does raise
+reports, one per frame, for every file it crosses. Each is a true answer to what
+is under the anchor and a wrong answer to what the reviewer is reading, and the
+file list ran the whole run of them as a highlight travelling down the tree —
+`src/terminal/PageList.zig` on ghostty-org/ghostty v1.3.0...v1.3.1 walked the
+mark through six rows before it settled. So `select` holds the mark on the file
+it named, and `useActiveDiffItem` throws away every measurement until one of
+three things ends the hold: the diff arrives, the reviewer takes the scroll back
+with a gesture of their own, or the reports stop for `JUMP_SETTLE_MS`.
+
+Those three cover the three ways a jump ends, and none of them is optional.
+Arrival is the ordinary one. The gesture is what a reviewer who overrules the
+jump mid-flight does, and the four events it watches are `CodeView`'s own list —
+a smooth scroll there is the viewer's spring, not the browser's, and `wheel`,
+`touchstart`, `pointerdown` and `keydown` are what it abandons the spring on.
+The two lists have to stay the same list, or the mark is left behind by a scroll
+that ended without the hold, or the crossed files come back on a hold that ended
+without the scroll. The settle is the backstop for the jump that never arrives:
+a scroll region that has bottomed out cannot bring the last file's top up to the
+anchor, and the file the reviewer asked for is still the right answer there.
+
 **One row in the tree, not a trail.** `FileTreeItemHandle.select()` **adds** to
 the selection, and the diff's scroll selects a row on every file it passes. So
 `ReviewFileTree` deselects `getSelectedPaths()` before it selects the new row.
