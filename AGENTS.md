@@ -55,6 +55,7 @@ src/
   hooks/                   client state: token, color mode, patch, comments,
                            pulls, pane widths, the URL fragment
   lib/                     pure domain logic, unit tested
+  lib/githubUrls.ts        every address on github.com this app links to
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
@@ -143,6 +144,34 @@ it cannot also be the boundary: two authors read as one run. Both lists rule off
 between repositories and between authors, and the rule is drawn from the index
 rather than `:first-child`, because an author group is never the first child of
 its section — the repository heading is.
+
+**A name on screen that GitHub has a page for is a link to it, in a new tab.**
+`src/lib/githubUrls.ts` builds every one of those addresses, so a query string
+assembled at one call site cannot differ from the next: the repository heading
+goes to the repository, the count beside it goes to the same rows on GitHub
+(`is:pr is:open`, which is what GitHub's own Pull requests tab applies), the
+author heading's arrow adds `author:` to that query, and the label in
+`ReviewHeader` goes to the pull request, commit or compare range under review.
+`GitHubTextLink` and `GitHubIconLink` in `src/components/GitHubLink.tsx` are the
+two shapes: text that reads as itself until the pointer arrives, and a glyph
+that is not there until the row is hovered. Both carry `target="_blank"` and
+`rel="noreferrer"`, because ghdiff is a place a reviewer stays — a link that
+replaced the diff would cost them the scroll position, the filter and the
+fragment they had built up. An author's arrow keeps its space while it is
+invisible, or every heading would move as the pointer crossed the list.
+
+**A review is a verdict, and it is one press.** `reviews.submit` posts to
+`/pulls/{n}/reviews` with GitHub's own `event`, and `src/lib/reviewDecision.ts`
+holds the three and the one rule that separates them: `REQUEST_CHANGES` and
+`COMMENT` are nothing without words, and `canSubmitReview` is what disables
+those buttons rather than letting a 422 arrive after the reviewer has written
+them. `ReviewSubmitDialog` gives each event a button of its own instead of a
+radio group and a Submit: GitHub asks twice because it has a batch of pending
+line comments to send with the verdict, and this app has none — a line comment
+is posted where it is written. A failure keeps the dialog open with GitHub's own
+sentence in it, because GitHub is the one that knows a reviewer cannot approve
+their own pull request. A verdict that lands reloads the open pull requests,
+since the review half of every row's square has just changed.
 
 **The API is one contract, and both sides read it.** `src/lib/rpc/contract.ts`
 names every procedure, its input and its output, and imports nothing from a

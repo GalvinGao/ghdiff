@@ -1,10 +1,12 @@
 import { type CSSProperties, useMemo } from 'react';
 
+import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { cn } from '@/lib/cn';
+import { repoPullsUrl, repoUrl } from '@/lib/githubUrls';
 import {
   formatWatchedRepo,
   groupPullsByRepo,
@@ -107,14 +109,28 @@ export function PullRequestList({
               groupIndex > 0 && 'border-t'
             )}
           >
+            {/* The repository's name goes to the repository, and the count
+                goes to the rows it counted: GitHub's own open pull requests
+                for it. Both are the answer to "what is this", so both are the
+                text itself rather than a glyph beside it. */}
             {showRepoHeadings && (
               <div className="flex items-baseline gap-2 px-2 pt-2 pb-1">
-                <SectionLabel className="min-w-0 truncate">
-                  {group.owner}/{group.repo}
+                <SectionLabel className="min-w-0">
+                  <GitHubTextLink
+                    className="block truncate"
+                    href={repoUrl(group)}
+                    title={`Open ${group.owner}/${group.repo} on GitHub`}
+                  >
+                    {group.owner}/{group.repo}
+                  </GitHubTextLink>
                 </SectionLabel>
-                <span className="text-ink-faint ml-auto text-xs tabular-nums">
+                <GitHubTextLink
+                  className="text-ink-faint ml-auto shrink-0 text-xs tabular-nums"
+                  href={repoPullsUrl(group)}
+                  title={`Open the ${String(group.count)} open pull requests on GitHub`}
+                >
                   {group.count}
-                </span>
+                </GitHubTextLink>
               </div>
             )}
             {group.authors.map((author, authorIndex) => (
@@ -125,13 +141,22 @@ export function PullRequestList({
                   authorIndex > 0 && 'mt-1 border-t'
                 )}
               >
-                <p className="text-ink-muted flex items-baseline gap-1.5 px-2 pt-1 pb-0.5 text-xs">
+                {/* An author is a name, not a link: the row under it is what
+                    the reviewer came for. The arrow appears with the pointer
+                    and takes them to the same author's pull requests on
+                    GitHub, and it holds its space at all times so no heading
+                    moves when it arrives. */}
+                <p className="group text-ink-muted flex items-center gap-1.5 px-2 pt-1 pb-0.5 text-xs">
                   <span className="min-w-0 truncate">{author.author}</span>
                   {author.isViewer && (
                     <span className="border-line text-ink-faint shrink-0 rounded border px-1 text-[10px] leading-4">
                       you
                     </span>
                   )}
+                  <GitHubIconLink
+                    href={repoPullsUrl(group, { author: author.author })}
+                    label={`Open ${author.author}'s open pull requests in ${group.owner}/${group.repo} on GitHub`}
+                  />
                 </p>
                 <PullStack
                   current={current}

@@ -210,6 +210,14 @@ export interface GitHubPullRequest {
   commits?: number;
 }
 
+/** What `POST /pulls/{n}/reviews` answers with. */
+export interface GitHubReview {
+  id: number;
+  state: string;
+  submitted_at?: string | null;
+  html_url?: string;
+}
+
 export interface GitHubReviewComment {
   id: number;
   path: string;

@@ -5,14 +5,17 @@ import {
   IconDiffUnified,
   IconEyeSlash,
   IconGearFill,
+  IconInReview,
   IconSymbolDiffstat,
 } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { ColorModeToggle } from '@/components/ColorModeToggle';
+import { GitHubTextLink } from '@/components/GitHubLink';
 import { GitHubTokenControl } from '@/components/GitHubTokenControl';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
+import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';
 import type { ViewerControls } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
 import {
@@ -28,6 +31,7 @@ import {
 import type { ColorModeState } from '@/hooks/useColorMode';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
 import type { PullDetailsState } from '@/hooks/usePullDetails';
+import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 
 // The bar sits on the same surface as the sidebar and carries no boxes: a row of
 // bordered buttons across the top of a diff reads as a form to fill in, and the
@@ -53,12 +57,19 @@ interface ReviewHeaderProps {
   colorMode: ColorModeState;
   controls: ViewerControls;
   onControlsChange(next: ViewerControls): void;
+  /** Called once a verdict lands, so the caller can reload what changed. */
+  onReviewSubmitted?(): void;
   /** Absent unless the target is a pull request. */
   pull?: PullDetailsState;
+  /** Absent unless the target is a pull request, which is the only one to
+      have a review to submit. */
+  review?: SubmitReviewState;
   /** True when the left bar is not on screen and the way home has to be here. */
   showBrand?: boolean;
   /** What is under review, in words. */
   targetLabel: string;
+  /** The same thing on github.com. */
+  targetUrl: string;
   token: GitHubTokenState;
 }
 
@@ -66,12 +77,16 @@ export function ReviewHeader({
   colorMode,
   controls,
   onControlsChange,
+  onReviewSubmitted,
   pull,
+  review,
   showBrand = false,
   targetLabel,
+  targetUrl,
   token,
 }: ReviewHeaderProps) {
   const split = controls.diffStyle === 'split';
+  const [reviewing, setReviewing] = useState(false);
   return (
     <header className="border-line bg-surface flex h-11 shrink-0 items-center gap-1 border-b px-3">
       {showBrand && (
@@ -82,15 +97,40 @@ export function ReviewHeader({
           ghdiff
         </Link>
       )}
-      <span
+      {/* The one place the review names itself, so it is also the way to the
+          page it was taken from. */}
+      <GitHubTextLink
         className="text-ink-muted shrink-0 truncate text-xs font-medium"
-        title={targetLabel}
+        href={targetUrl}
+        title={`Open ${targetLabel} on GitHub`}
       >
         {targetLabel}
-      </span>
+      </GitHubTextLink>
       {pull != null && <PullTitle pull={pull} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5">
+        {/* Only a pull request has a review to submit. A commit and a compare
+            range have no thread on GitHub for a verdict to land in. */}
+        {review != null && (
+          <>
+            <Button
+              size="sm"
+              title="Approve, request changes, or comment"
+              variant="chrome"
+              onClick={() => setReviewing(true)}
+            >
+              <IconInReview size={14} />
+              Review
+            </Button>
+            <ReviewSubmitDialog
+              open={reviewing}
+              review={review}
+              targetLabel={targetLabel}
+              onClose={() => setReviewing(false)}
+              onSubmitted={onReviewSubmitted}
+            />
+          </>
+        )}
         <Button
           aria-label={split ? 'Switch to unified view' : 'Switch to split view'}
           size="icon"
