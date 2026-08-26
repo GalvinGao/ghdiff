@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
+import { Route as ApiFileRouteImport } from './routes/api/file'
 import { Route as GhSplatRouteImport } from './routes/gh/$'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
 
@@ -30,6 +31,11 @@ const ApiDiffRoute = ApiDiffRouteImport.update({
   path: '/api/diff',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFileRoute = ApiFileRouteImport.update({
+  id: '/api/file',
+  path: '/api/file',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GhSplatRoute = GhSplatRouteImport.update({
   id: '/gh/$',
   path: '/gh/$',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/api/diff': typeof ApiDiffRoute
+  '/api/file': typeof ApiFileRoute
   '/gh/$': typeof GhSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/api/diff': typeof ApiDiffRoute
+  '/api/file': typeof ApiFileRoute
   '/gh/$': typeof GhSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
 }
@@ -60,21 +68,24 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/api/diff': typeof ApiDiffRoute
+  '/api/file': typeof ApiFileRoute
   '/gh/$': typeof GhSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/api/diff' | '/gh/$' | '/api/rpc/$'
+  fullPaths: '/' | '/$' | '/api/diff' | '/api/file' | '/gh/$' | '/api/rpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/api/diff' | '/gh/$' | '/api/rpc/$'
-  id: '__root__' | '/' | '/$' | '/api/diff' | '/gh/$' | '/api/rpc/$'
+  to: '/' | '/$' | '/api/diff' | '/api/file' | '/gh/$' | '/api/rpc/$'
+  id:
+    '__root__' | '/' | '/$' | '/api/diff' | '/api/file' | '/gh/$' | '/api/rpc/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   ApiDiffRoute: typeof ApiDiffRoute
+  ApiFileRoute: typeof ApiFileRoute
   GhSplatRoute: typeof GhSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
 }
@@ -102,6 +113,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDiffRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/file': {
+      id: '/api/file'
+      path: '/api/file'
+      fullPath: '/api/file'
+      preLoaderRoute: typeof ApiFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gh/$': {
       id: '/gh/$'
       path: '/gh/$'
@@ -123,6 +141,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   ApiDiffRoute: ApiDiffRoute,
+  ApiFileRoute: ApiFileRoute,
   GhSplatRoute: GhSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
 }

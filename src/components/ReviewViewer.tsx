@@ -5,6 +5,7 @@ import {
   type CodeViewOptions,
   type DiffIndicators,
   type DiffLineAnnotation,
+  type FileDiffContentsLoader,
   type SelectedLineRange,
   type ThemeTypes,
 } from '@pierre/diffs';
@@ -36,6 +37,12 @@ interface ReviewViewerProps {
   commentStore: CommentStore;
   controls: ViewerControls;
   items: readonly CodeViewDiffItem<CommentMetadata>[];
+  /**
+   * Reads a whole file so the viewer can draw the unmodified lines a patch
+   * left out. Its presence is also what puts the expand controls on a hunk
+   * separator, so it is passed from the first render and not on demand.
+   */
+  loadDiffFiles: FileDiffContentsLoader;
   onCancelDraft(itemId: string, key: string): void;
   onCreateDraft(itemId: string, range: SelectedLineRange): void;
   onDeleteComment(itemId: string, key: string): void;
@@ -57,6 +64,7 @@ export const ReviewViewer = memo(function ReviewViewer({
   commentStore,
   controls,
   items,
+  loadDiffFiles,
   onCancelDraft,
   onCreateDraft,
   onDeleteComment,
@@ -77,6 +85,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       overflow: controls.overflow,
       disableLineNumbers: !controls.lineNumbers,
       disableBackground: !controls.backgrounds,
+      loadDiffFiles,
       layout: { paddingTop: 0, paddingBottom: 0, gap: 1 },
       lineHoverHighlight: 'number',
       enableLineSelection: true,
@@ -93,6 +102,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       controls.diffStyle,
       controls.lineNumbers,
       controls.overflow,
+      loadDiffFiles,
       onCreateDraft,
       themeType,
     ]

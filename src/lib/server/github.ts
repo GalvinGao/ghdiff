@@ -15,6 +15,7 @@ const GITHUB_API_VERSION = '2022-11-28';
 const USER_AGENT = 'ghdiff';
 const JSON_MEDIA_TYPE = 'application/vnd.github+json';
 const DIFF_MEDIA_TYPE = 'application/vnd.github.diff';
+const RAW_MEDIA_TYPE = 'application/vnd.github.raw';
 
 export class GitHubError extends Error {
   readonly status: number;
@@ -164,14 +165,19 @@ export async function githubGraphQL<T>(
   return body.data;
 }
 
-/** GET a unified diff. Returns the raw response so the body can stream. */
-export async function githubDiff(
+/**
+ * GET a resource GitHub answers with plain bytes. Returns the response itself
+ * rather than its text, so the body can stream: a patch runs to tens of
+ * megabytes and a source file is not much smaller.
+ */
+async function githubStream(
   path: string,
-  token: string | undefined
+  token: string | undefined,
+  accept: string
 ): Promise<Response> {
   const response = await fetch(`${GITHUB_API_ROOT}${path}`, {
     cache: 'no-store',
-    headers: headers(token, DIFF_MEDIA_TYPE),
+    headers: headers(token, accept),
   });
   if (!response.ok) {
     throw new GitHubError(
@@ -180,6 +186,25 @@ export async function githubDiff(
     );
   }
   return response;
+}
+
+/** GET a unified diff. */
+export function githubDiff(
+  path: string,
+  token: string | undefined
+): Promise<Response> {
+  return githubStream(path, token, DIFF_MEDIA_TYPE);
+}
+
+/**
+ * GET one file's contents. The raw media type is what takes this past the 1 MB
+ * ceiling on the base64 form of the same endpoint.
+ */
+export function githubRaw(
+  path: string,
+  token: string | undefined
+): Promise<Response> {
+  return githubStream(path, token, RAW_MEDIA_TYPE);
 }
 
 export interface GitHubUser {
@@ -282,6 +307,47 @@ export async function githubWebDiff(
     throw new GitHubError(
       rateLimitedStatus(response.status, response.headers),
       await readErrorMessage(response)
+    );
+  }
+  return response;
+}
+
+// --- Where one file's contents comes from ------------------------------------
+
+const GITHUB_RAW_HOST = 'https://raw.githubusercontent.com';
+
+/**
+ * Fetches one file from the host that serves github.com's own **Raw** links.
+ * It answers for a public repository without a token and without spending any
+ * of the REST quota, which is what an anonymous reviewer's comments and pull
+ * request list need the whole of. It resolves every ref shape a review target
+ * has, `refs/pull/{n}/head` included.
+ *
+ * A private repository is not this host's job. `githubRaw` is, and the caller
+ * picks between them on whether it holds a token.
+ */
+export async function githubWebRaw(
+  owner: string,
+  repo: string,
+  ref: string,
+  path: string
+): Promise<Response> {
+  const url = `${GITHUB_RAW_HOST}/${owner}/${repo}/${encodeRefForPath(
+    ref
+  )}/${encodeRefForPath(path)}`;
+  const response = await fetch(url, {
+    cache: 'no-store',
+    headers: { accept: 'text/plain', 'user-agent': USER_AGENT },
+    redirect: 'follow',
+  });
+  if (!response.ok) {
+    throw new GitHubError(
+      rateLimitedStatus(response.status, response.headers),
+      // This host answers a missing file and an invisible repository alike with
+      // a bare 404 and no sentence of its own, so the caller writes one.
+      response.status === 404
+        ? 'GitHub has no such file on that commit. A private repository needs a token.'
+        : await readErrorMessage(response)
     );
   }
   return response;
