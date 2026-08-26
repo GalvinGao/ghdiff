@@ -29,7 +29,7 @@ pnpm build        # vite build: dist/client and dist/server
 pnpm preview      # vite preview, the built Worker on workerd
 pnpm deploy       # wrangler deploy
 pnpm test         # node --test over src/lib/**/*.test.ts
-pnpm typecheck    # tsc --noEmit
+pnpm typecheck    # wrangler types, then tsc --noEmit
 pnpm lint         # oxlint
 pnpm fmt          # oxfmt, writes in place
 pnpm fmt:check    # oxfmt, reports only
@@ -59,7 +59,7 @@ src/
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
-  lib/server/              server-only: the GitHub client
+  lib/server/              server-only: the GitHub client, and the KV counter
 public/
   ghdiff.user.js           the userscript, copied to dist/client as it is
 ```
@@ -331,6 +331,30 @@ envelope would make the Worker read all of it into memory and JSON-escape it
 first, on a runtime with neither the memory nor the CPU time to spare. It is
 also the one call whose HTTP status the client reads directly, for
 `describeReviewFailure`.
+
+**A serve is counted where the serve happens, and the figure is an estimate on
+purpose.** The footer's **Served** line is one key in Workers KV,
+`served:total`, and `src/lib/server/servedCount.ts` is what stands between a
+counter and a store that is not one. KV takes one write per second per key and
+answers a second one with 429, and two writes that overlap overwrite each other
+rather than add up. Neither is an edge case here: a reviewer who opens three
+pull requests in three tabs is a burst of three serves in one second. So a serve
+writes nothing. It adds one to a number the isolate holds, and one flush later
+folds however many arrived into a single read-add-write, inside `waitUntil`,
+after the patch has already gone to the browser. `lastWritten` guards the read,
+because a read that came back stale would take the figure backwards. What is
+still lost is an isolate that dies with a flush outstanding, and two locations
+that write in the same moment. A footer figure is allowed to be an estimate. The
+exact one costs a Durable Object, which is a second runtime object in a Worker
+with about 140 KiB of headroom.
+
+`/api/diff` takes the count and no other route does, because that route **is**
+the serve: `gitHubResponse` returns only when a source answered, so a 404 and a
+spent quota are not serves, and a target the query could not parse never reaches
+it. `stats.served` is the read half, and it is the one procedure that asks
+GitHub nothing — it carries no token, and it lets a store that cannot answer
+throw. `ServedCount` then prints no figure at all, which is the right answer:
+`Served 0 diffs` is what a failed read would otherwise say.
 
 **A repository answers with at most 100 open pull requests.**
 `MAX_PULLS_PER_REPO` in `src/lib/rpc/router.ts` is 100 because that is the
@@ -690,6 +714,21 @@ needs: `AsyncLocalStorage` for the request logger, and a populated
 that variable comes from `.dev.vars`; on Cloudflare it comes from a Worker
 secret.
 
+`kv_namespaces` binds one namespace, `GHDIFF`, which is this app's own key-value
+store. It holds one key today, the one the footer's **Served** counter reads and
+writes, and it is named for the app rather than for that counter so the next
+thing that needs a key has a place to go. The Worker reaches it through
+`import { env } from 'cloudflare:workers'` rather than through a handler
+argument, because the counter is called from a route and from an RPC procedure
+and neither of them is handed a Cloudflare `env`. `waitUntil` comes from the
+same module for the same reason.
+
+That import is typed by `worker-configuration.d.ts`, which `wrangler types`
+generates from `wrangler.jsonc` and which is **not** committed — `.gitignore`
+and both oxc tools already skip it. `pnpm typecheck` therefore runs
+`wrangler types` first, so a fresh clone and CI both typecheck without a
+separate step. Re-run it after any change to the bindings.
+
 `vite build` writes `dist/client` (the static assets, which the generated
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
@@ -720,6 +759,13 @@ checked in a browser.
 
 Put it in `.dev.vars` for `pnpm dev` and `pnpm preview`, and in a Worker secret
 (`pnpm exec wrangler secret put GITHUB_TOKEN`) for a deployment.
+
+| Binding  | Effect                                             |
+| -------- | -------------------------------------------------- |
+| `GHDIFF` | This app's KV namespace. Holds the served counter. |
+
+`pnpm dev` and `pnpm preview` give that binding a local store of their own under
+`.wrangler`, so a development run never touches the deployed figure.
 
 ## CI
 
