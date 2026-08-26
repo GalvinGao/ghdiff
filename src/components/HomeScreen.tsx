@@ -1,4 +1,4 @@
-import { IconArrow, IconBrandGithub } from '@pierre/icons';
+import { IconArrow, IconBrandGithub, IconBrandTwitterX } from '@pierre/icons';
 import { useNavigate } from '@tanstack/react-router';
 import { type MouseEvent, useRef, useState } from 'react';
 
@@ -259,6 +259,20 @@ export function HomeScreen() {
           >
             <IconBrandGithub aria-hidden="true" size={13} />
             <span className="underline">Source on GitHub</span>
+          </a>
+          {/* The person who writes it, beside the source of it. Both are
+              addresses off this site, and the two figures after them are about
+              this deployment, so the row reads as two pairs. The X mark fills
+              its own box corner to corner where the GitHub mark keeps a margin
+              inside one, so it is drawn a pixel smaller to weigh the same. */}
+          <a
+            className="text-ink-faint hover:text-ink inline-flex items-center gap-1.5 text-xs"
+            href="https://x.com/imgggalvin"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <IconBrandTwitterX aria-hidden="true" size={12} />
+            <span className="underline">@imgggalvin</span>
           </a>
           <BuildCommit />
           <ServedCount />
