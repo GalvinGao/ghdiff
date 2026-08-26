@@ -5,6 +5,7 @@ import { type MouseEvent, useRef, useState } from 'react';
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { ExampleTargets } from '@/components/ExampleTargets';
+import { GitHubTextLink } from '@/components/GitHubLink';
 import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
@@ -12,6 +13,7 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { UserscriptInstall } from '@/components/UserscriptInstall';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
+import { commitUrl, GHDIFF_REPO, repoUrl } from '@/lib/githubUrls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
 
 // The home page carries no chrome of its own. There is no diff on screen yet, so
@@ -244,20 +246,44 @@ export function HomeScreen() {
           </a>
           .
         </p>
-        <p className="mt-1">
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
           {/* The mark, not a word: this line names a repository, and the line
               above it names two libraries the same size in the same colour. */}
           <a
             className="text-ink-faint hover:text-ink inline-flex items-center gap-1.5 text-xs"
-            href="https://github.com/GalvinGao/ghdiff"
+            href={repoUrl(GHDIFF_REPO)}
             rel="noreferrer"
             target="_blank"
           >
             <IconBrandGithub aria-hidden="true" size={13} />
             <span className="underline">Source on GitHub</span>
           </a>
+          <BuildCommit />
         </p>
       </div>
     </main>
+  );
+}
+
+/**
+ * Which commit this page was built from, beside the repository it was built
+ * from. A deployment a reviewer is looking at is a question with one right
+ * answer, and until now the page could not give it.
+ *
+ * The build writes the sha in; the browser cannot ask a Worker what it was
+ * built from. A build with no repository around it writes an empty string, and
+ * this then draws nothing rather than link to a commit that may not exist.
+ */
+function BuildCommit() {
+  const sha = import.meta.env.VITE_COMMIT_SHA;
+  if (sha.length === 0) return null;
+  return (
+    <GitHubTextLink
+      className="text-ink-faint font-mono text-xs"
+      href={commitUrl(GHDIFF_REPO, sha)}
+      title={`Open the commit this build was made from, ${sha}, on GitHub`}
+    >
+      {sha.slice(0, 7)}
+    </GitHubTextLink>
   );
 }

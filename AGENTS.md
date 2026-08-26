@@ -177,6 +177,18 @@ the selection is gone. The button is not overlaid on the input instead, which is
 the other answer: its width is its label's, and the input would have to reserve
 a fixed strip for a control free to outgrow it.
 
+**The footer names the commit it was built from.** A reviewer looking at a
+deployment has one right answer to "which version is this", and the page could
+not give it. `vite.config.ts` asks git at config time and writes the sha into
+both bundles as `import.meta.env.VITE_COMMIT_SHA` — nothing at runtime can ask a
+Worker what it was built from. Git is asked before `GITHUB_SHA`, because
+`actions/checkout` leaves the deploy job on the very commit it deploys and a
+developer's own `pnpm dev` then reports what they are working from. A build with
+no repository around it writes an empty string, and `BuildCommit` draws nothing
+rather than link to a commit that may not exist. `GHDIFF_REPO` in
+`src/lib/githubUrls.ts` is this repository, so the two links in that footer
+cannot name different ones.
+
 **A control that is only a glyph says what it is.**
 `src/components/ui/Tooltip.tsx` is CSS and no JavaScript, the way `Dialog` is
 the platform's own `<dialog>`: the browser already tracks hover and focus, and a

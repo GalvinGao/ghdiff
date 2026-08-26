@@ -1,13 +1,27 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { repoPullsUrl, repoUrl, reviewTargetUrl } from './githubUrls.ts';
+import {
+  commitUrl,
+  repoPullsUrl,
+  repoUrl,
+  reviewTargetUrl,
+} from './githubUrls.ts';
 
 const REF = { owner: 'troph-team', repo: 'lilja' };
 
 describe('repoUrl', () => {
   it('is the repository page', () => {
     assert.equal(repoUrl(REF), 'https://github.com/troph-team/lilja');
+  });
+});
+
+describe('commitUrl', () => {
+  it('is the commit page', () => {
+    assert.equal(
+      commitUrl(REF, '6e21af4c1d'),
+      'https://github.com/troph-team/lilja/commit/6e21af4c1d'
+    );
   });
 });
 

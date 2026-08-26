@@ -18,9 +18,17 @@ export interface RepoRef {
   repo: string;
 }
 
+/** ghdiff's own repository, for the two links in the home page's footer. */
+export const GHDIFF_REPO: RepoRef = { owner: 'GalvinGao', repo: 'ghdiff' };
+
 /** The repository's own page. */
 export function repoUrl({ owner, repo }: RepoRef): string {
   return `${GITHUB}/${owner}/${repo}`;
+}
+
+/** One commit's own page. */
+export function commitUrl(ref: RepoRef, sha: string): string {
+  return `${repoUrl(ref)}/commit/${sha}`;
 }
 
 /**
@@ -49,7 +57,7 @@ export function reviewTargetUrl(target: ReviewTarget): string {
     case 'github-pull':
       return `${root}/pull/${String(target.number)}`;
     case 'github-commit':
-      return `${root}/commit/${target.sha}`;
+      return commitUrl(target, target.sha);
     case 'github-compare':
       // GitHub's own separator between the two refs, and the one the app's own
       // splat route reads back.
