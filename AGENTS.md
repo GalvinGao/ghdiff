@@ -99,11 +99,35 @@ page that both of GitHub's headers still draw and that the conversation and the
 diff share, so a single insertion point covers all four combinations:
 `nav[aria-label="Pull request navigation"]` is the React header and
 `.tabnav-tabs` is the one it has not replaced yet. Neither selector is a
-contract, so `findTabListByFilesTab` says what the row _is_ — the row that holds
-the link to this pull request's own `/files` page — and finds it again when the
+contract, so `findRowByLinkTo` says what the row _is_ — the row that holds the
+link to this pull request's own `/files` page — and finds it again when the
 names change. The title-row actions were the other candidate and lost: GitHub
 puts the review state, **Code** and **Preview** there, and it needs a second
 selector for the same button.
+
+**A commit is the other page that is one diff, and its button goes beside Browse
+files.** A commit header has no tab row, so `findHost` sends a commit to the
+same `findRowByLinkTo` with a different question: the row that holds the link to
+this commit's own `/tree/<sha>` page. That row holds nothing but **Browse
+files** — twice, in fact, a wide one with the words and a narrow icon, one of
+which is always hidden — so the search takes whichever is on screen and they
+share the one row either way. No selector is named for a commit at all, because
+every class on that header is hashed per build.
+
+The two rows are not the same row, and `data-ghdiff-place` on the button is what
+lets one stylesheet dress it for both. The tab bar has no gap of its own and
+holds 28px controls at 12px; the commit header's action row is a flex row with
+an 8px gap holding a 32px **Browse files** at 14px. A button that carried the
+tab bar's figures into the commit header would sit short beside it, and one that
+kept the tab bar's own `margin-left` there would sit 16px off. Everything the
+two places share is stated once, above them both.
+
+A move from a pull request to a commit is a navigation GitHub makes without
+reloading, and it reuses this one button. So `sync` writes the href, the place
+and the title on every pass rather than at build time.
+
+A compare range is the third target ghdiff has an address for, and it has no
+button. Its header carries no control of its own to sit beside.
 
 The script matches every page on github.com and not the pull request paths
 alone, because GitHub moves between its own pages without reloading the
@@ -197,6 +221,13 @@ GitHub one: it fills its own box corner to corner where the GitHub mark keeps a
 margin inside one, so equal boxes would not weigh the same. The X address is
 written where it is used and not in `src/lib/githubUrls.ts`, which holds
 github.com and nothing else.
+
+The sha opens that commit **in ghdiff**, not on github.com: this app reads
+diffs, and its own build is a diff like any other. It is the one link in the app
+that is a `Link` in this tab rather than a new one. `GitHubTextLink` opens a new
+tab to keep a reviewer's scroll position, filter and fragment, and the home page
+has none of the three to lose — so the rule that sends every other name to a new
+tab has nothing to protect here.
 
 **A control that is only a glyph says what it is.**
 `src/components/ui/Tooltip.tsx` is CSS and no JavaScript, the way `Dialog` is
