@@ -165,7 +165,13 @@ export function PullRail() {
             diff. The rows above clip already: the list scrolls, and the
             header's own name truncates. */}
         {!collapsed && (
-          <div className="border-line flex shrink-0 items-center gap-1 overflow-hidden border-t p-1">
+          // The foot of this bar and the foot of the review sidebar are one
+          // rule across the screen, so this strip states the same height the
+          // sidebar's strip states. `p-1` around a 28px button measured 36px
+          // and the border took it to 37, a pixel taller than the sidebar's
+          // `h-9` — which counts its own border — so the rule stepped at the
+          // seam between the two panes.
+          <div className="border-line flex h-9 shrink-0 items-center gap-1 overflow-hidden border-t px-1">
             <Button
               className="min-w-0"
               size="sm"
