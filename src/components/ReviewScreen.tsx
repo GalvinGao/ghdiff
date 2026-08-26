@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
 import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
+import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
 import { useStoredJson } from '@/hooks/useLocalStorage';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
@@ -125,6 +126,9 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     repo: pullTarget?.repo,
     token: token.token,
   });
+  // Only reached when a reviewer expands a hunk's unmodified lines, so it costs
+  // nothing on a review nobody expands.
+  const files = useDiffFileLoader({ target, token: token.token });
   const comments = useReviewComments({
     target,
     entries: patch.data.entries,
@@ -423,6 +427,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             commentStore={comments.store}
             controls={controls}
             items={items}
+            loadDiffFiles={files.loadDiffFiles}
             onCancelDraft={comments.removeComment}
             onCreateDraft={handleCreateDraft}
             onDeleteComment={comments.removeComment}
@@ -456,6 +461,11 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           tone="error"
         >
           {comments.error}
+        </ReviewNotice>
+      )}
+      {files.error != null && (
+        <ReviewNotice onDismiss={files.dismissError} tone="error">
+          {files.error}
         </ReviewNotice>
       )}
     </>

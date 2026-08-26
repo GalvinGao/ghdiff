@@ -50,10 +50,12 @@ src/
     $.tsx                  mirrors github.com paths: /owner/repo/pull/123
     gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff, as text/plain
+    api/file.ts            one whole file, as text/plain
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: token, color mode, patch, comments,
-                           pulls, pane widths, the URL fragment
+                           pulls, pane widths, the URL fragment, the files a
+                           hunk expansion reads
   lib/                     pure domain logic, unit tested
   lib/githubUrls.ts        every address on github.com this app links to
   lib/rpc/contract.ts      the API, stated once: shared by both sides
@@ -370,7 +372,65 @@ implementations will not compile until they agree with it.
 envelope would make the Worker read all of it into memory and JSON-escape it
 first, on a runtime with neither the memory nor the CPU time to spare. It is
 also the one call whose HTTP status the client reads directly, for
-`describeReviewFailure`.
+`describeReviewFailure`. `/api/file` is a route for the same reason and answers
+the same way; a source file is not much smaller than a patch.
+
+**The unmodified lines cost one request, and only for the new side.** A patch
+carries three lines of context around each change, and `@pierre/diffs` draws the
+rest of a file only once it has both whole sides — which is what `loadDiffFiles`
+hands it, and what puts the expand controls on a hunk separator in the first
+place. `/api/file` fetches the new side, and `src/lib/diffHydration.ts` rebuilds
+the old side from it: outside a hunk the two sides are the same lines by
+definition, and inside one the patch holds the old lines itself, so the old file
+is the new file with each hunk's new-side lines swapped back. That is a
+reverse-apply, it is exact, and it needs no merge base — which is the whole
+reason it is done this way. A pull request's diff runs from the merge base,
+`pull.base.sha` is not that commit, and asking GitHub for it costs a compare
+call whose answer carries up to 300 file patches with it.
+
+Exact only against the file the patch describes, though. A branch that moved
+between the diff and the press gives a new side the patch does not fit, and
+reverse-applying that would print lines nobody wrote — worse, it would corrupt
+the changes as well, because `hydratePartialDiff` re-reads a hunk's own lines
+out of the two arrays too. `patchFitsNewFile` is asked before every rebuild and
+`useDiffFileLoader` rethrows what it refuses, so the file stays partial and the
+foot of the screen says why. Never hydrate a side that has not been checked.
+
+**A file's commit is `refs/pull/{n}/head`, its own sha, or the range's head.**
+`newSideRef` in `src/routes/api/file.ts` answers for all three targets without a
+second request, and the pull ref resolves in the base repository even when the
+head belongs to a fork. A compare range typed across two forks addresses its
+head as `owner:branch`, which no source can read, so that one range gets no
+unmodified lines and says so.
+
+**Which source answers turns on the token, and only on the token.** A caller
+with none has sixty REST requests an hour and needs them for the comments and
+the pull request list, so its file comes from `raw.githubusercontent.com`, the
+host behind github.com's own **Raw** links, which spends none of them. A caller
+with a token has five thousand and may be reading a private repository, so its
+file comes from the contents API, which is the only one of the two that answers
+for one. One request per file either way, and the reviewer pays it once: the
+library hydrates the metadata object in place, and `items` keeps the same
+`fileDiff` reference through a filter change and a comment revision alike, so
+the lines stay expanded.
+
+**A big file is safe because each press is small.** The library reveals
+`expansionLineCount` lines — 100 — per press on a region larger than that, and
+it hides its own **Expand all** control, so the visible affordance is the
+bounded one; a shift-click is what asks for the whole region. Above 100 000
+lines it stops highlighting rather than tokenizing forever, and the virtualizer
+lays out what it needs. So the only limit worth stating is the byte one:
+`MAX_FILE_BYTES` is 4 MiB, above which the route answers 413 and says so instead
+of pulling an unbounded blob through the Worker into a string in the tab.
+Verified with a 3 MB, 54 434-line file expanded end to end — split and unified —
+which laid out to a million pixels and scrolled.
+
+One thing GitHub decides rather than this app: a line comment written on an
+expanded line of a **pull request** is a line outside the diff, and the review
+comment API refuses one. The failure arrives as GitHub's own sentence in the
+strip along the foot of the screen, which is where every other comment failure
+already lands. A commit and a compare range keep their comments in the browser
+and take them anywhere.
 
 **A serve is counted where the serve happens, and the figure is an estimate on
 purpose.** The footer's **Served** line is one key in Workers KV,
