@@ -1,21 +1,19 @@
 import { IconArrow, IconBrandGithub } from '@pierre/icons';
 import { useNavigate } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { type MouseEvent, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { ExampleTargets } from '@/components/ExampleTargets';
+import { GitHubTextLink } from '@/components/GitHubLink';
 import { GitHubTokenForm } from '@/components/GitHubTokenForm';
-import { PullRequestList } from '@/components/PullRequestList';
-import { RepoPicker } from '@/components/RepoPicker';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { SectionLabel } from '@/components/ui/SectionLabel';
-import { Spinner } from '@/components/ui/Spinner';
 import { UserscriptInstall } from '@/components/UserscriptInstall';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
-import { WatchedReposDialog } from '@/components/WatchedReposDialog';
-import { formatWatchedRepo } from '@/lib/pulls';
+import { WatchedReposEditor } from '@/components/WatchedReposEditor';
+import { commitUrl, GHDIFF_REPO, repoUrl } from '@/lib/githubUrls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
 
 // The home page carries no chrome of its own. There is no diff on screen yet, so
@@ -28,46 +26,32 @@ const CARD =
 
 export function HomeScreen() {
   const navigate = useNavigate();
-  const { colorMode, pulls, token, watched } = useAppData();
+  const { colorMode, token, watched } = useAppData();
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
-  const [editingRepos, setEditingRepos] = useState(false);
   const [editingToken, setEditingToken] = useState(false);
-  const [repoFilter, setRepoFilter] = useState<string | undefined>(undefined);
+  const targetField = useRef<HTMLInputElement>(null);
 
-  // A repository can leave the watch list while it is the one selected, and a
-  // filter for something nobody watches any more would show an empty list with
-  // no way to read it. Falling back to all of them is the honest answer.
-  const activeFilter =
-    repoFilter != null &&
-    watched.repos.some(
-      (repo) =>
-        formatWatchedRepo(repo).toLowerCase() === repoFilter.toLowerCase()
-    )
-      ? repoFilter
-      : undefined;
-
-  const counts = useMemo(() => {
-    if (pulls.data == null) return undefined;
-    const result = new Map<string, number>();
-    for (const pull of pulls.data.pulls) {
-      const key = formatWatchedRepo(pull).toLowerCase();
-      result.set(key, (result.get(key) ?? 0) + 1);
-    }
-    return result;
-  }, [pulls.data]);
+  // The card's border is the field's promise of a click target, and the field
+  // is only the middle of it: the row's own padding, the gap, and the space
+  // around the Review button are not the input, so a click that landed there
+  // used to do nothing at all. Anything that is a control of its own keeps its
+  // own click; everything else in the row puts the caret in the field.
+  //
+  // The button is not overlaid on the input instead, which is the other answer:
+  // its width is its label's, so the input would have to reserve a fixed strip
+  // for a control free to outgrow it.
+  function focusTargetField(event: MouseEvent<HTMLFormElement>) {
+    if (!(event.target instanceof HTMLElement)) return;
+    if (event.target.closest('button, a, input, textarea, select, label'))
+      return;
+    // `mousedown`, because by the time a click has been reported the browser
+    // has already moved the caret and dropped the selection.
+    event.preventDefault();
+    targetField.current?.focus();
+  }
 
   const viewer = token.viewer;
-
-  const list = (
-    <PullRequestList
-      hydrated={watched.hydrated}
-      repoFilter={activeFilter}
-      repos={watched.repos}
-      showRepoHeadings={activeFilter == null}
-      state={pulls}
-    />
-  );
 
   return (
     // `m-auto` on the column below, not `items-center`: auto margins take the
@@ -116,7 +100,8 @@ export function HomeScreen() {
 
         <div className={`${CARD} mt-4`}>
           <form
-            className="flex items-center gap-1 px-4"
+            className="flex cursor-text items-center gap-1 px-4"
+            onMouseDown={focusTargetField}
             onSubmit={(event) => {
               event.preventDefault();
               const target = parseGitHubInput(input);
@@ -137,6 +122,7 @@ export function HomeScreen() {
               GitHub pull request, commit, or compare URL
             </label>
             <input
+              ref={targetField}
               id="github-target"
               value={input}
               placeholder="https://github.com/owner/repo/pull/123"
@@ -217,37 +203,17 @@ export function HomeScreen() {
           <ExampleTargets />
         </div>
 
-        <div className="mt-10 flex items-center gap-2">
-          <SectionLabel>Open pull requests</SectionLabel>
-          {pulls.loading && <Spinner label="Loading the pull requests" />}
-          <Button
-            className="ml-auto"
-            size="sm"
-            variant="chrome"
-            onClick={() => setEditingRepos(true)}
-          >
-            Watched repos
-          </Button>
+        {/* The watch list itself, and not the pull requests it produces. The
+            left bar lists those on every page, this one included, so a second
+            copy of the bar down the page was the same rows twice. What the
+            home page has that the bar has not is the way to change the list —
+            and it has to be here in the open, because the bar is not drawn at
+            all for a reviewer who watches nothing. */}
+        <div className="mt-10">
+          <SectionLabel>Watched repos</SectionLabel>
         </div>
-        <div className={`${CARD} mt-2`}>
-          {/* The picker only earns its column when there is something to pick
-              between. With one repository it would name the repository twice. */}
-          {watched.repos.length > 1 ? (
-            <div className="divide-line grid grid-cols-[9rem_minmax(0,1fr)] divide-x">
-              <div className="p-1">
-                <RepoPicker
-                  counts={counts}
-                  repos={watched.repos}
-                  total={pulls.data?.pulls.length}
-                  value={activeFilter}
-                  onChange={setRepoFilter}
-                />
-              </div>
-              <div className="p-1">{list}</div>
-            </div>
-          ) : (
-            <div className="p-1">{list}</div>
-          )}
+        <div className={`${CARD} mt-2 px-4 py-3`}>
+          <WatchedReposEditor watched={watched} />
         </div>
 
         <Dialog
@@ -258,15 +224,6 @@ export function HomeScreen() {
         >
           <GitHubTokenForm token={token} />
         </Dialog>
-
-        <WatchedReposDialog
-          open={editingRepos}
-          watched={watched}
-          onClose={() => {
-            setEditingRepos(false);
-            pulls.reload();
-          }}
-        />
 
         <p className="text-ink-faint mt-10 text-xs">
           Diffs via{' '}
@@ -289,20 +246,44 @@ export function HomeScreen() {
           </a>
           .
         </p>
-        <p className="mt-1">
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
           {/* The mark, not a word: this line names a repository, and the line
               above it names two libraries the same size in the same colour. */}
           <a
             className="text-ink-faint hover:text-ink inline-flex items-center gap-1.5 text-xs"
-            href="https://github.com/GalvinGao/ghdiff"
+            href={repoUrl(GHDIFF_REPO)}
             rel="noreferrer"
             target="_blank"
           >
             <IconBrandGithub aria-hidden="true" size={13} />
             <span className="underline">Source on GitHub</span>
           </a>
+          <BuildCommit />
         </p>
       </div>
     </main>
+  );
+}
+
+/**
+ * Which commit this page was built from, beside the repository it was built
+ * from. A deployment a reviewer is looking at is a question with one right
+ * answer, and until now the page could not give it.
+ *
+ * The build writes the sha in; the browser cannot ask a Worker what it was
+ * built from. A build with no repository around it writes an empty string, and
+ * this then draws nothing rather than link to a commit that may not exist.
+ */
+function BuildCommit() {
+  const sha = import.meta.env.VITE_COMMIT_SHA;
+  if (sha.length === 0) return null;
+  return (
+    <GitHubTextLink
+      className="text-ink-faint font-mono text-xs"
+      href={commitUrl(GHDIFF_REPO, sha)}
+      title={`Open the commit this build was made from, ${sha}, on GitHub`}
+    >
+      {sha.slice(0, 7)}
+    </GitHubTextLink>
   );
 }

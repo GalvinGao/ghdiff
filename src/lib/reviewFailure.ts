@@ -12,8 +12,19 @@ import { isRateLimited } from './rateLimit.ts';
 //
 // A token that is itself over quota gets "Try again" and nothing else: there is
 // no second token to add, and the wait is all that is left.
+//
+// Not Found is the other failure with a fix, and it is the one that does not
+// look like it has one. GitHub answers 404 for a diff that is not there and for
+// a diff the caller is not allowed to see, on purpose: an answer that
+// distinguished them would confirm that a private repository exists. So "Not
+// Found" on a repository the reviewer knows is there means, almost always,
+// that the request could not prove who was asking — and that is a token.
 
-/** Which button the panel leads with. */
+/**
+ * Which button the panel leads with. `add-token` opens the token dialog, and
+ * the panel words it for whether there is a token there already: the reviewer
+ * a 404 sends there usually has one that cannot reach this repository.
+ */
 export type ReviewFailureAction = 'add-token' | 'retry';
 
 export interface ReviewFailure {
@@ -23,6 +34,8 @@ export interface ReviewFailure {
 }
 
 const FALLBACK_MESSAGE = 'The request for this diff did not come back.';
+
+const NOT_FOUND = 404;
 
 export function describeReviewFailure(input: {
   hasToken: boolean;
@@ -49,6 +62,25 @@ export function describeReviewFailure(input: {
           message:
             'GitHub gives one small hourly quota to every unauthenticated address, and this one is spent. A personal access token carries a quota of its own, and a much larger one.',
           title: 'GitHub is rate limiting this browser',
+        };
+  }
+
+  if (status === NOT_FOUND) {
+    // GitHub's own body is the single word "Not Found", which is true and
+    // useless. What the reviewer needs is the reason it is the same word for
+    // both cases, and the one thing they can do about it.
+    return hasToken
+      ? {
+          action: 'add-token',
+          message:
+            'Your token might not include this repo, or it may need SAML authorization. Try updating your token.',
+          title: 'Check your token permissions',
+        }
+      : {
+          action: 'add-token',
+          message:
+            "If this repo is private, GitHub won't show it without a personal access token. Add a token to view the diff.",
+          title: 'This repository might be private',
         };
   }
 

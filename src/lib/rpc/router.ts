@@ -176,6 +176,43 @@ const getPull = os.pulls.get.handler(async ({ context, input }) => {
   }
 });
 
+const getMyReview = os.reviews.mine.handler(async ({ context, input }) => {
+  const log = requestLog();
+  const { number, owner, repo } = input;
+  log.set({ owner, repo, pull: number });
+  // GraphQL refuses an anonymous caller, and `viewerLatestReview` is a question
+  // about the token in the first place, so there is nothing to ask without one.
+  if (context.token == null) return {};
+
+  try {
+    const data = await githubGraphQL<MyReviewQueryData>(
+      MY_REVIEW_QUERY,
+      { owner, repo, number },
+      context.token
+    );
+    const node = data.repository?.pullRequest?.viewerLatestReview;
+    // A viewer who has never reviewed this pull request gets a null field and
+    // no error, which is the ordinary answer and not a failure. A review whose
+    // `databaseId` or `state` did not arrive reads the same way: the header
+    // says nothing rather than report a verdict it cannot name.
+    if (node?.state == null || typeof node.databaseId !== 'number') {
+      log.set({ outcome: 'none' });
+      return {};
+    }
+    log.set({ outcome: 'ok', state: node.state });
+    return {
+      review: {
+        id: node.databaseId,
+        state: node.state,
+        submittedAt: node.submittedAt ?? undefined,
+        htmlUrl: node.url ?? undefined,
+      },
+    };
+  } catch (error) {
+    return fail(error, 'Could not read your review of that pull request.');
+  }
+});
+
 const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
   const log = requestLog();
   const { body, event, number, owner, repo } = input;
@@ -330,6 +367,7 @@ export const router = os.router({
   viewer: { get: getViewer },
   pulls: { list: listPulls, get: getPull },
   reviews: {
+    mine: getMyReview,
     submit: submitReview,
   },
   comments: {
@@ -462,4 +500,31 @@ async function readOpenPullsRest(
     headRef: pull.head.ref,
     baseRef: pull.base.ref,
   }));
+}
+
+// `viewerLatestReview` is the whole question in one field: the last review this
+// token's own user left on this pull request. REST has no equivalent — it
+// answers with every review by everybody, over as many pages as the pull
+// request has collected, and the caller would then have to ask GitHub who it is
+// before it could pick out its own.
+const MY_REVIEW_QUERY = `
+query($owner:String!,$repo:String!,$number:Int!){
+  repository(owner:$owner,name:$repo){
+    pullRequest(number:$number){
+      viewerLatestReview{ databaseId state submittedAt url }
+    }
+  }
+}`;
+
+interface MyReviewQueryData {
+  repository?: {
+    pullRequest?: {
+      viewerLatestReview?: {
+        databaseId?: number | null;
+        state?: string | null;
+        submittedAt?: string | null;
+        url?: string | null;
+      } | null;
+    } | null;
+  } | null;
 }

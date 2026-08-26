@@ -14,6 +14,7 @@ import { PullStackBadge } from '@/components/PullStackBadge';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useStoredJson } from '@/hooks/useLocalStorage';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
@@ -64,6 +65,9 @@ export function PullRail() {
     false
   );
   const current = useCurrentPull();
+  const collapseLabel = collapsed
+    ? 'Show the pull requests'
+    : 'Hide the pull requests';
   // Destructured, so nothing reads a property of the state object while this
   // component renders.
   const {
@@ -88,7 +92,18 @@ export function PullRail() {
         // rather than taking a column of its own. The width is a custom
         // property, because the drag writes that property straight onto this
         // element and re-renders nothing. See hooks/usePaneWidth.ts.
-        className="border-line bg-surface relative flex h-full shrink-0 flex-col border-r"
+        // The collapse and the expand travel, because the bar taking half the
+        // window away in one frame reads as the page breaking rather than as
+        // the reviewer's own press. A drag must not travel: `usePaneWidth`
+        // repaints the custom property on every pointermove, and a transition
+        // would leave the bar behind the pointer. The handle carries
+        // `data-resizing` for the length of the drag, and it is a child of this
+        // element, so `has-` is the whole test.
+        className={cn(
+          'border-line bg-surface relative flex h-full shrink-0 flex-col border-r',
+          'transition-[width] duration-200 ease-out',
+          'has-[[data-resizing]]:transition-none motion-reduce:transition-none'
+        )}
         data-app-rail=""
         style={{
           ...railStyle,
@@ -109,24 +124,24 @@ export function PullRail() {
               ghdiff
             </Link>
           )}
-          <Button
-            aria-label={
-              collapsed ? 'Show the pull requests' : 'Hide the pull requests'
-            }
+          <Tooltip
             className={collapsed ? undefined : 'ml-auto'}
-            size="icon-sm"
-            title={
-              collapsed ? 'Show the pull requests' : 'Hide the pull requests'
-            }
-            variant="chrome"
-            onClick={() => setCollapsed(!collapsed)}
+            label={collapseLabel}
+            side={collapsed ? 'right' : 'bottom'}
           >
-            {collapsed ? (
-              <IconSidebarLeftOpen size={15} />
-            ) : (
-              <IconSidebarLeft size={15} />
-            )}
-          </Button>
+            <Button
+              aria-label={collapseLabel}
+              size="icon-sm"
+              variant="chrome"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              {collapsed ? (
+                <IconSidebarLeftOpen size={15} />
+              ) : (
+                <IconSidebarLeft size={15} />
+              )}
+            </Button>
+          </Tooltip>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -144,6 +159,11 @@ export function PullRail() {
           )}
         </div>
 
+        {/* `overflow-hidden` on the row below, for the 200 ms the bar spends
+            between its two widths. Both buttons in it are `shrink-0`, so a row
+            narrower than the two of them puts them outside the bar and over the
+            diff. The rows above clip already: the list scrolls, and the
+            header's own name truncates. */}
         {!collapsed && (
           // The foot of this bar and the foot of the review sidebar are one
           // rule across the screen, so this strip states the same height the
@@ -151,7 +171,7 @@ export function PullRail() {
           // and the border took it to 37, a pixel taller than the sidebar's
           // `h-9` — which counts its own border — so the rule stepped at the
           // seam between the two panes.
-          <div className="border-line flex h-9 shrink-0 items-center gap-1 border-t px-1">
+          <div className="border-line flex h-9 shrink-0 items-center gap-1 overflow-hidden border-t px-1">
             <Button
               className="min-w-0"
               size="sm"

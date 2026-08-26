@@ -34,8 +34,9 @@ const COPY: Record<
  * button rather than a line of underlined text when one of them breaks.
  *
  * Which button it leads with is `describeReviewFailure`'s answer. A rate limit
- * with no token is the one failure "Try again" cannot mend, so that panel asks
- * for a token instead and keeps the retry as the second control on the row.
+ * with no token, and a Not Found either way, are the failures "Try again"
+ * cannot mend, so those panels ask for a token instead and keep the retry as
+ * the second control on the row.
  */
 export function ReviewStatusPanel({
   error,
@@ -102,8 +103,12 @@ export function ReviewStatusPanel({
         {isError && (
           <div className="mt-4 flex items-center justify-center gap-2">
             {failure.action === 'add-token' && (
+              // The same dialog either way, and the word for what it is about
+              // to do. A reviewer a 404 sends here usually has a token already,
+              // one that cannot reach this repository, and `Add token` would
+              // read as an offer they had taken up.
               <Button variant="solid" onClick={() => setAsking(true)}>
-                Add token
+                {token.hasToken ? 'Update token' : 'Add token'}
               </Button>
             )}
             <Button variant="outline" onClick={onRetry}>

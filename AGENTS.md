@@ -46,7 +46,7 @@ src/
   globals.css              imported by __root.tsx as a `?url` stylesheet link
   routes/
     __root.tsx             the document, then AppShell: the left bar, then the page
-    index.tsx              home: the open pull requests, and a box for any GitHub URL
+    index.tsx              home: a box for any GitHub URL, and the watch list
     $.tsx                  mirrors github.com paths: /owner/repo/pull/123
     gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff, as text/plain
@@ -116,12 +116,14 @@ with an optional line part, which is the one fragment `lookupDiffAnchor` can
 resolve.
 
 `UserscriptInstall` offers it from the home page, under the form and above the
-examples, with the address written out for a manager that takes one instead of a
-click. Its Install control is a plain `<a>` and never a `Link`: a client-side
-navigation makes no request, and the request is the whole point. Bump `@version`
-in the script when it changes, or nobody who installed it gets the change —
-`@updateURL` is what every manager re-reads, and the version is what it
-compares.
+examples. The line above the button names one manager and links to its install
+page, because Install pressed in a browser with no manager downloads a file that
+browser can do nothing with. That link is what the address written out under the
+card used to be for, and one of the two is enough. Its Install control is a
+plain `<a>` and never a `Link`: a client-side navigation makes no request, and
+the request is the whole point. Bump `@version` in the script when it changes,
+or nobody who installed it gets the change — `@updateURL` is what every manager
+re-reads, and the version is what it compares.
 
 **The left bar is not there when it has nothing to list.** `PullRail` returns
 `null` while the watch list is empty, because an empty column beside a diff is a
@@ -143,7 +145,79 @@ that is not an array, and storage that throws alike — or the flash returns the
 other way round. `PullRequestList` takes `hydrated` for the same reason: an
 empty `repos` before the read is the default, not an answer, so it draws
 `PullListSkeleton` and does not tell a reviewer who watches five that they watch
-none.
+none. It draws the same skeleton whenever a request is in flight and it has no
+rows, which is the other half of that: the moment after the first repository is
+watched, `useOpenPulls` still holds the empty answer it gives an empty watch
+list, and "no open pull requests in it" is a wrong answer to a question GitHub
+has not been asked yet.
+
+The attribute belongs to the watch list from then on, and `AppDataProvider`
+writes it on every change once `hydrated`. The head script settles the first
+paint and nothing else, so a stale `'no'` would go on hiding the bar with the
+CSS after the reviewer watched their first repository — which is exactly the
+reviewer the rule is there for, and exactly the moment the bar has to arrive.
+
+**The home page holds the watch list itself, not the pull requests it makes.**
+The bar lists those on every page, this one included, so a second copy of the
+bar down the home page was the same rows twice. What the home page has that the
+bar has not is the way to change the list, and `WatchedReposEditor` is there in
+the open rather than behind a button: the bar is not drawn at all for a reviewer
+who watches nothing, so on their first visit this section is the only way in.
+`PullRail` keeps `WatchedReposDialog` for the same editor, because a reviewer
+reading a diff cannot lose it to a navigation home.
+
+**A field's border is its promise of a click target.** The card around the home
+page's URL box is that border, and the `<input>` is only the middle of it: the
+row's padding, the gap, and the space around **Review** are not the field, so a
+click there did nothing. `focusTargetField` in `HomeScreen` puts the caret in
+the field for any `mousedown` on the row that misses a control of its own, and
+the guard has to name every control the row nests. It is `mousedown` and not
+`click`, because by the time a click is reported the caret has already moved and
+the selection is gone. The button is not overlaid on the input instead, which is
+the other answer: its width is its label's, and the input would have to reserve
+a fixed strip for a control free to outgrow it.
+
+**The footer names the commit it was built from.** A reviewer looking at a
+deployment has one right answer to "which version is this", and the page could
+not give it. `vite.config.ts` asks git at config time and writes the sha into
+both bundles as `import.meta.env.VITE_COMMIT_SHA` — nothing at runtime can ask a
+Worker what it was built from. Git is asked before `GITHUB_SHA`, because
+`actions/checkout` leaves the deploy job on the very commit it deploys and a
+developer's own `pnpm dev` then reports what they are working from. A build with
+no repository around it writes an empty string, and `BuildCommit` draws nothing
+rather than link to a commit that may not exist. `GHDIFF_REPO` in
+`src/lib/githubUrls.ts` is this repository, so the two links in that footer
+cannot name different ones.
+
+**A control that is only a glyph says what it is.**
+`src/components/ui/Tooltip.tsx` is CSS and no JavaScript, the way `Dialog` is
+the platform's own `<dialog>`: the browser already tracks hover and focus, and a
+library for them would be a dependency in a Worker graph with about 130 KiB left
+in it. The delay belongs to the shown state alone — half a second before it
+appears, and gone the moment the pointer leaves, because a tooltip that lingers
+stands in front of the next press. The label is `aria-hidden` and the control
+keeps its `aria-label`, or a screen reader says it twice, and the control loses
+its `title`, or the browser draws a second tooltip beside this one.
+
+**The bar's two widths travel; a drag does not.** `PullRail` transitions `width`
+over 200 ms, so a collapse reads as the reviewer's own press rather than as the
+page breaking. A drag must not travel: `usePaneWidth` repaints the custom
+property on every pointermove, and a transition would leave the bar behind the
+pointer. `PaneResizeHandle` carries `data-resizing` for the length of a drag and
+is a child of the bar, so `has-[[data-resizing]]:transition-none` is the whole
+test. The footer row clips for the same 200 ms: both buttons in it are
+`shrink-0`, and a row narrower than the two of them would put them over the
+diff. The list and the header need nothing — one scrolls and the other
+truncates.
+
+**A row on a card hovers to `surface`, not to `raised`.** A card is `raised`
+itself, so `hover:bg-raised` on a row inside one is the colour already under it
+and nothing happens — which is what the examples list did for as long as it had
+a hover. `surface` is the pair the `outline` button already uses for this. The
+two tones are eight values apart, the whole distance this app keeps between a
+card and the page, so a row that has more than a background to give should give
+it: `ExampleTargets` lifts its size figures from `ink-faint` to `ink-muted` with
+the same hover.
 
 **The accent is ink, not a hue.** `--app-accent` is near-black in the light
 scheme and near-white in the dark one, and `--app-accent-ink` is its opposite,
@@ -177,6 +251,13 @@ squares: which pull requests were chained, and whose they were, were the two
 things collapsing the bar used to throw away. The block is an **inset ring**,
 not a border — a border would indent the rows inside it by a pixel, and a
 stacked row's square must land where a plain row's square lands.
+
+The wide bar names the block. `Stack` sits at the left of the caption row and
+the badge at the right, in the badge's own size and colour, so the two read as
+one quiet line rather than a heading over the rows. The count alone left a
+reader to work out what a background and a layers glyph meant, against an empty
+half-row. The word is `PullRequestList`'s and never `PullStackBadge`'s: the
+collapsed bar is the width of one square, and it draws the badge alone.
 
 **A group boundary is a rule, not a heading.** A heading sits closer to the rows
 under it than the rows sit to each other, which is what a heading is for and why
@@ -212,6 +293,21 @@ is posted where it is written. A failure keeps the dialog open with GitHub's own
 sentence in it, because GitHub is the one that knows a reviewer cannot approve
 their own pull request. A verdict that lands reloads the open pull requests,
 since the review half of every row's square has just changed.
+
+**A verdict already given is what the button says.** `reviews.mine` asks GraphQL
+for `viewerLatestReview`, the one field that answers "what did this token's own
+user decide about this pull request" — REST answers with every review by
+everybody, over as many pages as the pull request has collected, and the caller
+would then have to ask GitHub who it is. `reviewVerdict` in
+`src/lib/reviewDecision.ts` reads that state, and `PENDING` and `DISMISSED`
+answer with nothing: a draft nobody sent and a verdict GitHub took back are not
+decisions. `ReviewButton` then says **Approved** rather than **Review**, in the
+tone `PullStatusMark` paints the same verdict in, so one green means one thing
+in the header and in the left bar. The button still opens the same dialog,
+because GitHub keeps every review and follows the newest — a second one is how a
+reviewer changes their mind. Everything about this needs a token, since the
+verdict is the token's own, and a failure to read it is reported nowhere: the
+button falls back to the offer it would have made anyway.
 
 **The API is one contract, and both sides read it.** `src/lib/rpc/contract.ts`
 names every procedure, its input and its output, and imports nothing from a
@@ -266,6 +362,21 @@ token that is itself over quota gets the retry alone — there is no second toke
 to add. `ReviewStatusPanel` opens `GitHubTokenForm` in a dialog for that button,
 and closes it once GitHub answers for the token, because `useReviewPatch`
 depends on the token and has already started the reload behind it.
+
+Not Found is the other failure with a fix, and the one that does not look like
+it has one. GitHub answers 404 both for a diff that is not there and for a diff
+the caller may not see, deliberately: an answer that told the two apart would
+confirm that a private repository exists. So the panel guesses out loud and
+offers the token either way. A browser with no token is told the repository is
+probably private and asked for one. A browser whose token cannot reach the
+repository is told the two usual reasons — a fine-grained token lists its
+repositories, and an organization behind SAML has to authorize the token — and
+its button reads **Update token**. `ReviewFailureAction` names the dialog and
+not the wording on the button; the panel takes that word from `token.hasToken`.
+
+The copy there is deliberately spoken rather than written. Every other line in
+this app is composed; an error panel is read by somebody who is stuck, and a
+sentence they have to parse twice costs them more than it tells them.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list

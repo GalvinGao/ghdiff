@@ -27,14 +27,36 @@ describe('describeReviewFailure', () => {
     assert.match(failure.message, /within the hour/);
   });
 
-  it('keeps the message from the server for every other status', () => {
+  it('reads a 404 with no token as a repository nobody proved they could see', () => {
     const failure = describeReviewFailure({
       hasToken: false,
       message: 'Not Found',
       status: 404,
     });
+    assert.equal(failure.action, 'add-token');
+    assert.match(failure.message, /private/);
+    // GitHub's own word for it is true and useless on its own.
+    assert.doesNotMatch(failure.message, /^Not Found$/);
+  });
+
+  it('tells a token that a 404 may be its own reach', () => {
+    const failure = describeReviewFailure({
+      hasToken: true,
+      message: 'Not Found',
+      status: 404,
+    });
+    assert.equal(failure.action, 'add-token');
+    assert.match(failure.message, /SAML/);
+  });
+
+  it('keeps the message from the server for every other status', () => {
+    const failure = describeReviewFailure({
+      hasToken: false,
+      message: 'Something broke upstream.',
+      status: 500,
+    });
     assert.equal(failure.action, 'retry');
-    assert.equal(failure.message, 'Not Found');
+    assert.equal(failure.message, 'Something broke upstream.');
     assert.equal(failure.title, 'Could not load that diff');
   });
 
@@ -42,14 +64,5 @@ describe('describeReviewFailure', () => {
     const failure = describeReviewFailure({ hasToken: false });
     assert.equal(failure.action, 'retry');
     assert.match(failure.message, /did not come back/);
-  });
-
-  it('does not ask a reviewer with a token to add one', () => {
-    const failure = describeReviewFailure({
-      hasToken: true,
-      message: 'Not Found',
-      status: 404,
-    });
-    assert.equal(failure.action, 'retry');
   });
 });

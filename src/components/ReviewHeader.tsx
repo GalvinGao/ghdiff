@@ -1,12 +1,15 @@
 import type { DiffIndicators } from '@pierre/diffs';
 import {
+  IconApproved,
   IconCodeStyleBars,
+  IconComment,
   IconDiffSplit,
   IconDiffUnified,
   IconEyeSlash,
   IconGearFill,
   IconInReview,
   IconSymbolDiffstat,
+  IconX,
 } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -32,6 +35,13 @@ import type { ColorModeState } from '@/hooks/useColorMode';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
 import type { PullDetailsState } from '@/hooks/usePullDetails';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
+import { cn } from '@/lib/cn';
+import type { StatusTone } from '@/lib/pullStatus';
+import {
+  describeSubmittedReview,
+  type ReviewVerdict,
+  reviewVerdict,
+} from '@/lib/reviewDecision';
 
 // The bar sits on the same surface as the sidebar and carries no boxes: a row of
 // bordered buttons across the top of a diff reads as a form to fill in, and the
@@ -113,15 +123,7 @@ export function ReviewHeader({
             range have no thread on GitHub for a verdict to land in. */}
         {review != null && (
           <>
-            <Button
-              size="sm"
-              title="Approve, request changes, or comment"
-              variant="chrome"
-              onClick={() => setReviewing(true)}
-            >
-              <IconInReview size={14} />
-              Review
-            </Button>
+            <ReviewButton review={review} onOpen={() => setReviewing(true)} />
             <ReviewSubmitDialog
               open={reviewing}
               review={review}
@@ -224,6 +226,76 @@ export function ReviewHeader({
         <GitHubTokenControl token={token} />
       </div>
     </header>
+  );
+}
+
+const VERDICT_ICON: Record<ReviewVerdict, typeof IconInReview> = {
+  approved: IconApproved,
+  changes: IconX,
+  commented: IconComment,
+};
+
+/**
+ * The verdict's colour, in the tokens the status square paints with, so the
+ * green on this button and the green on the square in the left bar are one
+ * colour saying one thing. `pending` never reaches here — a verdict is a
+ * decision already made — and it is listed because the tone vocabulary is
+ * shared with the check axis, which does have a running state.
+ */
+const VERDICT_COLOR: Record<StatusTone, string> = {
+  success: 'text-status-success',
+  failure: 'text-status-failure',
+  pending: 'text-status-pending',
+  neutral: 'text-status-neutral',
+};
+
+/**
+ * The way in to a verdict, and the report of the one already on record.
+ *
+ * A reviewer who approved this pull request yesterday should not be offered a
+ * bare **Review**, which reads as an invitation to do what they have already
+ * done. So the button says what they decided and shows it in the verdict's own
+ * colour, and it still opens the same dialog: GitHub takes a second review, and
+ * the newest one is the one that counts.
+ */
+function ReviewButton({
+  onOpen,
+  review,
+}: {
+  onOpen(): void;
+  review: SubmitReviewState;
+}) {
+  const { latest } = review;
+  const verdict = reviewVerdict(latest);
+
+  // Also the first paint of every review, before GitHub has answered. The
+  // button is pressable throughout, because the verdict on record changes what
+  // it says and never what it does.
+  if (latest == null || verdict == null) {
+    return (
+      <Button
+        size="sm"
+        title="Approve, request changes, or comment"
+        variant="chrome"
+        onClick={onOpen}
+      >
+        <IconInReview size={14} />
+        Review
+      </Button>
+    );
+  }
+
+  const Icon = VERDICT_ICON[verdict.verdict];
+  return (
+    <Button
+      size="sm"
+      title={`${describeSubmittedReview(latest)} Review it again.`}
+      variant="chrome"
+      onClick={onOpen}
+    >
+      <Icon className={cn('shrink-0', VERDICT_COLOR[verdict.tone])} size={14} />
+      {verdict.label}
+    </Button>
   );
 }
 
