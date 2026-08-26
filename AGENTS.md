@@ -363,6 +363,16 @@ to add. `ReviewStatusPanel` opens `GitHubTokenForm` in a dialog for that button,
 and closes it once GitHub answers for the token, because `useReviewPatch`
 depends on the token and has already started the reload behind it.
 
+Not Found is the other failure with a fix, and the one that does not look like
+it has one. GitHub answers 404 both for a diff that is not there and for a diff
+the caller may not see, deliberately: an answer that told the two apart would
+confirm that a private repository exists. So the panel names both readings and
+offers the token either way — **Add token** to a browser that has none, and
+**Change token** to one whose token cannot reach the repository, since a
+fine-grained token has to list the repository and an organization behind SSO has
+to authorize the token as well. `ReviewFailureAction` names the dialog and not
+the wording on the button; the panel takes that word from `token.hasToken`.
+
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list
 is open — and it took half the leading lane from the one glyph that carries new
