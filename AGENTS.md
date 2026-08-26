@@ -542,6 +542,13 @@ has a total wider than either of them, and a fixed width would spill. The right
 padding belongs to each tab rather than the strip, because the filter bar runs
 to the edge and the totals stop where the tree's figures stop.
 
+**Both feet are one rule.** The foot of the left bar and the foot of the review
+sidebar meet at the seam between the two panes, so both state `h-9` and neither
+takes its height from what is inside it. A strip padded around its button
+measured 36px and the border took it to 37, against the 36 an `h-9` strip counts
+its border inside — and the rule stepped by a pixel where the panes met. The two
+headers hold the line the same way: `h-11` on each, stated twice.
+
 ## The Worker
 
 `wrangler.jsonc` sets `main` to `@tanstack/react-start/server-entry` and
