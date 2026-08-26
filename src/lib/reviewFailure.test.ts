@@ -7,7 +7,7 @@ describe('describeReviewFailure', () => {
   it('asks a rate-limited browser with no token for one', () => {
     const failure = describeReviewFailure({ hasToken: false, status: 429 });
     assert.equal(failure.action, 'add-token');
-    assert.match(failure.title, /rate limiting/);
+    assert.match(failure.title, /rate limit/);
   });
 
   it('drops the rate limit body GitHub wrote', () => {
@@ -24,7 +24,7 @@ describe('describeReviewFailure', () => {
   it('offers only the wait to a rate-limited token', () => {
     const failure = describeReviewFailure({ hasToken: true, status: 429 });
     assert.equal(failure.action, 'retry');
-    assert.match(failure.message, /within the hour/);
+    assert.match(failure.message, /refill/);
   });
 
   it('reads a 404 with no token as a repository nobody proved they could see', () => {
