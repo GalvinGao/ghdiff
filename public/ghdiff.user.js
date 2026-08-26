@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ghdiff
 // @namespace    https://ghdiff.com/
-// @version      1.0.0
-// @description  Adds a ghdiff button to the tab bar of every GitHub pull request, beside Files changed.
+// @version      1.1.0
+// @description  Adds a ghdiff button to every GitHub pull request, beside Files changed, and to every commit, beside Browse files.
 // @author       GalvinGao
 // @homepageURL  https://github.com/GalvinGao/ghdiff
 // @supportURL   https://github.com/GalvinGao/ghdiff/issues
@@ -28,6 +28,7 @@
   const STYLE_ID = 'ghdiff-open-style';
 
   const PULL_PATH = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:\/|$)/;
+  const COMMIT_PATH = /^\/([^/]+)\/([^/]+)\/commit\/([0-9a-f]{7,40})(?:\/|$)/i;
 
   // github.com writes the file part of a diff anchor as the SHA-256 of the
   // path, and ghdiff reads that form, so a reviewer who followed a link to one
@@ -42,25 +43,41 @@
   // which both headers still set on the document, so the button follows the
   // reviewer's own light and dark scheme; the fallbacks are Primer's light
   // values, for the day a token is renamed.
+  //
+  // Everything that is the same wherever the button lands is stated once, and
+  // `data-ghdiff-place` carries the rest. The two rows it goes in are not the
+  // same row: the pull request's tab bar has no gap of its own and holds 28px
+  // controls at 12px, and the commit header's action row is a flex row with an
+  // 8px gap holding a 32px Browse files at 14px. A button that took the tab
+  // bar's figures into the commit header would sit short beside it, and one
+  // that kept the tab bar's own margin there would sit 16px off.
   const STYLE = `
 #${BUTTON_ID} {
   display: inline-flex;
   align-items: center;
   align-self: center;
   flex: 0 0 auto;
-  margin-left: 8px;
-  height: 28px;
-  padding: 0 8px;
   border: 1px solid var(--borderColor-default, #d1d9e0);
   border-radius: var(--borderRadius-medium, 6px);
   background: var(--button-default-bgColor-rest, #f6f8fa);
   color: var(--fgColor-default, #1f2328);
   font-family: var(--fontStack-sansSerif, -apple-system, system-ui, sans-serif);
-  font-size: 12px;
-  font-weight: 600;
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
+}
+#${BUTTON_ID}[data-ghdiff-place="tabs"] {
+  margin-left: 8px;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+#${BUTTON_ID}[data-ghdiff-place="actions"] {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
 }
 #${BUTTON_ID}:hover {
   background: var(--button-default-bgColor-hover, #eff2f5);
@@ -72,17 +89,45 @@
 }
 `;
 
-  /** The owner, the repository and the number, or null on any other page. */
-  function pullTarget() {
-    const match = PULL_PATH.exec(location.pathname);
-    if (match == null) return null;
-    return { owner: match[1], repo: match[2], number: match[3] };
+  /**
+   * The diff on screen, or null on any other page. A pull request and a commit
+   * are the two github.com pages that are one diff and that ghdiff has an
+   * address for; a compare range is the third, and its header carries no
+   * control of its own to sit beside.
+   */
+  function currentTarget() {
+    const pull = PULL_PATH.exec(location.pathname);
+    if (pull != null) {
+      return { kind: 'pull', owner: pull[1], repo: pull[2], number: pull[3] };
+    }
+    const commit = COMMIT_PATH.exec(location.pathname);
+    if (commit != null) {
+      return {
+        kind: 'commit',
+        owner: commit[1],
+        repo: commit[2],
+        sha: commit[3],
+      };
+    }
+    return null;
+  }
+
+  /** github.com's own path for this target, which is ghdiff's path as well. */
+  function targetPath(target) {
+    return target.kind === 'pull'
+      ? `/${target.owner}/${target.repo}/pull/${target.number}`
+      : `/${target.owner}/${target.repo}/commit/${target.sha}`;
   }
 
   function ghdiffHref(target) {
-    const path = `/${target.owner}/${target.repo}/pull/${target.number}`;
     const hash = GITHUB_DIFF_HASH.test(location.hash) ? location.hash : '';
-    return `${APP_ORIGIN}${path}${hash}`;
+    return `${APP_ORIGIN}${targetPath(target)}${hash}`;
+  }
+
+  function buttonTitle(target) {
+    return target.kind === 'pull'
+      ? 'Open this pull request in ghdiff'
+      : 'Open this commit in ghdiff';
   }
 
   // The row of tabs, in the two headers GitHub serves today. The React header
@@ -93,28 +138,42 @@
     '.tabnav-tabs',
   ];
 
-  function findTabList() {
+  /**
+   * Where the button goes for this target: the tab bar on a pull request, the
+   * action row on a commit. Both are found by what they hold rather than by
+   * what they are called — see the two functions below.
+   */
+  function findHost(target) {
+    if (target.kind === 'commit') return findRowByLinkTo(treePath(target));
     for (const selector of TAB_LISTS) {
       const found = document.querySelector(selector);
       if (found != null) return found;
     }
-    return findTabListByFilesTab();
+    return findRowByLinkTo(`${targetPath(target)}/files`);
   }
 
-  // Neither selector above is a contract, and GitHub has already replaced this
-  // header once. What the tab bar is, rather than what it is called, is the row
-  // that holds the link to this pull request's own Files changed page — so find
-  // that link and take the row it sits in. A link with a fragment is not it:
-  // the page's skip link resolves to the same path.
-  function findTabListByFilesTab() {
-    const target = pullTarget();
-    if (target == null) return null;
-    const files = `/${target.owner}/${target.repo}/pull/${target.number}/files`;
+  /** Browse files, which is this commit's own tree page. */
+  function treePath(target) {
+    return `/${target.owner}/${target.repo}/tree/${target.sha}`;
+  }
+
+  // No selector GitHub gives is a contract, and it has already replaced the
+  // pull request header once. So neither row is looked up by name. What each one
+  // *is* is the row that holds the link to one page — Files changed for a pull
+  // request, Browse files for a commit — so find that link and take the row it
+  // sits in.
+  //
+  // A link with a fragment or a query is not it: the page's own skip link
+  // resolves to the same path. A link that is not on screen is not it either,
+  // and the commit header holds two of them — a wide one with the words and a
+  // narrow icon, one of which is always hidden. They share the one row, so
+  // whichever is on screen answers.
+  function findRowByLinkTo(path) {
     for (const link of document.querySelectorAll('a[href]')) {
       const href = link.getAttribute('href');
       if (href == null) continue;
       const url = new URL(href, location.href);
-      if (url.pathname !== files) continue;
+      if (url.pathname !== path) continue;
       if (url.hash !== '' || url.search !== '') continue;
       if (link.offsetParent == null) continue;
       const row = link.parentElement;
@@ -123,10 +182,13 @@
     return null;
   }
 
+  function placeFor(target) {
+    return target.kind === 'pull' ? 'tabs' : 'actions';
+  }
+
   function buildButton() {
     const button = document.createElement('a');
     button.id = BUTTON_ID;
-    button.title = 'Open this pull request in ghdiff';
     button.textContent = 'ghdiff';
     return button;
   }
@@ -140,27 +202,35 @@
   }
 
   function sync() {
-    const target = pullTarget();
+    const target = currentTarget();
     const existing = document.getElementById(BUTTON_ID);
     if (target == null) {
       existing?.remove();
       return;
     }
-    const list = findTabList();
-    if (list == null) {
+    const host = findHost(target);
+    if (host == null) {
       existing?.remove();
       return;
     }
     installStyle();
     const button = existing ?? buildButton();
+    // A move from a pull request to a commit reuses this button, so everything
+    // that differs between the two is written on every sync and not once at
+    // build time.
     const href = ghdiffHref(target);
     if (button.getAttribute('href') !== href) button.setAttribute('href', href);
-    // React owns this row and re-renders it, which drops anything it did not
-    // put there. Appending is what brings the button back. Appending only when
-    // it is not already the last child is what keeps this from answering its
-    // own observer for ever.
-    if (button.parentElement !== list || button.nextElementSibling != null) {
-      list.append(button);
+    const place = placeFor(target);
+    if (button.dataset.ghdiffPlace !== place)
+      button.dataset.ghdiffPlace = place;
+    const title = buttonTitle(target);
+    if (button.title !== title) button.title = title;
+    // React owns these rows and re-renders them, which drops anything it did
+    // not put there. Appending is what brings the button back. Appending only
+    // when it is not already the last child is what keeps this from answering
+    // its own observer for ever.
+    if (button.parentElement !== host || button.nextElementSibling != null) {
+      host.append(button);
     }
   }
 
