@@ -18,6 +18,7 @@ import { normalizePullStatus, type PullStatusSource } from '@/lib/pullStatus';
 import {
   GitHubError,
   type GitHubPullRequest,
+  type GitHubReview,
   type GitHubReviewComment,
   type GitHubUser,
   githubGraphQL,
@@ -175,6 +176,47 @@ const getPull = os.pulls.get.handler(async ({ context, input }) => {
   }
 });
 
+const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
+  const log = requestLog();
+  const { body, event, number, owner, repo } = input;
+  log.set({ owner, repo, pull: number, event });
+  const token = requireToken(context.token, 'submit a review');
+
+  try {
+    // An empty body is left off rather than sent as `""`. GitHub takes both for
+    // an approval, and neither is a body, so the shorter request is the honest
+    // one. The other two events GitHub refuses without words, which is the
+    // answer `canSubmitReview` already gave in the dialog.
+    const trimmed = body?.trim();
+    const review = await githubWrite<GitHubReview>(
+      'POST',
+      `/repos/${owner}/${repo}/pulls/${number}/reviews`,
+      token,
+      {
+        event,
+        ...(trimmed == null || trimmed.length === 0 ? {} : { body: trimmed }),
+      }
+    );
+    if (review == null) {
+      throw new ORPCError('BAD_GATEWAY', {
+        status: 502,
+        message: 'GitHub accepted the review but returned nothing.',
+      });
+    }
+    log.set({ outcome: 'submitted', reviewId: review.id, state: review.state });
+    return {
+      id: review.id,
+      state: review.state,
+      submittedAt: review.submitted_at ?? undefined,
+      htmlUrl: review.html_url,
+    };
+  } catch (error) {
+    // GitHub's own words are worth more than ours here: it is the one that
+    // knows a reviewer cannot approve their own pull request.
+    return fail(error, 'That review was not submitted.');
+  }
+});
+
 const listComments = os.comments.list.handler(async ({ context, input }) => {
   const log = requestLog();
   const { number, owner, repo } = input;
@@ -287,6 +329,9 @@ const removeComment = os.comments.remove.handler(async ({ context, input }) => {
 export const router = os.router({
   viewer: { get: getViewer },
   pulls: { list: listPulls, get: getPull },
+  reviews: {
+    submit: submitReview,
+  },
   comments: {
     list: listComments,
     create: createComment,

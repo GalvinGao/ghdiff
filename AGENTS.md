@@ -53,8 +53,9 @@ src/
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: token, color mode, patch, comments,
-                           pulls, sidebar width, the URL fragment
+                           pulls, pane widths, the URL fragment
   lib/                     pure domain logic, unit tested
+  lib/githubUrls.ts        every address on github.com this app links to
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
@@ -143,6 +144,34 @@ it cannot also be the boundary: two authors read as one run. Both lists rule off
 between repositories and between authors, and the rule is drawn from the index
 rather than `:first-child`, because an author group is never the first child of
 its section — the repository heading is.
+
+**A name on screen that GitHub has a page for is a link to it, in a new tab.**
+`src/lib/githubUrls.ts` builds every one of those addresses, so a query string
+assembled at one call site cannot differ from the next: the repository heading
+goes to the repository, the count beside it goes to the same rows on GitHub
+(`is:pr is:open`, which is what GitHub's own Pull requests tab applies), the
+author heading's arrow adds `author:` to that query, and the label in
+`ReviewHeader` goes to the pull request, commit or compare range under review.
+`GitHubTextLink` and `GitHubIconLink` in `src/components/GitHubLink.tsx` are the
+two shapes: text that reads as itself until the pointer arrives, and a glyph
+that is not there until the row is hovered. Both carry `target="_blank"` and
+`rel="noreferrer"`, because ghdiff is a place a reviewer stays — a link that
+replaced the diff would cost them the scroll position, the filter and the
+fragment they had built up. An author's arrow keeps its space while it is
+invisible, or every heading would move as the pointer crossed the list.
+
+**A review is a verdict, and it is one press.** `reviews.submit` posts to
+`/pulls/{n}/reviews` with GitHub's own `event`, and `src/lib/reviewDecision.ts`
+holds the three and the one rule that separates them: `REQUEST_CHANGES` and
+`COMMENT` are nothing without words, and `canSubmitReview` is what disables
+those buttons rather than letting a 422 arrive after the reviewer has written
+them. `ReviewSubmitDialog` gives each event a button of its own instead of a
+radio group and a Submit: GitHub asks twice because it has a batch of pending
+line comments to send with the verdict, and this app has none — a line comment
+is posted where it is written. A failure keeps the dialog open with GitHub's own
+sentence in it, because GitHub is the one that knows a reviewer cannot approve
+their own pull request. A verdict that lands reloads the open pull requests,
+since the review half of every row's square has just changed.
 
 **The API is one contract, and both sides read it.** `src/lib/rpc/contract.ts`
 names every procedure, its input and its output, and imports nothing from a
@@ -291,6 +320,21 @@ the thread the height was taken from. That is one relayout for one deliberate
 act, and it is the same relayout posting the first comment on a line already
 costs. Everything else stays fixed.
 
+**That layer is measured in the box it is about to have.** How tall a comment is
+is a question about the column it is read in, and the panel opens two or three
+times wider than the card. So `CommentExpansion` writes the target width and the
+largest allowed height onto the panel, reads the height of the box that holds
+the comments, and puts the panel back — all inside one layout effect, so the
+browser paints none of it and the panel still travels from the card's rectangle.
+Three things in that sequence are load-bearing. The panel's own transition is
+turned off around it, or the box read back is the box it started from and the
+answer is the card's tall wrap. The height goes on with the width, or the scroll
+region carries a scrollbar it is about to lose and every paragraph wraps eight
+pixels early. And what is measured is the padded box inside the scroll region,
+never the region: the region is `h-full` of a panel still the height of the
+card, so its `scrollHeight` can never report less than the card, which is what
+used to leave a band of empty panel under the last line.
+
 **A comment body is untrusted, and the schema is what makes it safe.**
 `CommentBody` parses raw HTML with `rehype-raw` and then filters it with
 `rehype-sanitize` on its **default** schema, which follows GitHub's own
@@ -370,10 +414,10 @@ not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
 every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
 
-**A sidebar drag renders nothing.** `src/hooks/useSidebarWidth.ts` writes every
-pointermove straight onto `--ghdiff-sidebar-width` on the layout element, and
-tells React once, on pointerup. The grid column and the handle's own `left` both
-read that property, so the pane and the seam travel together while the
+**A pane drag renders nothing.** `src/hooks/usePaneWidth.ts` writes every
+pointermove straight onto one custom property of the element that carries it,
+and tells React once, on pointerup. The layout and the handle's own placement
+both read that property, so the pane and the seam travel together while the
 `CodeView` beside them is neither re-rendered nor re-measured. The drag's active
 look comes from a `data-resizing` attribute on the handle for the same reason.
 Two widths are kept apart on purpose: the width the reviewer chose, which goes
@@ -381,6 +425,18 @@ to browser storage, and the width on screen, which a window too narrow for both
 panes squeezes. Widening the window gives the choice back, and a browser tab
 reporting a viewport of zero — which happens while a page loads and while a tab
 is hidden — is ignored rather than treated as a layout to shrink into.
+
+**Two panes drag, and `room` is the whole of what separates them.**
+`useSidebarWidth` is `room: 'self'`: the review sidebar is a grid column inside
+the element that carries `--ghdiff-sidebar-width`, so that element is both what
+the drag writes to and what says how much room there is. `useRailWidth` is
+`room: 'parent'`: the left bar **is** the element the drag resizes, so its room
+is its parent's width — measuring itself would chase its own tail, and the
+ResizeObserver would answer its own drag. What each pane leaves behind is
+`reserve`: the diff's minimum for the sidebar, and the sidebar's minimum plus
+the diff's for the bar, so a bar dragged to its widest still leaves a review
+screen that fits. The collapsed bar has no handle: it is the width of one
+square, and a square is not a thing to resize.
 
 **A file's diff stats belong to the tree's decoration lane.** `@pierre/trees`
 draws `renderRowDecoration` after the name and before the git badge, so the

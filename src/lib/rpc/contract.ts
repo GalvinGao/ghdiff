@@ -4,6 +4,7 @@ import * as z from 'zod';
 import type { CommentPayload } from '@/lib/comments';
 import type { PullDetails } from '@/lib/pullDetails';
 import type { OpenPullsData } from '@/lib/pulls';
+import type { SubmittedReview } from '@/lib/reviewDecision';
 import type { GitHubViewer } from '@/lib/viewer';
 
 // The whole API, stated once, in a module that imports nothing from a server
@@ -48,6 +49,23 @@ export const contract = {
 
     /** One pull request's own details, for the card behind its title. */
     get: oc.input(pullRef).output(type<PullDetails>()),
+  },
+
+  reviews: {
+    /**
+     * A verdict on the pull request as a whole. The three events are GitHub's
+     * own spelling, and the body is optional here rather than conditional:
+     * `canSubmitReview` holds the button until a verdict that needs words has
+     * them, and GitHub is the authority on the rest.
+     */
+    submit: oc
+      .input(
+        pullRef.extend({
+          event: z.enum(['APPROVE', 'COMMENT', 'REQUEST_CHANGES']),
+          body: z.string().optional(),
+        })
+      )
+      .output(type<SubmittedReview>()),
   },
 
   comments: {

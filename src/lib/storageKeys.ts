@@ -6,6 +6,7 @@ export const GITHUB_TOKEN_STORAGE_KEY = 'ghdiff-github-token';
 export const WATCHED_REPOS_STORAGE_KEY = 'ghdiff-watched-repos';
 export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'ghdiff-sidebar-width';
+export const RAIL_WIDTH_STORAGE_KEY = 'ghdiff-rail-width';
 export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
 
 /** Comments for one review target, when they cannot go to GitHub. */

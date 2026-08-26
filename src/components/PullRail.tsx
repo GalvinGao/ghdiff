@@ -7,6 +7,7 @@ import { Link, useLocation } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
+import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import { PullRequestList } from '@/components/PullRequestList';
 import { isCurrentPull } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
@@ -16,6 +17,12 @@ import { Spinner } from '@/components/ui/Spinner';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useStoredJson } from '@/hooks/useLocalStorage';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
+import {
+  RAIL_MAX_WIDTH,
+  RAIL_MIN_WIDTH,
+  RAIL_WIDTH_PROPERTY,
+  useRailWidth,
+} from '@/hooks/useRailWidth';
 import { cn } from '@/lib/cn';
 import { flattenStacks, groupPullsByRepo, type PullSummary } from '@/lib/pulls';
 import {
@@ -46,7 +53,7 @@ import { RAIL_COLLAPSED_STORAGE_KEY } from '@/lib/storageKeys';
 // rule on `[data-app-rail]` in globals.css keeps that paint empty. The hook's
 // answer arrives after it and agrees with it.
 
-const EXPANDED_WIDTH = '17rem';
+// Wide enough for the squares and their padding, and nothing else to size.
 const COLLAPSED_WIDTH = '2.75rem';
 
 export function PullRail() {
@@ -57,6 +64,16 @@ export function PullRail() {
     false
   );
   const current = useCurrentPull();
+  // Destructured, so nothing reads a property of the state object while this
+  // component renders.
+  const {
+    attach: attachRail,
+    onHandleKeyDown: onRailHandleKeyDown,
+    onHandlePointerDown: onRailHandlePointerDown,
+    reset: resetRailWidth,
+    style: railStyle,
+    width: railWidth,
+  } = useRailWidth();
 
   if (watched.hydrated && watched.repos.length === 0) {
     return null;
@@ -65,10 +82,18 @@ export function PullRail() {
   return (
     <>
       <aside
+        ref={attachRail}
         aria-label="Open pull requests"
-        className="border-line bg-surface flex h-full shrink-0 flex-col border-r"
+        // `relative`, because the seam hangs off this element's own right edge
+        // rather than taking a column of its own. The width is a custom
+        // property, because the drag writes that property straight onto this
+        // element and re-renders nothing. See hooks/usePaneWidth.ts.
+        className="border-line bg-surface relative flex h-full shrink-0 flex-col border-r"
         data-app-rail=""
-        style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH }}
+        style={{
+          ...railStyle,
+          width: collapsed ? COLLAPSED_WIDTH : `var(${RAIL_WIDTH_PROPERTY})`,
+        }}
       >
         <div
           className={cn(
@@ -147,6 +172,21 @@ export function PullRail() {
               )}
             </Button>
           </div>
+        )}
+
+        {/* The collapsed bar is the width of one square, and a square is not a
+            thing to resize. */}
+        {!collapsed && (
+          <PaneResizeHandle
+            label="Pull request bar width"
+            max={RAIL_MAX_WIDTH}
+            min={RAIL_MIN_WIDTH}
+            onKeyDown={onRailHandleKeyDown}
+            onPointerDown={onRailHandlePointerDown}
+            onReset={resetRailWidth}
+            style={{ right: -4 }}
+            width={railWidth}
+          />
         )}
       </aside>
 
