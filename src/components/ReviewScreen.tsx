@@ -192,12 +192,13 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const itemIds = useMemo(() => items.map((item) => item.id), [items]);
   // Destructured: every jump handler below states the file it lands on, and a
   // handler that changed identity on each render would re-render the tree and
-  // the viewer with it.
+  // the viewer with it. The scroll region goes in because a jump holds the mark
+  // until it lands, and a gesture in that region is what cuts the hold short.
   const {
     activeItemId,
     onScroll: onDiffScroll,
     select: selectActiveItem,
-  } = useActiveDiffItem(itemIds);
+  } = useActiveDiffItem(itemIds, scrollRef);
 
   // The selected lines are the truth about which thread the reviewer is on, so
   // the row in the sidebar lights up whether they clicked it there or landed on
