@@ -15,9 +15,6 @@ whole instruction:
 + ghdiff.com/owner/repo/pull/123
 ```
 
-A `/gh/...` path, which earlier versions required, redirects to the same review
-without the prefix.
-
 ## What it adds over diffs-hub
 
 `diffs-hub` in the `pierrecomputer/pierre` monorepo is the reference
