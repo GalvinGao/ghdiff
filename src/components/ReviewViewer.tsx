@@ -1,19 +1,24 @@
 import {
   areSelectionsEqual,
   type CodeViewDiffItem,
+  type CodeViewItem,
   type CodeViewLineSelection,
   type CodeViewOptions,
   type DiffIndicators,
   type DiffLineAnnotation,
   type FileDiffContentsLoader,
+  type FileDiffMetadata,
   type SelectedLineRange,
   type ThemeTypes,
 } from '@pierre/diffs';
 import { CodeView, type CodeViewHandle } from '@pierre/diffs/react';
-import { memo, type RefObject, useMemo } from 'react';
+import { IconExpandRow } from '@pierre/icons';
+import { memo, type RefObject, useCallback, useMemo } from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
+import { Button } from '@/components/ui/Button';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
@@ -77,6 +82,19 @@ export const ReviewViewer = memo(function ReviewViewer({
   themeType,
   viewerRef,
 }: ReviewViewerProps) {
+  // In the file header, beside the name, the way GitHub places the same
+  // control. The hunk separators reveal 100 lines per press; this is the one
+  // press that asks for the whole file instead.
+  const renderHeaderFilenameSuffix = useCallback(
+    (item: CodeViewItem<CommentMetadata>) => {
+      if (item.type !== 'diff' || !canExpandWholeFile(item.fileDiff)) {
+        return null;
+      }
+      return <ExpandFileButton itemId={item.id} viewerRef={viewerRef} />;
+    },
+    [viewerRef]
+  );
+
   const options: CodeViewOptions<CommentMetadata> = useMemo(
     () => ({
       themeType,
@@ -117,6 +135,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       selectedLines={selectedLines}
       onScroll={onScroll}
       onSelectedLinesChange={onSelectedLinesChange}
+      renderHeaderFilenameSuffix={renderHeaderFilenameSuffix}
       className={cn(
         'cv-scrollbar bg-canvas relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto',
         // `none`, not `contain`: contain stops the scroll from chaining to the
@@ -153,6 +172,79 @@ export const ReviewViewer = memo(function ReviewViewer({
     />
   );
 });
+
+/**
+ * Only a changed file has unmodified lines the patch left out: a new or a
+ * deleted file arrives whole, and a pure rename has no lines at all. This is
+ * the library's own hydration test, minus `rename-pure`.
+ */
+function canExpandWholeFile(fileDiff: FileDiffMetadata): boolean {
+  return fileDiff.type === 'change' || fileDiff.type === 'rename-changed';
+}
+
+const EXPAND_WHOLE_FILE_LABEL = 'Show the whole file';
+
+/**
+ * The whole file is safe where a single press is: the file was already turned
+ * away at `MAX_FILE_BYTES` if it could not be afforded, and the virtualizer
+ * lays out only what is on screen. The button stays after the press, because
+ * the expansion state lives inside the viewer's rendered instance and React
+ * cannot read it — a second press finds every region already at its full size
+ * and changes nothing.
+ */
+function ExpandFileButton({
+  itemId,
+  viewerRef,
+}: {
+  itemId: string;
+  viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
+}) {
+  return (
+    <Tooltip label={EXPAND_WHOLE_FILE_LABEL}>
+      <Button
+        aria-label={EXPAND_WHOLE_FILE_LABEL}
+        size="icon-sm"
+        variant="quiet"
+        onClick={() => {
+          const viewer = viewerRef.current;
+          if (viewer != null) expandWholeFile(viewer, itemId);
+        }}
+      >
+        <IconExpandRow size={13} />
+      </Button>
+    </Tooltip>
+  );
+}
+
+/**
+ * Asks every collapsed region of one file for everything, through the same
+ * call the library's own shift-click sends for one region: `expandHunk` with
+ * an infinite count, which the region clamps to its own size. On a file still
+ * partial, the first call also starts the one `/api/file` fetch and the
+ * expansions wait for it; a fetch that fails leaves the file partial, keeps
+ * the regions collapsed, and reports through the strip at the foot of the
+ * screen like any other press.
+ *
+ * The instance is read from the rendered items, which is safe here and only
+ * here: the button lives in this file's own header, so the file is rendered
+ * whenever the button can be pressed.
+ */
+function expandWholeFile(
+  viewer: CodeViewHandle<CommentMetadata>,
+  itemId: string
+): void {
+  const rendered = viewer
+    .getInstance()
+    ?.getRenderedItems()
+    .find((entry) => entry.id === itemId);
+  if (rendered == null || rendered.type !== 'diff') return;
+  // Region i is the gap above hunk i, and one more region is the tail of the
+  // file, which is why the loop runs one past the hunks.
+  const { hunks } = rendered.item.fileDiff;
+  for (let region = 0; region <= hunks.length; region++) {
+    rendered.instance.expandHunk(region, 'both', Number.POSITIVE_INFINITY);
+  }
+}
 
 /** Kept next to the viewer so both use the same equality rule. */
 export function isSameSelection(
