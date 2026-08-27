@@ -465,14 +465,22 @@ library hydrates the metadata object in place, and `items` keeps the same
 `fileDiff` reference through a filter change and a comment revision alike, so
 the lines stay expanded.
 
-**A big file is safe because each press is small.** The library reveals
-`expansionLineCount` lines — 100 — per press on a region larger than that, and
-it hides its own **Expand all** control, so the visible affordance is the
-bounded one; a shift-click is what asks for the whole region. Above 100 000
-lines it stops highlighting rather than tokenizing forever, and the virtualizer
-lays out what it needs. So the only limit worth stating is the byte one, and
-`MAX_FILE_BYTES` is 4 MiB. Verified with a 3 MB, 54 434-line file expanded end
-to end — split and unified — which laid out to a million pixels and scrolled.
+**A big file is safe because the limits hold, which is why the header can offer
+the whole of it.** The library reveals `expansionLineCount` lines — 100 — per
+press on a region larger than that, and it hides its own **Expand all** control
+on the separator, so the separator's visible affordance is the bounded one; a
+shift-click is what asks for the whole region there. `ExpandFileButton` in
+`ReviewViewer` is the unbounded press, beside the file's name where github.com
+puts the same control: it sends the library's own shift-click call —
+`expandHunk` with an infinite count, which each region clamps to its own size —
+to every gap and to the tail, one file per press and never the diff. It appears
+only where there is something to reveal, `change` and `rename-changed`: a new or
+deleted file arrives whole, and a pure rename has no lines at all. Above 100 000
+lines the library stops highlighting rather than tokenizing forever, and the
+virtualizer lays out what it needs. So the only limit worth stating is the byte
+one, and `MAX_FILE_BYTES` is 4 MiB. Verified with a 3 MB, 54 434-line file
+expanded end to end — split and unified — which laid out to a million pixels and
+scrolled.
 
 **Both ends hold that limit, because neither one can hold it alone.**
 `content-length` counts the bytes on the wire, and GitHub compresses: 4.8 MB of
