@@ -6,6 +6,7 @@ import {
   useMemo,
 } from 'react';
 
+import { type CodeFontState, useCodeFont } from '@/hooks/useCodeFont';
 import { type ColorModeState, useColorMode } from '@/hooks/useColorMode';
 import { type GitHubTokenState, useGitHubToken } from '@/hooks/useGitHubToken';
 import { type OpenPullsState, useOpenPulls } from '@/hooks/useOpenPulls';
@@ -16,14 +17,16 @@ import {
 
 // One owner for the state the whole app shares.
 //
-// The token, the colour mode and the watch list each live in browser storage,
-// and a hook that reads storage owns a copy of what it read. That was fine while
-// only one screen was mounted at a time. The left bar is now on every page, so
-// the bar and the page under it would hold two copies: adding a repository in
-// the home page's dialog would leave the bar listing the old set until a reload.
+// The token, the colour mode, the code font and the watch list each live in
+// browser storage, and a hook that reads storage owns a copy of what it read.
+// That was fine while only one screen was mounted at a time. The left bar is
+// now on every page, so the bar and the page under it would hold two copies:
+// adding a repository in the home page's dialog would leave the bar listing the
+// old set until a reload.
 // This provider mounts each hook once, above both.
 
 export interface AppData {
+  codeFont: CodeFontState;
   colorMode: ColorModeState;
   pulls: OpenPullsState;
   token: GitHubTokenState;
@@ -33,6 +36,7 @@ export interface AppData {
 const AppDataContext = createContext<AppData | null>(null);
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
+  const codeFont = useCodeFont();
   const colorMode = useColorMode();
   const token = useGitHubToken();
   const watched = useWatchedRepos();
@@ -56,8 +60,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [watching]);
 
   const value = useMemo<AppData>(
-    () => ({ colorMode, pulls, token, watched }),
-    [colorMode, pulls, token, watched]
+    () => ({ codeFont, colorMode, pulls, token, watched }),
+    [codeFont, colorMode, pulls, token, watched]
   );
 
   return (

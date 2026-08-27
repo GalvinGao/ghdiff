@@ -1,5 +1,18 @@
 @import 'tailwindcss';
 
+/* The three faces the code font selector offers, self-hosted through
+   fontsource. Each package's `index.css` is a handful of `@font-face` rules
+   split by `unicode-range`, so all three cost a couple of kilobytes of CSS
+   here and not one byte of woff2 until a reviewer picks one: the browser
+   fetches a subset only when it has a character to draw with it. That is why
+   these are static imports rather than a download per press — a lazily
+   imported stylesheet would arrive after the diff had already measured itself.
+   None of it reaches the Worker, which is built from the modules and not from
+   this stylesheet. `src/lib/codeFonts.ts` names the families. */
+@import '@fontsource-variable/jetbrains-mono/index.css';
+@import '@fontsource-variable/geist-mono/index.css';
+@import '@fontsource-variable/fira-code/index.css';
+
 /* The color scheme lives on <html data-color-scheme>, which the color-mode
    hook writes before paint. Tailwind's `dark:` variant follows that attribute
    rather than the media query, so one control drives the whole app. */
@@ -49,9 +62,28 @@
   --app-font-sans:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans',
     'Liberation Sans', Arial, sans-serif;
-  --app-font-mono:
+
+  /* The platform's own mono is a property of its own, because it is also the
+     tail of every face the selector offers: a chosen face that fails to
+     download still leaves a monospace behind it. `src/lib/codeFonts.ts` names
+     this property rather than restate the stack, and a choice other than
+     System is applied by setting `--app-font-mono` on the document element —
+     the same element `:root` matches, so the inline value wins over this
+     default. */
+  --app-font-mono-system:
     'SF Mono', Monaco, Consolas, 'Ubuntu Mono', 'Liberation Mono',
     'Courier New', monospace;
+  --app-font-mono: var(--app-font-mono-system);
+
+  /* The diff draws inside a shadow root and reads two properties of its own,
+     whose fallbacks are these same two stacks stated a second time in the
+     library. Pointing them at the app's is what carries the reviewer's chosen
+     face into the code itself — a custom property is substituted where it is
+     declared and then inherits across the shadow boundary as the resolved
+     stack — and it leaves one statement of each face rather than two free to
+     drift apart. */
+  --diffs-font-family: var(--app-font-mono);
+  --diffs-header-font-family: var(--app-font-sans);
 }
 
 /* The diff and the tree paint themselves from the pierre theme, and the chrome

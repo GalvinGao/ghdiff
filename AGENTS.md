@@ -53,9 +53,10 @@ src/
     api/file.ts            one whole file, as text/plain
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
   components/              the left bar, the review surface, and their chrome
-  hooks/                   client state: token, color mode, patch, comments,
-                           pulls, pane widths, the URL fragment, the files a
-                           hunk expansion reads, and whether this is a phone
+  hooks/                   client state: token, color mode, code font, patch,
+                           comments, pulls, pane widths, the URL fragment, the
+                           files a hunk expansion reads, and whether this is a
+                           phone
   lib/                     pure domain logic, unit tested
   lib/githubUrls.ts        every address on github.com this app links to
   lib/rpc/contract.ts      the API, stated once: shared by both sides
@@ -270,12 +271,62 @@ exists: a `brightness` filter moves near-black and near-white by nothing, so the
 instead. A link inside a comment body is `text-accent` and reads as body text;
 its underline is what marks it.
 
+**The code font is a choice; the interface font is not.** A review is almost
+entirely code, so `--app-font-mono` is the one typeface worth offering — it sets
+the diff's own lines, the paths in the tree and the comment list, and every sha
+on screen. `src/lib/codeFonts.ts` holds the choices and their whole stacks, and
+`useCodeFont` applies one by setting that property on the document element,
+which is the same element `:root` matches, so the inline value wins over the
+stylesheet's default. `--app-font-mono-system` is the platform's own mono, and
+every stack ends in it: a face that fails to download still leaves a monospace
+behind it, and the system stack is written once. The control is a radio group in
+the review header's display menu, where each row is drawn in the face it names,
+because what a typeface looks like is the whole of what the choice is about.
+
+**The diff has to be told, because it draws in a shadow root.** `@pierre/diffs`
+reads `--diffs-font-family` and falls back to a stack of its own that happens to
+be the same one, so changing `--app-font-mono` alone moved the chrome and left
+the code as it was. `:root` in `src/globals.css` now points both of the
+library's properties at the app's two, which carries the reviewer's choice into
+the code and leaves one statement of each face rather than two free to drift.
+
+**Every face the selector offers advances 0.6em, and that is load-bearing.** The
+viewer measures the width of `0` once — `Metrics.init()` returns early on every
+call after the first, and its `document.fonts.ready` re-measure is a one-shot —
+so a face picked mid-review lays the diff out against the figure taken from the
+face before it. SF Mono, JetBrains Mono, Geist Mono and Fira Code all measure
+7.80px at 13px, which is why a switch needs no remount and why wrap points,
+selection rectangles and the horizontal extent all stay correct. Verified on
+ghostty-org/ghostty v1.3.0...v1.3.1, split and unified, wrapped and scrolled: no
+element overflowed. **A candidate whose advance is not 0.6em cannot simply be
+added to `CODE_FONTS`** — it needs the `CodeView` remounted on the change, and a
+remount costs the reviewer their scroll position.
+
+**Those three faces cost bytes only when one is picked.** Each is a fontsource
+**variable** package, so one file covers the weight range shiki and the chrome
+both draw from; a static package would cost a download per weight. `globals.css`
+imports all three statically, which is a couple of kilobytes of `@font-face`
+rules split by `unicode-range` and not one byte of woff2 until a face is chosen
+— the browser fetches a subset only when it has a character to draw with it. A
+face picked mid-review fetches exactly one file, the 40 KB latin subset. Lazily
+importing a stylesheet per press was the other answer and it loses: it arrives
+after the diff has already measured itself. None of it reaches the Worker, which
+is built from the modules and never from this stylesheet.
+
+**And the first paint has to be the chosen face, not just the chosen colour.**
+`CodeFontScript` sits beside `ColorModeScript` in the document head for a reason
+the colour scheme does not have: the measurement above is taken from whatever is
+on screen when the viewer initializes, so a face applied after mount is a layout
+computed against the wrong one. The script and the hook both read their stacks
+out of `codeFonts.ts`, so they cannot come to disagree about what a choice
+means.
+
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
-`useColorMode`, `useGitHubToken`, `useWatchedRepos`, and `useOpenPulls` once,
-above the bar and the page. Each of those reads browser storage, and a hook that
-reads storage owns a copy of what it read: two instances would let the bar and
-the page disagree about the token or the watch list. Call `useAppData()`; never
-call those four hooks in a screen.
+`useCodeFont`, `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and
+`useOpenPulls` once, above the bar and the page. Each of those reads browser
+storage, and a hook that reads storage owns a copy of what it read: two
+instances would let the bar and the page disagree about the token or the watch
+list. Call `useAppData()`; never call those five hooks in a screen.
 
 **The pull request list is repository, then author, then stack.**
 `groupPullsByRepo` in `src/lib/pulls.ts` produces that shape, `buildPullStacks`
@@ -940,8 +991,8 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 140 KiB of headroom is
+The Worker script is about 2.89 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 115 KiB of headroom is
 left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
 it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
 which carries the lazy loader for all 300-odd grammars, so importing anything
@@ -949,6 +1000,11 @@ from that package pulls the whole registry into whichever bundle it lands in.
 The server never highlights, so none of those chunks is ever evaluated there.
 Headroom on the free plan is thin, and any new dependency in the server graph
 eats into it.
+
+A dependency that only a stylesheet imports is not in that graph. The three
+fontsource packages are reached from `globals.css`, which `__root.tsx` links as
+a `?url` stylesheet, so their woff2 files are written to `dist/client` and
+uploaded as assets. They cost the script nothing.
 
 ## Tests
 
