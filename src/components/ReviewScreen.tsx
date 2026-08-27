@@ -163,6 +163,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     entries: patch.data.entries,
     token: token.token,
     viewerLogin: token.viewer?.login,
+    viewerAvatarUrl: token.viewer?.avatarUrl,
     ready: patch.state === 'ready',
   });
 

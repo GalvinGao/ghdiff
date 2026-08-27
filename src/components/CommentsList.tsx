@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { cn } from '@/lib/cn';
 import { commentPreviewText } from '@/lib/commentHeight';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
@@ -112,7 +113,12 @@ export function CommentsList({
                       'bg-raised shadow-[inset_2px_0_0_var(--app-accent)]'
                   )}
                 >
-                  <AuthorAvatar thread={thread} />
+                  <AuthorAvatar
+                    author={thread.author}
+                    avatarUrl={thread.authorAvatarUrl}
+                    isBot={thread.authorIsBot}
+                    size={20}
+                  />
                   <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
                     <span className="flex min-w-0 items-baseline gap-1.5">
                       <span className="text-ink truncate text-xs font-medium">
@@ -319,40 +325,6 @@ function PathReveal({
       </span>
     </div>,
     document.body
-  );
-}
-
-/**
- * The account that opened the thread, in the place the line number used to sit.
- * A face, or a robot's logo, is read faster than a login, which is what makes a
- * bot's wall of comments skippable at a glance.
- */
-function AuthorAvatar({ thread }: { thread: CommentListEntry }) {
-  const shared = 'size-5 shrink-0 rounded-full border border-line object-cover';
-  if (thread.authorAvatarUrl != null) {
-    return (
-      <img
-        alt=""
-        aria-hidden="true"
-        className={cn(shared, thread.authorIsBot && 'rounded-sm')}
-        height={20}
-        loading="lazy"
-        src={thread.authorAvatarUrl}
-        width={20}
-      />
-    );
-  }
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        shared,
-        'bg-surface text-ink-faint flex items-center justify-center text-[10px] font-semibold uppercase',
-        thread.authorIsBot && 'rounded-sm'
-      )}
-    >
-      {thread.author.slice(0, 1)}
-    </span>
   );
 }
 

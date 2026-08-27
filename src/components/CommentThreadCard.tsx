@@ -1,6 +1,7 @@
 import { IconReply } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
+import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { CommentBody } from '@/components/CommentBody';
 import { CommentExpansion } from '@/components/CommentExpansion';
 import { ConfirmInline } from '@/components/ConfirmInline';
@@ -126,6 +127,17 @@ export function CommentThreadCard({
       )}
     >
       <div className="mb-1 flex items-center gap-2">
+        {/*
+          16px, which fits inside the 20px line box the login already draws, so
+          the picture costs the header no height. A card that grew here would
+          relay out the virtualized list. See lib/commentHeight.ts.
+        */}
+        <AuthorAvatar
+          author={root.author}
+          avatarUrl={root.authorAvatarUrl}
+          isBot={root.authorIsBot}
+          size={16}
+        />
         <span className="truncate text-[13px] font-semibold">
           {root.author}
         </span>
@@ -173,6 +185,11 @@ export function CommentThreadCard({
           measureKey={comments.length}
           onClose={close}
         >
+          {/*
+            No picture on this row. It is the panel's own chrome, and every
+            message under it already carries the picture of whoever wrote it —
+            one beside "4 comments" would name only the first of the four.
+          */}
           <div className="mb-2 flex items-center gap-2">
             <span className="text-ink text-sm font-semibold">
               {comments.length === 1
@@ -206,7 +223,18 @@ export function CommentThreadCard({
                   index > 0 && 'border-line mt-2.5 border-t pt-2.5'
                 )}
               >
-                <div className="mb-1 flex items-baseline gap-2">
+                {/*
+                  items-center, not items-baseline: a picture has no baseline
+                  of its own, and a row aligned on one would hang it below the
+                  login it belongs to.
+                */}
+                <div className="mb-1 flex items-center gap-2">
+                  <AuthorAvatar
+                    author={comment.author}
+                    avatarUrl={comment.authorAvatarUrl}
+                    isBot={comment.authorIsBot}
+                    size={20}
+                  />
                   <span className="text-ink text-[13px] font-semibold">
                     {comment.author}
                   </span>
