@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { withGitHubToken } from './useGitHubToken';
+import { formatBytes } from '@/lib/byteSize';
 import {
   buildReviewData,
   EMPTY_REVIEW_DATA,
@@ -11,6 +12,7 @@ import {
   reviewTargetKey,
   reviewTargetQuery,
 } from '@/lib/reviewTarget';
+import { readStreamedText } from '@/lib/streamText';
 
 export type PatchLoadState = 'fetching' | 'parsing' | 'ready' | 'error';
 
@@ -26,6 +28,13 @@ export interface ReviewPatchState {
   status?: number;
   /** What the diff source could not carry, when it said so. */
   notice?: string;
+  /**
+   * Bytes of patch read so far, while `state` is 'fetching'. There is no total
+   * to divide it by: github.com's `.diff` answers chunked and states no
+   * `content-length`, and the one it states elsewhere counts compressed bytes.
+   * So this is a count and never a percentage.
+   */
+  bytes?: number;
   retry(): void;
 }
 
@@ -55,6 +64,7 @@ export function useReviewPatch(options: {
   const [error, setError] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<number | undefined>(undefined);
   const [notice, setNotice] = useState<string | undefined>(undefined);
+  const [bytes, setBytes] = useState<number | undefined>(undefined);
   const controllerRef = useRef<AbortController | null>(null);
 
   const query = reviewTargetQuery(target).toString();
@@ -69,6 +79,7 @@ export function useReviewPatch(options: {
     setError(undefined);
     setStatus(undefined);
     setNotice(undefined);
+    setBytes(undefined);
     setState('fetching');
 
     try {
@@ -76,8 +87,22 @@ export function useReviewPatch(options: {
         `/api/diff?${query}`,
         withGitHubToken(token, { signal: controller.signal })
       );
-      const body = await response.text();
       setNotice(response.headers.get(NOTICE_HEADER) ?? undefined);
+      // Read a chunk at a time so the wait has a figure on it. A patch of tens
+      // of megabytes is a long stare at one sentence, and the count of what has
+      // arrived is the only honest thing there is to say about it: nothing on
+      // the wire states a total. The label is what decides whether this reaches
+      // React, so a chunk that does not move the figure costs no render.
+      const body = await readStreamedText(response, {
+        onBytes: (read) => {
+          if (controller.signal.aborted) return;
+          setBytes((shown) =>
+            shown != null && formatBytes(shown) === formatBytes(read)
+              ? shown
+              : read
+          );
+        },
+      });
       if (!response.ok) {
         setStatus(response.status);
         throw new Error(
@@ -114,5 +139,5 @@ export function useReviewPatch(options: {
     void load();
   }, [load]);
 
-  return { data, state, error, status, notice, retry };
+  return { data, state, error, status, notice, bytes, retry };
 }
