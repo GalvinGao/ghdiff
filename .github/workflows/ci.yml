@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  # A run nobody had to push for. GitHub Actions lost this repository's queue
+  # for three hours on 2026-08-26 and stranded the run for a merge to main;
+  # with only the two triggers above, the sole way to ask for another was to
+  # push again. This is the ask. It runs the two jobs below and not the deploy,
+  # which stays gated on a push to main.
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
