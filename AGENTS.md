@@ -600,6 +600,28 @@ the thread the height was taken from. That is one relayout for one deliberate
 act, and it is the same relayout posting the first comment on a line already
 costs. Everything else stays fixed.
 
+**A comment says who wrote it with a picture, and the picture fits the row it
+lands in.** `src/components/AuthorAvatar.tsx` is that one square: round for a
+person, `rounded-sm` for an app, whose logo is drawn to fill a square and loses
+its corners to a circle. Its box is a `size` in pixels on the style attribute
+rather than a class, so a picture that arrives late or never arrives at all
+cannot resize what holds it. The three places it goes take three sizes for one
+reason each. The card in the diff takes **16px**, which fits inside the 20px
+line box the login already draws, so a card that has picked its height keeps it.
+The open thread takes 20px, and the sidebar's list takes 20px against a row
+already fixed at `ROW_HEIGHT`. The login sits beside every one of them, so the
+picture is `aria-hidden` and adds nothing to a reader who cannot see it.
+
+The panel's own heading carries none, and neither does the composer. That
+heading says `4 comments` above four different authors, so one picture there
+would name only the first of them.
+
+A comment the reviewer has just written is shown before GitHub answers, so
+`useReviewComments` takes `viewerAvatarUrl` alongside `viewerLogin` and puts it
+on that optimistic message. Without it the message draws its initial and then
+swaps to the picture a moment later, on the one comment the reviewer is watching
+most closely.
+
 **That layer is measured in the box it is about to have.** How tall a comment is
 is a question about the column it is read in, and the panel opens two or three
 times wider than the card. So `CommentExpansion` writes the target width and the
