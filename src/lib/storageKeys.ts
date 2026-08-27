@@ -1,7 +1,9 @@
-// Browser storage keys. The pre-paint color mode script reads the first one on
-// the server as it builds its source text, so this module must stay free of any
+// Browser storage keys. Three of them are read on the server, by the pre-paint
+// scripts that interpolate a key into their own source text — the colour mode,
+// the code font, and the watch list — so this module must stay free of any
 // browser-only import.
 export const COLOR_MODE_STORAGE_KEY = 'ghdiff-color-mode';
+export const CODE_FONT_STORAGE_KEY = 'ghdiff-code-font';
 export const GITHUB_TOKEN_STORAGE_KEY = 'ghdiff-github-token';
 export const WATCHED_REPOS_STORAGE_KEY = 'ghdiff-watched-repos';
 export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';

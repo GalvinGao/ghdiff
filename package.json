@@ -17,6 +17,9 @@
     "test": "node --test --experimental-strip-types \"src/lib/**/*.test.ts\""
   },
   "dependencies": {
+    "@fontsource-variable/fira-code": "5.3.0",
+    "@fontsource-variable/geist-mono": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
     "@orpc/client": "^1.15.0",
     "@orpc/contract": "^1.15.0",
     "@orpc/server": "^1.15.0",

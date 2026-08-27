@@ -88,7 +88,13 @@ function defaultControls(isPhone: boolean): ViewerControls {
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // The left bar owns these, so the diff and the bar cannot disagree about who
   // the token belongs to or which repositories are watched.
-  const { colorMode, pulls: openPulls, token, watched } = useAppData();
+  const {
+    codeFont,
+    colorMode,
+    pulls: openPulls,
+    token,
+    watched,
+  } = useAppData();
   const workersReady = useWorkerPoolReady();
   const isPhone = useIsPhone();
   // Null until the reviewer touches a control, which is what lets the default
@@ -392,6 +398,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   return (
     <>
       <ReviewHeader
+        codeFont={codeFont}
         colorMode={colorMode}
         controls={controls}
         // The file list is a column of its own on every wider screen, which
