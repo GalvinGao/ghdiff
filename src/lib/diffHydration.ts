@@ -23,6 +23,24 @@ import { type FileDiffMetadata, SPLIT_WITH_NEWLINES } from '@pierre/diffs';
 // context around them.
 
 /**
+ * The largest file ghdiff will read for its unmodified lines. Around this size
+ * a source file runs to the hundred thousand lines at which the viewer gives up
+ * highlighting it, so little above the line improves what is on screen.
+ *
+ * Both ends hold it, and they have to. The route knows only what GitHub's
+ * headers say, and `content-length` states the **compressed** size whenever
+ * GitHub compressed the answer — 4.8 MB of word list arrives declaring 1.4 MB —
+ * and some answers carry no length at all. So the route rejects what it can
+ * prove is too big, and the browser counts the bytes it actually decodes, which
+ * is where the file becomes a string and where the string is the cost.
+ */
+export const MAX_FILE_BYTES = 4 * 1024 * 1024;
+
+/** What both ends say when a file runs past it. */
+export const FILE_TOO_LARGE =
+  'That file is too large to show its unmodified lines.';
+
+/**
  * Splits file text into lines, each keeping its own line break. The library
  * splits the loaded contents by the same rule, so the indexes this module
  * computes are the indexes it will read.
@@ -96,4 +114,39 @@ export function oldFileFromPatch(
     lines.push(newLines[index] ?? '');
   }
   return lines.join('');
+}
+
+/**
+ * The body, as text, and nothing past `MAX_FILE_BYTES` of it.
+ *
+ * The route turns an oversized file away on the length GitHub declared, but
+ * that length is the compressed one whenever GitHub compressed the answer and
+ * is absent from some answers altogether. So the decoded bytes are counted
+ * here, on the way in: this is the point where a file becomes a string in the
+ * reviewer's tab, which is the cost the limit is about.
+ */
+export async function readCappedText(response: Response): Promise<string> {
+  const body = response.body;
+  // No stream to read means no way to count, and only a runtime with no
+  // streaming fetch at all lands here.
+  if (body == null) return await response.text();
+
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let read = 0;
+  let text = '';
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      read += value.byteLength;
+      if (read > MAX_FILE_BYTES) throw new Error(FILE_TOO_LARGE);
+      text += decoder.decode(value, { stream: true });
+    }
+  } finally {
+    // Releases the lock on the way out, and cancels the rest of the download
+    // when this is the throw above rather than the end of the file.
+    await reader.cancel().catch(() => undefined);
+  }
+  return text + decoder.decode();
 }
