@@ -909,6 +909,12 @@ id is in `wrangler.jsonc`, so `CLOUDFLARE_API_TOKEN` is the only secret the job
 carries. The workflow cancels a superseded run only on a pull request, and the
 deploy job holds a concurrency group of its own, so no deploy is killed halfway.
 
+`workflow_dispatch` starts the two checks by hand and never the deploy, which
+stays gated on a push to main. It is there because a push was once the only way
+to ask for a run at all: an Actions outage stranded the run for a merge to main
+for three hours, and a run stuck in the queue holds the `main` concurrency group
+against the next push as well. Cancel a stranded run before pushing again.
+
 GitHub Actions reserves every secret name that opens with `GITHUB_`. A Worker
 `GITHUB_TOKEN` therefore cannot travel as a repository secret of the same name.
 
