@@ -809,6 +809,17 @@ fragment typed into the address bar raises `hashchange` and nothing else, and
 TanStack Router listens for `popstate` alone, so `useDiffAnchor` forwards that
 event to the router itself.
 
+**A fragment belongs to the page it was written on.** No `Link` in the app
+states a fragment, so the router empties the address the moment a reviewer
+leaves a review — and the viewer is taken down after that, reporting its
+selection away as it goes. `syncSelection` answers a selection of nothing with
+the last file's own fragment, so that write used to land on the page the
+reviewer had just arrived at: the home page wearing `#diff-src/lib/byteSize.ts`,
+or the next pull request wearing a file from the one before it. So
+`useDiffAnchor` drops the file it is holding the moment the fragment goes empty.
+An empty fragment names no file, and a file it does not hold is one it cannot
+write back.
+
 **A range anchor takes more than one frame.** `CodeView.scrollTo` resolves a
 range through `getLinePosition`, which answers only for a file the viewer has
 already rendered, and it drops a target it cannot resolve without a word. The
