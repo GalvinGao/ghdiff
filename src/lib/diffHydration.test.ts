@@ -3,11 +3,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
-  FILE_TOO_LARGE,
-  MAX_FILE_BYTES,
   oldFileFromPatch,
   patchFitsNewFile,
-  readCappedText,
   splitFileLines,
 } from './diffHydration.ts';
 
@@ -169,68 +166,4 @@ test('splits lines with their own newline, and empty text into nothing', () => {
   assert.deepEqual(splitFileLines('a\nb\n'), ['a\n', 'b\n']);
   assert.deepEqual(splitFileLines('a\nb'), ['a\n', 'b']);
   assert.deepEqual(splitFileLines(''), []);
-});
-
-// --- readCappedText ---------------------------------------------------------
-//
-// The route cannot always measure a file: GitHub states the compressed length
-// when it compresses, and none at all when it chunks. These cover the end that
-// can always measure it.
-
-/** A response whose body arrives in the given pieces, as a real stream. */
-function streamed(chunks: readonly Uint8Array[]): Response {
-  return new Response(
-    new ReadableStream({
-      start(controller) {
-        for (const chunk of chunks) controller.enqueue(chunk);
-        controller.close();
-      },
-    })
-  );
-}
-
-function bytes(text: string): Uint8Array {
-  return new TextEncoder().encode(text);
-}
-
-test('reads a body that stays under the limit', async () => {
-  const text = 'const answer = 42;\n';
-  assert.equal(await readCappedText(streamed([bytes(text)])), text);
-});
-
-test('joins every chunk of a body in order', async () => {
-  const parts = ['one\n', 'two\n', 'three\n'];
-  assert.equal(
-    await readCappedText(streamed(parts.map(bytes))),
-    parts.join('')
-  );
-});
-
-test('decodes a character split across two chunks', async () => {
-  // Three bytes of one CJK character, cut after the first.
-  const whole = bytes('漢字');
-  const first = whole.slice(0, 1);
-  const rest = whole.slice(1);
-  assert.equal(await readCappedText(streamed([first, rest])), '漢字');
-});
-
-test('stops a body that runs past the limit', async () => {
-  const chunk = bytes('x'.repeat(1024 * 1024));
-  const chunks = Array.from({ length: 6 }, () => chunk);
-  await assert.rejects(
-    readCappedText(streamed(chunks)),
-    (error: Error) => error.message === FILE_TOO_LARGE
-  );
-});
-
-test('takes a body of exactly the limit', async () => {
-  const chunk = bytes('y'.repeat(MAX_FILE_BYTES));
-  const text = await readCappedText(streamed([chunk]));
-  assert.equal(text.length, MAX_FILE_BYTES);
-});
-
-test('falls back to text() for a response with no stream', async () => {
-  const response = new Response(null);
-  Object.defineProperty(response, 'body', { value: null });
-  assert.equal(await readCappedText(response), '');
 });

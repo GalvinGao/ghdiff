@@ -497,6 +497,10 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         </div>
       ) : (
         <ReviewStatusPanel
+          // Only while the patch is still coming down. The parse and the
+          // highlighters are not measured in bytes, and a figure that stayed on
+          // screen through them would read as a download that had stalled.
+          bytes={patch.state === 'fetching' ? patch.bytes : undefined}
           error={patch.error}
           onRetry={patch.retry}
           state={patch.state === 'ready' ? 'starting' : patch.state}

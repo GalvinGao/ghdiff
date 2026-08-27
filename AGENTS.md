@@ -444,6 +444,35 @@ strip along the foot of the screen, which is where every other comment failure
 already lands. A commit and a compare range keep their comments in the browser
 and take them anywhere.
 
+**The wait says how much has arrived, and never how much is left.** A patch of
+tens of megabytes is a long stare at one sentence — oven-sh/bun#30412 is 43.3 MB
+in 1,654 chunks over four seconds — so `useReviewPatch` reads the body through
+`readStreamedText` and `ReviewStatusPanel` prints the count. A count and not a
+percentage, because there is no total to divide by: github.com's `.diff` answers
+chunked and states no `content-length`, and where GitHub does state one it
+counts compressed bytes while the stream yields decoded ones. A bar filling
+against an invented denominator would be a lie that runs past 100.
+
+What reaches React is decided by the label, not the chunk: `formatBytes` is
+compared before `setBytes`, which turned those 1,654 reports into about 450
+renders of a four-line panel. The figure is `tabular-nums`, or 9.9 MB becoming
+10.0 MB shifts every digit beside it and the number reads as the page redrawing
+rather than as the download moving. It is shown only while `state` is
+`'fetching'`: the parse and the highlighters are not measured in bytes, and a
+figure left on screen through them would read as a download that had stalled.
+
+`readStreamedText` in `src/lib/streamText.ts` is the one decode loop, and both
+things this app fetches use it — the patch with no ceiling, because 43 MB is a
+real diff, and a whole file with `MAX_FILE_BYTES`. `TextDecoder` is fed
+`{ stream: true }`, or a character split across two chunks decodes as two
+replacement characters.
+
+The parse is the other wait and it is not measured yet. `buildReviewData` runs
+`parsePatchFiles` over the whole patch in one synchronous call, so the tab is
+frozen for its duration and no message can update. Splitting the patch on its
+own `diff --git` boundaries would give both a figure and a responsive tab; the
+count of files is already known from `changed_files`.
+
 **A serve is counted where the serve happens, and the figure is an estimate on
 purpose.** The footer's **Served** line is one key in Workers KV,
 `served:total`, and `src/lib/server/servedCount.ts` is what stands between a

@@ -5,6 +5,7 @@ import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
+import { formatBytes } from '@/lib/byteSize';
 import { describeReviewFailure } from '@/lib/reviewFailure';
 import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
 
@@ -39,6 +40,7 @@ const COPY: Record<
  * the second control on the row.
  */
 export function ReviewStatusPanel({
+  bytes,
   error,
   onRetry,
   state,
@@ -46,6 +48,8 @@ export function ReviewStatusPanel({
   target,
   token,
 }: {
+  /** Patch bytes read so far, while the patch is still arriving. */
+  bytes?: number;
   error?: string;
   onRetry(): void;
   state: ReviewLoadState;
@@ -97,6 +101,17 @@ export function ReviewStatusPanel({
         <p className="text-ink-muted mt-1 text-sm text-pretty">
           {isError ? failure.message : COPY[state].message}
         </p>
+        {/* What has arrived, while it is still arriving. A count and not a
+            percentage, because nothing on the wire states a total: the diff
+            host answers chunked. `tabular-nums`, or a figure that climbs
+            through 9.9 MB to 10.0 MB shifts every digit beside it, and a
+            number that jitters reads as the page redrawing rather than as
+            the download moving. */}
+        {!isError && bytes != null && (
+          <p className="text-ink-muted mt-1 text-sm tabular-nums">
+            {formatBytes(bytes)} read
+          </p>
+        )}
         <p className="text-ink-faint mt-3 truncate font-mono text-xs">
           {describeReviewTarget(target)}
         </p>

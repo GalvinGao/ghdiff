@@ -115,38 +115,3 @@ export function oldFileFromPatch(
   }
   return lines.join('');
 }
-
-/**
- * The body, as text, and nothing past `MAX_FILE_BYTES` of it.
- *
- * The route turns an oversized file away on the length GitHub declared, but
- * that length is the compressed one whenever GitHub compressed the answer and
- * is absent from some answers altogether. So the decoded bytes are counted
- * here, on the way in: this is the point where a file becomes a string in the
- * reviewer's tab, which is the cost the limit is about.
- */
-export async function readCappedText(response: Response): Promise<string> {
-  const body = response.body;
-  // No stream to read means no way to count, and only a runtime with no
-  // streaming fetch at all lands here.
-  if (body == null) return await response.text();
-
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let read = 0;
-  let text = '';
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      read += value.byteLength;
-      if (read > MAX_FILE_BYTES) throw new Error(FILE_TOO_LARGE);
-      text += decoder.decode(value, { stream: true });
-    }
-  } finally {
-    // Releases the lock on the way out, and cancels the rest of the download
-    // when this is the throw above rather than the end of the file.
-    await reader.cancel().catch(() => undefined);
-  }
-  return text + decoder.decode();
-}

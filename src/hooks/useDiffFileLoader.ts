@@ -3,12 +3,14 @@ import { useCallback, useState } from 'react';
 
 import { withGitHubToken } from './useGitHubToken';
 import {
+  FILE_TOO_LARGE,
+  MAX_FILE_BYTES,
   oldFileFromPatch,
   patchFitsNewFile,
-  readCappedText,
   splitFileLines,
 } from '@/lib/diffHydration';
 import { type ReviewTarget, reviewTargetQuery } from '@/lib/reviewTarget';
+import { readStreamedText } from '@/lib/streamText';
 
 // What the viewer calls when a reviewer expands the unmodified lines around a
 // hunk. `@pierre/diffs` asks for both whole files and keeps the patch's own
@@ -97,5 +99,10 @@ async function fetchFile(
         : `Request failed (${response.status}).`
     );
   }
-  return await readCappedText(response);
+  // Counted on the way in, because the route can only turn away a file whose
+  // size GitHub declared, and a compressed answer declares the wrong one.
+  return await readStreamedText(response, {
+    maxBytes: MAX_FILE_BYTES,
+    tooLarge: FILE_TOO_LARGE,
+  });
 }
