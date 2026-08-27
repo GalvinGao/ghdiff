@@ -6,6 +6,7 @@ import {
   IconDiffSplit,
   IconDiffUnified,
   IconEyeSlash,
+  IconFileTree,
   IconGearFill,
   IconInReview,
   IconSymbolDiffstat,
@@ -18,6 +19,7 @@ import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { GitHubTextLink } from '@/components/GitHubLink';
 import { GitHubTokenControl } from '@/components/GitHubTokenControl';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
+import { PullListButton } from '@/components/PullListButton';
 import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';
 import type { ViewerControls } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
@@ -32,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import type { ColorModeState } from '@/hooks/useColorMode';
+import { useEdgeFade } from '@/hooks/useEdgeFade';
 import type { GitHubTokenState } from '@/hooks/useGitHubToken';
 import type { PullDetailsState } from '@/hooks/usePullDetails';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
@@ -66,7 +69,12 @@ const MARKERS: {
 interface ReviewHeaderProps {
   colorMode: ColorModeState;
   controls: ViewerControls;
+  /** True while the file list covers the diff. Phone layout only. */
+  filesOpen?: boolean;
   onControlsChange(next: ViewerControls): void;
+  /** Shows and hides the file list. Absent on every screen wide enough to
+      draw the list beside the diff. */
+  onToggleFiles?(): void;
   /** Called once a verdict lands, so the caller can reload what changed. */
   onReviewSubmitted?(): void;
   /** Absent unless the target is a pull request. */
@@ -86,8 +94,10 @@ interface ReviewHeaderProps {
 export function ReviewHeader({
   colorMode,
   controls,
+  filesOpen = false,
   onControlsChange,
   onReviewSubmitted,
+  onToggleFiles,
   pull,
   review,
   showBrand = false,
@@ -97,8 +107,38 @@ export function ReviewHeader({
 }: ReviewHeaderProps) {
   const split = controls.diffStyle === 'split';
   const [reviewing, setReviewing] = useState(false);
+  // Only the phone layout scrolls this row, and the attributes it writes mean
+  // nothing to any other width, so this costs a wider screen two no-op writes.
+  const fadeRef = useEdgeFade<HTMLElement>();
   return (
-    <header className="border-line bg-surface flex h-11 shrink-0 items-center gap-1 border-b px-3">
+    // On a phone this row holds more than the screen is wide, so it scrolls
+    // sideways and `data-app-topbar` fades whichever end still has something
+    // past it. See `[data-app-topbar]` in globals.css. `overflow-visible` on
+    // every wider screen, or the menus this row opens would be clipped by
+    // their own bar.
+    <header
+      ref={fadeRef}
+      className="border-line bg-surface max-phone:gap-0.5 max-phone:overflow-x-auto max-phone:px-2 flex h-11 shrink-0 items-center gap-1 border-b px-3"
+      data-app-topbar=""
+    >
+      {/* The two leftmost controls on a phone, in the order they open onto
+          more of the app: every pull request, then every file of this one.
+          Both are absent on a wider screen, which draws the bar and the file
+          list as columns instead. */}
+      <PullListButton className="phone:hidden shrink-0" />
+      {onToggleFiles != null && (
+        <Button
+          aria-expanded={filesOpen}
+          aria-label={filesOpen ? 'Hide the file list' : 'Show the file list'}
+          className="phone:hidden shrink-0"
+          size="icon"
+          title={filesOpen ? 'Hide the file list' : 'Show the file list'}
+          variant="chrome"
+          onClick={onToggleFiles}
+        >
+          <IconFileTree size={15} />
+        </Button>
+      )}
       {showBrand && (
         <Link
           to="/"
@@ -324,8 +364,13 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {
       onOpenChange={(open) => setOpenedAt(open ? Date.now() : null)}
     >
       <DropdownMenuTrigger asChild>
+        {/* `min-w-0 flex-1` so it gives its width up to the controls first and
+            truncates rather than push them off. `max-phone:min-w-32` puts a
+            floor under that: on a phone the row scrolls instead of shrinking,
+            and a title squeezed to nothing is a control nobody can read or
+            aim at — it is the way in to what the pull request is for. */}
         <Button
-          className="ml-1 min-w-0 flex-1 justify-start"
+          className="max-phone:min-w-32 ml-1 min-w-0 flex-1 justify-start"
           size="sm"
           title={title}
           variant="chrome"

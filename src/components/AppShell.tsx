@@ -8,6 +8,11 @@ import { PullRail } from '@/components/PullRail';
  * the right of it. The bar is part of the app rather than part of a screen, so
  * moving between pull requests never unmounts it and never re-asks GitHub for
  * the list.
+ *
+ * On a phone the bar is hidden and each screen carries a `PullListButton`
+ * instead, which opens the same list in a window. The bar stays mounted behind
+ * that, so it is still holding the width and the scroll it was left at when the
+ * window widens.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   return (

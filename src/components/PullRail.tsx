@@ -3,7 +3,7 @@ import {
   IconSidebarLeft,
   IconSidebarLeftOpen,
 } from '@pierre/icons';
-import { Link, useLocation } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { type Ref, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
+import { useCurrentPull } from '@/hooks/useCurrentPull';
 import { useStoredJson } from '@/hooks/useLocalStorage';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import {
@@ -39,11 +40,7 @@ import {
   type PullSummary,
   type WatchedRepo,
 } from '@/lib/pulls';
-import {
-  type GitHubPullTarget,
-  gitHubTargetFromSegments,
-  reviewTargetSplat,
-} from '@/lib/reviewTarget';
+import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
 import { RAIL_COLLAPSED_STORAGE_KEY } from '@/lib/storageKeys';
 
 // The left-most bar, on every page. Reviewing is moving between pull requests,
@@ -133,8 +130,15 @@ export function PullRail() {
         // would leave the bar behind the pointer. The handle carries
         // `data-resizing` for the length of the drag, and it is a child of this
         // element, so `has-` is the whole test.
+        // `max-phone:hidden`: a phone has no column to spare beside a diff —
+        // 272px of an iPhone's 402 leaves 130 for the review — so below that
+        // width the bar is not drawn at all and `PullListButton` stands in for
+        // it from the leftmost control on the screen. Hidden rather than
+        // unmounted, so the width, the collapse and the scroll a reviewer left
+        // it at are all still there when the window widens again.
         className={cn(
           'border-line bg-surface relative flex h-full shrink-0 flex-col border-r',
+          'max-phone:hidden',
           'transition-[width]',
           'has-[[data-resizing]]:transition-none motion-reduce:transition-none'
         )}
@@ -511,20 +515,4 @@ function CollapsedMark({
       </span>
     </Link>
   );
-}
-
-/** The pull request the path names, if the path names one. */
-function useCurrentPull(): GitHubPullTarget | undefined {
-  // The bar sits above every route, so it reads the path rather than a route's
-  // params. `useLocation` re-renders it on each navigation.
-  const pathname = useLocation({ select: (location) => location.pathname });
-  return useMemo(() => {
-    const segments = pathname.split('/').filter((part) => part.length > 0);
-    // A `/gh` prefix redirects to the same path without it. The redirect is one
-    // navigation away, and reading through the prefix keeps the row highlighted
-    // for that navigation instead of blinking off and on.
-    const path = segments[0] === 'gh' ? segments.slice(1) : segments;
-    const target = gitHubTargetFromSegments(path);
-    return target?.kind === 'github-pull' ? target : undefined;
-  }, [pathname]);
 }
