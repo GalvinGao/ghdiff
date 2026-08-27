@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/Segmented';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { CommentStore } from '@/hooks/useReviewComments';
+import { cn } from '@/lib/cn';
 import type {
   CommentAuthorCounts,
   CommentAuthorFilter,
@@ -34,6 +35,8 @@ type Tab = 'files' | 'comments';
 interface ReviewSidebarProps {
   /** The file the diff is scrolled to, which the tree follows. */
   activeItemId?: string;
+  /** Where the caller puts this: a column beside the diff, or over it. */
+  className?: string;
   /** The thread the diff has selected, which the comment list follows. */
   activeThreadKey?: string;
   authorCounts: CommentAuthorCounts;
@@ -61,6 +64,7 @@ interface ReviewSidebarProps {
 export function ReviewSidebar({
   activeItemId,
   activeThreadKey,
+  className,
   authorCounts,
   authorFilter,
   availableStatuses,
@@ -92,7 +96,12 @@ export function ReviewSidebar({
   const threadCount = countThreads(commentSections);
 
   return (
-    <aside className="border-line bg-surface flex h-full min-h-0 flex-col border-r">
+    <aside
+      className={cn(
+        'border-line bg-surface flex h-full min-h-0 flex-col border-r',
+        className
+      )}
+    >
       <div className="flex items-center gap-1 px-2 pt-2 pb-1">
         <Segmented
           aria-label="Sidebar sections"

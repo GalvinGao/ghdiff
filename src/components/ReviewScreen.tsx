@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/Button';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
 import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import { useStoredJson } from '@/hooks/useLocalStorage';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
@@ -69,12 +70,34 @@ const DEFAULT_CONTROLS: ViewerControls = {
   backgrounds: true,
 };
 
+/**
+ * What the viewer starts on, before the reviewer has said otherwise.
+ *
+ * Two columns of code on a phone is about twenty characters each, which is not
+ * reading a diff — it is guessing at one. So a phone starts unified. It is a
+ * default and nothing more: the control in the header sets `controls`, and from
+ * that moment this function is not consulted again, so a reviewer who asks for
+ * split on a phone keeps it.
+ */
+function defaultControls(isPhone: boolean): ViewerControls {
+  return isPhone
+    ? { ...DEFAULT_CONTROLS, diffStyle: 'unified' }
+    : DEFAULT_CONTROLS;
+}
+
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // The left bar owns these, so the diff and the bar cannot disagree about who
   // the token belongs to or which repositories are watched.
   const { colorMode, pulls: openPulls, token, watched } = useAppData();
   const workersReady = useWorkerPoolReady();
-  const [controls, setControls] = useState<ViewerControls>(DEFAULT_CONTROLS);
+  const isPhone = useIsPhone();
+  // Null until the reviewer touches a control, which is what lets the default
+  // above follow the screen until then and stop following it afterwards.
+  const [chosenControls, setControls] = useState<ViewerControls | null>(null);
+  const controls = chosenControls ?? defaultControls(isPhone);
+  // The file list covers the diff on a phone instead of sitting beside it, so
+  // it starts closed: the diff is what the reviewer came for.
+  const [filesOpen, setFilesOpen] = useState(false);
   const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
@@ -308,6 +331,11 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     (itemId: string) => {
       const viewer = viewerRef.current;
       if (viewer == null) return;
+      // Picking a file is asking to read it, and on a phone the list is over
+      // the diff — so the list closes rather than leave the reviewer looking at
+      // the row they just pressed. On every wider screen it is already beside
+      // the diff and `filesOpen` is nothing to anyone.
+      setFilesOpen(false);
       expandItem(viewer, itemId);
       selectActiveItem(itemId);
       // The address is what the reviewer can send to somebody else, so opening
@@ -329,6 +357,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     (comment: CommentListEntry) => {
       const viewer = viewerRef.current;
       if (viewer == null) return;
+      setFilesOpen(false);
       selectActiveItem(comment.itemId);
       viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
       viewer.scrollTo({
@@ -365,6 +394,13 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       <ReviewHeader
         colorMode={colorMode}
         controls={controls}
+        // The file list is a column of its own on every wider screen, which
+        // needs no control to show it. Handing these down only on a phone is
+        // what keeps that button off a screen that has no use for it.
+        filesOpen={isPhone ? filesOpen : undefined}
+        onToggleFiles={
+          isPhone ? () => setFilesOpen((open) => !open) : undefined
+        }
         onControlsChange={setControls}
         pull={pullTarget == null ? undefined : pull}
         // PullRail renders nothing while the watch list is empty, and the bar's
@@ -389,11 +425,25 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           className="bg-canvas relative grid min-h-0 flex-1 overflow-hidden"
           style={{
             ...sidebarStyle,
-            gridTemplateColumns: `var(${SIDEBAR_WIDTH_PROPERTY}) minmax(0,1fr)`,
+            // One column on a phone. The file list is not beside the diff
+            // there, it is over it, so it takes no track of its own.
+            gridTemplateColumns: isPhone
+              ? 'minmax(0,1fr)'
+              : `var(${SIDEBAR_WIDTH_PROPERTY}) minmax(0,1fr)`,
           }}
         >
           <ReviewSidebar
             activeItemId={activeItemId}
+            // Over the diff rather than beside it, and gone rather than
+            // narrow. `hidden` and not unmounted: the tab, the filter and the
+            // scroll a reviewer left the list at are all still there the next
+            // time they open it. The viewer underneath keeps its own box
+            // either way, so nothing about the diff is measured again.
+            className={
+              isPhone
+                ? cn('absolute inset-0 z-20 border-r-0', !filesOpen && 'hidden')
+                : undefined
+            }
             activeThreadKey={activeThreadKey}
             authorCounts={authorCounts}
             authorFilter={authorMode}
@@ -413,16 +463,20 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             treeSource={filtered.treeSource}
             treeStats={treeStats}
           />
-          <PaneResizeHandle
-            label="Sidebar width"
-            max={SIDEBAR_MAX_WIDTH}
-            min={SIDEBAR_MIN_WIDTH}
-            onKeyDown={onSidebarHandleKeyDown}
-            onPointerDown={onSidebarHandlePointerDown}
-            onReset={resetSidebarWidth}
-            style={{ left: `calc(var(${SIDEBAR_WIDTH_PROPERTY}) - 4px)` }}
-            width={sidebarWidth}
-          />
+          {/* No seam on a phone: the two panes are not side by side there,
+              and there is no width to drag. */}
+          {!isPhone && (
+            <PaneResizeHandle
+              label="Sidebar width"
+              max={SIDEBAR_MAX_WIDTH}
+              min={SIDEBAR_MIN_WIDTH}
+              onKeyDown={onSidebarHandleKeyDown}
+              onPointerDown={onSidebarHandlePointerDown}
+              onReset={resetSidebarWidth}
+              style={{ left: `calc(var(${SIDEBAR_WIDTH_PROPERTY}) - 4px)` }}
+              width={sidebarWidth}
+            />
+          )}
           <ReviewViewer
             commentStore={comments.store}
             controls={controls}

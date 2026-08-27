@@ -55,7 +55,7 @@ src/
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: token, color mode, patch, comments,
                            pulls, pane widths, the URL fragment, the files a
-                           hunk expansion reads
+                           hunk expansion reads, and whether this is a phone
   lib/                     pure domain logic, unit tested
   lib/githubUrls.ts        every address on github.com this app links to
   lib/rpc/contract.ts      the API, stated once: shared by both sides
@@ -533,6 +533,51 @@ changes. The colours are Primer's, defined per scheme as `--app-status-*` in
 pull request tab, so a colour must keep meaning the same thing in both places:
 change `src/lib/pullStatus.ts` and floodgate's `lib/pr-status.ts` together, or
 not at all.
+
+**A phone gets one layout, and 480px is where it starts.** `--breakpoint-phone`
+in `src/globals.css` is 30rem, and `useIsPhone` states the same figure for the
+answers CSS cannot give. 480 sits above the widest phone held upright — an
+iPhone 17 Pro Max reports 440 — and well under the 640 Tailwind calls `sm`, so a
+tablet and a narrow desktop window keep the layout they had. Nothing below that
+line is a second design: each of the app's two columns becomes a button, and the
+diff takes the width they were using.
+
+`PullRail`'s own element is `max-phone:hidden` and `PullListButton` stands in
+for it, from the leftmost control on the screen. Hidden and not unmounted, so
+the width, the collapse and the scroll the bar was left at survive the window
+widening again. The button asks `useAppData()` itself rather than being handed
+the list, the way the bar does, so the two cannot disagree about what is open.
+Both the review header and the home page draw it: the home page is where a
+reviewer starts, and it has no header of its own, so it sits in the top corner
+opposite the colour toggle.
+
+The file list is over the diff on a phone rather than beside it —
+`absolute inset-0` and `hidden` when closed, never unmounted, so the tab, the
+filter and the scroll are all still there next time. It opens from the second
+button in the header and closes on the file that is picked, because the list is
+covering the thing that file was chosen to show. The viewer underneath keeps its
+own box throughout, which is what keeps the diff from being measured again on
+every toggle.
+
+Two columns of code on a phone is about twenty characters each, so
+`defaultControls` starts one unified. It is a default and nothing else: the
+control in the header writes `controls`, and from that press the screen is not
+consulted again.
+
+**The header scrolls sideways, and only a measurement may say so.** More
+controls than 402px holds, so on a phone that row is `overflow-x-auto` and the
+fade at an end says there is more that way. `useEdgeFade` writes
+`data-fade-start` and `data-fade-end` and the stylesheet draws from them,
+because whether a row overflows is a measurement and no CSS takes it: a scroll
+timeline reports progress along a range and cannot say whether the range exists,
+so at rest it draws one fade for "more to the right" and for "nothing to scroll"
+alike — and the second is a claim about content that is not there. That is not
+hypothetical: a commit target with a token signed in fits inside 402 and would
+have carried a permanent fade. The hook writes onto the node and tells React
+nothing, the way `usePaneWidth` does, so a gesture reported many times a second
+costs no render. The pull request title takes `max-phone:min-w-32` for the same
+row: it is the way in to what the pull request is for, and a control squeezed to
+nothing is one nobody can read or aim at.
 
 **The filter drives both panes.** `applyReviewFilter` returns the items for the
 viewer and the paths for the tree from one pass. Never filter one without the

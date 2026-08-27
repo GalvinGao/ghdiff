@@ -6,6 +6,7 @@ import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { ExampleTargets } from '@/components/ExampleTargets';
 import { GitHubTokenForm } from '@/components/GitHubTokenForm';
+import { PullListButton } from '@/components/PullListButton';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { SectionLabel } from '@/components/ui/SectionLabel';
@@ -61,8 +62,13 @@ export function HomeScreen() {
     // nothing when it is taller, so a long page still scrolls from its top
     // instead of having its head cut off.
     <main className="bg-surface flex min-h-0 flex-1 overflow-y-auto overscroll-none">
-      {/* The only control that isn't part of the page's own work, so it sits
-          out of the column entirely. */}
+      {/* Neither of these is part of the page's own work, so both sit out of
+          the column entirely, one in each top corner. The pull request button
+          is there only on a phone: every wider screen draws the bar itself
+          down the left of this page, and this would be a second way to the
+          same list. Without it a phone would have no way to the list at all
+          from here, which is the one screen a reviewer starts on. */}
+      <PullListButton className="phone:hidden fixed top-3 left-3 z-10" />
       <ColorModeToggle
         className="fixed top-3 right-3 z-10"
         colorMode={colorMode}

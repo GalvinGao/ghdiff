@@ -30,6 +30,17 @@
   --font-mono: var(--app-font-mono);
 }
 
+/* One breakpoint this app adds, and every mobile rule below is `max-phone:`.
+   480px sits above the widest phone held upright — an iPhone 17 Pro Max
+   reports 440 — and well under the 640 Tailwind calls `sm`, so a tablet and a
+   narrow desktop window keep the layout they already had. Nothing here is a
+   second design: the bar becomes a button, the file list becomes a button, and
+   the diff stacks. `useIsPhone` reads the same figure, so the layout the CSS
+   draws and the defaults the app picks cannot disagree about what a phone is. */
+@theme {
+  --breakpoint-phone: 30rem;
+}
+
 :root {
   /* The two faces @pierre/diffs renders with: its file headers use the first
      and its code uses the second. The chrome around the diff is set in the
@@ -150,6 +161,59 @@ body {
    Without it the bar is drawn on every load and then taken away again. */
 html[data-watching='no'] [data-app-rail] {
   display: none;
+}
+
+/* The review header on a phone: more controls than the screen is wide, so it
+   scrolls sideways, and the fade at an end is how it says there is more that
+   way. `useEdgeFade` writes the two attributes, because whether a row overflows
+   is a measurement and no CSS can take it — a scroll timeline reports progress
+   along a range and cannot say whether the range exists, so at rest it draws
+   the same fade for "more to the right" and for "nothing to scroll", and the
+   second is a claim about content that is not there.
+
+   The two lengths are registered properties so the fade can be transitioned
+   rather than snap on at the moment an edge is crossed.
+
+   The scrollbar is hidden because iOS draws none until a scroll is under way,
+   and a desktop-shaped bar under a 44px row is a second border. */
+@property --topbar-fade-start {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --topbar-fade-end {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@media (width < 30rem) {
+  [data-app-topbar] {
+    scrollbar-width: none;
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--topbar-fade-start),
+      #000 calc(100% - var(--topbar-fade-end)),
+      transparent 100%
+    );
+    transition:
+      --topbar-fade-start 150ms ease,
+      --topbar-fade-end 150ms ease;
+  }
+
+  [data-app-topbar][data-fade-start] {
+    --topbar-fade-start: 1.25rem;
+  }
+
+  [data-app-topbar][data-fade-end] {
+    --topbar-fade-end: 1.25rem;
+  }
+
+  [data-app-topbar]::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .cv-scrollbar {
