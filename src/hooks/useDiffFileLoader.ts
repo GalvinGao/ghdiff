@@ -5,6 +5,7 @@ import { withGitHubToken } from './useGitHubToken';
 import {
   oldFileFromPatch,
   patchFitsNewFile,
+  readCappedText,
   splitFileLines,
 } from '@/lib/diffHydration';
 import { type ReviewTarget, reviewTargetQuery } from '@/lib/reviewTarget';
@@ -88,13 +89,13 @@ async function fetchFile(
     `/api/file?${query}&path=${encodeURIComponent(path)}`,
     withGitHubToken(token)
   );
-  const body = await response.text();
   if (!response.ok) {
+    const body = await response.text();
     throw new Error(
       body.trim().length > 0
         ? body.trim()
         : `Request failed (${response.status}).`
     );
   }
-  return body;
+  return await readCappedText(response);
 }

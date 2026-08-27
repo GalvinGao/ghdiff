@@ -419,11 +419,23 @@ the lines stay expanded.
 it hides its own **Expand all** control, so the visible affordance is the
 bounded one; a shift-click is what asks for the whole region. Above 100 000
 lines it stops highlighting rather than tokenizing forever, and the virtualizer
-lays out what it needs. So the only limit worth stating is the byte one:
-`MAX_FILE_BYTES` is 4 MiB, above which the route answers 413 and says so instead
-of pulling an unbounded blob through the Worker into a string in the tab.
-Verified with a 3 MB, 54 434-line file expanded end to end — split and unified —
-which laid out to a million pixels and scrolled.
+lays out what it needs. So the only limit worth stating is the byte one, and
+`MAX_FILE_BYTES` is 4 MiB. Verified with a 3 MB, 54 434-line file expanded end
+to end — split and unified — which laid out to a million pixels and scrolled.
+
+**Both ends hold that limit, because neither one can hold it alone.**
+`content-length` counts the bytes on the wire, and GitHub compresses: 4.8 MB of
+word list arrives declaring 1.4 MB, and a chunked answer declares nothing. A
+route that trusted the header would wave both through, which is exactly what the
+deployed one did while the same check fired in development, where the runtime
+negotiated no compression. So `statedSize` answers with nothing unless the
+header is a figure about the file — no `content-encoding`, and a number — and
+the route turns away only what it can prove. `readCapped` in `useDiffFileLoader`
+counts the decoded bytes as they arrive and stops there, which is the guard that
+always holds: the browser is where a file becomes a string, and the string is
+the cost the limit is about. Both ends read `MAX_FILE_BYTES` and
+`FILE_TOO_LARGE` from `src/lib/diffHydration.ts`, so they cannot come to differ
+about the figure or the sentence.
 
 One thing GitHub decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/diffHydration';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
   type ReviewTarget,
@@ -33,15 +34,6 @@ import {
 // github.com's own **Raw** links, which costs none of them. A caller with a
 // token has five thousand and a private repository to reach, so its file comes
 // from the API, which is the only one of the two that can answer for one.
-
-/**
- * The largest file this route will carry. Around this size a source file runs
- * to the hundred thousand lines at which the viewer gives up highlighting it,
- * so little above the line improves what is on screen, and one press would
- * otherwise pull an unbounded blob through the Worker and into a string in the
- * tab.
- */
-const MAX_FILE_BYTES = 4 * 1024 * 1024;
 
 function textResponse(body: string, status: number): Response {
   return new Response(body, {
@@ -87,6 +79,21 @@ function isReadablePath(path: string): boolean {
     .every(
       (segment) => segment.length > 0 && segment !== '.' && segment !== '..'
     );
+}
+
+/**
+ * How many bytes GitHub says the file is, or nothing when it did not say
+ * anything this route can act on. `content-length` counts the bytes on the
+ * wire, so a compressed answer states a figure far under the file's own size
+ * and is no answer at all; a chunked one states nothing. Either way the
+ * browser counts what it decodes, and that is the guard that always holds.
+ */
+function statedSize(response: Response): number | undefined {
+  if (response.headers.get('content-encoding') != null) return undefined;
+  const header = response.headers.get('content-length');
+  if (header == null) return undefined;
+  const size = Number(header);
+  return Number.isFinite(size) ? size : undefined;
 }
 
 function gitHubFile(
@@ -135,16 +142,13 @@ const getFile = withEvlog(
     });
     try {
       const response = await gitHubFile(target, ref, path, token);
-      const size = Number(response.headers.get('content-length'));
-      if (Number.isFinite(size) && size > MAX_FILE_BYTES) {
+      const size = statedSize(response);
+      if (size != null && size > MAX_FILE_BYTES) {
         // Nothing here reads the body, so it is cancelled rather than left for
         // the runtime to hold open behind a response nobody wanted.
         void response.body?.cancel();
         log.set({ outcome: 'too-large', size });
-        return textResponse(
-          'That file is too large to show its unmodified lines.',
-          413
-        );
+        return textResponse(FILE_TOO_LARGE, 413);
       }
       log.set({ outcome: 'ok', size });
       return new Response(response.body, {
