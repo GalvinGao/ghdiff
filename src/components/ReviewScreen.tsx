@@ -34,6 +34,7 @@ import {
   useSidebarWidth,
 } from '@/hooks/useSidebarWidth';
 import { useSubmitReview } from '@/hooks/useSubmitReview';
+import { useViewedFiles } from '@/hooks/useViewedFiles';
 import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
 import { cn } from '@/lib/cn';
 import {
@@ -61,6 +62,8 @@ import { buildTreeStatIndex } from '@/lib/treeStats';
 // is long enough for that and short enough that a reviewer who starts scrolling
 // straight away is not fought for it.
 const ANCHOR_RANGE_ATTEMPTS = 4;
+
+const NO_ITEMS: ReadonlySet<string> = new Set<string>();
 
 const DEFAULT_CONTROLS: ViewerControls = {
   diffStyle: 'split',
@@ -104,6 +107,12 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // The file list covers the diff on a phone instead of sitting beside it, so
   // it starts closed: the diff is what the reviewer came for.
   const [filesOpen, setFilesOpen] = useState(false);
+  // The files folded shut, by item id. This is its own state and not a reading
+  // of which files are marked read, because the two answer different
+  // questions: a file the reviewer has read and then opened again is still
+  // read, and a file folded from the header's own chevron was never marked.
+  const [collapsedItemIds, setCollapsedItemIds] =
+    useState<ReadonlySet<string>>(NO_ITEMS);
   const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
@@ -115,6 +124,9 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const viewerRef = useRef<CodeViewHandle<CommentMetadata> | null>(null);
   // The frame waiting to try a range anchor again. See handleApplyAnchor.
   const anchorFramesRef = useRef<number | null>(null);
+  // The file a jump has opened since the marks were last read. See the fold
+  // seed below, which is the only thing that reads it.
+  const openedByJumpRef = useRef<string | undefined>(undefined);
   // Destructured, so nothing reads a property of the state object while this
   // component renders.
   const {
@@ -166,26 +178,109 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     viewerAvatarUrl: token.viewer?.avatarUrl,
     ready: patch.state === 'ready',
   });
+  // The whole patch, not the filtered list: a mark belongs to the file and not
+  // to whichever files the filter is showing right now.
+  const viewedFiles = useViewedFiles({
+    target,
+    entries: patch.data.entries,
+    token: token.token,
+    ready: patch.state === 'ready',
+  });
+
+  // A file already read starts folded, the way it does on github.com: what a
+  // reviewer comes back to a review for is the files nobody has read yet. This
+  // watches the marks the store reported and not the marks now, so a file
+  // opened again from its chevron stays open until the store is read afresh —
+  // which happens on a new target and on a new token, where a fold left over
+  // from the review before would be about a different diff.
+  //
+  // One file is spared, and it has to be. A jump and this read race each other
+  // on a pull request: the address is applied the moment the diff is on
+  // screen, and the marks are a request that answers a moment later. Whichever
+  // lands first, the file the reviewer was sent to stays open, because a fold
+  // that shut it would leave them looking at a header.
+  const loadedViewedItemIds = viewedFiles.loaded;
+  useEffect(() => {
+    const opened = openedByJumpRef.current;
+    openedByJumpRef.current = undefined;
+    setCollapsedItemIds(
+      opened == null || !loadedViewedItemIds.has(opened)
+        ? loadedViewedItemIds
+        : new Set([...loadedViewedItemIds].filter((id) => id !== opened))
+    );
+  }, [loadedViewedItemIds]);
+
+  const setCollapsed = useCallback((itemId: string, collapsed: boolean) => {
+    setCollapsedItemIds((current) => {
+      if (current.has(itemId) === collapsed) return current;
+      const next = new Set(current);
+      if (collapsed) next.add(itemId);
+      else next.delete(itemId);
+      return next;
+    });
+  }, []);
+
+  /**
+   * Opens the file a jump lands on. A scroll to a folded file lands on its
+   * header and shows nothing, so every jump — a row in the tree, a thread in
+   * the comment list, a fragment in the address — comes through here.
+   */
+  const openFile = useCallback(
+    (itemId: string) => {
+      openedByJumpRef.current = itemId;
+      setCollapsed(itemId, false);
+    },
+    [setCollapsed]
+  );
+
+  // A mark folds the file, and taking the mark back opens it, which is what
+  // github.com does and what makes the mark worth making: a diff read from the
+  // top gets shorter as the reviewer goes down it.
+  const setViewedFile = viewedFiles.setViewed;
+  const handleToggleViewed = useCallback(
+    (itemId: string, viewed: boolean) => {
+      setViewedFile(itemId, viewed);
+      setCollapsed(itemId, viewed);
+    },
+    [setCollapsed, setViewedFile]
+  );
 
   const filtered = useMemo(
     () => applyReviewFilter(patch.data, filter),
     [filter, patch.data]
   );
 
-  // CodeView keys an update off id and version, so an annotation change must
-  // bump the version of the item that carries it.
+  // CodeView keys an update off id and version, so a change to either of the
+  // two things this screen writes onto an item — its comments and whether it is
+  // folded — must move the version of the item that carries it. Doubling the
+  // comment revision leaves the low bit for the fold, so neither can hide a
+  // change in the other. Only the items that carry something are rebuilt, and
+  // the rest keep their identity: the viewer relays out from the first item
+  // whose version moved, and rebuilding all of them would relay out the diff.
   const items = useMemo<readonly CodeViewDiffItem<CommentMetadata>[]>(() => {
-    if (comments.annotationsByItemId.size === 0) return filtered.items;
+    if (
+      comments.annotationsByItemId.size === 0 &&
+      collapsedItemIds.size === 0
+    ) {
+      return filtered.items;
+    }
     return filtered.items.map((item) => {
       const annotations = comments.annotationsByItemId.get(item.id);
-      if (annotations == null) return item;
+      const collapsed = collapsedItemIds.has(item.id);
+      if (annotations == null && !collapsed) return item;
       return {
         ...item,
-        annotations: [...annotations],
-        version: comments.revision,
+        ...(annotations == null ? {} : { annotations: [...annotations] }),
+        collapsed,
+        version: comments.revision * 2 + (collapsed ? 1 : 0),
       };
     });
-  }, [comments.annotationsByItemId, comments.revision, filtered.items]);
+  }, [
+    collapsedItemIds,
+    comments.annotationsByItemId,
+    comments.revision,
+    filtered.items,
+  ]);
 
   const commentSections = useMemo(
     () =>
@@ -274,7 +369,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         clearViewerSelection(viewer, setSelectedLines);
         return;
       }
-      expandItem(viewer, anchored.itemId);
+      openFile(anchored.itemId);
       const { itemId, range } = anchored;
       selectActiveItem(itemId);
       if (range == null) {
@@ -325,7 +420,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       };
       anchorFramesRef.current = requestAnimationFrame(step);
     },
-    [selectActiveItem]
+    [openFile, selectActiveItem]
   );
 
   const anchor = useDiffAnchor({
@@ -343,7 +438,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       // the row they just pressed. On every wider screen it is already beside
       // the diff and `filesOpen` is nothing to anyone.
       setFilesOpen(false);
-      expandItem(viewer, itemId);
+      openFile(itemId);
       selectActiveItem(itemId);
       // The address is what the reviewer can send to somebody else, so opening
       // a file goes into it and into the history.
@@ -357,7 +452,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         behavior: 'smooth',
       });
     },
-    [anchor, selectActiveItem]
+    [anchor, openFile, selectActiveItem]
   );
 
   const handleSelectComment = useCallback(
@@ -365,6 +460,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       const viewer = viewerRef.current;
       if (viewer == null) return;
       setFilesOpen(false);
+      openFile(comment.itemId);
       selectActiveItem(comment.itemId);
       viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
       viewer.scrollTo({
@@ -376,7 +472,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         behavior: 'smooth-auto',
       });
     },
-    [selectActiveItem]
+    [openFile, selectActiveItem]
   );
 
   const handleCreateDraft = useCallback(
@@ -497,9 +593,13 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             onSaveDraft={comments.saveDraft}
             onScroll={onDiffScroll}
             onSelectedLinesChange={handleSelectedLinesChange}
+            onToggleCollapsed={setCollapsed}
+            onToggleViewed={handleToggleViewed}
             scrollRef={scrollRef}
             selectedLines={selectedLines}
+            collapsedItemIds={collapsedItemIds}
             themeType={colorMode.hydrated ? colorMode.mode : 'system'}
+            viewedItemIds={viewedFiles.viewed}
             viewerRef={viewerRef}
           />
         </div>
@@ -534,22 +634,13 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           {files.error}
         </ReviewNotice>
       )}
+      {viewedFiles.error != null && (
+        <ReviewNotice onDismiss={viewedFiles.dismissError} tone="error">
+          {viewedFiles.error}
+        </ReviewNotice>
+      )}
     </>
   );
-}
-
-/** A collapsed file cannot be scrolled to, so open it before going there. */
-function expandItem(
-  viewer: CodeViewHandle<CommentMetadata>,
-  itemId: string
-): void {
-  const item = viewer.getItem(itemId);
-  if (item?.collapsed !== true) return;
-  viewer.updateItem({
-    ...item,
-    collapsed: false,
-    version: (item.version ?? 0) + 1,
-  });
 }
 
 /**

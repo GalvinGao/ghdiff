@@ -5,6 +5,7 @@ import type { CommentPayload } from '@/lib/comments';
 import type { PullDetails } from '@/lib/pullDetails';
 import type { OpenPullsData } from '@/lib/pulls';
 import type { SubmittedReview } from '@/lib/reviewDecision';
+import type { ViewedFilesData } from '@/lib/viewedFiles';
 import type { GitHubViewer } from '@/lib/viewer';
 
 // The whole API, stated once, in a module that imports nothing from a server
@@ -86,6 +87,29 @@ export const contract = {
      * every reviewer sees the same one.
      */
     served: oc.output(type<{ count: number }>()),
+  },
+
+  viewedFiles: {
+    /**
+     * The files of this pull request the caller has already read. The mark is
+     * the token's own, so a caller with no token gets an empty list rather
+     * than an error, the way `reviews.mine` answers with no review.
+     */
+    list: oc.input(pullRef).output(type<ViewedFilesData>()),
+
+    /**
+     * Marks one file read, or takes the mark back. GitHub addresses the file
+     * by its path on the new side, which is what `PullRequestChangedFile.path`
+     * answers with and what this app's own item carries.
+     */
+    set: oc
+      .input(
+        pullRef.extend({
+          path: z.string().min(1),
+          viewed: z.boolean(),
+        })
+      )
+      .output(type<{ ok: true }>()),
   },
 
   comments: {

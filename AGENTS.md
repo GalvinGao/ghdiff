@@ -692,6 +692,73 @@ with an upstream review thread, so only `supportsGitHubComments` targets post to
 GitHub. Every other target keeps comments in browser storage, and the sidebar
 says so.
 
+**A file the reviewer has read is marked in its own header, and GitHub keeps
+that mark.** `markFileAsViewed` and `unmarkFileAsViewed` are the two mutations,
+`PullRequestChangedFile.viewerViewedState` reads it back, and all three are
+GraphQL only — REST answers with the patch and the counts and says nothing about
+who has read what. So a mark made here is the same mark github.com's own
+**Viewed** box draws, and a reviewer can start in one and finish in the other.
+The mark divides by target the way a comment does: a pull request's goes
+upstream, and a commit's or a compare range's stays in this browser, because
+GitHub holds no such state for either. Those two records never merge — a browser
+mark is about a diff GitHub is not tracking, and the pull request's is GitHub's
+own — so `useViewedFiles` reads one store and writes the same one.
+
+`viewedFiles.list` is what fills the boxes on arrival, and it needs a token,
+since the mark is the token's own user's. A caller with no token gets an empty
+list rather than an error, the way `reviews.mine` gets no review, and its press
+then fails with the sentence `requireToken` writes. A read that fails is
+reported nowhere: an unread mark and no mark draw the same empty box, and a
+press still lands, because `viewedFiles.set` names the file by its path alone.
+That is also why the router resolves the pull request's node id itself on every
+press rather than have the browser hold it — a browser that held it would have
+nothing to send for a press that arrived before the list did.
+
+`DISMISSED` is the third state and it counts as unread. GitHub writes it when a
+file changed after the reviewer marked it, and GitHub's own screen takes the
+tick off at that point: the mark was about lines that are no longer there.
+
+The box is drawn and not an `<input type="checkbox">`, for the reason
+`TaskMarker` draws its own: the browser paints a native one in the platform's
+blue, which is the single colour this app never uses. It goes in
+`renderHeaderMetadata`, which is the last child of the header's metadata row, so
+it lands to the right of the file's own `-N +N` and takes that row's gap.
+
+**A mark folds the file, and the fold is its own state.** That is what the mark
+is for: a diff read from the top gets shorter as the reviewer goes down it, and
+a review reopened tomorrow shows the files nobody has read yet. So the mark
+folds, taking the mark back opens, and the marks the store reported on load fold
+on arrival. But the two are not one value. A file read and then opened again
+from its chevron is still read, and a file folded from the chevron alone was
+never marked — so `ReviewScreen` holds `collapsedItemIds` beside the marks
+rather than reading one off the other.
+
+`CollapseFileButton` is the chevron, and `renderHeaderPrefix` is the only slot
+drawn to the left of the change-type icon, which is where github.com puts the
+same control. Its word comes from the browser's own `title` and not from
+`Tooltip`: the library lays each file out in a container it contains, and
+containment makes a stacking context, so a label drawn below that button is
+painted over by the next file whatever its z-index. A folded file is one header
+tall, and everything under it belongs to the file after it — which is exactly
+when this control is pressed. `ExpandFileButton` beside the name is not drawn on
+a folded file at all: there is nothing to reveal into.
+
+**A jump opens the file it lands on, and one file is spared the fold.** A scroll
+to a folded file lands on a header and shows nothing, so the tree, the comment
+list and the URL fragment all go through `openFile`. That call also names the
+file in `openedByJumpRef`, and the fold seed leaves that one open: the address
+is applied the moment the diff is on screen, while the marks are a request that
+answers a moment later, so without it a link to a line in a file already read
+would fold itself shut under the reviewer.
+
+`CodeView` keys an item update off `id` and `version`, and this screen now
+writes two things onto an item — its comments and its fold. So the version is
+`comments.revision * 2 + (collapsed ? 1 : 0)`: doubling the revision leaves the
+low bit for the fold, and neither input can hide a change in the other. Only the
+items that carry something are rebuilt. The viewer relays out from the first
+item whose version moved, so rebuilding all of them would relay out the whole
+diff on every press.
+
 **`CommentMetadata` is one interface, not a union.** `DiffLineAnnotation<T>`
 resolves its metadata through a conditional type, so a union `T` distributes
 into a union of annotation shapes the viewer rejects. `kind` discriminates
