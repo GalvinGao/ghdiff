@@ -743,6 +743,24 @@ tall, and everything under it belongs to the file after it — which is exactly
 when this control is pressed. `ExpandFileButton` beside the name is not drawn on
 a folded file at all: there is nothing to reveal into.
 
+**That chevron is the hunk separator's expand column, continued up into the
+header.** A file with collapsed context draws the separator's own expand button
+one row below, in the same glyph, for the same kind of press, so the two are
+read as one column and have to be one column. The chevron therefore takes 32px
+around a 16px glyph and not the 28 around 13 every other icon button in this app
+takes, and `HEADER_PREFIX_PULL` gives back the 8px by which the header's 16px
+padding overshoots the separator's own inline inset. Both figures are the
+library's defaults, and neither is a custom property this app can read, so a
+change to either has to be answered in `ReviewViewer`. Untouched, the two
+chevrons sat six pixels and three pixels of glyph apart, which reads as one
+column that failed to line up rather than as two controls.
+
+`HEADER_METADATA_PULL` is the same idea at the other end of the row. A quiet
+button's horizontal padding is its hover box and not its text, so `Viewed`
+stopped short of the line the header's own padding draws, and its box sat
+further from `+N` than `+N` sits from `-N`. The button gives both back, and its
+hover box is then the only thing that reaches past either.
+
 **A jump opens the file it lands on, and one file is spared the fold.** A scroll
 to a folded file lands on a header and shows nothing, so the tree, the comment
 list and the URL fragment all go through `openFile`. That call also names the

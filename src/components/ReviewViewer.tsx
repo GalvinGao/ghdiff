@@ -231,6 +231,18 @@ export const ReviewViewer = memo(function ReviewViewer({
  * and the Viewed mark beside the figures both set it, so `aria-expanded` says
  * which way it is however it got there.
  *
+ * Its box is the hunk separator's expand button, continued up into the header,
+ * and that is why it is 32px around a 16px glyph rather than the 28 around 13
+ * every other icon button in the app takes. A file with collapsed context
+ * draws that button one row below this one, in the same glyph, for the same
+ * kind of press — and the two sat six pixels and three pixels of glyph apart,
+ * which reads as one column that failed to line up rather than as two
+ * controls. `HEADER_PREFIX_PULL` closes the gap: the separator insets its
+ * button by the library's own inline gap and the header pads by 16, so the
+ * chevron gives back the difference. Both figures are the library's defaults
+ * and neither is a variable this app can read, so a change to either has to be
+ * answered here.
+ *
  * The word comes from the browser's own `title` and not from `Tooltip`, which
  * is the one control in the app that needs it to. Each file is laid out inside
  * a container of its own that the library contains, and containment makes a
@@ -253,7 +265,8 @@ function CollapseFileButton({
     <Button
       aria-expanded={!collapsed}
       aria-label={label}
-      size="icon-sm"
+      className={HEADER_PREFIX_PULL}
+      size="icon"
       title={label}
       variant="quiet"
       onClick={() => onToggle(itemId, !collapsed)}
@@ -263,11 +276,27 @@ function CollapseFileButton({
           'transition-transform duration-150 motion-reduce:transition-none',
           collapsed && '-rotate-90'
         )}
-        size={13}
+        size={16}
       />
     </Button>
   );
 }
+
+/**
+ * 16px of header padding, less the 8px the separator insets its own expand
+ * button by, so the two land in one column. See `CollapseFileButton`.
+ */
+const HEADER_PREFIX_PULL = '-ml-2';
+
+/**
+ * A quiet button's padding is its hover box and not its text, so the last
+ * letter of `Viewed` stopped 8px short of the line the header's own padding
+ * draws, and the box before it sat 8px further from `+N` than `+N` sits from
+ * `-N`. The button gives both back: the label ends where the figures would
+ * have ended, the two gaps in the row become one gap, and the hover box is the
+ * only thing that reaches past either.
+ */
+const HEADER_METADATA_PULL = '-mx-2';
 
 /**
  * Only a changed file has unmodified lines the patch left out: a new or a
@@ -336,6 +365,7 @@ function ViewedToggle({
   return (
     <Button
       aria-pressed={viewed}
+      className={HEADER_METADATA_PULL}
       onClick={() => onToggle(itemId, !viewed)}
       size="sm"
       variant="quiet"
