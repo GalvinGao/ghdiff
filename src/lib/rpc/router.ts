@@ -510,6 +510,15 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
 // `reviews(last: 1, states: [CHANGES_REQUESTED])` is the one review that
 // matters here: the newest request for changes, so the author's newest commit
 // can be compared against it.
+//
+// `latestOpinionatedReviews` is the review axis itself, and `reviewFromSource`
+// says why `reviewDecision` cannot carry it alone. Twenty is the page, because
+// a pull request with more than twenty people who each left a verdict is a
+// pull request nobody is reading a list of squares for — past that the axis
+// misses a twenty-first reviewer's request for changes. `first` is the whole
+// page's own cap, so the nesting costs about twenty rate-limit points per
+// repository, against the five thousand an hour a token has. The list is
+// fetched once a session.
 const OPEN_PULLS_QUERY = `
 query($owner:String!,$repo:String!,$first:Int!){
   repository(owner:$owner,name:$repo){
@@ -520,6 +529,7 @@ query($owner:String!,$repo:String!,$first:Int!){
         author{ login avatarUrl }
         commits(last:1){nodes{commit{oid committedDate statusCheckRollup{state}}}}
         reviews(last:1,states:[CHANGES_REQUESTED]){nodes{submittedAt}}
+        latestOpinionatedReviews(first:20){nodes{state}}
       }
     }
   }
