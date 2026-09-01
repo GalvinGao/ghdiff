@@ -1,6 +1,6 @@
 import type { DiffIndicators } from '@pierre/diffs';
 
-// How the diff is drawn, which is the reviewer's own set of five answers.
+// How the diff is drawn, which is the reviewer's own set of answers.
 //
 // The viewer takes these one at a time. They are gathered into one object
 // because they are remembered as one: a reviewer who reads unified with no
@@ -18,6 +18,8 @@ export interface ViewerControls {
   overflow: 'wrap' | 'scroll';
   lineNumbers: boolean;
   backgrounds: boolean;
+  /** Dim a changed line whose two sides differ only in whitespace. */
+  dimWhitespace: boolean;
 }
 
 export const DEFAULT_VIEWER_CONTROLS: ViewerControls = {
@@ -26,6 +28,7 @@ export const DEFAULT_VIEWER_CONTROLS: ViewerControls = {
   overflow: 'scroll',
   lineNumbers: true,
   backgrounds: true,
+  dimWhitespace: true,
 };
 
 /** The same set with the one field a phone answers differently. */
@@ -56,12 +59,12 @@ function isDiffIndicators(value: unknown): value is DiffIndicators {
  *
  * Each field is taken on its own and falls back to the default on its own,
  * which is deliberate: this object gains fields as the header gains controls,
- * and a set stored by yesterday's build is still four right answers and one
+ * and a set stored by yesterday's build is still right answers plus one
  * absence. Refusing the whole object over the one missing field would throw
- * away the four.
+ * the rest away.
  *
- * `undefined` is the answer when the stored value says nothing about any of the
- * five — it is not an object, or it is an object with none of these fields in a
+ * `undefined` is the answer when the stored value says nothing about any of
+ * the fields — it is not an object, or it is an object with none of them in a
  * readable state. That is not the same answer as the default set: a reviewer
  * who has chosen nothing lets the screen pick, and a phone picks unified.
  */
@@ -101,6 +104,11 @@ export function acceptViewerControls(
       typeof stored.backgrounds === 'boolean',
       stored.backgrounds as boolean,
       DEFAULT_VIEWER_CONTROLS.backgrounds
+    ),
+    dimWhitespace: take(
+      typeof stored.dimWhitespace === 'boolean',
+      stored.dimWhitespace as boolean,
+      DEFAULT_VIEWER_CONTROLS.dimWhitespace
     ),
   };
   return read === 0 ? undefined : controls;

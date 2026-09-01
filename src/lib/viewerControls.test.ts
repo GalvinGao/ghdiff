@@ -33,6 +33,7 @@ describe('acceptViewerControls', () => {
       overflow: 'wrap',
       lineNumbers: false,
       backgrounds: false,
+      dimWhitespace: false,
     };
     assert.deepEqual(acceptViewerControls(stored), stored);
   });
@@ -64,7 +65,7 @@ describe('acceptViewerControls', () => {
     assert.equal(acceptViewerControls(7), undefined);
   });
 
-  it('refuses an object that says nothing about any of the five', () => {
+  it('refuses an object that says nothing about any of the fields', () => {
     // A reviewer who has chosen nothing is not a reviewer who chose the
     // defaults: the screen still gets to pick, and a phone picks unified.
     assert.equal(acceptViewerControls({}), undefined);

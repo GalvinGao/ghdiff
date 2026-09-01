@@ -16,6 +16,7 @@ import { memo, type RefObject, useCallback, useMemo } from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
+import { applyLineMarks, LINE_MARKS_CSS } from '@/components/diffLineMarks';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { CommentStore } from '@/hooks/useReviewComments';
@@ -149,6 +150,18 @@ export const ReviewViewer = memo(function ReviewViewer({
       onGutterUtilityClick(range, context) {
         if (context.item.type !== 'diff') return;
         onCreateDraft(context.item.id, range);
+      },
+      // The stylesheet for the marks below, installed by the library inside
+      // each file's shadow root, where no outside selector can reach.
+      unsafeCSS: LINE_MARKS_CSS,
+      onPostRender(node, instance, phase) {
+        if (phase === 'unmount') return;
+        // `fileDiffCache` is protected in the type and a plain getter at
+        // runtime; there is no public path from an instance to its metadata.
+        const fileDiff = (
+          instance as unknown as { fileDiffCache?: FileDiffMetadata }
+        ).fileDiffCache;
+        applyLineMarks(node, fileDiff);
       },
     }),
     [

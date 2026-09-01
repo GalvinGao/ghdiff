@@ -533,6 +533,34 @@ the cost the limit is about. Both ends read `MAX_FILE_BYTES` and
 `FILE_TOO_LARGE` from `src/lib/diffHydration.ts`, so they cannot come to differ
 about the figure or the sentence.
 
+**A changed line that says less than its colour claims is dimmed, and never
+hidden.** `findLineMarks` in `src/lib/lineMarks.ts` reads each file's own change
+blocks and names the pairs whose two sides differ only in whitespace — the
+`git diff -w` rule — which are a formatting pass, so both sides go quiet. All of
+it is text arithmetic over the patch, ready at parse time, and honest about its
+limit: this is not SemanticDiff's syntax tree, and `0x80` against `128` still
+reads as a change. Dim and never hide, because a hidden line would break the
+promise this app is built on — a comment anchored to GitHub's own diff lines —
+where a dim one can still be read, selected and commented on.
+
+**The marks travel through the one per-line door the viewer has.**
+`@pierre/diffs` draws each file in a shadow root and has no line-decoration
+option, but `onPostRender` hands over the file's container after every render
+pass, and `unsafeCSS` installs a stylesheet inside the root. So `applyLineMarks`
+in `src/components/diffLineMarks.ts` stamps `data-ghdiff-quiet` onto the rows
+each pass just built — matched by the library's own `data-line` and
+`data-line-type`, in split and unified alike — and `LINE_MARKS_CSS` says what
+the stamp looks like. A pass renders only the virtualized window, so a walk
+touches tens of rows, and it re-runs because the next pass rebuilds them. The
+display-menu switch costs no render at all: the stamps stay, and
+`--ghdiff-quiet-opacity` — a custom property set beside the viewer and inherited
+through the shadow boundary — is the whole toggle, the same trick `usePaneWidth`
+plays. Marks are cached in a WeakMap per metadata object, which hydration
+mutates in place and a filter change reuses, so an entry cannot go stale.
+`fileDiffCache` is protected in the library's types and a plain getter at
+runtime; the cast in `ReviewViewer` is the one place that leans on it, and a
+library upgrade must re-check it.
+
 One thing GitHub decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review
 comment API refuses one. The failure arrives as GitHub's own sentence in the
