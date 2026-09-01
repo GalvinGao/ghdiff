@@ -564,12 +564,29 @@ loses is what nobody has touched. Raising it past 100 buys nothing without
 pagination.
 
 **The review and the check axes need a token.** `pulls.list` asks GraphQL for
-`reviewDecision` and the head commit's `statusCheckRollup`, which REST does not
-carry. GraphQL refuses an anonymous caller, so a caller with no token gets the
-REST list and `PullSummary.status` stays **absent** — not `none`. Absent means
-"never asked", and `PullRow` leaves the square off the row rather than claim
-there is no review and no CI. It keeps the lane the square sits in, so the
-number after it starts on the same pixel either way.
+`latestOpinionatedReviews`, `reviewDecision` and the head commit's
+`statusCheckRollup`, none of which REST carries. GraphQL refuses an anonymous
+caller, so a caller with no token gets the REST list and `PullSummary.status`
+stays **absent** — not `none`. Absent means "never asked", and `PullRow` leaves
+the square off the row rather than claim there is no review and no CI. It keeps
+the lane the square sits in, so the number after it starts on the same pixel
+either way.
+
+**The review axis is the reviews, and `reviewDecision` only adds to them.** That
+field was the whole of the axis once, and it answers a different question:
+GitHub computes it against the base branch's own rule about who has to approve,
+so an unprotected repository answers `null` for every pull request it has, and
+even a protected one goes stale — troph-team/lilja#700 and #701 each carried one
+approval, on the same branch, in the same minute, and GitHub reported `APPROVED`
+for the first and `null` for the second. So `reviewFromSource` in
+`src/lib/pullStatus.ts` reads `latestOpinionatedReviews`, which is the newest
+verdict from each reviewer, and lets `reviewDecision` contribute `APPROVED` or
+`CHANGES_REQUESTED` on top. `REVIEW_REQUIRED` contributes nothing: it says a
+rule is unsatisfied, and one approval out of the two a rule wants is still
+somebody's approval. `DISMISSED` is the one state in that list which is not an
+opinion, and it counts as unread. A grey square under a header that read
+**Approved** was the whole complaint — `ReviewButton` asks `viewerLatestReview`,
+which is a review, and the two now agree.
 
 **A spent quota is one status, and the panel asks for a token.** GitHub reports
 the primary rate limit as 403 on `api.github.com` and as 429 on the web diff
@@ -620,7 +637,9 @@ changes. The colours are Primer's, defined per scheme as `--app-status-*` in
 `src/globals.css`. floodgate paints the same square into the favicon of every
 pull request tab, so a colour must keep meaning the same thing in both places:
 change `src/lib/pullStatus.ts` and floodgate's `lib/pr-status.ts` together, or
-not at all.
+not at all. floodgate's `normalize` still reads `reviewDecision` alone, so its
+favicon is grey for the approved pull request whose square here is green. Carry
+`latestOpinionatedReviews` over there.
 
 **A phone gets one layout, and 480px is where it starts.** `--breakpoint-phone`
 in `src/globals.css` is 30rem, and `useIsPhone` states the same figure for the
