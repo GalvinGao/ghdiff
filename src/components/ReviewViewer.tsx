@@ -12,7 +12,7 @@ import {
   type ThemeTypes,
 } from '@pierre/diffs';
 import { CodeView, type CodeViewHandle } from '@pierre/diffs/react';
-import { IconExpandRow } from '@pierre/icons';
+import { IconChevron, IconExpandRow } from '@pierre/icons';
 import { memo, type RefObject, useCallback, useMemo } from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
@@ -38,6 +38,8 @@ interface ItemTopReader {
 
 interface ReviewViewerProps {
   className?: string;
+  /** The files folded shut, by item id. */
+  collapsedItemIds: ReadonlySet<string>;
   /** Where a comment written here goes, which a card says out loud. */
   commentStore: CommentStore;
   controls: ViewerControls;
@@ -56,9 +58,15 @@ interface ReviewViewerProps {
   /** Reports the scroll offset, so the file tree can follow the diff. */
   onScroll(scrollTop: number, viewer: ItemTopReader): void;
   onSelectedLinesChange(selection: CodeViewLineSelection | null): void;
+  /** Folds one file shut, or opens it again. */
+  onToggleCollapsed(itemId: string, collapsed: boolean): void;
+  /** Sets, or takes back, this file's own "I have read this" mark. */
+  onToggleViewed(itemId: string, viewed: boolean): void;
   scrollRef: RefObject<HTMLDivElement | null>;
   selectedLines: CodeViewLineSelection | null;
   themeType: ThemeTypes;
+  /** The files already marked read, by item id. */
+  viewedItemIds: ReadonlySet<string>;
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }
 
@@ -66,6 +74,7 @@ interface ReviewViewerProps {
 // hover. It is what opens a comment composer on the hovered line.
 export const ReviewViewer = memo(function ReviewViewer({
   className,
+  collapsedItemIds,
   commentStore,
   controls,
   items,
@@ -77,22 +86,58 @@ export const ReviewViewer = memo(function ReviewViewer({
   onSaveDraft,
   onScroll,
   onSelectedLinesChange,
+  onToggleCollapsed,
+  onToggleViewed,
   scrollRef,
   selectedLines,
   themeType,
+  viewedItemIds,
   viewerRef,
 }: ReviewViewerProps) {
+  // First in the header, before the change-type icon, where github.com puts
+  // its own. This slot is the one thing drawn to the left of that icon.
+  const renderHeaderPrefix = useCallback(
+    (item: CodeViewItem<CommentMetadata>) => (
+      <CollapseFileButton
+        collapsed={collapsedItemIds.has(item.id)}
+        itemId={item.id}
+        onToggle={onToggleCollapsed}
+      />
+    ),
+    [collapsedItemIds, onToggleCollapsed]
+  );
+
   // In the file header, beside the name, the way GitHub places the same
   // control. The hunk separators reveal 100 lines per press; this is the one
   // press that asks for the whole file instead.
   const renderHeaderFilenameSuffix = useCallback(
     (item: CodeViewItem<CommentMetadata>) => {
-      if (item.type !== 'diff' || !canExpandWholeFile(item.fileDiff)) {
+      // Not on a folded file. There is nothing to reveal into, and the tooltip
+      // could not be read there anyway. See `CollapseFileButton`.
+      if (
+        item.type !== 'diff' ||
+        collapsedItemIds.has(item.id) ||
+        !canExpandWholeFile(item.fileDiff)
+      ) {
         return null;
       }
       return <ExpandFileButton itemId={item.id} viewerRef={viewerRef} />;
     },
-    [viewerRef]
+    [collapsedItemIds, viewerRef]
+  );
+
+  // After the file's own `-N +N`, which is where github.com puts the same
+  // control. This slot is the last child of the header's metadata row, so the
+  // toggle lands to the right of the two figures and takes the row's own gap.
+  const renderHeaderMetadata = useCallback(
+    (item: CodeViewItem<CommentMetadata>) => (
+      <ViewedToggle
+        itemId={item.id}
+        onToggle={onToggleViewed}
+        viewed={viewedItemIds.has(item.id)}
+      />
+    ),
+    [onToggleViewed, viewedItemIds]
   );
 
   const options: CodeViewOptions<CommentMetadata> = useMemo(
@@ -136,6 +181,8 @@ export const ReviewViewer = memo(function ReviewViewer({
       onScroll={onScroll}
       onSelectedLinesChange={onSelectedLinesChange}
       renderHeaderFilenameSuffix={renderHeaderFilenameSuffix}
+      renderHeaderMetadata={renderHeaderMetadata}
+      renderHeaderPrefix={renderHeaderPrefix}
       className={cn(
         'cv-scrollbar bg-canvas relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto',
         // `none`, not `contain`: contain stops the scroll from chaining to the
@@ -172,6 +219,55 @@ export const ReviewViewer = memo(function ReviewViewer({
     />
   );
 });
+
+/**
+ * Folds one file shut. It sits before the change-type icon, which is the only
+ * place on the row that reads as belonging to the whole file rather than to
+ * its name, and it is where github.com puts the same chevron.
+ *
+ * The chevron turns rather than swapping for a second glyph, so the press
+ * reads as one control moving and not as two controls trading places. It is
+ * the only state a reviewer can reach from two directions. The chevron itself
+ * and the Viewed mark beside the figures both set it, so `aria-expanded` says
+ * which way it is however it got there.
+ *
+ * The word comes from the browser's own `title` and not from `Tooltip`, which
+ * is the one control in the app that needs it to. Each file is laid out inside
+ * a container of its own that the library contains, and containment makes a
+ * stacking context, so a label drawn below this button is painted over by the
+ * next file whatever its z-index. That is exactly the case this control is
+ * for: a folded file is one header tall, and everything under it belongs to
+ * the file after it.
+ */
+function CollapseFileButton({
+  collapsed,
+  itemId,
+  onToggle,
+}: {
+  collapsed: boolean;
+  itemId: string;
+  onToggle(itemId: string, collapsed: boolean): void;
+}) {
+  const label = collapsed ? 'Show the diff' : 'Hide the diff';
+  return (
+    <Button
+      aria-expanded={!collapsed}
+      aria-label={label}
+      size="icon-sm"
+      title={label}
+      variant="quiet"
+      onClick={() => onToggle(itemId, !collapsed)}
+    >
+      <IconChevron
+        className={cn(
+          'transition-transform duration-150 motion-reduce:transition-none',
+          collapsed && '-rotate-90'
+        )}
+        size={13}
+      />
+    </Button>
+  );
+}
 
 /**
  * Only a changed file has unmodified lines the patch left out: a new or a
@@ -213,6 +309,78 @@ function ExpandFileButton({
         <IconExpandRow size={13} />
       </Button>
     </Tooltip>
+  );
+}
+
+/**
+ * The file's own "I have read this" mark, in the header where github.com puts
+ * it. Where the mark is kept is the hook's business and not this button's: on
+ * a pull request it goes to GitHub, and on a commit or a compare range it goes
+ * to this browser, because GitHub holds no such mark for either.
+ *
+ * A toggle button and not an `<input type="checkbox">`, for the reason
+ * `TaskMarker` draws its own box: the browser paints a native one in the
+ * platform's blue, which is the single colour this app never uses. The word
+ * sits beside the box rather than in a tooltip, because a tick with nothing
+ * next to it does not say what it is a tick for.
+ */
+function ViewedToggle({
+  itemId,
+  onToggle,
+  viewed,
+}: {
+  itemId: string;
+  onToggle(itemId: string, viewed: boolean): void;
+  viewed: boolean;
+}) {
+  return (
+    <Button
+      aria-pressed={viewed}
+      onClick={() => onToggle(itemId, !viewed)}
+      size="sm"
+      variant="quiet"
+    >
+      <ViewedBox checked={viewed} />
+      Viewed
+    </Button>
+  );
+}
+
+/**
+ * The box, in the two tones `TaskMarker` already uses for the same shape. The
+ * checked state fills with the accent rather than adding a tick to the same
+ * empty box: a header row is read at a glance, and a hairline tick at 13px is
+ * not a glance.
+ */
+function ViewedBox({ checked }: { checked: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="shrink-0"
+      height={13}
+      viewBox="0 0 16 16"
+      width={13}
+    >
+      <rect
+        fill={checked ? 'var(--app-accent)' : 'var(--app-surface)'}
+        height={13}
+        rx={3.5}
+        stroke={checked ? 'var(--app-accent)' : 'var(--app-ink-faint)'}
+        width={13}
+        x={1.5}
+        y={1.5}
+      />
+      {checked && (
+        <path
+          d="M4.6 8.2 7 10.6l4.4-5"
+          fill="none"
+          stroke="var(--app-accent-ink)"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.8}
+        />
+      )}
+    </svg>
   );
 }
 

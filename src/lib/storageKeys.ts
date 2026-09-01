@@ -15,3 +15,8 @@ export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
 export function localCommentsStorageKey(targetKey: string): string {
   return `ghdiff-comments:${targetKey}`;
 }
+
+/** The files marked read on one review target, when GitHub keeps no such mark. */
+export function localViewedFilesStorageKey(targetKey: string): string {
+  return `ghdiff-viewed:${targetKey}`;
+}
