@@ -16,6 +16,7 @@ import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
 import { isSameSelection, ReviewViewer } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
 import {
+  archiveHydrationPreference,
   commentAuthorFilterPreference,
   usePreference,
   viewerControlsPreference,
@@ -118,6 +119,11 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const { value: authorMode, setValue: setAuthorMode } = usePreference(
     commentAuthorFilterPreference
   );
+  // The switch in the display menu for how expanded lines travel: one archive
+  // download for the whole review, or one request per file. On by default; the
+  // codec refuses anything storage holds that is not a boolean.
+  const archivePref = usePreference(archiveHydrationPreference);
+  const archiveEnabled = archivePref.value;
 
   const patch = useReviewPatch({
     target,
@@ -139,9 +145,24 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     repo: pullTarget?.repo,
     token: token.token,
   });
+  // Every new-side path the archive should carry, unfiltered — a filter change
+  // must not decide what was downloaded. A deleted file's path is not in the
+  // head commit, and wanting it would keep the download running to the end.
+  const hydrationPaths = useMemo(
+    () =>
+      patch.data.items
+        .filter((item) => item.fileDiff.type !== 'deleted')
+        .map((item) => item.fileDiff.name),
+    [patch.data.items]
+  );
   // Only reached when a reviewer expands a hunk's unmodified lines, so it costs
   // nothing on a review nobody expands.
-  const files = useDiffFileLoader({ target, token: token.token });
+  const files = useDiffFileLoader({
+    target,
+    token: token.token,
+    paths: hydrationPaths,
+    archiveEnabled,
+  });
   const comments = useReviewComments({
     target,
     entries: patch.data.entries,
@@ -467,6 +488,8 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   return (
     <>
       <ReviewHeader
+        archiveHydration={archiveEnabled}
+        onArchiveHydrationChange={archivePref.setValue}
         codeFont={codeFont}
         colorMode={colorMode}
         controls={controls}
@@ -506,14 +529,21 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             gridTemplateColumns: isPhone
               ? 'minmax(0,1fr)'
               : `var(${SIDEBAR_WIDTH_PROPERTY}) minmax(0,1fr)`,
-            // The whole effect of the dim switch. The marks are stamped on
-            // rows inside the viewer's shadow roots and styled by
-            // LINE_MARKS_CSS, whose default is the on state; this property
-            // inherits through the shadow boundary and overrides it, so a
-            // toggle is one style write and never a re-render of the diff.
+            // The whole effect of the two mark switches. The marks are stamped
+            // on rows inside the viewer's shadow roots and styled by
+            // LINE_MARKS_CSS, whose defaults are the on state; these
+            // properties inherit through the shadow boundary and override
+            // them, so a toggle is one style write and never a re-render of
+            // the diff.
             ...(controls.dimWhitespace
               ? undefined
               : { '--ghdiff-quiet-opacity': '1' }),
+            ...(controls.markMoves
+              ? undefined
+              : {
+                  '--ghdiff-moved-opacity': '1',
+                  '--ghdiff-moved-edge': 'transparent',
+                }),
           }}
         >
           <ReviewSidebar

@@ -11,6 +11,7 @@ export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'ghdiff-sidebar-width';
 export const RAIL_WIDTH_STORAGE_KEY = 'ghdiff-rail-width';
 export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
+export const ARCHIVE_HYDRATION_STORAGE_KEY = 'ghdiff-archive-hydration';
 
 /** Comments for one review target, when they cannot go to GitHub. */
 export function localCommentsStorageKey(targetKey: string): string {

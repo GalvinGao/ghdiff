@@ -45,6 +45,32 @@ export function supportsGitHubComments(
   return target.kind === 'github-pull';
 }
 
+/**
+ * The commit whose copy of a file the patch's new side describes. Both
+ * `/api/file` and `/api/archive` resolve their ref through this one function,
+ * so the file a fallback fetches is the file the archive would have held.
+ *
+ * A pull request answers through `refs/pull/{n}/head`, which GitHub keeps in
+ * the base repository and which needs no second request to resolve — and works
+ * for a pull request from a fork, where the head commit lives nowhere else
+ * those routes can reach.
+ *
+ * A compare range answers with whatever it was addressed by. That is a branch
+ * or a sha of this repository for every range ghdiff has a link to, and it is
+ * `owner:branch` for a range typed across two forks — which no source can
+ * read, so such a range gets no unmodified lines and says so.
+ */
+export function newSideRef(target: ReviewTarget): string {
+  switch (target.kind) {
+    case 'github-pull':
+      return `refs/pull/${target.number}/head`;
+    case 'github-commit':
+      return target.sha;
+    case 'github-compare':
+      return target.head;
+  }
+}
+
 /** Stable key for caches and for browser-side comment storage. */
 export function reviewTargetKey(target: ReviewTarget): string {
   switch (target.kind) {

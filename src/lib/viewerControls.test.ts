@@ -34,6 +34,7 @@ describe('acceptViewerControls', () => {
       lineNumbers: false,
       backgrounds: false,
       dimWhitespace: false,
+      markMoves: false,
     };
     assert.deepEqual(acceptViewerControls(stored), stored);
   });

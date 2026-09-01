@@ -20,6 +20,8 @@ export interface ViewerControls {
   backgrounds: boolean;
   /** Dim a changed line whose two sides differ only in whitespace. */
   dimWhitespace: boolean;
+  /** Dim and edge-mark a block that moved within its file unaltered. */
+  markMoves: boolean;
 }
 
 export const DEFAULT_VIEWER_CONTROLS: ViewerControls = {
@@ -29,6 +31,7 @@ export const DEFAULT_VIEWER_CONTROLS: ViewerControls = {
   lineNumbers: true,
   backgrounds: true,
   dimWhitespace: true,
+  markMoves: true,
 };
 
 /** The same set with the one field a phone answers differently. */
@@ -109,6 +112,11 @@ export function acceptViewerControls(
       typeof stored.dimWhitespace === 'boolean',
       stored.dimWhitespace as boolean,
       DEFAULT_VIEWER_CONTROLS.dimWhitespace
+    ),
+    markMoves: take(
+      typeof stored.markMoves === 'boolean',
+      stored.markMoves as boolean,
+      DEFAULT_VIEWER_CONTROLS.markMoves
     ),
   };
   return read === 0 ? undefined : controls;
