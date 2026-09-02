@@ -51,6 +51,7 @@ src/
     gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff, as text/plain
     api/file.ts            one whole file, as text/plain
+    api/archive.ts         the new side of every changed file, as one tar.gz
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: patch, comments, pulls, the URL
@@ -463,18 +464,36 @@ also the one call whose HTTP status the client reads directly, for
 `describeReviewFailure`. `/api/file` is a route for the same reason and answers
 the same way; a source file is not much smaller than a patch.
 
-**The unmodified lines cost one request, and only for the new side.** A patch
-carries three lines of context around each change, and `@pierre/diffs` draws the
-rest of a file only once it has both whole sides — which is what `loadDiffFiles`
-hands it, and what puts the expand controls on a hunk separator in the first
-place. `/api/file` fetches the new side, and `src/lib/diffHydration.ts` rebuilds
-the old side from it: outside a hunk the two sides are the same lines by
-definition, and inside one the patch holds the old lines itself, so the old file
-is the new file with each hunk's new-side lines swapped back. That is a
-reverse-apply, it is exact, and it needs no merge base — which is the whole
-reason it is done this way. A pull request's diff runs from the merge base,
-`pull.base.sha` is not that commit, and asking GitHub for it costs a compare
-call whose answer carries up to 300 file patches with it.
+**The unmodified lines cost one request for the whole review, and only for the
+new side.** A patch carries three lines of context around each change, and
+`@pierre/diffs` draws the rest of a file only once it has both whole sides —
+which is what `loadDiffFiles` hands it, and what puts the expand controls on a
+hunk separator in the first place. The first expansion starts one `/api/archive`
+download, the tar.gz of the head commit's whole worktree, so a review is priced
+at one request rather than at its file count — three hundred changed files used
+to be three hundred requests against an anonymous quota of sixty an hour.
+`TarReader` in `src/lib/tar.ts` walks the stream as it arrives,
+`ArchiveFileCollector` keeps exactly the changed paths — deleted files excluded,
+because the head commit does not hold them and a path that can never be found
+would keep the download running to the end — and the download is cancelled the
+moment every wanted path is settled. The stream is counted before the gzip and
+abandoned past `MAX_ARCHIVE_DOWNLOAD_BYTES`, because an archive is priced by the
+repository rather than by the diff. Whatever it could not supply falls back to
+`/api/file`, one file at a time, and the archive's own failures are silent on
+purpose: the fallback is the path that already knows how to speak, and a
+reviewer should hear one explanation, not two. The display menu's **One download
+per review** switch is the reviewer's way out of the archive — off sends every
+press down the per-file path, which is what a metered connection wants from a
+repository whose archive outweighs the few files they will expand — and
+`ARCHIVE_HYDRATION_STORAGE_KEY` keeps the choice across sessions, on by default.
+Either way `src/lib/diffHydration.ts` rebuilds the old side from the new one:
+outside a hunk the two sides are the same lines by definition, and inside one
+the patch holds the old lines itself, so the old file is the new file with each
+hunk's new-side lines swapped back. That is a reverse-apply, it is exact, and it
+needs no merge base — which is the whole reason it is done this way. A pull
+request's diff runs from the merge base, `pull.base.sha` is not that commit, and
+asking GitHub for it costs a compare call whose answer carries up to 300 file
+patches with it.
 
 Exact only against the file the patch describes, though. A branch that moved
 between the diff and the press gives a new side the patch does not fit, and
@@ -485,19 +504,21 @@ out of the two arrays too. `patchFitsNewFile` is asked before every rebuild and
 foot of the screen says why. Never hydrate a side that has not been checked.
 
 **A file's commit is `refs/pull/{n}/head`, its own sha, or the range's head.**
-`newSideRef` in `src/routes/api/file.ts` answers for all three targets without a
-second request, and the pull ref resolves in the base repository even when the
-head belongs to a fork. A compare range typed across two forks addresses its
-head as `owner:branch`, which no source can read, so that one range gets no
-unmodified lines and says so.
+`newSideRef` in `src/lib/reviewTarget.ts` answers for all three targets without
+a second request, and `/api/archive` and `/api/file` both resolve through it, so
+the fallback fetches from the same commit the archive held. The pull ref
+resolves in the base repository even when the head belongs to a fork. A compare
+range typed across two forks addresses its head as `owner:branch`, which no
+source can read, so that one range gets no unmodified lines and says so.
 
 **Which source answers turns on the token, and only on the token.** A caller
 with none has sixty REST requests an hour and needs them for the comments and
-the pull request list, so its file comes from `raw.githubusercontent.com`, the
-host behind github.com's own **Raw** links, which spends none of them. A caller
-with a token has five thousand and may be reading a private repository, so its
-file comes from the contents API, which is the only one of the two that answers
-for one. One request per file either way, and the reviewer pays it once: the
+the pull request list, so its archive comes from `codeload.github.com` and its
+fallback file from `raw.githubusercontent.com` — the hosts behind github.com's
+own archive and **Raw** links — which spend none of them. A caller with a token
+has five thousand and may be reading a private repository, so its archive comes
+from the API's tarball endpoint and its file from the contents API, the pair
+that answers for one. However a file arrives, the reviewer pays for it once: the
 library hydrates the metadata object in place, and `items` keeps the same
 `fileDiff` reference through a filter change and a comment revision alike, so
 the lines stay expanded.
@@ -535,8 +556,13 @@ about the figure or the sentence.
 
 **A changed line that says less than its colour claims is dimmed, and never
 hidden.** `findLineMarks` in `src/lib/lineMarks.ts` reads each file's own change
-blocks and names the pairs whose two sides differ only in whitespace — the
-`git diff -w` rule — which are a formatting pass, so both sides go quiet. All of
+blocks and names two kinds of line. A pair whose two sides differ only in
+whitespace — the `git diff -w` rule — is a formatting pass, and both sides go
+quiet. A block of three or more lines that left one place and landed elsewhere
+in the same file, indentation aside and with at least twenty non-whitespace
+characters between its lines (git's own `--color-moved` floor), is a move, and
+both ends take the dim and an inset edge. Whitespace pairs are settled first and
+excluded from the move search, so a line never carries both explanations. All of
 it is text arithmetic over the patch, ready at parse time, and honest about its
 limit: this is not SemanticDiff's syntax tree, and `0x80` against `128` still
 reads as a change. Dim and never hide, because a hidden line would break the
@@ -547,19 +573,26 @@ where a dim one can still be read, selected and commented on.
 `@pierre/diffs` draws each file in a shadow root and has no line-decoration
 option, but `onPostRender` hands over the file's container after every render
 pass, and `unsafeCSS` installs a stylesheet inside the root. So `applyLineMarks`
-in `src/components/diffLineMarks.ts` stamps `data-ghdiff-quiet` onto the rows
-each pass just built — matched by the library's own `data-line` and
-`data-line-type`, in split and unified alike — and `LINE_MARKS_CSS` says what
-the stamp looks like. A pass renders only the virtualized window, so a walk
-touches tens of rows, and it re-runs because the next pass rebuilds them. The
-display-menu switch costs no render at all: the stamps stay, and
-`--ghdiff-quiet-opacity` — a custom property set beside the viewer and inherited
-through the shadow boundary — is the whole toggle, the same trick `usePaneWidth`
-plays. Marks are cached in a WeakMap per metadata object, which hydration
-mutates in place and a filter change reuses, so an entry cannot go stale.
-`fileDiffCache` is protected in the library's types and a plain getter at
-runtime; the cast in `ReviewViewer` is the one place that leans on it, and a
-library upgrade must re-check it.
+in `src/components/diffLineMarks.ts` stamps `data-ghdiff-quiet` and
+`data-ghdiff-moved` onto the rows each pass just built — matched by the
+library's own `data-line` and `data-line-type`, in split and unified alike — and
+`LINE_MARKS_CSS` says what a stamp looks like. A pass renders only the
+virtualized window, so a walk touches tens of rows, and it re-runs because the
+next pass rebuilds them. The two display-menu switches cost no render at all:
+the stamps stay, and `--ghdiff-quiet-opacity` with the moved pair — custom
+properties set beside the viewer and inherited through the shadow boundary — are
+the whole toggle, the same trick `usePaneWidth` plays. Marks are cached in a
+WeakMap per metadata object, which hydration mutates in place and a filter
+change reuses, so an entry cannot go stale. `fileDiffCache` is protected in the
+library's types and a plain getter at runtime; the cast in `ReviewViewer` is the
+one place that leans on it, and a library upgrade must re-check it.
+
+**The hunk separator names the scope, the way github.com's hunk headers do.**
+git writes the enclosing symbol after each hunk's `@@`, `parsePatchFiles` keeps
+it as `hunkContext`, and the renderer drops it. `applyScopeLabels` writes it
+back into the separator above hunk N, beside the unmodified-lines count, on the
+same pass as the marks. The trailing separator's index is one past the last hunk
+and so never names one.
 
 One thing GitHub decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review

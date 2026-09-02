@@ -6,6 +6,7 @@ import {
 } from './commentAuthors.ts';
 import { dedupeWatchedRepos, type WatchedRepo } from './pulls.ts';
 import {
+  ARCHIVE_HYDRATION_STORAGE_KEY,
   CODE_FONT_STORAGE_KEY,
   COLOR_MODE_STORAGE_KEY,
   COMMENT_AUTHOR_FILTER_STORAGE_KEY,
@@ -170,6 +171,18 @@ export const VIEWER_CONTROLS_PREFERENCE = jsonPreference<ViewerControls | null>(
 export const RAIL_COLLAPSED_PREFERENCE = jsonPreference<boolean>(
   RAIL_COLLAPSED_STORAGE_KEY,
   false,
+  (value) => (typeof value === 'boolean' ? value : undefined)
+);
+
+/**
+ * Whether the unmodified lines arrive as one archive download per review, or
+ * one request per file. On by default, and off is what a metered connection
+ * wants from a repository whose archive outweighs the few files a reviewer
+ * will expand.
+ */
+export const ARCHIVE_HYDRATION_PREFERENCE = jsonPreference<boolean>(
+  ARCHIVE_HYDRATION_STORAGE_KEY,
+  true,
   (value) => (typeof value === 'boolean' ? value : undefined)
 );
 

@@ -312,6 +312,56 @@ export async function githubWebDiff(
   return response;
 }
 
+// --- Where a whole worktree's archive comes from ------------------------------
+
+const GITHUB_CODELOAD_HOST = 'https://codeload.github.com';
+
+/**
+ * Fetches the tar.gz of one ref's whole worktree — the transport behind the
+ * expand controls, which carries the new side of every changed file in one
+ * request instead of one request each.
+ *
+ * The source turns on the token, the same split as a single file. A caller
+ * with none is served by codeload, the host behind github.com's own archive
+ * links: it answers for a public repository, resolves `refs/pull/{n}/head`,
+ * and spends none of the sixty REST requests an anonymous hour holds. A caller
+ * with a token goes through the API's tarball endpoint, which is the one of
+ * the two that answers for a private repository; it redirects to a signed
+ * codeload URL, and fetch drops the Authorization header on the cross-origin
+ * hop, which the signed target does not want anyway.
+ */
+export async function githubArchive(
+  owner: string,
+  repo: string,
+  ref: string,
+  token: string | undefined
+): Promise<Response> {
+  const encodedRef = encodeRefForPath(ref);
+  const url =
+    token == null
+      ? `${GITHUB_CODELOAD_HOST}/${owner}/${repo}/tar.gz/${encodedRef}`
+      : `${GITHUB_API_ROOT}/repos/${owner}/${repo}/tarball/${encodedRef}`;
+  const response = await fetch(url, {
+    cache: 'no-store',
+    headers:
+      token == null
+        ? { accept: 'application/x-gzip', 'user-agent': USER_AGENT }
+        : headers(token, JSON_MEDIA_TYPE),
+    redirect: 'follow',
+  });
+  if (!response.ok) {
+    throw new GitHubError(
+      rateLimitedStatus(response.status, response.headers),
+      // codeload answers a missing ref and an invisible repository alike with
+      // a bare 404 and no sentence of its own, so the caller writes one.
+      response.status === 404
+        ? 'GitHub has no archive for that commit. A private repository needs a token.'
+        : await readErrorMessage(response)
+    );
+  }
+  return response;
+}
+
 // --- Where one file's contents comes from ------------------------------------
 
 const GITHUB_RAW_HOST = 'https://raw.githubusercontent.com';

@@ -69,6 +69,9 @@ const MARKERS: {
 ];
 
 interface ReviewHeaderProps {
+  /** True while expanded lines arrive as one archive download per review. */
+  archiveHydration: boolean;
+  onArchiveHydrationChange(next: boolean): void;
   codeFont: CodeFontState;
   colorMode: ColorModeState;
   controls: ViewerControls;
@@ -95,6 +98,8 @@ interface ReviewHeaderProps {
 }
 
 export function ReviewHeader({
+  archiveHydration,
+  onArchiveHydrationChange,
   codeFont,
   colorMode,
   controls,
@@ -301,6 +306,33 @@ export function ReviewHeader({
               }
             >
               Dim whitespace changes
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={controls.markMoves}
+              indicator="switch"
+              onSelect={(event) => event.preventDefault()}
+              onCheckedChange={(checked) =>
+                onControlsChange({ ...controls, markMoves: checked === true })
+              }
+            >
+              Mark moved lines
+            </DropdownMenuCheckboxItem>
+
+            <DropdownMenuSeparator />
+            {/* Behind its own rule because it is the one row here that changes
+                no pixel: on means expanded lines arrive as one archive download
+                for the whole review, off means one request per file, which is
+                what a metered connection wants from a repository whose archive
+                outweighs the few files a reviewer will actually expand. */}
+            <DropdownMenuCheckboxItem
+              checked={archiveHydration}
+              indicator="switch"
+              onSelect={(event) => event.preventDefault()}
+              onCheckedChange={(checked) =>
+                onArchiveHydrationChange(checked === true)
+              }
+            >
+              One download per review
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -8,6 +8,7 @@ import {
   writeStoredString,
 } from './useLocalStorage';
 import {
+  ARCHIVE_HYDRATION_PREFERENCE,
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
@@ -158,3 +159,6 @@ export const commentAuthorFilterPreference = preference(
 );
 export const sidebarWidthPreference = preference(SIDEBAR_WIDTH_PREFERENCE);
 export const railWidthPreference = preference(RAIL_WIDTH_PREFERENCE);
+export const archiveHydrationPreference = preference(
+  ARCHIVE_HYDRATION_PREFERENCE
+);

@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/diffHydration';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
+  newSideRef,
   type ReviewTarget,
   reviewTargetFromQuery,
   reviewTargetKey,
@@ -19,6 +20,9 @@ import {
 //
 // This is what lets a reviewer expand the unmodified lines around a hunk: a
 // patch carries three lines of context and the viewer needs the whole file.
+// `/api/archive` is the primary way those files travel — the whole new side in
+// one request — and this route is the fallback the browser reaches for when
+// the archive failed, ran past a cap, or never held the path.
 // It is a route and not an RPC procedure for the same reason `/api/diff` is
 // one — the body is a file, the Worker hands GitHub's own stream straight to
 // the browser, and a JSON envelope would make it read all of it into memory
@@ -40,30 +44,6 @@ function textResponse(body: string, status: number): Response {
     status,
     headers: { 'cache-control': 'no-store', 'content-type': 'text/plain' },
   });
-}
-
-/**
- * The commit whose copy of a file the patch's new side describes.
- *
- * A pull request answers through `refs/pull/{n}/head`, which GitHub keeps in
- * the base repository and which needs no second request to resolve — and works
- * for a pull request from a fork, where the head commit lives nowhere else this
- * route can reach.
- *
- * A compare range answers with whatever it was addressed by. That is a branch
- * or a sha of this repository for every range ghdiff has a link to, and it is
- * `owner:branch` for a range typed across two forks — which neither source
- * below can read, so such a range gets no unmodified lines and says so.
- */
-function newSideRef(target: ReviewTarget): string {
-  switch (target.kind) {
-    case 'github-pull':
-      return `refs/pull/${target.number}/head`;
-    case 'github-commit':
-      return target.sha;
-    case 'github-compare':
-      return target.head;
-  }
 }
 
 /**

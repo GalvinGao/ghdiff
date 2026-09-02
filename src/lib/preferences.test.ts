@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  ARCHIVE_HYDRATION_PREFERENCE,
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
@@ -19,6 +20,7 @@ import { DEFAULT_VIEWER_CONTROLS } from './viewerControls.ts';
 // nine separately. The two directions are methods, which TypeScript treats as
 // bivariant, so one `unknown` codec stands for all of them.
 const ALL: PreferenceCodec<unknown>[] = [
+  ARCHIVE_HYDRATION_PREFERENCE,
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
