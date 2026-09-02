@@ -506,6 +506,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             gridTemplateColumns: isPhone
               ? 'minmax(0,1fr)'
               : `var(${SIDEBAR_WIDTH_PROPERTY}) minmax(0,1fr)`,
+            // The whole effect of the dim switch. The marks are stamped on
+            // rows inside the viewer's shadow roots and styled by
+            // LINE_MARKS_CSS, whose default is the on state; this property
+            // inherits through the shadow boundary and overrides it, so a
+            // toggle is one style write and never a re-render of the diff.
+            ...(controls.dimWhitespace
+              ? undefined
+              : { '--ghdiff-quiet-opacity': '1' }),
           }}
         >
           <ReviewSidebar

@@ -289,6 +289,19 @@ export function ReviewHeader({
             >
               Change backgrounds
             </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={controls.dimWhitespace}
+              indicator="switch"
+              onSelect={(event) => event.preventDefault()}
+              onCheckedChange={(checked) =>
+                onControlsChange({
+                  ...controls,
+                  dimWhitespace: checked === true,
+                })
+              }
+            >
+              Dim whitespace changes
+            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
