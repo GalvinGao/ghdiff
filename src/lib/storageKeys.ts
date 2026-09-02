@@ -6,6 +6,7 @@ export const COLOR_MODE_STORAGE_KEY = 'ghdiff-color-mode';
 export const CODE_FONT_STORAGE_KEY = 'ghdiff-code-font';
 export const GITHUB_TOKEN_STORAGE_KEY = 'ghdiff-github-token';
 export const WATCHED_REPOS_STORAGE_KEY = 'ghdiff-watched-repos';
+export const VIEWER_CONTROLS_STORAGE_KEY = 'ghdiff-viewer-controls';
 export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'ghdiff-sidebar-width';
 export const RAIL_WIDTH_STORAGE_KEY = 'ghdiff-rail-width';

@@ -4,7 +4,6 @@ import {
   type CodeViewItem,
   type CodeViewLineSelection,
   type CodeViewOptions,
-  type DiffIndicators,
   type DiffLineAnnotation,
   type FileDiffContentsLoader,
   type FileDiffMetadata,
@@ -22,14 +21,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
-
-export interface ViewerControls {
-  diffStyle: 'split' | 'unified';
-  diffIndicators: DiffIndicators;
-  overflow: 'wrap' | 'scroll';
-  lineNumbers: boolean;
-  backgrounds: boolean;
-}
+import type { ViewerControls } from '@/lib/viewerControls';
 
 /** The one method the scroll handler needs from the viewer it is handed. */
 interface ItemTopReader {

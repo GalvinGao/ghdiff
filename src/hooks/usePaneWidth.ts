@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-import { readStoredJson, writeStoredString } from './useLocalStorage';
+import { type PreferenceHandle, usePreference } from './preferences';
 
 // How wide a pane is, and the drag that changes it.
 //
@@ -29,6 +29,11 @@ import { readStoredJson, writeStoredString } from './useLocalStorage';
 // grid element that carries the property, so its room is that element's. That
 // is the whole of `room`, and it decides what the ResizeObserver watches as
 // well: a pane that watched the element it resizes would answer its own drag.
+//
+// The choice is a stored setting, so it also arrives from the reviewer's other
+// tabs. `chosenRef` is what tells the two apart: this pane records its own
+// choice there before it writes, so the value coming back is one it already
+// shows, and a value that differs is one another tab chose.
 
 /** One arrow key press. */
 const KEY_STEP = 16;
@@ -47,7 +52,8 @@ export interface PaneWidthOptions {
    * its own width is what the drag sets, so measuring it would chase its tail.
    */
   room: 'parent' | 'self';
-  storageKey: string;
+  /** Where the chosen width is remembered. `null` is a pane nobody dragged. */
+  preference: PreferenceHandle<number | null>;
 }
 
 export interface PaneWidthState {
@@ -71,11 +77,13 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
     defaultWidth,
     maxWidth,
     minWidth,
+    preference,
     property,
     reserve,
     room,
-    storageKey,
   } = options;
+  const { value: storedWidth, setValue: storeWidth } =
+    usePreference(preference);
 
   const carrierRef = useRef<HTMLElement | null>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
@@ -136,20 +144,21 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
   const choose = useCallback(
     (next: number) => {
       chosenRef.current = next;
-      writeStoredString(storageKey, JSON.stringify(next));
+      storeWidth(next);
       apply(next);
     },
-    [apply, storageKey]
+    [apply, storeWidth]
   );
 
-  // Read after mount, not during the first render, so the server markup and
-  // the first client render agree.
+  // The stored choice, which arrives after mount — never during the first
+  // render, so the server markup and the first client render agree — and again
+  // whenever another tab drags the same pane. A width this pane chose itself is
+  // already on `chosenRef` and already painted, so it stops here.
   useEffect(() => {
-    const stored = readStoredJson<number | null>(storageKey, null);
-    if (typeof stored !== 'number' || !Number.isFinite(stored)) return;
-    chosenRef.current = stored;
-    apply(clampWidth(stored, availableWidth()));
-  }, [apply, availableWidth, clampWidth, storageKey]);
+    if (storedWidth == null || storedWidth === chosenRef.current) return;
+    chosenRef.current = storedWidth;
+    apply(clampWidth(storedWidth, availableWidth()));
+  }, [apply, availableWidth, clampWidth, storedWidth]);
 
   const onHandlePointerDown = useCallback(
     (event: ReactPointerEvent<HTMLElement>) => {

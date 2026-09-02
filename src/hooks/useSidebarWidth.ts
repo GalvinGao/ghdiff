@@ -1,5 +1,5 @@
+import { sidebarWidthPreference } from './preferences';
 import { type PaneWidthState, usePaneWidth } from './usePaneWidth';
-import { SIDEBAR_WIDTH_STORAGE_KEY } from '@/lib/storageKeys';
 
 // The review sidebar's own width. The drag itself is `usePaneWidth`.
 //
@@ -20,10 +20,10 @@ const SIDEBAR_PANE = {
   defaultWidth: SIDEBAR_DEFAULT_WIDTH,
   maxWidth: SIDEBAR_MAX_WIDTH,
   minWidth: SIDEBAR_MIN_WIDTH,
+  preference: sidebarWidthPreference,
   property: SIDEBAR_WIDTH_PROPERTY,
   reserve: VIEWER_MIN_WIDTH,
   room: 'self',
-  storageKey: SIDEBAR_WIDTH_STORAGE_KEY,
 } as const;
 
 export function useSidebarWidth(): PaneWidthState {

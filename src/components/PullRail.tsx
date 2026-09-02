@@ -16,8 +16,8 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
+import { railCollapsedPreference, usePreference } from '@/hooks/preferences';
 import { useCurrentPull } from '@/hooks/useCurrentPull';
-import { useStoredJson } from '@/hooks/useLocalStorage';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import {
   RAIL_TOGGLE_FLIP_KEY,
@@ -41,7 +41,6 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
-import { RAIL_COLLAPSED_STORAGE_KEY } from '@/lib/storageKeys';
 
 // The left-most bar, on every page. Reviewing is moving between pull requests,
 // so the list of them is not a menu the reviewer opens: it is the edge of the
@@ -70,9 +69,8 @@ const COLLAPSED_WIDTH = '2.75rem';
 export function PullRail() {
   const { pulls, watched } = useAppData();
   const [editing, setEditing] = useState(false);
-  const { value: collapsed, setValue: setCollapsed } = useStoredJson(
-    RAIL_COLLAPSED_STORAGE_KEY,
-    false
+  const { value: collapsed, setValue: setCollapsed } = usePreference(
+    railCollapsedPreference
   );
   const current = useCurrentPull();
   // Destructured, so nothing reads a property of the state object while this

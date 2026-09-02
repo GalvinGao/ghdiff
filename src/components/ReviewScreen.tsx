@@ -13,17 +13,17 @@ import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
 import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
-import {
-  isSameSelection,
-  ReviewViewer,
-  type ViewerControls,
-} from '@/components/ReviewViewer';
+import { isSameSelection, ReviewViewer } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
+import {
+  commentAuthorFilterPreference,
+  usePreference,
+  viewerControlsPreference,
+} from '@/hooks/preferences';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
 import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
 import { useIsPhone } from '@/hooks/useIsPhone';
-import { useStoredJson } from '@/hooks/useLocalStorage';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
@@ -38,11 +38,8 @@ import { useViewedFiles } from '@/hooks/useViewedFiles';
 import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
 import { cn } from '@/lib/cn';
 import {
-  type CommentAuthorFilter,
   countCommentAuthors,
-  DEFAULT_COMMENT_AUTHOR_FILTER,
   filterCommentSections,
-  isCommentAuthorFilter,
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
@@ -54,8 +51,8 @@ import {
   type ReviewFilterState,
 } from '@/lib/reviewFilter';
 import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
-import { COMMENT_AUTHOR_FILTER_STORAGE_KEY } from '@/lib/storageKeys';
 import { buildTreeStatIndex } from '@/lib/treeStats';
+import { defaultViewerControls } from '@/lib/viewerControls';
 
 // Frames a range anchor is given to resolve. The scroll to the file is what
 // renders it, and the range can only be measured once it has been. Four frames
@@ -64,29 +61,6 @@ import { buildTreeStatIndex } from '@/lib/treeStats';
 const ANCHOR_RANGE_ATTEMPTS = 4;
 
 const NO_ITEMS: ReadonlySet<string> = new Set<string>();
-
-const DEFAULT_CONTROLS: ViewerControls = {
-  diffStyle: 'split',
-  diffIndicators: 'bars',
-  overflow: 'scroll',
-  lineNumbers: true,
-  backgrounds: true,
-};
-
-/**
- * What the viewer starts on, before the reviewer has said otherwise.
- *
- * Two columns of code on a phone is about twenty characters each, which is not
- * reading a diff — it is guessing at one. So a phone starts unified. It is a
- * default and nothing more: the control in the header sets `controls`, and from
- * that moment this function is not consulted again, so a reviewer who asks for
- * split on a phone keeps it.
- */
-function defaultControls(isPhone: boolean): ViewerControls {
-  return isPhone
-    ? { ...DEFAULT_CONTROLS, diffStyle: 'unified' }
-    : DEFAULT_CONTROLS;
-}
 
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // The left bar owns these, so the diff and the bar cannot disagree about who
@@ -100,10 +74,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   } = useAppData();
   const workersReady = useWorkerPoolReady();
   const isPhone = useIsPhone();
-  // Null until the reviewer touches a control, which is what lets the default
-  // above follow the screen until then and stop following it afterwards.
-  const [chosenControls, setControls] = useState<ViewerControls | null>(null);
-  const controls = chosenControls ?? defaultControls(isPhone);
+  // Null until the reviewer touches a control, which is what lets
+  // `defaultViewerControls` follow the screen until then and stop following it
+  // afterwards. The choice is remembered, so "until then" is the first press in
+  // this browser and not the first press on this page.
+  const { value: chosenControls, setValue: setControls } = usePreference(
+    viewerControlsPreference
+  );
+  const controls = chosenControls ?? defaultViewerControls(isPhone);
   // The file list covers the diff on a phone instead of sitting beside it, so
   // it starts closed: the diff is what the reviewer came for.
   const [filesOpen, setFilesOpen] = useState(false);
@@ -137,15 +115,9 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     style: sidebarStyle,
     width: sidebarWidth,
   } = useSidebarWidth();
-  const authorFilter = useStoredJson<CommentAuthorFilter>(
-    COMMENT_AUTHOR_FILTER_STORAGE_KEY,
-    DEFAULT_COMMENT_AUTHOR_FILTER
+  const { value: authorMode, setValue: setAuthorMode } = usePreference(
+    commentAuthorFilterPreference
   );
-  // Storage holds whatever an older build wrote there, so the value is checked
-  // rather than trusted.
-  const authorMode = isCommentAuthorFilter(authorFilter.value)
-    ? authorFilter.value
-    : DEFAULT_COMMENT_AUTHOR_FILTER;
 
   const patch = useReviewPatch({
     target,
@@ -558,7 +530,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             entries={patch.data.entries}
             filter={filter}
             hiddenCount={filtered.hiddenCount}
-            onAuthorFilterChange={authorFilter.setValue}
+            onAuthorFilterChange={setAuthorMode}
             onFilterChange={setFilter}
             onSelectComment={handleSelectComment}
             onSelectItem={handleSelectItem}

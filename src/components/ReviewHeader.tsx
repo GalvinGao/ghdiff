@@ -21,7 +21,6 @@ import { GitHubTokenControl } from '@/components/GitHubTokenControl';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
 import { PullListButton } from '@/components/PullListButton';
 import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';
-import type { ViewerControls } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -47,6 +46,7 @@ import {
   type ReviewVerdict,
   reviewVerdict,
 } from '@/lib/reviewDecision';
+import type { ViewerControls } from '@/lib/viewerControls';
 
 // The bar sits on the same surface as the sidebar and carries no boxes: a row of
 // bordered buttons across the top of a diff reads as a form to fill in, and the

@@ -59,6 +59,9 @@ importers:
       evlog:
         specifier: ^2.27.0
         version: 2.27.0(@orpc/server@1.15.0(ws@8.21.0))(@tanstack/start-client-core@1.170.27)(next@16.3.2(@babel/core@7.29.7)(@types/node@26.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(vite@8.2.2(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0))
+      jotai:
+        specifier: ^2.20.3
+        version: 2.20.3(@babel/core@7.29.7)(@babel/template@7.29.7)(@types/react@19.2.18)(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -2432,6 +2435,24 @@ packages:
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
+
+  jotai@2.20.3:
+    resolution: {integrity: sha512-N8L9FUbeGDP+0qNJw1FebOxt+5hk+jTOwUA2LlRE4C081jUcY6F1T/FSETp4DT2/INMtiSRZyNm2D+yZdzrSgA==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@babel/core': '>=7.0.0'
+      '@babel/template': '>=7.0.0'
+      '@types/react': '>=17.0.0'
+      react: '>=17.0.0'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@babel/template':
+        optional: true
+      '@types/react':
+        optional: true
+      react:
+        optional: true
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -5148,6 +5169,13 @@ snapshots:
   isbot@5.2.1: {}
 
   jiti@2.7.0: {}
+
+  jotai@2.20.3(@babel/core@7.29.7)(@babel/template@7.29.7)(@types/react@19.2.18)(react@19.2.8):
+    optionalDependencies:
+      '@babel/core': 7.29.7
+      '@babel/template': 7.29.7
+      '@types/react': 19.2.18
+      react: 19.2.8
 
   js-tokens@4.0.0: {}
 
