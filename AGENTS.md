@@ -53,11 +53,12 @@ src/
     api/file.ts            one whole file, as text/plain
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
   components/              the left bar, the review surface, and their chrome
-  hooks/                   client state: token, color mode, code font, patch,
-                           comments, pulls, pane widths, the URL fragment, the
-                           files a hunk expansion reads, and whether this is a
-                           phone
+  hooks/                   client state: patch, comments, pulls, the URL
+                           fragment, the files a hunk expansion reads, and
+                           whether this is a phone
+  hooks/preferences.ts     every remembered setting, as one jotai atom each
   lib/                     pure domain logic, unit tested
+  lib/preferences.ts       what each of those settings is, and how it is stored
   lib/githubUrls.ts        every address on github.com this app links to
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
@@ -321,12 +322,48 @@ computed against the wrong one. The script and the hook both read their stacks
 out of `codeFonts.ts`, so they cannot come to disagree about what a choice
 means.
 
+**A remembered setting is a jotai atom, and that is the whole of why it
+travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
+colour mode, the code font, the token, the watch list, the viewer's five
+controls, the bar's collapse, the two pane widths, and the comment author filter
+— as a key, a fallback, and the two directions between the value and the one
+string a browser can hold. `src/hooks/preferences.ts` turns each of those into
+one `atomWithStorage`, and `usePreference` is how a hook reads it.
+
+Three things follow, and each of them was a rule or a bug before it. The store
+is the owner, so two callers of a setting cannot come to disagree. A `storage`
+event is what one tab hears when another writes, so a reviewer with four tabs
+open changes the code font once — verified live for all nine, sign-out included.
+And a setting is `undefined` until the browser's copy has been read, which is
+where `hydrated` comes from: storage is read on mount and never during a render,
+so the server's markup and the first client render agree, and an unread watch
+list is not an empty one.
+
+Add a setting by adding its codec to `src/lib/preferences.ts` and its atom
+beside the others, then reading it with `usePreference`. The encodings there are
+the ones already deployed and are not free to change: a reviewer's stored value
+has to go on reading across a deploy, and three of those keys are read before
+the first paint by a script in the document head. `src/lib/preferences.test.ts`
+is where a new codec proves it can refuse what an older build wrote.
+
+Two settings are not settings and stay where they are. The comments and the
+viewed-file marks a browser keeps are per target, they are content rather than a
+preference, and `useReviewComments` and `useViewedFiles` go on reading their own
+key through `readStoredJson`.
+
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
 `useCodeFont`, `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and
-`useOpenPulls` once, above the bar and the page. Each of those reads browser
-storage, and a hook that reads storage owns a copy of what it read: two
-instances would let the bar and the page disagree about the token or the watch
-list. Call `useAppData()`; never call those five hooks in a screen.
+`useOpenPulls` once, above the bar and the page. Four of those now read an atom
+and could safely be called anywhere; `useOpenPulls` is the one that could not,
+because it is a request to GitHub and mounting it twice asks GitHub twice. So
+the rule stands as it was: call `useAppData()`, and do not call those five hooks
+in a screen.
+
+jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
+the Worker rather than for the browser. Without it every atom would resolve
+against one store held by the module, and a Worker isolate serves many requests
+in turn: a value written while one page rendered would be a value the next
+reader inherited.
 
 **The pull request list is repository, then author, then stack.**
 `groupPullsByRepo` in `src/lib/pulls.ts` produces that shape, `buildPullStacks`
@@ -667,9 +704,12 @@ own box throughout, which is what keeps the diff from being measured again on
 every toggle.
 
 Two columns of code on a phone is about twenty characters each, so
-`defaultControls` starts one unified. It is a default and nothing else: the
-control in the header writes `controls`, and from that press the screen is not
-consulted again.
+`defaultViewerControls` in `src/lib/viewerControls.ts` starts one unified. It is
+a default and nothing else: the control in the header writes the whole set to
+storage, and from that press the screen is not consulted again — this visit or
+the next. `null` is what says nobody has pressed anything, which is why
+`acceptViewerControls` refuses an object with none of the five fields in it
+rather than reading it as the default set: those two answers differ on a phone.
 
 **The header scrolls sideways, and only a measurement may say so.** More
 controls than 402px holds, so on a phone that row is `overflow-x-auto` and the
@@ -704,7 +744,9 @@ not put path parsing in a component.
 
 **The token never reaches the server's disk.** The browser holds the personal
 access token and sends it on the `Authorization` header of each request.
-`GITHUB_TOKEN` is honoured as a fallback for a single-user deployment.
+`GITHUB_TOKEN` is honoured as a fallback for a single-user deployment. The token
+is a setting like the others, so signing in on one tab signs in on the rest, and
+signing out removes the key rather than writing an empty string.
 
 **Comments belong to their target.** A GitHub pull request is the only target
 with an upstream review thread, so only `supportsGitHubComments` targets post to
@@ -1136,8 +1178,8 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.89 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 115 KiB of headroom is
+The Worker script is about 2.90 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 100 KiB of headroom is
 left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
 it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
 which carries the lazy loader for all 300-odd grammars, so importing anything
@@ -1226,3 +1268,11 @@ on every run.
 copies give the two libraries two separate theme controllers, so the diff and
 the tree drift apart. `pnpm-workspace.yaml` overrides both to 1.0.1. Do not
 remove that override.
+
+jotai is the one state library in the graph, and it holds the remembered
+settings and nothing else. It cost about 9 KiB of the Worker's gzipped headroom,
+new modules included, which is what a hand-written store over `localStorage`,
+the `storage` event and a subscription per key would have cost anyway — with the
+tab synchronization and the read-on-mount contract left to be got right here
+rather than upstream. Everything else in this app is React state or a ref, and
+adding a second store would be the change to argue for.

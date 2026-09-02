@@ -17,13 +17,16 @@ import {
 
 // One owner for the state the whole app shares.
 //
-// The token, the colour mode, the code font and the watch list each live in
-// browser storage, and a hook that reads storage owns a copy of what it read.
-// That was fine while only one screen was mounted at a time. The left bar is
-// now on every page, so the bar and the page under it would hold two copies:
-// adding a repository in the home page's dialog would leave the bar listing the
-// old set until a reload.
-// This provider mounts each hook once, above both.
+// Four of these five read a setting out of browser storage, and each of those
+// four reads it through a jotai atom, so the store is the owner and two callers
+// cannot come to disagree — see `src/hooks/preferences.ts`. `useOpenPulls` is
+// the one that has no atom behind it: it is a request to GitHub, and mounting
+// it twice would ask GitHub twice.
+//
+// So this provider stays, and the rule with it. It is the one place the five
+// are mounted, it is where the request's inputs are wired to the settings it
+// depends on, and it is what carries the answer to a bar and a page that are
+// never unmounted between pull requests.
 
 export interface AppData {
   codeFont: CodeFontState;

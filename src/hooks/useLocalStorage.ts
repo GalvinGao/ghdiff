@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
-
-// Reads on mount rather than during the first render, so the server markup and
-// the first client render agree. Every access is guarded: storage throws in a
-// private window and when the browser blocks site data.
+// Browser storage, guarded. Every access is in a `try`: storage throws in a
+// private window and when the browser blocks site data, and neither is a
+// failure the app should report — the value simply stays in memory for this
+// page.
+//
+// Nothing here reads storage during a render. A settings value is read after
+// mount, so the server's markup and the first client render agree; see
+// `src/hooks/preferences.ts`, which is where the settings themselves live.
 
 export function readStoredString(key: string): string | null {
   try {
@@ -35,35 +38,17 @@ export function readStoredJson<T>(key: string, fallback: T): T {
 }
 
 /**
- * A JSON value in local storage. `hydrated` tells the caller whether the stored
- * value has been read yet, so the UI can hold back a control until it knows.
+ * Whether a `StorageEvent` is about local storage.
+ *
+ * The event is raised for session storage too, and this app writes none, so a
+ * listener that skipped the test would answer to a value some other script on
+ * the page keeps. The comparison itself is what throws when site data is
+ * blocked, so it is guarded like every other access.
  */
-export function useStoredJson<T>(
-  key: string,
-  fallback: T
-): {
-  value: T;
-  setValue: (next: T) => void;
-  hydrated: boolean;
-} {
-  const [value, setStateValue] = useState<T>(fallback);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setStateValue(readStoredJson(key, fallback));
-    setHydrated(true);
-    // `fallback` is a literal at every call site, so it is deliberately not a
-    // dependency: including it would re-read storage on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-
-  const setValue = useCallback(
-    (next: T) => {
-      setStateValue(next);
-      writeStoredString(key, JSON.stringify(next));
-    },
-    [key]
-  );
-
-  return { value, setValue, hydrated };
+export function isLocalStorageArea(area: Storage | null): boolean {
+  try {
+    return area != null && area === globalThis.localStorage;
+  } catch {
+    return false;
+  }
 }

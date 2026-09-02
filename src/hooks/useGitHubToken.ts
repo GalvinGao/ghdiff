@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { readStoredString, writeStoredString } from './useLocalStorage';
+import { gitHubTokenPreference, usePreference } from './preferences';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
-import { GITHUB_TOKEN_STORAGE_KEY } from '@/lib/storageKeys';
 import type { GitHubViewer } from '@/lib/viewer';
 
 export type { GitHubViewer };
@@ -10,8 +9,6 @@ export type { GitHubViewer };
 export interface GitHubTokenState {
   token?: string;
   hasToken: boolean;
-  /** Increases on every change, so loaders re-run when the token changes. */
-  version: number;
   viewer?: GitHubViewer;
   viewerError?: string;
   checking: boolean;
@@ -24,22 +21,21 @@ export interface GitHubTokenState {
  * Holds the personal access token in local storage, never on the server, and
  * resolves the login it belongs to so the pull switcher knows which pull
  * requests are self review.
+ *
+ * The token is one of the app's settings, so a reviewer who signs in on one tab
+ * is signed in on the others: the storage event carries the new token over and
+ * the check below re-runs there on its own.
  */
 export function useGitHubToken(): GitHubTokenState {
-  const [token, setTokenState] = useState<string | undefined>(undefined);
-  const [version, setVersion] = useState(0);
-  const [hydrated, setHydrated] = useState(false);
+  const {
+    value: stored,
+    hydrated,
+    setValue: storeToken,
+  } = usePreference(gitHubTokenPreference);
+  const token = stored ?? undefined;
   const [viewer, setViewer] = useState<GitHubViewer | undefined>(undefined);
   const [viewerError, setViewerError] = useState<string | undefined>(undefined);
   const [checking, setChecking] = useState(false);
-
-  // Read after mount, not during the first render, so the server markup and
-  // the first client render agree.
-  useEffect(() => {
-    const stored = readStoredString(GITHUB_TOKEN_STORAGE_KEY)?.trim();
-    setTokenState(stored != null && stored.length > 0 ? stored : undefined);
-    setHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (!hydrated) return undefined;
@@ -73,26 +69,21 @@ export function useGitHubToken(): GitHubTokenState {
     return () => controller.abort();
   }, [hydrated, token]);
 
-  const setToken = useCallback((next: string) => {
-    const trimmed = next.trim();
-    setTokenState(trimmed.length === 0 ? undefined : trimmed);
-    writeStoredString(
-      GITHUB_TOKEN_STORAGE_KEY,
-      trimmed.length === 0 ? null : trimmed
-    );
-    setVersion((current) => current + 1);
-  }, []);
+  const setToken = useCallback(
+    (next: string) => {
+      const trimmed = next.trim();
+      storeToken(trimmed.length === 0 ? null : trimmed);
+    },
+    [storeToken]
+  );
 
-  const clearToken = useCallback(() => {
-    setTokenState(undefined);
-    writeStoredString(GITHUB_TOKEN_STORAGE_KEY, null);
-    setVersion((current) => current + 1);
-  }, []);
+  // `null` removes the key rather than writing an empty string, so signing out
+  // leaves nothing behind for the next reader to trim.
+  const clearToken = useCallback(() => storeToken(null), [storeToken]);
 
   return {
     token,
     hasToken: token != null,
-    version,
     viewer,
     viewerError,
     checking,
