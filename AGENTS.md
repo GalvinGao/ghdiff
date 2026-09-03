@@ -119,9 +119,9 @@ reads through a leading `gh` segment for the one navigation the redirect takes.
 
 **The userscript makes that host swap a button, and the tab bar is where it
 goes.** `public/ghdiff.user.js` adds one link to github.com, beside **Files
-changed** in the pull request's own tab row. That row is the one part of the
-page that both of GitHub's headers still draw and that the conversation and the
-diff share, so a single insertion point covers all four combinations:
+changed** at the end of the pull request's own tab row. That row is the one part
+of the page that both of GitHub's headers still draw and that the conversation
+and the diff share, so a single insertion point covers all four combinations:
 `nav[aria-label="Pull request navigation"]` is the React header and
 `.tabnav-tabs` is the one it has not replaced yet. Neither selector is a
 contract, so `findRowByLinkTo` says what the row _is_ — the row that holds the
@@ -139,13 +139,31 @@ which is always hidden — so the search takes whichever is on screen and they
 share the one row either way. No selector is named for a commit at all, because
 every class on that header is hashed per build.
 
+The button wears two skins, and both were read off the live page rather than
+guessed. In the tab row it is another one of github.com's own tabs — the same
+`TabNavLink` the row draws for **Files changed**: transparent and borderless in
+its unselected shape, `8px 12px` of padding at `--text-body-size-medium` and
+weight 400, stretched to the row's height, with a leading `link-external`
+octicon in `--fgColor-muted` the way every tab in the row carries one, gone
+under github.com's `sm` breakpoint the way theirs are. Beside **Browse files**
+on a commit it is Primer React's own default `Button`, the component github.com
+draws next to it there — `prc-Button-ButtonBase`, a medium control at
+`--control-medium-size` and weight 500, the 80 ms colour transition, the hover
+and active backgrounds, and the focus ring. The custom properties are Primer's
+design tokens, set by github.com itself on the document element for both colour
+schemes, so the button follows the reviewer's scheme without a stylesheet of its
+own to keep in step; the fallbacks are the ones Primer ships, for the day a
+token is renamed.
+
 The two rows are not the same row, and `data-ghdiff-place` on the button is what
-lets one stylesheet dress it for both. The tab bar has no gap of its own and
-holds 28px controls at 12px; the commit header's action row is a flex row with
-an 8px gap holding a 32px **Browse files** at 14px. A button that carried the
-tab bar's figures into the commit header would sit short beside it, and one that
-kept the tab bar's own `margin-left` there would sit 16px off. Everything the
-two places share is stated once, above them both.
+lets one stylesheet dress it for both. The tab row has no gap of its own, so the
+tab skin sits flush against **Files changed** and reads as the next tab; the
+commit header's action row is a flex row with an 8px gap of its own, so the
+button skin carries no margin there. The old server-rendered `.tabnav-tabs`
+draws its tabs wider and quieter than the React one — muted at rest, spacious
+padding, a colour-only hover — and a descendant override under the same selector
+github.com scopes its own rules with follows it. Everything else the two places
+share is stated once, above them both.
 
 A move from a pull request to a commit is a navigation GitHub makes without
 reloading, and it reuses this one button. So `sync` writes the href, the place

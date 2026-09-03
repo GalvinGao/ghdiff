@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ghdiff
 // @namespace    https://ghdiff.com/
-// @version      1.1.0
-// @description  Adds a ghdiff button to every GitHub pull request, beside Files changed, and to every commit, beside Browse files.
+// @version      1.2.0
+// @description  Adds a ghdiff button to the tab row of every GitHub pull request, and beside Browse files on every commit.
 // @author       GalvinGao
 // @homepageURL  https://github.com/GalvinGao/ghdiff
 // @supportURL   https://github.com/GalvinGao/ghdiff/issues
@@ -37,57 +37,111 @@
   // carrying one over would put a fragment in the bar that resolves to nothing.
   const GITHUB_DIFF_HASH = /^#diff-[0-9a-f]{64}(?:[LR]\d+(?:-[LR]\d+)?)?$/;
 
-  // The button is not styled with `btn btn-sm`. Those classes are Primer's and
-  // the React pull request header has already stopped using most of the rest of
-  // that stylesheet. The custom properties below are Primer's design tokens,
-  // which both headers still set on the document, so the button follows the
-  // reviewer's own light and dark scheme; the fallbacks are Primer's light
-  // values, for the day a token is renamed.
+  // The button wears two skins, and `data-ghdiff-place` picks between them.
+  // Both were read off the live page rather than guessed.
   //
-  // Everything that is the same wherever the button lands is stated once, and
-  // `data-ghdiff-place` carries the rest. The two rows it goes in are not the
-  // same row: the pull request's tab bar has no gap of its own and holds 28px
-  // controls at 12px, and the commit header's action row is a flex row with an
-  // 8px gap holding a 32px Browse files at 14px. A button that took the tab
-  // bar's figures into the commit header would sit short beside it, and one
-  // that kept the tab bar's own margin there would sit 16px off.
+  // In the pull request's tab row it is another one of github.com's own tabs —
+  // the same `TabNavLink` the row draws for Files changed: transparent and
+  // borderless in its unselected shape, `8px 12px` of padding at
+  // `--text-body-size-medium` and weight 400, stretched to the row's height,
+  // with a leading octicon in `--fgColor-muted` the way every tab in the row
+  // carries one. The odd-looking `1.64em` line height is the override
+  // github.com itself puts on those tabs, and the icon vanishes under
+  // github.com's `sm` breakpoint the same way theirs does.
+  //
+  // Beside Browse files on a commit it is Primer React's own default `Button` —
+  // the component github.com draws next to it there: a medium control at
+  // `--control-medium-size`, weight 500, the 80 ms colour transition, the hover
+  // and active backgrounds, and the focus ring.
+  //
+  // The custom properties are Primer's design tokens, which github.com sets on
+  // the document element for both colour schemes, so the button follows the
+  // reviewer's own scheme; the fallbacks are the ones Primer itself ships, for
+  // the day a token is renamed.
   const STYLE = `
 #${BUTTON_ID} {
   display: inline-flex;
   align-items: center;
-  align-self: center;
   flex: 0 0 auto;
-  border: 1px solid var(--borderColor-default, #d1d9e0);
-  border-radius: var(--borderRadius-medium, 6px);
-  background: var(--button-default-bgColor-rest, #f6f8fa);
-  color: var(--fgColor-default, #1f2328);
-  font-family: var(--fontStack-sansSerif, -apple-system, system-ui, sans-serif);
-  line-height: 1;
+  gap: var(--base-size-8, 8px);
+  font-size: var(--text-body-size-medium, 14px);
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
+}
+#${BUTTON_ID} .ghdiff-icon {
+  flex: 0 0 auto;
+  color: var(--fgColor-muted, #59636e);
 }
 #${BUTTON_ID}[data-ghdiff-place="tabs"] {
-  margin-left: 8px;
-  height: 28px;
-  padding: 0 8px;
-  font-size: 12px;
-  font-weight: 600;
+  align-self: stretch;
+  padding: var(--base-size-8, 8px) var(--base-size-12, 12px);
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+  color: var(--fgColor-default, #1f2328);
+  font-weight: var(--base-text-weight-normal, 400);
+  line-height: 1.64em;
+}
+#${BUTTON_ID}[data-ghdiff-place="tabs"]:focus-visible {
+  outline: var(--focus-outline, 2px solid var(--focus-outlineColor, #0969da));
+  outline-offset: -6px;
+}
+@media (max-width: 575.98px) {
+  #${BUTTON_ID}[data-ghdiff-place="tabs"] .ghdiff-icon {
+    display: none;
+  }
 }
 #${BUTTON_ID}[data-ghdiff-place="actions"] {
-  height: 32px;
-  padding: 0 12px;
-  font-size: 14px;
-  font-weight: 500;
+  align-self: center;
+  height: var(--control-medium-size, 32px);
+  padding: 0 var(--control-medium-paddingInline-normal, 12px);
+  border: 1px solid var(--button-default-borderColor-rest, #d1d9e0);
+  border-radius: var(--borderRadius-medium, 6px);
+  background-color: var(--button-default-bgColor-rest, #f6f8fa);
+  box-shadow: var(--button-default-shadow-resting, 0 1px 0 0 #1f23280a);
+  color: var(--button-default-fgColor-rest, #25292e);
+  font-weight: var(--base-text-weight-medium, 500);
+  line-height: var(--text-body-lineHeight-medium, 1.5);
+  user-select: none;
+  transition: color 80ms cubic-bezier(0.65, 0, 0.35, 1),
+    fill 80ms cubic-bezier(0.65, 0, 0.35, 1),
+    background-color 80ms cubic-bezier(0.65, 0, 0.35, 1),
+    border-color 80ms cubic-bezier(0.65, 0, 0.35, 1);
 }
-#${BUTTON_ID}:hover {
-  background: var(--button-default-bgColor-hover, #eff2f5);
-  text-decoration: none;
+#${BUTTON_ID}[data-ghdiff-place="actions"]:hover {
+  background-color: var(--button-default-bgColor-hover, #eff2f5);
+  border-color: var(--button-default-borderColor-hover, #d1d9e0);
 }
-#${BUTTON_ID}:focus-visible {
-  outline: 2px solid var(--focus-outlineColor, #0969da);
-  outline-offset: -1px;
+#${BUTTON_ID}[data-ghdiff-place="actions"]:active {
+  background-color: var(--button-default-bgColor-active, #e6eaef);
+  border-color: var(--button-default-borderColor-active, #d1d9e0);
+}
+#${BUTTON_ID}[data-ghdiff-place="actions"]:focus-visible {
+  box-shadow: none;
+  outline: 2px solid var(--focus-outline-color, var(--focus-outlineColor, #0969da));
+  outline-offset: -2px;
+}
+/* The old server-rendered tab bar draws its tabs wider and quieter than the
+   React one — muted at rest, generous padding, a colour-only hover — so the
+   same descendant selector github.com scopes its own rules with scopes ours. */
+.tabnav-tabs #${BUTTON_ID} {
+  padding-inline: var(--control-medium-paddingInline-spacious, 16px);
+  color: var(--fgColor-muted, #59636e);
+  transition: color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+.tabnav-tabs #${BUTTON_ID}:hover {
+  color: var(--fgColor-default, #1f2328);
 }
 `;
+
+  // The octicon github.com puts on a link that leaves the site — drawn the way
+  // github.com draws its own octicons, down to `focusable="false"`, which IE
+  // needed to keep a focus ring off `svg`.
+  const LINK_EXTERNAL_PATH =
+    'M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z';
 
   /**
    * The diff on screen, or null on any other page. A pull request and a commit
@@ -189,7 +243,22 @@
   function buildButton() {
     const button = document.createElement('a');
     button.id = BUTTON_ID;
-    button.textContent = 'ghdiff';
+    const label = document.createElement('span');
+    label.textContent = 'ghdiff';
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'ghdiff-icon');
+    icon.setAttribute('viewBox', '0 0 16 16');
+    icon.setAttribute('width', '16');
+    icon.setAttribute('height', '16');
+    icon.setAttribute('fill', 'currentColor');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.setAttribute('focusable', 'false');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', LINK_EXTERNAL_PATH);
+    icon.append(path);
+    // The icon leads, because in the tab row every tab leads with its own
+    // octicon; Primer buttons carry leading visuals just as happily.
+    button.append(icon, label);
     return button;
   }
 
