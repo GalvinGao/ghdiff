@@ -303,3 +303,68 @@ html[data-watching='no'] [data-app-rail] {
     animation: none;
   }
 }
+
+/* The colour scheme wipe: the transition behind a press on the colour mode
+   control (src/lib/colorSchemeWipe.ts, which sets the three lengths and the
+   `data-scheme-wipe` marker for the length of one transition).
+
+   The outgoing scheme holds still as the `old` snapshot while the incoming one
+   is revealed by a circle growing from the press, so the two schemes never
+   cross-fade as flat frames. The marker scopes every rule below to this one
+   transition: these pseudo-elements belong to the document rather than to a
+   component, and a navigation that is view-transitioned later must not inherit
+   a theme wipe.
+
+   `--scheme-wipe-radius` is registered because a plain custom property is not
+   animatable, and the mask reads it — so the whole reveal is that one length
+   growing. The old snapshot keeps `animation: none`, or it fades out from
+   under the reveal, and both snapshots drop the `mix-blend-mode: plus-lighter`
+   the user agent sets to make its own cross-fade add up, which blows out the
+   feathered edge. */
+@property --scheme-wipe-radius {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+html[data-scheme-wipe] {
+  /* The width of the soft edge. The reveal is opaque up to
+     `radius - feather` and transparent at `radius`, so the boundary reads as a
+     fade rather than a cut. The travel overshoots by the same amount below, or
+     the band is still mid-fade over the farthest corner when the time is up. */
+  --scheme-wipe-feather: 30px;
+}
+
+html[data-scheme-wipe]::view-transition-old(root),
+html[data-scheme-wipe]::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+
+html[data-scheme-wipe]::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-scheme-wipe]::view-transition-new(root) {
+  /* A short push off the press, then a decelerating sweep into the far corner.
+     A linear radius reads as acceleration instead, because the area it covers
+     grows with the square. */
+  animation: scheme-wipe 550ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  mask-image: radial-gradient(
+    circle at var(--scheme-wipe-x) var(--scheme-wipe-y),
+    #000 max(0px, var(--scheme-wipe-radius) - var(--scheme-wipe-feather)),
+    transparent var(--scheme-wipe-radius)
+  );
+  mask-repeat: no-repeat;
+}
+
+@keyframes scheme-wipe {
+  from {
+    --scheme-wipe-radius: 0px;
+  }
+
+  to {
+    --scheme-wipe-radius: calc(
+      var(--scheme-wipe-reach) + var(--scheme-wipe-feather)
+    );
+  }
+}

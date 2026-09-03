@@ -348,6 +348,46 @@ computed against the wrong one. The script and the hook both read their stacks
 out of `codeFonts.ts`, so they cannot come to disagree about what a choice
 means.
 
+**The colour scheme arrives from the press, and not as a new frame.** A theme
+swap is every pixel on screen changing at once, which reads as the page
+reloading. `src/lib/colorSchemeWipe.ts` puts it inside a same-document view
+transition instead: the outgoing scheme is held still as the
+`::view-transition-old(root)` snapshot while the incoming one is revealed above
+it by a feathered circle growing from the pointer, so the two schemes never
+cross-fade as two flat pages. `--scheme-wipe-radius` is a registered property,
+because a plain custom property is not animatable and the mask reads it — the
+whole reveal is that one length growing, and every other figure in it is stated
+once in `src/globals.css` under the `data-scheme-wipe` marker. The marker is
+what scopes it: those pseudo-elements belong to the document rather than to a
+component, so a navigation that is view-transitioned later must not inherit a
+theme wipe. The circle has to reach the viewport corner farthest from the press,
+or that corner never changes scheme, and the radius decelerates because the area
+it covers grows with the square — a linear one reads as acceleration.
+
+The wipe is `useColorMode`'s and not the control's, and `flushSync` inside it is
+load-bearing. A view transition captures the page the moment the update callback
+returns, and the scheme reaches two props by render — the tree's own scheme and
+the viewer's `themeType` — so without the flush the code and the file list would
+be captured in the old scheme and pop into place once the wipe had finished.
+That callback writes `data-color-scheme` itself for the same reason, rather than
+leave it to the effect that ordinarily maintains it; the effect then writes the
+same value a second time, which changes nothing. And resolving a mode to a
+scheme needs the platform's own answer, which the hook already holds: the
+control knows which mode it is asking for and cannot know whether that changes
+anything on screen.
+
+Three presses get no wipe, and each of them is a press that would pay for one
+and get nothing. A browser with no view transitions — Firefox ships none — and a
+reviewer who asks for reduced motion both apply the mode instantly. So does
+picking Light while Auto already resolves to light: the stored choice changes
+and the screen does not, and half a second of blocked rendering between two
+identical frames is the one cost with no reveal to show for it. Two generation
+counters carry the rest, because a press can supersede a wipe without starting
+one: `latestRequest` decides which press may still write the mode, and
+`latestWipe` owns the marker and the three lengths. One counter cannot do both
+jobs — an instant press would revoke the running wipe's claim on the cleanup and
+leave all four stranded on the document element.
+
 **A remembered setting is a jotai atom, and that is the whole of why it
 travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
 colour mode, the code font, the token, the watch list, the viewer's five
