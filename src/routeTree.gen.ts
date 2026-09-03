@@ -11,9 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
 import { Route as ApiFileRouteImport } from './routes/api/file'
 import { Route as GhSplatRouteImport } from './routes/gh/$'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as ApiAuthRefreshRouteImport } from './routes/api/auth/refresh'
+import { Route as ApiAuthSignoutRouteImport } from './routes/api/auth/signout'
+import { Route as ApiAuthStartRouteImport } from './routes/api/auth/start'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -24,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDiffRoute = ApiDiffRouteImport.update({
@@ -41,6 +51,26 @@ const GhSplatRoute = GhSplatRouteImport.update({
   path: '/gh/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
+  id: '/api/auth/callback',
+  path: '/api/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthRefreshRoute = ApiAuthRefreshRouteImport.update({
+  id: '/api/auth/refresh',
+  path: '/api/auth/refresh',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignoutRoute = ApiAuthSignoutRouteImport.update({
+  id: '/api/auth/signout',
+  path: '/api/auth/signout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthStartRoute = ApiAuthStartRouteImport.update({
+  id: '/api/auth/start',
+  path: '/api/auth/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
   path: '/api/rpc/$',
@@ -50,43 +80,96 @@ const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
   '/gh/$': typeof GhSplatRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/refresh': typeof ApiAuthRefreshRoute
+  '/api/auth/signout': typeof ApiAuthSignoutRoute
+  '/api/auth/start': typeof ApiAuthStartRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
   '/gh/$': typeof GhSplatRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/refresh': typeof ApiAuthRefreshRoute
+  '/api/auth/signout': typeof ApiAuthSignoutRoute
+  '/api/auth/start': typeof ApiAuthStartRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
   '/gh/$': typeof GhSplatRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/refresh': typeof ApiAuthRefreshRoute
+  '/api/auth/signout': typeof ApiAuthSignoutRoute
+  '/api/auth/start': typeof ApiAuthStartRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/api/diff' | '/api/file' | '/gh/$' | '/api/rpc/$'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/setup'
+    | '/api/diff'
+    | '/api/file'
+    | '/gh/$'
+    | '/api/auth/callback'
+    | '/api/auth/refresh'
+    | '/api/auth/signout'
+    | '/api/auth/start'
+    | '/api/rpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/api/diff' | '/api/file' | '/gh/$' | '/api/rpc/$'
+  to:
+    | '/'
+    | '/$'
+    | '/setup'
+    | '/api/diff'
+    | '/api/file'
+    | '/gh/$'
+    | '/api/auth/callback'
+    | '/api/auth/refresh'
+    | '/api/auth/signout'
+    | '/api/auth/start'
+    | '/api/rpc/$'
   id:
-    '__root__' | '/' | '/$' | '/api/diff' | '/api/file' | '/gh/$' | '/api/rpc/$'
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/setup'
+    | '/api/diff'
+    | '/api/file'
+    | '/gh/$'
+    | '/api/auth/callback'
+    | '/api/auth/refresh'
+    | '/api/auth/signout'
+    | '/api/auth/start'
+    | '/api/rpc/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  SetupRoute: typeof SetupRoute
   ApiDiffRoute: typeof ApiDiffRoute
   ApiFileRoute: typeof ApiFileRoute
   GhSplatRoute: typeof GhSplatRoute
+  ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
+  ApiAuthRefreshRoute: typeof ApiAuthRefreshRoute
+  ApiAuthSignoutRoute: typeof ApiAuthSignoutRoute
+  ApiAuthStartRoute: typeof ApiAuthStartRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
 }
 
@@ -104,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/diff': {
@@ -127,6 +217,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GhSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/callback': {
+      id: '/api/auth/callback'
+      path: '/api/auth/callback'
+      fullPath: '/api/auth/callback'
+      preLoaderRoute: typeof ApiAuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/refresh': {
+      id: '/api/auth/refresh'
+      path: '/api/auth/refresh'
+      fullPath: '/api/auth/refresh'
+      preLoaderRoute: typeof ApiAuthRefreshRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/signout': {
+      id: '/api/auth/signout'
+      path: '/api/auth/signout'
+      fullPath: '/api/auth/signout'
+      preLoaderRoute: typeof ApiAuthSignoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/start': {
+      id: '/api/auth/start'
+      path: '/api/auth/start'
+      fullPath: '/api/auth/start'
+      preLoaderRoute: typeof ApiAuthStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/rpc/$': {
       id: '/api/rpc/$'
       path: '/api/rpc/$'
@@ -140,9 +258,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  SetupRoute: SetupRoute,
   ApiDiffRoute: ApiDiffRoute,
   ApiFileRoute: ApiFileRoute,
   GhSplatRoute: GhSplatRoute,
+  ApiAuthCallbackRoute: ApiAuthCallbackRoute,
+  ApiAuthRefreshRoute: ApiAuthRefreshRoute,
+  ApiAuthSignoutRoute: ApiAuthSignoutRoute,
+  ApiAuthStartRoute: ApiAuthStartRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
 }
 export const routeTree = rootRouteImport

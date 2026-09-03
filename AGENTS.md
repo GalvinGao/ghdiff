@@ -12,6 +12,7 @@ implementation. ghdiff differs from it in three ways that matter:
 | File filter    | git status only                                    | preset path rules **and** git status **and** a path query |
 | Filter reach   | the file tree                                      | the file tree **and** the diff scroll region              |
 | Comments       | client state, discarded on reload                  | GitHub pull request review comments                       |
+| Auth           | none                                               | the ghdiff GitHub App, in a sealed `httpOnly` cookie      |
 | Item ownership | `initialItems` plus an imperative handle, streamed | controlled `items`, whole patch in state                  |
 
 ## The stack
@@ -47,21 +48,34 @@ src/
   routes/
     __root.tsx             the document, then AppShell: the left bar, then the page
     index.tsx              home: a box for any GitHub URL, and the watch list
+    setup.tsx              why a private diff will not load, as three steps
     $.tsx                  mirrors github.com paths: /owner/repo/pull/123
     gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff, as text/plain
     api/file.ts            one whole file, as text/plain
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
+    api/auth/start.ts      begins a sign-in: 302 to GitHub, handoff put aside
+    api/auth/callback.ts   GitHub's answer: the code spent, the session sealed
+    api/auth/refresh.ts    the one route that spends a refresh token
+    api/auth/signout.ts    revokes at GitHub, then drops both cookies
   components/              the left bar, the review surface, and their chrome
-  hooks/                   client state: token, color mode, patch, comments,
-                           pulls, pane widths, the URL fragment, the files a
-                           hunk expansion reads, and whether this is a phone
+  hooks/                   client state: the session, color mode, patch,
+                           comments, pulls, pane widths, the URL fragment, the
+                           files a hunk expansion reads, and whether this is a
+                           phone
   lib/                     pure domain logic, unit tested
   lib/githubUrls.ts        every address on github.com this app links to
+  lib/githubApp.ts         every address the ghdiff GitHub App has there
+  lib/session.ts           the cookies, the two clocks, and where a redirect may go
+  lib/installations.ts     how far an installation reaches, in words
+  lib/base64url.ts         both directions, for a cookie and for a `state`
+  lib/authFetch.ts         every call to this Worker, with one retry behind it
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
-  lib/server/              server-only: the GitHub client, and the KV counter
+  lib/server/              server-only: the GitHub client, the App's own three
+                           calls, the cipher half of the session, where the App
+                           is installed, the KV counter
 public/
   ghdiff.user.js           the userscript, copied to dist/client as it is
 ```
@@ -90,7 +104,15 @@ splat over the whole path, so `ghdiff.com/owner/repo/pull/123` is the github.com
 URL with the host swapped and nothing else. Every static route — `/` and each
 `/api/...` handler — outranks the splat, so adding a static route is safe and
 adding a top-level _page_ route is what would shadow a repository owner of that
-name. `src/routes/gh/$.tsx` is the old prefix and holds no component: its loader
+name. `/setup` is the one static **page** route besides `/`, and it is the case
+that rule is there to catch. `github.com/setup` is a real account — but ghdiff
+has no route for a user profile and never did, so
+`gitHubTargetFromSegments(['setup'])` answers with nothing and `/setup` was
+already a 404. It claims a dead address rather than shadowing one a reviewer
+could reach. Check that before adding another: a name GitHub serves a _diff_
+under is a name this app cannot take.
+
+`src/routes/gh/$.tsx` is the old prefix and holds no component: its loader
 throws a `redirect`, which keeps every link already written alive. `PullRail`
 reads through a leading `gh` segment for the one navigation the redirect takes.
 
@@ -270,6 +292,11 @@ exists: a `brightness` filter moves near-black and near-white by nothing, so the
 instead. A link inside a comment body is `text-accent` and reads as body text;
 its underline is what marks it.
 
+`/setup` is the screen that tests this rule hardest: three steps, each with an
+action of its own. Only the step that is actually next takes `solid`, and the
+other two take `outline` — two filled controls on one screen was the first thing
+a measurement of that page caught.
+
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
 `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and `useOpenPulls` once,
 above the bar and the page. Each of those reads browser storage, and a hook that
@@ -323,6 +350,18 @@ replaced the diff would cost them the scroll position, the filter and the
 fragment they had built up. An author's arrow keeps its space while it is
 invisible, or every heading would move as the pointer crossed the list.
 
+**A failure GitHub explained must reach the reviewer explained.** GitHub answers
+most failures with the useful sentence in the body's top-level `message` — "Not
+Found", "Bad credentials", the rate limit's own line. A **validation** failure
+is the exception: there `message` is only the status name, and the reason sits
+in `errors[].message`. Reading the top level alone is what put **Unprocessable
+Entity** in front of a reviewer who had tried to approve their own pull request,
+which is a true sentence and the least useful one available.
+`gitHubErrorMessage` in `src/lib/githubError.ts` takes the detail when there is
+one and changes nothing otherwise, and `githubError.test.ts` pins both halves —
+the 422 that has a reason, and the ordinary failures that must keep behaving as
+they did.
+
 **A review is a verdict, and it is one press.** `reviews.submit` posts to
 `/pulls/{n}/reviews` with GitHub's own `event`, and `src/lib/reviewDecision.ts`
 holds the three and the one rule that separates them: `REQUEST_CHANGES` and
@@ -335,6 +374,40 @@ is posted where it is written. A failure keeps the dialog open with GitHub's own
 sentence in it, because GitHub is the one that knows a reviewer cannot approve
 their own pull request. A verdict that lands reloads the open pull requests,
 since the review half of every row's square has just changed.
+
+**A grey button says why it is grey.** Two things stop a verdict, and they are
+not the same kind of thing. A missing note is the reviewer's to fix and clears
+the moment they type. Their own pull request never clears — GitHub refuses an
+approval and a change request from whoever opened it, and answers 422 if asked,
+which is how this was found: pressing **Approve** on your own pull request
+returned a bare "Unprocessable Entity". So `reviewBlock` in
+`src/lib/reviewDecision.ts` returns a reason rather than a boolean, and
+`own-pull-request` is asked before `needs-note`: on your own pull request a note
+would change nothing, and sending a reviewer to write one is sending them to do
+work for no result. `isOwnPullRequest` compares logins without case and answers
+no when either side is unknown, which is the safe default — it leaves all three
+offered and lets GitHub decide.
+
+The reason reaches the reviewer twice, because the two ways of reading a screen
+need different things. A standing line beside the buttons is real text in the
+DOM, so it is there without hovering and a screen reader gets it; only one
+shows, and ownership wins over the note because it is the fact that cannot be
+acted on. Per button, a `Tooltip` carries the precise sentence, and the button's
+own `aria-label` becomes its label plus that sentence — the tooltip's text is
+`aria-hidden`, so without that a screen reader is told a button is unavailable
+and never why.
+
+Two measurements shape those tooltips, and both were surprises. `buttonClass`
+sets `disabled:pointer-events-none`, which sounds like it would kill a CSS-only
+tooltip on a disabled control — it does not, because `Tooltip` hovers on the
+wrapper it puts around the control and the pointer passes straight through to
+it. And the buttons are the **last row of a scrolling dialog**, so `side`
+matters twice over: a label below them is outside the content box and gets
+clipped, and a centred label on the rightmost button hangs out the side — which
+turns into a horizontal scrollbar across the whole dialog, because a box with
+`overflow-y: auto` has an `overflow-x` of `auto` whether it asked for one or
+not. `top-end` plus `wide` is what keeps a sixty-character reason inside a 480px
+dialog, and it was verified by measuring all four edges rather than by looking.
 
 **A verdict already given is what the button says.** `reviews.mine` asks GraphQL
 for `viewerLatestReview`, the one field that answers "what did this token's own
@@ -359,6 +432,10 @@ once. That split is also what keeps `@/lib/server/github` out of the client
 bundle: the client is built from the **contract**, never from the router, so no
 import path leads from a hook to the GitHub client.
 
+No procedure takes a credential. The token is resolved once at the edge and
+handed down as context, and on the client side there is no context at all: the
+cookie is same-origin and the browser attaches it.
+
 An input carries a zod schema, because it arrives from a browser and is not
 trusted. An output carries `type<T>()`, which is a type and no runtime check:
 `PullSummary`, `PullDetails` and `CommentPayload` each already have one home in
@@ -374,6 +451,25 @@ first, on a runtime with neither the memory nor the CPU time to spare. It is
 also the one call whose HTTP status the client reads directly, for
 `describeReviewFailure`. `/api/file` is a route for the same reason and answers
 the same way; a source file is not much smaller than a patch.
+
+**A private diff is capped, and the cap is GitHub App's fault.** github.com's
+`.diff` host has no file or line limit and is the primary source — but it does
+not authenticate a user-to-server token, which was measured rather than assumed:
+a public pull request with no credential answers from `web-diff`, and the same
+route with a live `ghu_` token on a private pull request answers from
+`api-diff`. So a private diff gets the API's 300 files and 20000 lines, then
+`synthesizePatch`, which is where GitHub omits `patch` on its larger files — a
+162-file private pull request came back with 96 of them carrying no lines.
+
+Public diffs are unaffected, and private diffs inside the cap are complete. What
+a large private diff loses is content the personal access token used to fetch,
+and `describeSynthesisGaps` is what says so on screen. That is a known and
+accepted cost of shipping the App as the only credential path; the fallback for
+it is a follow-up, and the seam it will use already exists — a `Bearer` header
+still reaches the web host, and `resolveGitHubToken` honours one ahead of the
+cookie. Whatever that follow-up does, it must not put a token form back in front
+of a reviewer who has just finished authorizing an App: it asks only when a diff
+has actually hit the limit, and nowhere else.
 
 **The unmodified lines cost one request, and only for the new side.** A patch
 carries three lines of context around each change, and `@pierre/diffs` draws the
@@ -403,16 +499,16 @@ head belongs to a fork. A compare range typed across two forks addresses its
 head as `owner:branch`, which no source can read, so that one range gets no
 unmodified lines and says so.
 
-**Which source answers turns on the token, and only on the token.** A caller
+**Which source answers turns on the credential, and only on that.** A caller
 with none has sixty REST requests an hour and needs them for the comments and
 the pull request list, so its file comes from `raw.githubusercontent.com`, the
 host behind github.com's own **Raw** links, which spends none of them. A caller
-with a token has five thousand and may be reading a private repository, so its
-file comes from the contents API, which is the only one of the two that answers
-for one. One request per file either way, and the reviewer pays it once: the
-library hydrates the metadata object in place, and `items` keeps the same
-`fileDiff` reference through a filter change and a comment revision alike, so
-the lines stay expanded.
+with one has five thousand and may be reading a private repository, so its file
+comes from the contents API, which is the only one of the two that answers for
+one. One request per file either way, and the reviewer pays it once: the library
+hydrates the metadata object in place, and `items` keeps the same `fileDiff`
+reference through a filter change and a comment revision alike, so the lines
+stay expanded.
 
 **A big file is safe because each press is small.** The library reveals
 `expansionLineCount` lines — 100 — per press on a region larger than that, and
@@ -504,49 +600,99 @@ largest single page GitHub gives: REST caps `per_page` there and GraphQL caps
 loses is what nobody has touched. Raising it past 100 buys nothing without
 pagination.
 
-**The review and the check axes need a token.** `pulls.list` asks GraphQL for
-`reviewDecision` and the head commit's `statusCheckRollup`, which REST does not
-carry. GraphQL refuses an anonymous caller, so a caller with no token gets the
+**The review and the check axes need a credential.** `pulls.list` asks GraphQL
+for `reviewDecision` and the head commit's `statusCheckRollup`, which REST does
+not carry. GraphQL refuses an anonymous caller, so a signed-out caller gets the
 REST list and `PullSummary.status` stays **absent** — not `none`. Absent means
 "never asked", and `PullRow` leaves the square off the row rather than claim
 there is no review and no CI. It keeps the lane the square sits in, so the
 number after it starts on the same pixel either way.
 
-**A spent quota is one status, and the panel asks for a token.** GitHub reports
-the primary rate limit as 403 on `api.github.com` and as 429 on the web diff
-host, and a 403 is also its answer to an invisible repository and to a request
-that names no user agent. `rateLimitedStatus` in `src/lib/rateLimit.ts` reads
-`retry-after` and `x-ratelimit-remaining: 0` to tell those apart, and every
-throw in `src/lib/server/github.ts` reports 429 for a quota that is gone, so
-nothing downstream has to ask which 403 it holds. `describeReviewFailure` in
+**A spent quota is one status, and the panel asks for a sign-in.** GitHub
+reports the primary rate limit as 403 on `api.github.com` and as 429 on the web
+diff host, and a 403 is also its answer to an invisible repository and to a
+request that names no user agent. `rateLimitedStatus` in `src/lib/rateLimit.ts`
+reads `retry-after` and `x-ratelimit-remaining: 0` to tell those apart, and
+every throw in `src/lib/server/github.ts` reports 429 for a quota that is gone,
+so nothing downstream has to ask which 403 it holds. `describeReviewFailure` in
 `src/lib/reviewFailure.ts` then turns that status into the panel's copy and its
-button: an anonymous browser over the limit leads with **Add token**, because
-"Try again" against a spent anonymous quota does nothing for the rest of the
-hour while a token takes the ceiling from 60 requests to 5000 on the next one. A
-token that is itself over quota gets the retry alone — there is no second token
-to add. `ReviewStatusPanel` opens `GitHubTokenForm` in a dialog for that button,
-and closes it once GitHub answers for the token, because `useReviewPatch`
-depends on the token and has already started the reload behind it.
+button: a signed-out browser over the limit leads with **Sign in with GitHub**,
+because "Try again" against a spent anonymous quota does nothing for the rest of
+the hour while signing in takes the ceiling from 60 requests to 5000 on the next
+one. A signed-in reviewer over quota gets the retry alone — there is no second
+account to add, and the hour is all that is left. That button is one press and
+no dialog: `session.signIn()` leaves the site, and `returnTo` carries the
+fragment, so the sign-in comes back to the very lines the reviewer was reading.
 
 Not Found is the other failure with a fix, and the one that does not look like
 it has one. GitHub answers 404 both for a diff that is not there and for a diff
 the caller may not see, deliberately: an answer that told the two apart would
-confirm that a private repository exists. So the panel guesses out loud and
-offers the token either way. A browser with no token is told the repository is
-probably private and asked for one. A browser whose token cannot reach the
-repository is told the two usual reasons — a fine-grained token lists its
-repositories, and an organization behind SAML has to authorize the token — and
-its button reads **Update token**. `ReviewFailureAction` names the dialog and
-not the wording on the button; the panel takes that word from `token.hasToken`.
+confirm that a private repository exists. So the panel guesses out loud, and the
+guess turns on whether the reviewer is signed in.
+
+Signed out, the answer is the repository is probably private, and the fix is to
+sign in. Signed in, it is almost never the credential: the sign-in worked, and
+telling that reviewer to sign in again sends them to redo a step that already
+did what it could. It is the step a personal access token never had. A GitHub
+App reaches only the repositories it is **installed** on, so a signed-in 404
+means ghdiff is not installed on this one — `ReviewFailureAction` calls that
+`install`, and it leads to `/setup` rather than to github.com.
+
+**`/setup` is where a 404 gets answered instead of described.** A panel can say
+one sentence and offer one button. What it cannot do is answer the question
+behind the sentence, which is not "what went wrong" but "what is still missing"
+— and under a GitHub App two things can be, in a fixed order. Signed in with no
+installation reads exactly like signed out. An installation on the wrong account
+reads exactly like no installation at all. An installation whose chosen list is
+empty reads like success from every angle and still answers 404 for everything.
+
+So the page checks each in turn, and every step reports its own state from what
+GitHub answered rather than from what the reviewer was told to do — a step is
+done because it is done, and the rail cannot claim progress the App does not
+have. `installations.list` is what it asks: `GET /user/installations` is a
+user-to-server endpoint, so it answers for this token's own user and this App
+with no App-level JWT, and `src/lib/server/installations.ts` counts the reach of
+each chosen list with one further request apiece. That count is the whole point
+of the row — "installed" is the fact the reviewer already believes by the time
+they are reading it, and the figure beside it is what explains the 404 they are
+still getting. `describeInstallationReach` gives zero its own sentence for the
+same reason.
+
+Two callers, and they know different things. The review panel knows the path the
+diff would not load from and sends `from`, which also gives step three somewhere
+to go back to. `PullRequestList` knows only that a repository would not list and
+sends `account` — that list used to print GitHub's own "Could not resolve to a
+Repository" and stop, which was the least useful message in the app for the one
+condition a reviewer meets most. It still cannot say whether the repository is
+absent or merely unreachable, because GitHub deliberately answers both the same
+way, and it does not pretend to: it names the one cause that can be acted on. It
+offers that once, and only when signed in, and only when every failing row
+shares one owner — two accounts failing is a general question, and `undefined`
+is what asks it.
+
+Step three is a plain `<a>` and a whole page load, not a `Link`. The point of
+going back is a fresh request to GitHub under an installation that did not exist
+a minute ago. And nothing polls for step two: a reviewer installs in the other
+tab, comes back knowing they have finished, and presses **Check again**.
 
 **Copy on screen is spoken, not written.** Every line a reviewer reads — the
-error panels, the empty states, the token form, the buttons, the server's own
+error panels, the empty states, the account panel, the buttons, the server's own
 failures — says the likely cause and the next step and then stops. The comments
 in this repository are composed prose and stay that way; the interface is not. A
 reviewer meets a message when something has gone wrong, or when they do not yet
 know what to do, and a sentence they have to parse twice costs them more than it
-tells them. `agy -p` wrote the current wording against that brief. Write a new
-message the same way, not in the register of the code around it.
+tells them. `agy -p` wrote the current wording against that brief — every line
+of `/setup`, the four failure panels, the four sign-in failures in
+`githubApp.ts`, the reach captions in `installations.ts`, and the three
+entry-point labels. Write a new message the same way, not in the register of the
+code around it.
+
+Which is why no test asserts a whole sentence. `reviewFailure.test.ts` and
+`installations.test.ts` check the decision — which button appears, that zero is
+not a plural, that a signed-in reviewer is never told to sign in again — and
+match the message only against the fragment that carries its meaning. A test
+that pinned the prose would fail on every copy pass and would have said nothing
+about whether the panel offers the right thing.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list
@@ -624,9 +770,233 @@ no hidden control can hide files.
 `src/lib/filterRules.ts` and add its cases to `src/lib/filterRules.test.ts`. Do
 not put path parsing in a component.
 
-**The token never reaches the server's disk.** The browser holds the personal
-access token and sends it on the `Authorization` header of each request.
-`GITHUB_TOKEN` is honoured as a fallback for a single-user deployment.
+**The credential never reaches the server's disk, and no script can read it.** A
+reviewer signs in through the ghdiff GitHub App. What comes back is a
+user-to-server access token, good for eight hours, and a refresh token good for
+six months; both go into one `httpOnly` cookie the Worker seals with AES-256-GCM
+and hands to the browser. There is no session table, no per-reviewer record, and
+nothing kept between requests — a dump of everything this Worker persists is one
+KV key holding an integer, so `SESSION_SECRET` on its own opens nothing, because
+nothing sealed is stored anywhere for it to open.
+
+`httpOnly` is what the personal access token could not have. This app renders
+comment bodies that any GitHub user can write, through `rehype-sanitize`, and a
+credential in `localStorage` is one hole in that filter away from being read.
+
+`resolveGitHubToken` in `src/lib/server/github.ts` is where the three sources
+meet, most specific first: a `Bearer` header, then the sealed cookie, then
+`GITHUB_TOKEN`. The header wins because a caller that named a credential meant
+that one — which is what keeps curl and a script working with a personal access
+token even though nothing in the interface offers one. `GITHUB_TOKEN` is last,
+and it is a single-user deployment's way to skip the browser step entirely.
+
+It also answers `fromSession`, and that is the only thing that reads it: a
+viewer resolved from `GITHUB_TOKEN` has no sign-out to offer and one resolved
+from the cookie does, so `viewer.get` forwards it and the account menu draws the
+button from it rather than guessing from the viewer.
+
+`accessTokenUsable` is asked there **without** the refresh skew, and
+`accessTokenFresh` with it. They are two different questions. A token five
+minutes from its expiry still works, so the first says yes; the second is what
+the refresh route asks, and the skew is there because GitHub's clock and this
+Worker's are not the same clock. Answering the first question with the skew
+would drop a signed-in reviewer to anonymous for those five minutes.
+
+**A sealed cookie is guarded by six things, and none of them is a store.** Each
+is a few lines and none adds a dependency; `src/lib/session.ts` holds the ones
+with no cipher in them and `src/lib/server/session.ts` the rest.
+
+A **per-seal key**: `HKDF-SHA256` over `SESSION_SECRET` with sixteen fresh
+random bytes as the salt, and the salt travels in the cookie. One key never
+seals two cookies, so GCM's nonce-reuse cliff is not reachable even in
+principle.
+
+A **keyring, not a secret**: `SESSION_SECRET` parses as a comma-separated list.
+The first seals and every one of them is tried on the way in. GCM authenticates
+what it opens, so a wrong key simply fails and no key id has to travel — and a
+rotation costs nobody their session, where one key would sign out every reviewer
+at once. An unset secret answers with nothing, which is a deployment that serves
+public diffs and cannot sign anybody in; a secret that is set and is not a key
+throws, because that is a typo and a loud failure is what tells somebody so.
+
+The **`__Host-` prefix** on both cookie names. The browser enforces it:
+`Secure`, `Path=/`, and no `Domain` at all, so no subdomain of ghdiff.com can
+write the session cookie and none can fix a session onto a reviewer.
+`SameSite=Lax` plus `originAllowed` on every mutating route is the CSRF pair —
+the first for every browser that honours it, the second for the check that does
+not depend on one.
+
+An **absolute lifetime**. The payload carries `issuedAt` and a refresh carries
+it forward unchanged, so `SESSION_MAX_AGE_MS` is a ceiling and not a window that
+rolls. Thirty days, whatever GitHub's six months say.
+
+**Refresh reuse treated as theft.** Any failure but one clears the session.
+
+**Revocation at GitHub on sign-out.** `DELETE /applications/{client_id}/token`
+with the client id and secret as HTTP Basic, awaited inside the request rather
+than in `waitUntil`: a sign-out that reported success before the revocation
+landed would be reporting something it did not know. This is the answer to the
+one thing a session table is genuinely good for — GitHub **is** the session
+store, the reviewer can revoke ghdiff from their own settings page at any
+moment, and every cookie dies with it. Both cookies go whatever GitHub says: a
+revocation that failed leaves a token outliving its session, which is a shame,
+where a cookie surviving the press would leave a reviewer signed in after asking
+not to be.
+
+None of this stops a stolen cookie, and nothing here pretends to. A cookie is a
+bearer credential. What the six do is bound how long one lasts and give the
+reviewer one press that kills it.
+
+The split-key design — ciphertext in KV, half the key in a cookie and stored
+nowhere — is the right answer the day ghdiff keeps anything server-side per
+reviewer. Not before: there is nothing to keep, and KV is eventually consistent,
+so a refresh written in one location can be invisible in another for up to a
+minute. That is a session that breaks at random for a travelling reviewer, and
+strong consistency means a Durable Object, which this file already turned down
+for the served counter.
+
+**One route spends a refresh token, and the cookie is the single-flight.**
+GitHub's refresh token is single-use: spending it invalidates it and the access
+token beside it, and a second caller spending the same one gets nothing. A
+refresh folded into each request would race itself the first time a reviewer had
+two tabs open. So `/api/auth/refresh` is the only place, and two of its answers
+make the race harmless without a lock or a store.
+
+A refresh that is **not needed** answers 204 and writes no cookie. The tab that
+arrives a moment after another one refreshed finds a live token in the cookie
+the browser now holds, and is told there is nothing to do.
+
+A refresh GitHub refuses with `bad_refresh_token` **also** answers 204 and
+writes no cookie. That answer means somebody already spent this refresh token,
+and the overwhelmingly likely somebody is another tab whose new cookie the
+browser is holding right now — a cookie this request cannot see, because the
+browser sent the old one before the new one existed. So the route breaks nothing
+and lets the caller retry, and the retry carries the newer cookie. In the other
+case — a refresh token spent by somebody who should not have it — that retry
+gets 401 and the client stops there. The wrong guess costs one request; the
+opposite wrong guess would sign a reviewer out for having two tabs open.
+
+Inside one tab the same job is a promise. `withRefresh` in
+`src/lib/authFetch.ts` wraps every call this app makes to its own Worker: a 401
+asks `/api/auth/refresh` once, through one module-level promise however many
+requests hit 401 together, and then sends the request again. It takes a
+**function** and not a request, because sending reads a body and a body is a
+stream — the RPC link takes its `Request` apart and rebuilds it per attempt,
+which also sidesteps `worker-configuration.d.ts` putting Cloudflare's own
+generic `Request` in the global scope of a browser module.
+
+**No hook carries a credential any more.** The cookie is same-origin and the
+browser attaches it itself, so `useOpenPulls`, `usePullDetails`,
+`useSubmitReview`, `useReviewComments`, `useReviewPatch` and `useDiffFileLoader`
+each lost a `token` option, a dependency, and the chance of sending a stale one.
+`RpcContext` on the client is gone with them.
+
+`useGitHubSession` has no version counter either, and that is deliberate rather
+than an omission. A sign-in leaves the site and comes back to a fresh document.
+A sign-out calls `location.assign('/')` — the one moment when everything already
+fetched under a credential should stop being on screen, rather than re-render a
+private diff into an error panel. Neither press needs a hook told to re-run.
+
+**The one redirect nobody asked for, and the gate that keeps it rare.** An older
+build kept a reviewer's personal access token in browser storage under
+`ghdiff-github-token`. Nothing sends it any more, so it authenticates nothing —
+and honouring it for a release was the other plan and is wrong: the header beats
+the cookie in `resolveGitHubToken`, so a browser still sending an old token
+would go on using it after the reviewer had signed in, with no way to tell whose
+account their comments carried.
+
+So `useGitHubSession` deletes it. Not quietly, though, and this is the part
+worth getting right: **deleting it from storage revokes nothing.** That token is
+live at GitHub for whatever is left of the ninety days the old form asked for,
+and a reviewer who is never told it was there will leave it valid. Wording that
+called it cleared, revoked or safe would read as "the credential is dead" and
+produce exactly that outcome. So the first load after this change sends them to
+`/setup?migrated=true`, and `MigrationNotice` says the token is gone from this
+browser **and** that GitHub still accepts it, with a link to
+`personalAccessTokensUrl()`. Naming GitHub as the one that still accepts it is
+what shuts the wrong reading down — "it has been removed" alone invites "so it
+is dealt with".
+
+A notice on that page rather than a dialog over it. The page exists to explain
+this, so a modal would have to be dismissed before any of the three steps could
+be read — and it would take the revoke link with it, which is the one thing in
+there to act on.
+
+The gate is `heldLegacyToken` in `src/lib/legacyToken.ts` and nothing else,
+because ghdiff works signed out and an anonymous visitor pulled off the diff
+they asked for is a plain regression. Four readings, one of which moves:
+
+| The browser              | The key                                                             | What happens       |
+| ------------------------ | ------------------------------------------------------------------- | ------------------ |
+| never set a token        | absent                                                              | nothing            |
+| set one, then cleared it | absent — the old `writeStoredString(key, null)` called `removeItem` | nothing            |
+| set one and left it      | present                                                             | one redirect, ever |
+| refuses storage          | unreadable, and the read throws                                     | nothing            |
+
+An empty value is checked for as well, though nothing ever wrote one: the cost
+is one condition and the failure it prevents is a navigation nobody asked for.
+The key is deleted **before** the navigation, so a reviewer who presses back
+arrives at a browser with nothing left to migrate. `legacyToken.test.ts` is what
+holds all of that, and it is the anonymous rows it is really about.
+
+**Nothing signs in except `/setup`.** The home page row, the header control and
+the failure panel are all plain links to that page; `session.signIn()` has one
+caller left, which is step one of the page itself.
+
+That is one press more than going straight to GitHub, and it is the trade this
+app wants. Signing in is only the first of two things GitHub needs, and a
+control that jumped to GitHub left the second to be discovered later as a 404 —
+the exact confusion `/setup` exists to remove. It is also why none of those
+three says **Sign in with GitHub** any more: a button promising a redirect it
+does not make is a small lie, so each says where it goes.
+
+**The account popup manages accounts, not just the account.** A GitHub App keeps
+two facts apart: who a reviewer signed in as, which decides whose name their
+comments carry, and which accounts ghdiff is installed on, which decides what it
+can read at all. `GitHubAccountPanel` shows both — the identity, then every
+installation with its reach and a **Configure** link to GitHub's own settings
+for it, then a way to add another, then **Sign out**. A panel that showed only
+the first would answer the less useful of the two questions, and a reviewer
+would have to leave the diff to answer the other.
+
+It is only ever opened by somebody already signed in; both entries to it are
+drawn from the viewer, and a signed-out reviewer gets a link to `/setup`
+instead.
+
+`active` is not decoration. The Radix menu it sits in is unmounted while closed,
+so being rendered there is the same fact as being on screen — but `Dialog` is
+the platform's `<dialog>` and keeps its children mounted either way, so the home
+page's copy would spend two GitHub requests on every visit, opened or not. The
+menu passes `active`, the dialog passes its own `open`.
+
+Which row belongs to the diff on screen is read off the path by
+`useCurrentAccount`, the way the left bar reads the pull request it marks —
+nothing hands it down, and it is right over a review, the home page and a 404
+alike. `useCurrentPull` answers only for pull requests; this one answers for any
+target, because a commit and a compare range have owners too.
+
+`InstallationRow` is shared with `/setup` and takes its wrapper's classes from
+the caller. The page puts these on cards down a wide column and the popup puts
+them bare in about 296px; everything inside is the same at both widths and the
+box around them is not. Measured at 296px, a long organization name truncates
+rather than pushing **Configure** off the row. The reach caption is allowed to
+wrap to two lines there — "No repositories selected" is the line that explains a
+404 nothing else explains, and clipping it to fit would hide the one thing the
+row is for.
+
+It names no permissions. GitHub's own consent screen names every one the App
+asks for, it is the only authoritative statement of them, and a list here would
+be free to drift from the registration it described. The registration is written
+below instead.
+
+A sign-in that fails has nowhere to draw a panel — the callback is a redirect —
+so `authFailureUrl` puts the reason on the address as `ghdiff_auth`, the screen
+reads it once and takes it back out with `replaceState`, and the line appears
+under the home page's sign-in row or on the review screen's own notice strip.
+`authFailureMessage` uses `Object.hasOwn` and not `in`: the value arrives in the
+address bar where anybody can type one, and `in` walks the prototype chain, so
+`?ghdiff_auth=toString` would otherwise put a function's source on screen as a
+sentence.
 
 **Comments belong to their target.** A GitHub pull request is the only target
 with an upstream review thread, so only `supportsGitHubComments` targets post to
@@ -648,9 +1018,9 @@ depends on those.
 
 **Highlighting runs in workers.** `WorkerPoolProvider` wraps the whole app, and
 the viewer waits for `useWorkerPoolReady`. Shiki on the main thread was the
-whole cause of scroll stutter: on troph-team/lilja#584 it gave a p99 frame of
-135 ms with 9% of frames dropped, and the pool took that to a p99 of 17 ms with
-none dropped. Do not mount a `CodeView` outside the provider.
+whole cause of scroll stutter: on one large diff it gave a p99 frame of 135 ms
+with 9% of frames dropped, and the pool took that to a p99 of 17 ms with none
+dropped. Do not mount a `CodeView` outside the provider.
 
 Two settings keep that worker alive under Vite. The `Worker` constructor names
 `{ type: 'module' }`, because Vite otherwise builds a classic worker that
@@ -917,9 +1287,9 @@ headers hold the line the same way: `h-11` on each, stated twice.
 `wrangler.jsonc` sets `main` to `@tanstack/react-start/server-entry` and
 `compatibility_flags: ["nodejs_compat"]`. The flag buys two things this app
 needs: `AsyncLocalStorage` for the request logger, and a populated
-`process.env`, which is where `readGitHubToken` finds `GITHUB_TOKEN`. Locally
-that variable comes from `.dev.vars`; on Cloudflare it comes from a Worker
-secret.
+`process.env`, which is where `resolveGitHubToken` finds `GITHUB_TOKEN` and
+`readKeyring` finds `SESSION_SECRET`. Locally that variable comes from
+`.dev.vars`; on Cloudflare it comes from a Worker secret.
 
 `kv_namespaces` binds one namespace, `GHDIFF`, which is this app's own key-value
 store. It holds one key today, the one the footer's **Served** counter reads and
@@ -958,14 +1328,72 @@ explicit `.ts` extension**, and `allowImportingTsExtensions` is on in
 `tsconfig.json`. Only pure logic in `src/lib/` is unit tested; the surface is
 checked in a browser.
 
+## The GitHub App
+
+Two registrations, production and dev, so a laptop never holds the production
+secret. Each is registered with these **repository** permissions and no others.
+Metadata is mandatory on any App and GitHub grants it without being asked.
+
+| Permission      | Level          | What it is for                                       |
+| --------------- | -------------- | ---------------------------------------------------- |
+| Contents        | Read-only      | A commit or compare diff, and one file's whole text. |
+| Pull requests   | Read and write | A pull request's diff, its comments, its reviews.    |
+| Commit statuses | Read-only      | The check half of the status square.                 |
+| Checks          | Read-only      | The other half of it, via `statusCheckRollup`.       |
+
+This table is the whole of what a sign-in grants, and nothing in the code
+enforces it: a permission added at github.com and not added here is a permission
+granted with nothing written about it. The interface names none of them, on
+purpose — GitHub's consent screen is the authoritative statement, and a copy in
+a component would be free to drift from this one too.
+
+Two settings matter. **Request user authorization (OAuth) during installation**
+is on, so one press installs and authorizes together rather than making the
+reviewer do both. **User-to-server token expiration** is on, which is GitHub's
+default and its recommendation, and it is why `/api/auth/refresh` exists at all
+— turning it off would make GitHub answer with a token that states no life and
+no refresh token beside it, and `accessExpiresAt` absent is exactly that case.
+
+The callback URL is not configured here. `callbackUrl` derives it from the
+origin the request arrived on, so one App registered with both addresses serves
+ghdiff.com and a laptop alike and neither can be sent to the other's. Register
+`https://ghdiff.com/api/auth/callback` on the production App and
+`http://localhost:3000/api/auth/callback` on the dev one. GitHub compares the
+value against its own list, so an unregistered origin fails at GitHub with a
+sentence about the redirect URI rather than landing somewhere unexpected.
+
+PKCE is sent even though the exchange also carries the client secret. The code
+travels back through the reviewer's own browser and whatever sits in front of
+it, and `code_verifier` is the half of the pair that never leaves the Worker —
+so a code lifted out of a redirect, a log or a referrer cannot be spent by
+whoever lifted it.
+
 ## Environment
 
-| Variable       | Effect                                    |
-| -------------- | ----------------------------------------- |
-| `GITHUB_TOKEN` | Fallback token when the browser has none. |
+| Variable                   | Effect                                                      |
+| -------------------------- | ----------------------------------------------------------- |
+| `GITHUB_APP_CLIENT_ID`     | The App's client id. No App configured, no sign-in offered. |
+| `GITHUB_APP_CLIENT_SECRET` | Signs the code exchange, the refresh, and the revocation.   |
+| `GITHUB_APP_SLUG`          | The App's name in a URL, for the install link.              |
+| `SESSION_SECRET`           | Seals the session cookie. A comma-separated keyring.        |
+| `GITHUB_TOKEN`             | Fallback token when the request carries none.               |
 
-Put it in `.dev.vars` for `pnpm dev` and `pnpm preview`, and in a Worker secret
-(`pnpm exec wrangler secret put GITHUB_TOKEN`) for a deployment.
+All five are absent-tolerant except one: `SESSION_SECRET` set to something that
+is not a key throws, while unset simply means no sign-in. Generate one with
+
+```bash
+node -e "console.log(Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url'))"
+```
+
+Put them in `.dev.vars` for `pnpm dev` and `pnpm preview`, and in Worker secrets
+(`pnpm exec wrangler secret put <NAME>`) for a deployment. `.dev.vars.example`
+is the file to copy, and it says what each name is for.
+
+`.gitignore` covers `.dev.vars` and `.dev.vars.*`, and then names
+`!.dev.vars.example` as the one exception. The negation has to be that narrow: a
+broader one would stop ignoring `.dev.vars.production` as well, and wrangler
+reads `.dev.vars.<environment>` for real when `--env <environment>` is passed.
+Nothing loads the example, since nobody passes `--env example`.
 
 | Binding  | Effect                                             |
 | -------- | -------------------------------------------------- |

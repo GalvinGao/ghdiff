@@ -3,29 +3,36 @@ import { isRateLimited } from './rateLimit.ts';
 // What the review panel says, and which button it offers, when the diff does
 // not arrive.
 //
-// A rate limit is the one failure the reviewer can fix in the moment, and the
-// fix is not the one the panel used to offer. "Try again" against a spent
-// anonymous quota does nothing for the rest of the hour, while a token raises
-// the ceiling from 60 requests to 5000 and takes effect on the next request.
-// So a rate-limited browser with no token is asked for one, and "Try again"
-// steps back to being the second button on the row.
+// Two actions, not three. There used to be one for "sign in" and one for
+// "install", and they both now lead to `/setup` — the page that can tell those
+// two apart, because it asks GitHub which of them is missing instead of guessing
+// from a status code. So the panel offers one button and the wording is where the
+// difference lives.
 //
-// A token that is itself over quota gets "Try again" and nothing else: there is
-// no second token to add, and the wait is all that is left.
+// A rate limit is the one failure a reviewer can fix in the moment, and the fix
+// is not "Try again". Against a spent signed-out quota that does nothing for the
+// rest of the hour, while signing in raises the ceiling from 60 requests to 5,000
+// and takes effect on the next one. A signed-in reviewer over quota gets the
+// retry alone: there is no second account to add, and the wait is all there is.
 //
-// Not Found is the other failure with a fix, and it is the one that does not
-// look like it has one. GitHub answers 404 for a diff that is not there and for
-// a diff the caller is not allowed to see, on purpose: an answer that
-// distinguished them would confirm that a private repository exists. So "Not
-// Found" on a repository the reviewer knows is there means, almost always,
-// that the request could not prove who was asking — and that is a token.
+// Not Found is the other failure with a fix, and the one that does not look like
+// it has one. GitHub answers 404 for a diff that is not there and for a diff the
+// caller may not see, on purpose: an answer that told the two apart would confirm
+// that a private repository exists. So the copy turns on whether the reviewer is
+// signed in. Signed out, the likely cause is a private repository. Signed in, it
+// is almost never the credential — that worked — and telling them to sign in
+// again sends them to redo a step that already did what it could. It is the step
+// a personal access token never had: a GitHub App reaches only the repositories
+// it is installed on.
+//
+// Every line here was written by `agy -p` against this project's copy brief, not
+// in the register of the comments around it.
 
 /**
- * Which button the panel leads with. `add-token` opens the token dialog, and
- * the panel words it for whether there is a token there already: the reviewer
- * a 404 sends there usually has one that cannot reach this repository.
+ * Which button the panel leads with. `setup` goes to `/setup`, carrying the path
+ * the diff would not load from so that page can name the account.
  */
-export type ReviewFailureAction = 'add-token' | 'retry';
+export type ReviewFailureAction = 'setup' | 'retry';
 
 export interface ReviewFailure {
   action: ReviewFailureAction;
@@ -39,30 +46,31 @@ const FALLBACK_MESSAGE =
 const NOT_FOUND = 404;
 
 export function describeReviewFailure(input: {
-  hasToken: boolean;
+  /** Whether GitHub answered for a credential on this browser's requests. */
+  signedIn: boolean;
   /** What the server said, when it said anything. */
   message?: string;
   /** The status the request failed with. Absent for a network failure. */
   status?: number;
 }): ReviewFailure {
-  const { hasToken, message, status } = input;
+  const { signedIn, message, status } = input;
 
   if (isRateLimited(status)) {
     // GitHub's own body names an address and recommends authentication, which
     // is the right advice in the wrong voice: this panel can offer the button
     // instead of describing it. So the copy here replaces it.
-    return hasToken
+    return signedIn
       ? {
           action: 'retry',
           message:
-            'Your token ran out of GitHub requests for the hour. Wait a bit for it to refill, then try again.',
-          title: "You've hit your token limit",
+            'You used all 5,000 GitHub requests for this hour. Wait a few minutes for your limit to reset, then try again.',
+          title: 'Hourly GitHub rate limit reached',
         }
       : {
-          action: 'add-token',
+          action: 'setup',
           message:
-            'GitHub limits requests without a token to 60 per hour. Add a token to get 5,000 requests per hour.',
-          title: "You've hit GitHub's rate limit",
+            'GitHub limits unauthenticated requests to 60 per hour. Set up access to get 5,000 requests per hour immediately.',
+          title: 'GitHub rate limit reached',
         };
   }
 
@@ -70,18 +78,18 @@ export function describeReviewFailure(input: {
     // GitHub's own body is the single word "Not Found", which is true and
     // useless. What the reviewer needs is the reason it is the same word for
     // both cases, and the one thing they can do about it.
-    return hasToken
+    return signedIn
       ? {
-          action: 'add-token',
+          action: 'setup',
           message:
-            'Your token might not include this repo, or it may need SAML authorization. Try updating your token.',
-          title: 'Check your token permissions',
+            'GitHub returned Not Found because ghdiff is not installed on this repository or access is missing. Set up access to grant permission.',
+          title: 'ghdiff needs access to this repository',
         }
       : {
-          action: 'add-token',
+          action: 'setup',
           message:
-            "If this repo is private, GitHub won't show it without a personal access token. Add a token to view the diff.",
-          title: 'This repository might be private',
+            'GitHub returns Not Found for private repositories when you are signed out. Set up access to view this diff.',
+          title: 'Repository not found or private',
         };
   }
 

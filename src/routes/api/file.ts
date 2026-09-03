@@ -12,7 +12,7 @@ import {
   GitHubError,
   githubRaw,
   githubWebRaw,
-  readGitHubToken,
+  resolveGitHubToken,
 } from '@/lib/server/github';
 
 // One file's contents, as text/plain, at the commit the target's diff ends on.
@@ -135,7 +135,7 @@ const getFile = withEvlog(
       ref,
     });
 
-    const token = readGitHubToken(request);
+    const { token } = await resolveGitHubToken(request);
     log.set({
       authenticated: token != null,
       source: token == null ? 'web-raw' : 'api-contents',

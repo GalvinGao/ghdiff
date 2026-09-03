@@ -21,9 +21,8 @@ export function usePullDetails(options: {
   number?: number;
   owner?: string;
   repo?: string;
-  token?: string;
 }): PullDetailsState {
-  const { number, owner, repo, token } = options;
+  const { number, owner, repo } = options;
   const [data, setData] = useState<PullDetails | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
@@ -41,7 +40,7 @@ export function usePullDetails(options: {
       setData(
         await rpc.pulls.get(
           { number, owner, repo },
-          { context: { token }, signal: controller.signal }
+          { signal: controller.signal }
         )
       );
     } catch (cause) {
@@ -50,7 +49,7 @@ export function usePullDetails(options: {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [number, owner, repo, token]);
+  }, [number, owner, repo]);
 
   useEffect(() => {
     if (owner == null || repo == null || number == null) {

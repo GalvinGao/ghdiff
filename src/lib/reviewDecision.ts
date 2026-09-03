@@ -24,6 +24,13 @@ export interface ReviewEventSpec {
    * is nothing at all without the words. An approval needs none.
    */
   requiresBody: boolean;
+  /**
+   * Whether GitHub takes this verdict from the person who opened the pull
+   * request. It takes a comment and refuses the other two, and it answers a
+   * refusal with 422 — so this is what keeps the button from offering something
+   * GitHub will not do.
+   */
+  allowedOnOwn: boolean;
   /** The verdict in `state`, once GitHub has recorded it. */
   submittedState: string;
 }
@@ -34,6 +41,7 @@ export const REVIEW_EVENTS: readonly ReviewEventSpec[] = [
     label: 'Approve',
     pendingLabel: 'Approving…',
     requiresBody: false,
+    allowedOnOwn: false,
     submittedState: 'APPROVED',
   },
   {
@@ -41,6 +49,7 @@ export const REVIEW_EVENTS: readonly ReviewEventSpec[] = [
     label: 'Request changes',
     pendingLabel: 'Requesting…',
     requiresBody: true,
+    allowedOnOwn: false,
     submittedState: 'CHANGES_REQUESTED',
   },
   {
@@ -48,6 +57,7 @@ export const REVIEW_EVENTS: readonly ReviewEventSpec[] = [
     label: 'Comment',
     pendingLabel: 'Commenting…',
     requiresBody: true,
+    allowedOnOwn: true,
     submittedState: 'COMMENTED',
   },
 ];
@@ -61,12 +71,65 @@ export function reviewEventSpec(event: ReviewEvent): ReviewEventSpec {
 }
 
 /**
- * Whether this verdict can be sent with this body. The dialog asks before it
- * enables a button, so the reviewer is told by a disabled button rather than by
- * a 422 that arrives after they have committed to the words.
+ * Why a verdict cannot be sent, when it cannot.
+ *
+ * Two things stop one, and they are not the same kind of thing. A missing note
+ * is the reviewer's to fix and clears the moment they type. Their own pull
+ * request never clears — GitHub refuses an approval and a change request from
+ * the person who opened it, whatever they write.
+ *
+ * `own-pull-request` is asked first for exactly that reason: on your own pull
+ * request, `Approve` and `Request changes` are gone whether or not there is a
+ * note, so reporting the note would send a reviewer to write one that changes
+ * nothing. `Comment` is the one verdict GitHub does take on your own, so it
+ * falls through to the note rule like any other.
+ *
+ * This replaced a boolean. The boolean was enough to disable a button and not
+ * enough to say why, and a control that is grey for an unstated reason is a
+ * control a reviewer argues with. It also let the second rule go unwritten
+ * until GitHub answered a self-approval with a bare "Unprocessable Entity".
  */
-export function canSubmitReview(event: ReviewEvent, body: string): boolean {
-  return !reviewEventSpec(event).requiresBody || body.trim().length > 0;
+/**
+ * Whether the reviewer is the one who opened this pull request.
+ *
+ * GitHub compares logins without case, so this does too. Either side missing
+ * answers no, and that default is the safe one: it leaves all three verdicts
+ * offered and lets GitHub be the authority, where guessing yes would grey out
+ * two buttons on somebody else's pull request for no reason a reviewer could
+ * see.
+ */
+export function isOwnPullRequest(
+  author: string | undefined,
+  viewer: string | undefined
+): boolean {
+  if (author == null || viewer == null) return false;
+  return author.toLowerCase() === viewer.toLowerCase();
+}
+
+export type ReviewBlock = 'needs-note' | 'own-pull-request';
+
+export function reviewBlock(input: {
+  body: string;
+  event: ReviewEvent;
+  /** Whether the reviewer is the one who opened this pull request. */
+  ownPullRequest: boolean;
+}): ReviewBlock | undefined {
+  const spec = reviewEventSpec(input.event);
+  if (input.ownPullRequest && !spec.allowedOnOwn) return 'own-pull-request';
+  if (spec.requiresBody && input.body.trim().length === 0) return 'needs-note';
+  return undefined;
+}
+
+/**
+ * Whether this verdict can be sent. A thin reading of `reviewBlock`, for the
+ * callers that only need the yes or no.
+ */
+export function canSubmitReview(
+  event: ReviewEvent,
+  body: string,
+  ownPullRequest = false
+): boolean {
+  return reviewBlock({ body, event, ownPullRequest }) == null;
 }
 
 /**

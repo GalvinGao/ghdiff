@@ -36,9 +36,8 @@ export function useSubmitReview(options: {
   number?: number;
   owner?: string;
   repo?: string;
-  token?: string;
 }): SubmitReviewState {
-  const { number, owner, repo, token } = options;
+  const { number, owner, repo } = options;
   const [pending, setPending] = useState<ReviewEvent | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [submitted, setSubmitted] = useState<SubmittedReview | undefined>(
@@ -57,7 +56,7 @@ export function useSubmitReview(options: {
       try {
         const answer = await rpc.reviews.mine(
           { number, owner, repo },
-          { context: { token }, signal: controller.signal }
+          { signal: controller.signal }
         );
         if (!controller.signal.aborted) setLatest(answer.review);
       } catch {
@@ -65,7 +64,7 @@ export function useSubmitReview(options: {
       }
     })();
     return () => controller.abort();
-  }, [number, owner, repo, token]);
+  }, [number, owner, repo]);
 
   const submit = useCallback(
     async (event: ReviewEvent, body: string) => {
@@ -73,10 +72,13 @@ export function useSubmitReview(options: {
       setPending(event);
       setError(undefined);
       try {
-        const review = await rpc.reviews.submit(
-          { body, event, number, owner, repo },
-          { context: { token } }
-        );
+        const review = await rpc.reviews.submit({
+          body,
+          event,
+          number,
+          owner,
+          repo,
+        });
         setSubmitted(review);
         // The verdict just sent is now the verdict on record, and GitHub has
         // said so in its answer, so nothing is asked again to find that out.
@@ -93,7 +95,7 @@ export function useSubmitReview(options: {
         setPending(undefined);
       }
     },
-    [number, owner, repo, token]
+    [number, owner, repo]
   );
 
   // The verdict on record survives this, because it is a fact about the pull

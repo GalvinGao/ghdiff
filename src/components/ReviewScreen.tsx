@@ -52,7 +52,11 @@ import {
   EMPTY_FILTER_STATE,
   type ReviewFilterState,
 } from '@/lib/reviewFilter';
-import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
+import {
+  describeReviewTarget,
+  type ReviewTarget,
+  reviewTargetSplat,
+} from '@/lib/reviewTarget';
 import { COMMENT_AUTHOR_FILTER_STORAGE_KEY } from '@/lib/storageKeys';
 import { buildTreeStatIndex } from '@/lib/treeStats';
 
@@ -87,8 +91,8 @@ function defaultControls(isPhone: boolean): ViewerControls {
 
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // The left bar owns these, so the diff and the bar cannot disagree about who
-  // the token belongs to or which repositories are watched.
-  const { colorMode, pulls: openPulls, token, watched } = useAppData();
+  // the reviewer is signed in as or which repositories are watched.
+  const { colorMode, pulls: openPulls, session, watched } = useAppData();
   const workersReady = useWorkerPoolReady();
   const isPhone = useIsPhone();
   // Null until the reviewer touches a control, which is what lets the default
@@ -129,11 +133,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     ? authorFilter.value
     : DEFAULT_COMMENT_AUTHOR_FILTER;
 
-  const patch = useReviewPatch({
-    target,
-    token: token.token,
-    tokenReady: token.hydrated,
-  });
+  const patch = useReviewPatch({ target });
   // Depends on the three parts, not on the target: a server component hands the
   // target down, so its identity changes on every read of the RSC payload.
   const pullTarget = target.kind === 'github-pull' ? target : undefined;
@@ -141,22 +141,19 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     number: pullTarget?.number,
     owner: pullTarget?.owner,
     repo: pullTarget?.repo,
-    token: token.token,
   });
   const review = useSubmitReview({
     number: pullTarget?.number,
     owner: pullTarget?.owner,
     repo: pullTarget?.repo,
-    token: token.token,
   });
   // Only reached when a reviewer expands a hunk's unmodified lines, so it costs
   // nothing on a review nobody expands.
-  const files = useDiffFileLoader({ target, token: token.token });
+  const files = useDiffFileLoader({ target });
   const comments = useReviewComments({
     target,
     entries: patch.data.entries,
-    token: token.token,
-    viewerLogin: token.viewer?.login,
+    viewerLogin: session.viewer?.login,
     ready: patch.state === 'ready',
   });
 
@@ -413,7 +410,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         // A verdict changes the review half of the square the left bar draws on
         // every row, so the list it came from is asked again.
         onReviewSubmitted={openPulls.reload}
-        token={token}
+        session={session}
       />
 
       {patch.state === 'ready' && workersReady ? (
@@ -506,12 +503,25 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           state={patch.state === 'ready' ? 'starting' : patch.state}
           status={patch.status}
           target={target}
-          token={token}
+          targetPath={`/${reviewTargetSplat(target)}`}
+          session={session}
         />
       )}
 
       {patch.notice != null && (
         <ReviewNotice tone="muted">{patch.notice}</ReviewNotice>
+      )}
+      {/* A sign-in comes back to the diff it left from, so a sign-in that
+          failed has to say so here. It is the same strip a failed comment
+          lands on, and it is dismissable for the same reason: the diff is
+          still readable and the reviewer may simply press Sign in again. */}
+      {session.authError != null && session.authError !== dismissedError && (
+        <ReviewNotice
+          onDismiss={() => setDismissedError(session.authError)}
+          tone="error"
+        >
+          {session.authError}
+        </ReviewNotice>
       )}
       {comments.error != null && comments.error !== dismissedError && (
         <ReviewNotice

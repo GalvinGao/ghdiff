@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { withEvlog } from '@/lib/logger';
 import { router } from '@/lib/rpc/router';
-import { readGitHubToken } from '@/lib/server/github';
+import { resolveGitHubToken } from '@/lib/server/github';
 
 // Every JSON call the app makes, under one path. The diff is not here: it is a
 // patch of up to tens of megabytes that the route pipes straight from GitHub to
@@ -18,7 +18,7 @@ const handler = new RPCHandler(router);
 const serve = withEvlog(async ({ request }: { request: Request }) => {
   const { matched, response } = await handler.handle(request, {
     prefix: '/api/rpc',
-    context: { token: readGitHubToken(request) },
+    context: await resolveGitHubToken(request),
   });
   return matched
     ? response

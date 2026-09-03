@@ -7,7 +7,10 @@ import {
 } from 'react';
 
 import { type ColorModeState, useColorMode } from '@/hooks/useColorMode';
-import { type GitHubTokenState, useGitHubToken } from '@/hooks/useGitHubToken';
+import {
+  type GitHubSessionState,
+  useGitHubSession,
+} from '@/hooks/useGitHubSession';
 import { type OpenPullsState, useOpenPulls } from '@/hooks/useOpenPulls';
 import {
   useWatchedRepos,
@@ -16,17 +19,23 @@ import {
 
 // One owner for the state the whole app shares.
 //
-// The token, the colour mode and the watch list each live in browser storage,
-// and a hook that reads storage owns a copy of what it read. That was fine while
-// only one screen was mounted at a time. The left bar is now on every page, so
-// the bar and the page under it would hold two copies: adding a repository in
-// the home page's dialog would leave the bar listing the old set until a reload.
-// This provider mounts each hook once, above both.
+// The colour mode and the watch list each live in browser storage, and a hook
+// that reads storage owns a copy of what it read. That was fine while only one
+// screen was mounted at a time. The left bar is now on every page, so the bar and
+// the page under it would hold two copies: adding a repository in the home
+// page's dialog would leave the bar listing the old set until a reload. This
+// provider mounts each hook once, above both.
+//
+// The session is here for a different reason. It reads nothing from storage —
+// the credential is in a cookie the browser sends by itself — but asking GitHub
+// who this is costs a request, and one answer serves the account menu, the
+// review header and every screen that needs to know whose name a comment will
+// carry.
 
 export interface AppData {
   colorMode: ColorModeState;
   pulls: OpenPullsState;
-  token: GitHubTokenState;
+  session: GitHubSessionState;
   watched: WatchedReposState;
 }
 
@@ -34,12 +43,11 @@ const AppDataContext = createContext<AppData | null>(null);
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const colorMode = useColorMode();
-  const token = useGitHubToken();
+  const session = useGitHubSession();
   const watched = useWatchedRepos();
   const pulls = useOpenPulls({
-    ready: token.hydrated && watched.hydrated,
+    ready: watched.hydrated,
     repos: watched.repos,
-    token: token.token,
   });
 
   // The document's own answer to whether the left bar is there.
@@ -56,8 +64,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [watching]);
 
   const value = useMemo<AppData>(
-    () => ({ colorMode, pulls, token, watched }),
-    [colorMode, pulls, token, watched]
+    () => ({ colorMode, pulls, session, watched }),
+    [colorMode, pulls, session, watched]
   );
 
   return (

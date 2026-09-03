@@ -1,10 +1,9 @@
 import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
-import { useEffect, useState } from 'react';
+import { Link } from '@tanstack/react-router';
 
-import { GitHubTokenForm } from '@/components/GitHubTokenForm';
 import { Button } from '@/components/ui/Button';
-import { Dialog } from '@/components/ui/Dialog';
-import type { GitHubTokenState } from '@/hooks/useGitHubToken';
+import { buttonClass } from '@/components/ui/buttonClass';
+import type { GitHubSessionState } from '@/hooks/useGitHubSession';
 import { formatBytes } from '@/lib/byteSize';
 import { describeReviewFailure } from '@/lib/reviewFailure';
 import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
@@ -34,45 +33,40 @@ const COPY: Record<
  * waits is happening, because they fail for different reasons, and it offers a
  * button rather than a line of underlined text when one of them breaks.
  *
- * Which button it leads with is `describeReviewFailure`'s answer. A rate limit
- * with no token, and a Not Found either way, are the failures "Try again"
- * cannot mend, so those panels ask for a token instead and keep the retry as
- * the second control on the row.
+ * Which button it leads with is `describeReviewFailure`'s answer, and there are
+ * two. Anything a reviewer can fix by granting something leads to `/setup`, which
+ * is the one screen that asks GitHub whether the missing piece is the sign-in or
+ * the installation. Everything else keeps "Try again" as the only offer worth
+ * making.
  */
 export function ReviewStatusPanel({
   bytes,
   error,
   onRetry,
+  session,
   state,
   status,
   target,
-  token,
+  targetPath,
 }: {
   /** Patch bytes read so far, while the patch is still arriving. */
   bytes?: number;
   error?: string;
   onRetry(): void;
+  session: GitHubSessionState;
   state: ReviewLoadState;
+  /** Where the reviewer is, so the setup page knows which account to name. */
+  targetPath: string;
   /** The status the diff request failed with, when it failed with one. */
   status?: number;
   target: ReviewTarget;
-  token: GitHubTokenState;
 }) {
   const isError = state === 'error';
-  const [asking, setAsking] = useState(false);
   const failure = describeReviewFailure({
-    hasToken: token.hasToken,
+    signedIn: session.signedIn,
     message: error,
     status,
   });
-
-  // A token GitHub answers for is the end of this errand, and the diff is
-  // already reloading behind the dialog: `useReviewPatch` depends on the token,
-  // so saving one starts the request that this panel was standing in for. A
-  // token GitHub rejects leaves the dialog open, with the reason inside it.
-  useEffect(() => {
-    if (asking && token.viewer != null) setAsking(false);
-  }, [asking, token.viewer]);
 
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center p-8">
@@ -117,14 +111,23 @@ export function ReviewStatusPanel({
         </p>
         {isError && (
           <div className="mt-4 flex items-center justify-center gap-2">
-            {failure.action === 'add-token' && (
-              // The same dialog either way, and the word for what it is about
-              // to do. A reviewer a 404 sends here usually has a token already,
-              // one that cannot reach this repository, and `Add token` would
-              // read as an offer they had taken up.
-              <Button variant="solid" onClick={() => setAsking(true)}>
-                {token.hasToken ? 'Update token' : 'Add token'}
-              </Button>
+            {/* One button for both of the things that can be missing, because
+                the page it opens is the one that can tell them apart — it asks
+                GitHub which, rather than guessing from a status code. `from`
+                carries the path so that page can name the account, and step
+                three there leads straight back here. */}
+            {failure.action === 'setup' && (
+              <Link
+                className={buttonClass({ variant: 'solid' })}
+                search={{
+                  account: undefined,
+                  from: targetPath,
+                  migrated: undefined,
+                }}
+                to="/setup"
+              >
+                Set up repository access
+              </Link>
             )}
             <Button variant="outline" onClick={onRetry}>
               Try again
@@ -132,14 +135,6 @@ export function ReviewStatusPanel({
           </div>
         )}
       </section>
-
-      <Dialog
-        onClose={() => setAsking(false)}
-        open={asking}
-        title="GitHub token"
-      >
-        <GitHubTokenForm token={token} />
-      </Dialog>
     </div>
   );
 }

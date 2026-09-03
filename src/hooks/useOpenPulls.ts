@@ -29,17 +29,16 @@ function reposFromKey(key: string): WatchedRepo[] {
  * The open pull requests of the watched repositories. The left bar is on every
  * page, so this runs for the whole session and one instance feeds every list.
  *
- * `ready` holds the first request back until the browser has read the token and
- * the watch list out of storage. Without it the app asks GitHub anonymously,
- * gets an unauthenticated answer with no review or check state, and then asks
- * again a tick later.
+ * `ready` holds the first request back until the watch list has been read out of
+ * storage. Without it the app asks GitHub about no repositories at all, and then
+ * asks again a tick later. The credential needs no such wait: it is in a cookie
+ * the browser attaches itself.
  */
 export function useOpenPulls(options: {
   ready: boolean;
   repos: readonly WatchedRepo[];
-  token?: string;
 }): OpenPullsState {
-  const { ready, repos, token } = options;
+  const { ready, repos } = options;
   const [data, setData] = useState<OpenPullsData | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -64,7 +63,7 @@ export function useOpenPulls(options: {
       setData(
         await rpc.pulls.list(
           { repos: reposFromKey(repoKey) },
-          { context: { token }, signal: controller.signal }
+          { signal: controller.signal }
         )
       );
     } catch (cause) {
@@ -73,7 +72,7 @@ export function useOpenPulls(options: {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [repoKey, token]);
+  }, [repoKey]);
 
   useEffect(() => {
     if (!ready) return undefined;

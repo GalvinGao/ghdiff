@@ -6,6 +6,7 @@ import {
   type CommentPayload,
   gitHubSideFromAnnotation,
 } from '@/lib/comments';
+import { installUrl as buildInstallUrl } from '@/lib/githubApp';
 import { requestLog } from '@/lib/logger';
 import { toPullDetails } from '@/lib/pullDetails';
 import {
@@ -25,6 +26,8 @@ import {
   githubJson,
   githubWrite,
 } from '@/lib/server/github';
+import { readAppConfig } from '@/lib/server/githubApp';
+import { readInstallations } from '@/lib/server/installations';
 import { readServedCount } from '@/lib/server/servedCount';
 
 // The Worker's half of the contract. Nothing here is imported by the browser:
@@ -38,6 +41,8 @@ import { readServedCount } from '@/lib/server/servedCount';
  */
 export interface RpcContext {
   token?: string;
+  /** True when that token came out of the sealed session cookie. */
+  fromSession?: boolean;
 }
 
 const os = implement(contract).$context<RpcContext>();
@@ -99,11 +104,13 @@ function requireToken(token: string | undefined, action: string): string {
 
 const getViewer = os.viewer.get.handler(async ({ context }) => {
   const log = requestLog();
-  if (context.token == null) return { viewer: undefined };
+  const fromSession = context.fromSession === true;
+  if (context.token == null) return { viewer: undefined, fromSession };
   try {
     const user = await githubJson<GitHubUser>('/user', context.token);
     log.set({ outcome: 'ok', viewer: user.login });
     return {
+      fromSession,
       viewer: {
         login: user.login,
         avatarUrl: user.avatar_url,
@@ -112,7 +119,25 @@ const getViewer = os.viewer.get.handler(async ({ context }) => {
     };
   } catch (error) {
     log.set({ outcome: 'error' });
-    return fail(error, 'Could not verify this token.');
+    return fail(error, 'Could not check who you are signed in as.');
+  }
+});
+
+const listInstallations = os.installations.list.handler(async ({ context }) => {
+  const log = requestLog();
+  const app = readAppConfig();
+  const installUrl = app == null ? undefined : buildInstallUrl(app.slug);
+  if (context.token == null) {
+    log.set({ outcome: 'anonymous' });
+    return { installations: [], installUrl };
+  }
+  try {
+    const installations = await readInstallations(context.token);
+    log.set({ outcome: 'ok', installationCount: installations.length });
+    return { installations, installUrl };
+  } catch (error) {
+    log.set({ outcome: 'error' });
+    return fail(error, 'Could not read where ghdiff is installed.');
   }
 });
 
@@ -377,6 +402,7 @@ const getServedCount = os.stats.served.handler(async () => {
 });
 
 export const router = os.router({
+  installations: { list: listInstallations },
   viewer: { get: getViewer },
   pulls: { list: listPulls, get: getPull },
   stats: { served: getServedCount },

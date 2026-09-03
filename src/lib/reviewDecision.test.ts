@@ -4,6 +4,8 @@ import { describe, it } from 'node:test';
 import { reviewTone } from './pullStatus.ts';
 import {
   canSubmitReview,
+  isOwnPullRequest,
+  reviewBlock,
   describeSubmittedReview,
   REVIEW_EVENTS,
   reviewEventSpec,
@@ -105,5 +107,99 @@ describe('reviewVerdict', () => {
 
   it('answers with nothing when there is no review at all', () => {
     assert.equal(reviewVerdict(undefined), undefined);
+  });
+});
+
+describe('reviewBlock', () => {
+  const other = { ownPullRequest: false };
+  const own = { ownPullRequest: true };
+
+  it("lets an approval through with no note, on somebody else's", () => {
+    assert.equal(
+      reviewBlock({ ...other, event: 'APPROVE', body: '' }),
+      undefined
+    );
+  });
+
+  it('asks for a note before a change request or a comment', () => {
+    assert.equal(
+      reviewBlock({ ...other, event: 'REQUEST_CHANGES', body: '' }),
+      'needs-note'
+    );
+    assert.equal(
+      reviewBlock({ ...other, event: 'COMMENT', body: ' \n\t ' }),
+      'needs-note'
+    );
+    assert.equal(
+      reviewBlock({ ...other, event: 'COMMENT', body: 'looks fine' }),
+      undefined
+    );
+  });
+
+  it('refuses an approval and a change request on your own', () => {
+    // GitHub will not take either from the person who opened it, and answers a
+    // 422 if asked. This is what stops the button offering it.
+    assert.equal(
+      reviewBlock({ ...own, event: 'APPROVE', body: '' }),
+      'own-pull-request'
+    );
+    assert.equal(
+      reviewBlock({ ...own, event: 'REQUEST_CHANGES', body: 'do this' }),
+      'own-pull-request'
+    );
+  });
+
+  it('reports the ownership before the note, never the other way round', () => {
+    // The order is the whole point. A note would not help, so telling a
+    // reviewer to write one sends them to do work that changes nothing.
+    assert.equal(
+      reviewBlock({ ...own, event: 'REQUEST_CHANGES', body: '' }),
+      'own-pull-request'
+    );
+  });
+
+  it('still takes a comment on your own, once there is a note', () => {
+    // The one verdict GitHub allows on your own pull request.
+    assert.equal(
+      reviewBlock({ ...own, event: 'COMMENT', body: '' }),
+      'needs-note'
+    );
+    assert.equal(
+      reviewBlock({ ...own, event: 'COMMENT', body: 'noting this' }),
+      undefined
+    );
+  });
+
+  it('agrees with canSubmitReview everywhere', () => {
+    for (const event of ['APPROVE', 'REQUEST_CHANGES', 'COMMENT'] as const) {
+      for (const body of ['', 'a note']) {
+        for (const ownPullRequest of [false, true]) {
+          assert.equal(
+            canSubmitReview(event, body, ownPullRequest),
+            reviewBlock({ body, event, ownPullRequest }) == null,
+            `${event} body=${JSON.stringify(body)} own=${ownPullRequest}`
+          );
+        }
+      }
+    }
+  });
+});
+
+describe('isOwnPullRequest', () => {
+  it('matches whatever case either side is written in', () => {
+    assert.equal(isOwnPullRequest('GalvinGao', 'galvingao'), true);
+    assert.equal(isOwnPullRequest('galvingao', 'GALVINGAO'), true);
+  });
+
+  it('says no for a different author', () => {
+    assert.equal(isOwnPullRequest('somebody-else', 'GalvinGao'), false);
+  });
+
+  it('says no when either side is unknown', () => {
+    // The safe default. Guessing yes would grey out two buttons on somebody
+    // else's pull request, for a reason the reviewer could not see.
+    assert.equal(isOwnPullRequest(undefined, 'GalvinGao'), false);
+    assert.equal(isOwnPullRequest('GalvinGao', undefined), false);
+    assert.equal(isOwnPullRequest(undefined, undefined), false);
   });
 });

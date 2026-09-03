@@ -10,6 +10,10 @@ coverage/
 .env.local
 .dev.vars
 .dev.vars.*
+# The one exception, and it holds no value: it is the list of names a fresh
+# clone has to fill in. wrangler reads `.dev.vars.<environment>` only when
+# `--env <environment>` is passed, so nothing loads this by accident.
+!.dev.vars.example
 .env.*.local
 *.log
 .DS_Store
