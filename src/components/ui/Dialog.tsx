@@ -1,6 +1,7 @@
 import { IconXSquircle } from '@pierre/icons';
 import { type ReactNode, useEffect, useRef } from 'react';
 
+import { AnimatedHeight } from '@/components/ui/AnimatedHeight';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 
@@ -10,6 +11,37 @@ import { cn } from '@/lib/cn';
 // the top layer, which sits above every stacking context including a portaled
 // menu. Rebuilding those on a div would be a dependency or a pile of listeners,
 // and both would be worse than what the browser already has.
+//
+// What it does not bring is a sensible landing place. `showModal()` focuses the
+// first focusable thing it finds, and in every dialog here that is the close
+// button in the title bar — so the browser arrived with Enter bound to shutting
+// the window the reviewer had just opened. Two things outrank it, in this
+// order: the first field, because a dialog with one is a dialog you came to
+// type in, and then the control the dialog itself names with
+// `dialogPrimaryAction`.
+//
+// That naming is the caller's and cannot be inferred, which is the whole reason
+// for the attribute. Reading it off the accent — this app draws one filled
+// control per screen — would be right for the watch-list offer and wrong twice
+// over: `ReviewSubmitDialog` offers three verdicts and GitHub gives none of them
+// a default, and the account dialog's one button is **Sign out**. A rule that
+// guessed would bind Enter to signing the reviewer out.
+
+// Stated once, and spread by the caller, so the selector below and the markup
+// that answers it cannot come to disagree about the name.
+const PRIMARY_ATTRIBUTE = 'data-dialog-primary';
+
+/**
+ * Marks the control a dialog opens onto, which is the one Enter presses.
+ *
+ * Spread it onto that control: `<Button {...dialogPrimaryAction}>`. A dialog
+ * with a field of its own needs none of this — the field wins either way — and
+ * a dialog whose actions have no obvious default should name nothing rather
+ * than pick one.
+ */
+export const dialogPrimaryAction: Record<string, string> = {
+  [PRIMARY_ATTRIBUTE]: '',
+};
 
 interface DialogProps {
   children: ReactNode;
@@ -34,10 +66,15 @@ export function Dialog({
     if (element == null) return;
     if (open && !element.open) {
       element.showModal();
-      // Without this the browser lands on the first focusable thing, which is
-      // the close button, and Enter would then shut the dialog the reviewer
-      // just opened. The first field is what they came here to type in.
-      element.querySelector<HTMLElement>('input, textarea, select')?.focus();
+      // The field first, then the named action. Neither present leaves the
+      // browser's own answer, which is the close button — the right one for a
+      // dialog that is only there to be read. `focus()` on a disabled control
+      // does nothing and lands in the same place, which is also right: a
+      // primary action that cannot be pressed is not where Enter should go.
+      const target =
+        element.querySelector<HTMLElement>('input, textarea, select') ??
+        element.querySelector<HTMLElement>(`[${PRIMARY_ATTRIBUTE}]`);
+      target?.focus();
     } else if (!open && element.open) {
       element.close();
     }
@@ -77,7 +114,16 @@ export function Dialog({
           <IconXSquircle size={14} />
         </Button>
       </div>
-      <div className={cn('p-3', className)}>{children}</div>
+      {/* Every dialog travels between its content heights rather than snap
+          between them. A dialog is centred by `m-auto`, so a jump moves all
+          four of its edges at once and reads as a second window arriving in
+          place of the first — the offer going from its question to its answer,
+          a row leaving the watch list, a list of pull requests landing where a
+          skeleton was. The title bar stays outside this box: it is `sticky` and
+          the height being measured is the body's. */}
+      <AnimatedHeight>
+        <div className={cn('p-3', className)}>{children}</div>
+      </AnimatedHeight>
     </dialog>
   );
 }

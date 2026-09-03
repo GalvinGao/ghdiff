@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { Button } from '@/components/ui/Button';
-import { Dialog } from '@/components/ui/Dialog';
+import { Dialog, dialogPrimaryAction } from '@/components/ui/Dialog';
 import { usePreference, watchOfferPreference } from '@/hooks/preferences';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { describePullStatus, type PullReviewStatus } from '@/lib/pullStatus';
@@ -230,7 +230,12 @@ export function WatchOfferDialog({
             to the ghdiff home page.
           </p>
           <div className="mt-4 flex justify-end">
-            <Button size="md" variant="solid" onClick={close}>
+            <Button
+              {...dialogPrimaryAction}
+              size="md"
+              variant="solid"
+              onClick={close}
+            >
               Keep reviewing
             </Button>
           </div>
@@ -259,6 +264,7 @@ export function WatchOfferDialog({
                 scrollbar across the whole window. Nothing is lost to the clip:
                 the title above carries the same name, and it wraps. */}
             <Button
+              {...dialogPrimaryAction}
               className="min-w-0 shrink"
               size="md"
               variant="solid"

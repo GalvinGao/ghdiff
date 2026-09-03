@@ -19,6 +19,17 @@ import { cn } from '@/lib/cn';
 // content is the whole of what a reveal is. It clips then and not at rest: a
 // `focus-visible` ring in this app is drawn outside the control's own box, and a
 // permanent clip would cut the ring off the last row of a panel.
+//
+// One of these inside another is the ordinary case now that `Dialog` wraps every
+// dialog's body in one, and the inner box owns the travel. The outer would
+// otherwise chase it: a ResizeObserver reports the inner box's height on every
+// frame of its transition, so the outer would restart its own transition each
+// time and arrive late, easing an ease. So a box with an animating descendant
+// drops its transition and follows that frame by frame, which is
+// `has-[[data-animating]]` — `:has()` looks at descendants and never at self, so
+// the attribute this box sets on itself does not turn its own travel off. It is
+// the same division `PullRail` makes for a drag: the gesture writes the figure
+// and the transition stands aside.
 
 /** The length of the travel, stated once: the box's own `transitionDuration`
     reads it, and so does the timer that lifts the clip if no transition ran. */
@@ -98,6 +109,7 @@ export function AnimatedHeight({
       ref={boxRef}
       className={cn(
         'transition-[height] motion-reduce:transition-none',
+        'has-[[data-animating]]:transition-none',
         '[&[data-animating]]:overflow-hidden',
         className
       )}

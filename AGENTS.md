@@ -1563,6 +1563,42 @@ not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
 every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
 
+**What `showModal()` does not bring is a landing place.** It focuses the first
+focusable thing it finds, and in every dialog here that is the close button in
+the title bar — so the browser arrived with Enter bound to shutting the window
+the reviewer had just opened. Two things outrank it, in order: the first field,
+because a dialog with one is a dialog you came to type in, and then the control
+the dialog names with `dialogPrimaryAction`.
+
+That naming is the caller's and cannot be inferred, which is the whole reason
+for the attribute. Reading it off the accent — this app draws one filled control
+per screen — is right for the watch-list offer and wrong twice over:
+`ReviewSubmitDialog` offers three verdicts and GitHub gives none of them a
+default, and the account dialog's one button is **Sign out**. A rule that
+guessed would bind Enter to signing the reviewer out. So a dialog with no
+obvious default names nothing and keeps the close button, which is the right
+answer for a window that is only there to be read.
+
+**And every dialog travels between its content heights.** A dialog is centred by
+`m-auto`, so a jump moves all four edges at once and reads as a second window
+arriving in place of the first — the offer going from its question to its
+answer, a row leaving the watch list, a list of pull requests landing where a
+skeleton was. `Dialog` wraps its body in `AnimatedHeight` for all of them, and
+the sticky title bar stays outside that box: the height being measured is the
+body's.
+
+One `AnimatedHeight` inside another is the ordinary case now, because
+`GitHubAccountPanel` keeps its own around the installations alone — the identity
+line above it and **Sign out** below it should not move for an answer that
+arrives between them. The inner box owns the travel. The outer would otherwise
+chase it, since a ResizeObserver reports the inner height on every frame of its
+transition and the outer would restart its own each time, easing an ease. So a
+box with an animating descendant drops its transition and follows frame by
+frame, which is `has-[[data-animating]]` — `:has()` looks at descendants and
+never at self, so the attribute a box sets on itself does not turn its own
+travel off. It is the division `PullRail` already makes for a drag: the gesture
+writes the figure and the transition stands aside.
+
 **A skeleton is a guess at the answer's own shape, and the account panel guesses
 three.** The identity at the top of `GitHubAccountPanel` is on screen the moment
 the panel is, because the session already holds it; everything under the rule is
