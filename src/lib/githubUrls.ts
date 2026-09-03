@@ -66,7 +66,7 @@ export function reviewTargetUrl(target: ReviewTarget): string {
   const root = repoUrl(target);
   switch (target.kind) {
     case 'github-pull':
-      return `${root}/pull/${String(target.number)}`;
+      return `${root}/pull/${String(target.number)}${target.commitSha == null ? '' : `/commits/${target.commitSha}`}`;
     case 'github-commit':
       return commitUrl(target, target.sha);
     case 'github-compare':

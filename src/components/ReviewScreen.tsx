@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
+import { PullCommitNavigation } from '@/components/PullCommitNavigation';
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
 import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
@@ -21,9 +22,11 @@ import {
   viewerControlsPreference,
 } from '@/hooks/preferences';
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
+import { CommentDraftContext } from '@/hooks/useCommentDraft';
 import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
 import { useIsPhone } from '@/hooks/useIsPhone';
+import { usePullCommits } from '@/hooks/usePullCommits';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
@@ -40,16 +43,22 @@ import { cn } from '@/lib/cn';
 import {
   countCommentAuthors,
   filterCommentSections,
+  isBotLogin,
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
 import { reviewTargetUrl } from '@/lib/githubUrls';
+import {
+  createReviewCommentSession,
+  type ReviewCommentSession,
+} from '@/lib/reviewCommentSession';
 import {
   applyReviewFilter,
   availableStatuses,
   EMPTY_FILTER_STATE,
   type ReviewFilterState,
 } from '@/lib/reviewFilter';
+import { reviewTargetKey } from '@/lib/reviewTarget';
 import {
   describeReviewTarget,
   type ReviewTarget,
@@ -67,8 +76,14 @@ const ANCHOR_RANGE_ATTEMPTS = 4;
 const NO_ITEMS: ReadonlySet<string> = new Set<string>();
 
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
-  // The left bar owns these, so the diff and the bar cannot disagree about who
-  // the reviewer is signed in as or which repositories are watched.
+  const identity =
+    target.kind === 'github-pull'
+      ? reviewTargetKey({ ...target, commitSha: undefined })
+      : reviewTargetKey(target);
+  return <ReviewSession key={identity} target={target} />;
+}
+
+function ReviewSession({ target }: { target: ReviewTarget }) {
   const {
     codeFont,
     colorMode,
@@ -76,26 +91,138 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     session,
     watched,
   } = useAppData();
+  const isPhone = useIsPhone();
+  const { value: chosenControls, setValue: setControls } = usePreference(
+    viewerControlsPreference
+  );
+  const controls = chosenControls ?? defaultViewerControls(isPhone);
+  const [filesOpen, setFilesOpen] = useState(false);
+  const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
+  const [sessions] = useState(() => new Map<string, ReviewCommentSession>());
+  const scope = `${reviewTargetKey(target)}:${session.viewer?.login ?? 'anonymous'}`;
+  const commentSession = useMemo(() => {
+    let value = sessions.get(scope);
+    if (value == null) {
+      value = createReviewCommentSession();
+      sessions.set(scope, value);
+    }
+    return value;
+  }, [scope, sessions]);
+  const pullTarget =
+    target.kind === 'github-pull'
+      ? { ...target, commitSha: undefined }
+      : undefined;
+  const pull = usePullDetails({
+    number: pullTarget?.number,
+    owner: pullTarget?.owner,
+    repo: pullTarget?.repo,
+  });
+  const review = useSubmitReview({
+    number: pullTarget?.number,
+    owner: pullTarget?.owner,
+    repo: pullTarget?.repo,
+  });
+  const commits = usePullCommits(pullTarget);
+  const selectedSha =
+    target.kind === 'github-pull' ? target.commitSha : undefined;
+  const selectedAvailable =
+    selectedSha == null ||
+    commits.data?.commits.some((commit) => commit.sha === selectedSha) === true;
+  return (
+    <>
+      <ReviewHeader
+        codeFont={codeFont}
+        colorMode={colorMode}
+        controls={controls}
+        // The file list is a column of its own on every wider screen, which
+        // needs no control to show it. Handing these down only on a phone is
+        // what keeps that button off a screen that has no use for it.
+        filesOpen={isPhone ? filesOpen : undefined}
+        onToggleFiles={
+          isPhone ? () => setFilesOpen((open) => !open) : undefined
+        }
+        onControlsChange={setControls}
+        pull={pullTarget == null ? undefined : pull}
+        // PullRail renders nothing while the watch list is empty, and the bar's
+        // own name is the way home. The header takes that job over when the bar
+        // is away, so a review always has a route out of itself.
+        showBrand={watched.hydrated && watched.repos.length === 0}
+        review={pullTarget == null ? undefined : review}
+        targetLabel={describeReviewTarget(target)}
+        targetUrl={reviewTargetUrl(pullTarget ?? target)}
+        // A verdict changes the review half of the square the left bar draws on
+        // every row, so the list it came from is asked again.
+        onReviewSubmitted={openPulls.reload}
+        session={session}
+      />
+      {target.kind === 'github-pull' && (
+        <PullCommitNavigation target={target} commits={commits} />
+      )}
+      {selectedAvailable ? (
+        <CommentDraftContext value={commentSession.drafts}>
+          <ReviewWorkspace
+            key={scope}
+            target={target}
+            commentSession={commentSession}
+            filter={filter}
+            setFilter={setFilter}
+            filesOpen={filesOpen}
+            setFilesOpen={setFilesOpen}
+          />
+        </CommentDraftContext>
+      ) : (
+        <div className="text-ink-muted flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+          <p>
+            {commits.loading || (commits.data == null && commits.error == null)
+              ? 'Loading commit…'
+              : (commits.error ??
+                (commits.data?.truncated
+                  ? 'This commit is outside the available list. GitHub lists at most 250 commits.'
+                  : 'This commit is no longer in this pull request.'))}
+          </p>
+          <p className="text-ink-faint text-sm">
+            Choose another commit or All changes above.
+          </p>
+        </div>
+      )}
+    </>
+  );
+}
+
+function ReviewWorkspace({
+  target,
+  commentSession,
+  filter,
+  setFilter,
+  filesOpen,
+  setFilesOpen,
+}: {
+  target: ReviewTarget;
+  commentSession: ReviewCommentSession;
+  filter: ReviewFilterState;
+  setFilter(next: ReviewFilterState): void;
+  filesOpen: boolean;
+  setFilesOpen(next: boolean | ((current: boolean) => boolean)): void;
+}) {
+  // The left bar owns these, so the diff and the bar cannot disagree about who
+  // the reviewer is signed in as or which repositories are watched.
+  const { colorMode, session } = useAppData();
   const workersReady = useWorkerPoolReady();
   const isPhone = useIsPhone();
   // Null until the reviewer touches a control, which is what lets
   // `defaultViewerControls` follow the screen until then and stop following it
   // afterwards. The choice is remembered, so "until then" is the first press in
   // this browser and not the first press on this page.
-  const { value: chosenControls, setValue: setControls } = usePreference(
-    viewerControlsPreference
-  );
+  const { value: chosenControls } = usePreference(viewerControlsPreference);
   const controls = chosenControls ?? defaultViewerControls(isPhone);
   // The file list covers the diff on a phone instead of sitting beside it, so
   // it starts closed: the diff is what the reviewer came for.
-  const [filesOpen, setFilesOpen] = useState(false);
   // The files folded shut, by item id. This is its own state and not a reading
   // of which files are marked read, because the two answer different
   // questions: a file the reviewer has read and then opened again is still
   // read, and a file folded from the header's own chevron was never marked.
   const [collapsedItemIds, setCollapsedItemIds] =
     useState<ReadonlySet<string>>(NO_ITEMS);
-  const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
   // The comment failure the reviewer has already read and waved away.
@@ -124,24 +251,13 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   );
 
   const patch = useReviewPatch({ target });
-  // Depends on the three parts, not on the target: a server component hands the
-  // target down, so its identity changes on every read of the RSC payload.
-  const pullTarget = target.kind === 'github-pull' ? target : undefined;
-  const pull = usePullDetails({
-    number: pullTarget?.number,
-    owner: pullTarget?.owner,
-    repo: pullTarget?.repo,
-  });
-  const review = useSubmitReview({
-    number: pullTarget?.number,
-    owner: pullTarget?.owner,
-    repo: pullTarget?.repo,
-  });
   // Only reached when a reviewer expands a hunk's unmodified lines, so it costs
   // nothing on a review nobody expands.
   const files = useDiffFileLoader({ target });
   const comments = useReviewComments({
     target,
+    session: commentSession,
+    items: patch.data.items,
     entries: patch.data.entries,
     viewerLogin: session.viewer?.login,
     viewerAvatarUrl: session.viewer?.avatarUrl,
@@ -263,10 +379,16 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // Every thread in the diff, and the subset the sidebar lists. The counts come
   // from the whole set, so the buttons still say how many the other filter
   // holds while one of them is on.
-  const authorCounts = useMemo(
-    () => countCommentAuthors(commentSections),
-    [commentSections]
-  );
+  const authorCounts = useMemo(() => {
+    const counts = countCommentAuthors(commentSections);
+    for (const thread of comments.unplaced) {
+      const root = thread.comments[0];
+      counts[
+        (root.authorIsBot ?? isBotLogin(root.author)) ? 'bots' : 'people'
+      ]++;
+    }
+    return counts;
+  }, [commentSections, comments.unplaced]);
   const listedSections = useMemo(
     () => filterCommentSections(commentSections, authorMode),
     [authorMode, commentSections]
@@ -420,7 +542,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         behavior: 'smooth',
       });
     },
-    [anchor, openFile, selectActiveItem]
+    [anchor, openFile, selectActiveItem, setFilesOpen]
   );
 
   const handleSelectComment = useCallback(
@@ -440,7 +562,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         behavior: 'smooth-auto',
       });
     },
-    [openFile, selectActiveItem]
+    [openFile, selectActiveItem, setFilesOpen]
   );
 
   const handleCreateDraft = useCallback(
@@ -462,32 +584,6 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
 
   return (
     <>
-      <ReviewHeader
-        codeFont={codeFont}
-        colorMode={colorMode}
-        controls={controls}
-        // The file list is a column of its own on every wider screen, which
-        // needs no control to show it. Handing these down only on a phone is
-        // what keeps that button off a screen that has no use for it.
-        filesOpen={isPhone ? filesOpen : undefined}
-        onToggleFiles={
-          isPhone ? () => setFilesOpen((open) => !open) : undefined
-        }
-        onControlsChange={setControls}
-        pull={pullTarget == null ? undefined : pull}
-        // PullRail renders nothing while the watch list is empty, and the bar's
-        // own name is the way home. The header takes that job over when the bar
-        // is away, so a review always has a route out of itself.
-        showBrand={watched.hydrated && watched.repos.length === 0}
-        review={pullTarget == null ? undefined : review}
-        targetLabel={describeReviewTarget(target)}
-        targetUrl={reviewTargetUrl(target)}
-        // A verdict changes the review half of the square the left bar draws on
-        // every row, so the list it came from is asked again.
-        onReviewSubmitted={openPulls.reload}
-        session={session}
-      />
-
       {patch.state === 'ready' && workersReady ? (
         // The first column is a custom property rather than a fixed width,
         // because the drag writes that property straight onto this element and
@@ -531,6 +627,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             colorScheme={colorMode.scheme}
             commentSections={listedSections}
             commentStore={comments.store}
+            unplacedThreads={comments.unplaced.filter(
+              (thread) =>
+                authorMode == null ||
+                authorMode === 'all' ||
+                (thread.comments[0].authorIsBot ??
+                  isBotLogin(thread.comments[0].author)) ===
+                  (authorMode === 'bots')
+            )}
             entries={patch.data.entries}
             filter={filter}
             hiddenCount={filtered.hiddenCount}
@@ -557,27 +661,33 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
               width={sidebarWidth}
             />
           )}
-          <ReviewViewer
-            commentStore={comments.store}
-            controls={controls}
-            items={items}
-            loadDiffFiles={files.loadDiffFiles}
-            onCancelDraft={comments.removeComment}
-            onCreateDraft={handleCreateDraft}
-            onDeleteComment={comments.removeComment}
-            onReplyToThread={comments.replyToThread}
-            onSaveDraft={comments.saveDraft}
-            onScroll={onDiffScroll}
-            onSelectedLinesChange={handleSelectedLinesChange}
-            onToggleCollapsed={setCollapsed}
-            onToggleViewed={handleToggleViewed}
-            scrollRef={scrollRef}
-            selectedLines={selectedLines}
-            collapsedItemIds={collapsedItemIds}
-            themeType={colorMode.hydrated ? colorMode.mode : 'system'}
-            viewedItemIds={viewedFiles.viewed}
-            viewerRef={viewerRef}
-          />
+          {patch.data.entries.length === 0 ? (
+            <div className="text-ink-muted flex items-center justify-center p-6 text-sm">
+              No file changes in this diff.
+            </div>
+          ) : (
+            <ReviewViewer
+              commentStore={comments.store}
+              controls={controls}
+              items={items}
+              loadDiffFiles={files.loadDiffFiles}
+              onCancelDraft={comments.removeComment}
+              onCreateDraft={handleCreateDraft}
+              onDeleteComment={comments.removeComment}
+              onReplyToThread={comments.replyToThread}
+              onSaveDraft={comments.saveDraft}
+              onScroll={onDiffScroll}
+              onSelectedLinesChange={handleSelectedLinesChange}
+              onToggleCollapsed={setCollapsed}
+              onToggleViewed={handleToggleViewed}
+              scrollRef={scrollRef}
+              selectedLines={selectedLines}
+              collapsedItemIds={collapsedItemIds}
+              themeType={colorMode.hydrated ? colorMode.mode : 'system'}
+              viewedItemIds={viewedFiles.viewed}
+              viewerRef={viewerRef}
+            />
+          )}
         </div>
       ) : (
         <ReviewStatusPanel

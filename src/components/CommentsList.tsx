@@ -2,11 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { AuthorAvatar } from '@/components/AuthorAvatar';
+import { CommentBody } from '@/components/CommentBody';
 import { cn } from '@/lib/cn';
 import { commentPreviewText } from '@/lib/commentHeight';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
+import type { RawThread } from '@/lib/commentThreads';
 
 interface CommentsListProps {
+  unplacedThreads: readonly RawThread[];
   /** The thread the diff has selected. Its row is marked as the current one. */
   activeKey?: string;
   /** The heading of a group is the file's name, so it opens that file. */
@@ -54,6 +57,7 @@ const REVEAL_BORDER = 1;
 const REVEAL_SLACK = 1;
 
 export function CommentsList({
+  unplacedThreads,
   activeKey,
   onSelectFile,
   onSelectThread,
@@ -72,7 +76,7 @@ export function CommentsList({
     return `${String(digits + 1)}ch`;
   }, [sections]);
 
-  if (sections.length === 0) {
+  if (sections.length === 0 && unplacedThreads.length === 0) {
     return (
       <div className="text-ink-muted px-3 py-4 text-sm">
         <p>No comments here.</p>
@@ -161,6 +165,41 @@ export function CommentsList({
           </ul>
         </section>
       ))}
+      {unplacedThreads.length > 0 && (
+        <section className="border-line mt-2 border-t px-3 py-3">
+          <h3 className="text-ink-muted mb-2 text-xs font-medium">
+            Not in this diff
+          </h3>
+          {unplacedThreads.map((thread) => (
+            <details
+              key={thread.key}
+              className="border-line mb-2 rounded border p-2 text-xs"
+            >
+              <summary className="cursor-pointer break-all">
+                {thread.comments[0].path} · {thread.comments[0].author}
+              </summary>
+              {thread.comments.map((comment, index) => (
+                <div key={comment.githubId ?? index} className="mt-2">
+                  <p className="text-ink-muted mb-1">
+                    {comment.author}
+                    {comment.htmlUrl != null && (
+                      <a
+                        href={comment.htmlUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="ml-2 underline"
+                      >
+                        On GitHub
+                      </a>
+                    )}
+                  </p>
+                  <CommentBody body={comment.body} />
+                </div>
+              ))}
+            </details>
+          ))}
+        </section>
+      )}
     </div>
   );
 }

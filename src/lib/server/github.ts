@@ -280,6 +280,9 @@ export interface GitHubReview {
 }
 
 export interface GitHubReviewComment {
+  commit_id: string;
+  original_commit_id: string;
+  diff_hunk: string;
   id: number;
   path: string;
   body: string;
