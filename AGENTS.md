@@ -1490,6 +1490,67 @@ not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
 every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
 
+**A skeleton is a guess at the answer's own shape, and the account panel guesses
+three.** The identity at the top of `GitHubAccountPanel` is on screen the moment
+the panel is, because the session already holds it; everything under the rule is
+a request to GitHub, and that region is the one that waits. It used to wait as
+one line of text — **Checking GitHub accounts…** — which is the wrong length for
+every answer that follows it, so the panel jumped twice: once to the list and
+once again as the reviewer read it. `InstallationsSkeleton` draws the answer's
+shape instead: the two static lines of copy printed for real, three row
+placeholders, and the install control reserved.
+
+Three, because three is the shape this panel most often takes — a reviewer
+reading it is signed in, so their own account is installed, and the
+organizations they review for are the rest. A reviewer installed on three pays
+nothing at all for the guess: the region is already the height it needs, no
+transition runs, and every row lands on the pixel the placeholder was on.
+Measured, in the dialog and at the popup's 296px alike: a real row and a
+skeleton row are both 48px, and the whole region is 216.5px either way.
+
+That equality is a shared structure and not two sets of matching figures.
+`InstallationRow` and `InstallationRowSkeleton` sit in one file and share
+`ROW_CLASS`, `NAME_CLASS` and `REACH_CLASS`, because a skeleton whose numbers
+were copied would drift from the row it stands in for — and the drift is exactly
+the layout shift it exists to prevent. Each bar is an `inline-block` inside the
+row's own paragraph rather than a block in place of it, so the paragraph keeps
+the line box its sentence would have had: `0.75em` tall, `align-middle`, and
+20px and 16px of paragraph whichever it is.
+
+`answered` on `InstallationsState` is what chooses between the two. Empty
+`installations` means "GitHub has not answered" before the first answer and
+"installed nowhere" after it, and those are the two most different sentences in
+this panel — one is a wait and the other is the state that explains every 404.
+`loading` cannot stand in for it: it is false for the first paint of a panel
+that has not asked yet, which is how the "isn't installed on any account" line
+used to flash. It stays true through a `reload`, so a re-check keeps the list it
+is re-checking on screen.
+
+**A box whose content changes travels to its new height.** Three of the four
+answers above are not 216.5px — one account, five, none, or a failure — so
+`src/components/ui/AnimatedHeight.tsx` carries the region between them over
+200ms rather than snapping the dialog to a new size. `height: auto` is not an
+interpolable value, so CSS holds the timing here and never the two figures: a
+`ResizeObserver` measures the content and writes the px height onto the box, and
+React is told nothing, the way `useEdgeFade` and `usePaneWidth` write onto their
+own nodes.
+
+Four things in that are load-bearing. The **first** write needs no special case:
+it replaces `auto`, which a transition cannot start from, so a box arrives at
+the height of its first content in one frame. The box **clips only while a
+height is in flight** — a box shorter than its content is the whole of what a
+reveal is, and a permanent clip would cut the `focus-visible` ring off the last
+control in the panel, which is drawn outside its own box. A measurement of a box
+that is **not being displayed is thrown away**: `display: none` reports zero
+here, a closed `<dialog>` keeps its children mounted, and a pane hidden on a
+phone is hidden rather than unmounted — so without that test the region animated
+up from nothing on every open. And the clip has a **timer behind the
+`transitionend`**, because a transition that never runs never reports one.
+
+The easing is the pop-in curve and not the left bar's. `RAIL_TRANSITION_EASING`
+crests past 1, which on a width is a spring and on a clipping height is a strip
+of empty box opening below the content it is revealing.
+
 **A pane drag renders nothing.** `src/hooks/usePaneWidth.ts` writes every
 pointermove straight onto one custom property of the element that carries it,
 and tells React once, on pointerup. The layout and the handle's own placement
