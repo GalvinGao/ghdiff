@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router';
-import { type CSSProperties, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
@@ -346,39 +347,27 @@ export function PullListSkeleton() {
         {SKELETON_GROUPS.map((widths, groupIndex) => (
           <div key={groupIndex} className="pb-1">
             <div className="px-2 pt-2 pb-1">
-              <Bar className="h-2.5 w-[38%]" />
+              <SkeletonBar className="h-2.5 w-[38%]" />
             </div>
             <div className="px-2 pt-1 pb-0.5">
-              <Bar className="h-2.5 w-[24%]" />
+              <SkeletonBar className="h-2.5 w-[24%]" />
             </div>
             {widths.map((width, rowIndex) => (
               <div key={rowIndex} className="px-2 py-1.5">
                 <div className="flex items-center gap-1.5">
-                  <Bar className="size-3.5 rounded-sm" />
-                  <Bar className="h-3 w-8" />
-                  <Bar
+                  <SkeletonBar className="size-3.5 rounded-sm" />
+                  <SkeletonBar className="h-3 w-8" />
+                  <SkeletonBar
                     className="h-3 min-w-0 flex-1"
                     style={{ maxWidth: width }}
                   />
                 </div>
-                <Bar className="mt-1 h-2 w-[42%] opacity-70" />
+                <SkeletonBar className="mt-1 h-2 w-[42%] opacity-70" />
               </div>
             ))}
           </div>
         ))}
       </div>
     </div>
-  );
-}
-
-function Bar({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: CSSProperties;
-}) {
-  return (
-    <span className={cn('bg-line/70 block rounded', className)} style={style} />
   );
 }
