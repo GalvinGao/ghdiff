@@ -1,11 +1,7 @@
 import { implement, ORPCError } from '@orpc/server';
 
 import { contract } from './contract.ts';
-import {
-  annotationSideFromGitHub,
-  type CommentPayload,
-  gitHubSideFromAnnotation,
-} from '@/lib/comments';
+import { annotationSideFromGitHub, type CommentPayload } from '@/lib/comments';
 import { installUrl as buildInstallUrl } from '@/lib/githubApp';
 import { requestLog } from '@/lib/logger';
 import { toPullDetails } from '@/lib/pullDetails';
@@ -28,6 +24,11 @@ import {
 } from '@/lib/server/github';
 import { readAppConfig } from '@/lib/server/githubApp';
 import { readInstallations } from '@/lib/server/installations';
+import {
+  CommentInputError,
+  submitPullComment,
+} from '@/lib/server/pullComments';
+import { readPullCommits } from '@/lib/server/pullCommits';
 import { readServedCount } from '@/lib/server/servedCount';
 import { isFileViewed } from '@/lib/viewedFiles';
 
@@ -212,6 +213,23 @@ const getPull = os.pulls.get.handler(async ({ context, input }) => {
   }
 });
 
+const listPullCommits = os.pulls.commits.handler(async ({ context, input }) => {
+  try {
+    const result = await readPullCommits(
+      (path) => githubJson(path, context.token),
+      input
+    );
+    requestLog().set({
+      outcome: 'ok',
+      commitCount: result.commits.length,
+      truncated: result.truncated,
+    });
+    return result;
+  } catch (error) {
+    return fail(error, 'Could not load commits.');
+  }
+});
+
 const getMyReview = os.reviews.mine.handler(async ({ context, input }) => {
   const log = requestLog();
   const { number, owner, repo } = input;
@@ -296,11 +314,14 @@ const listComments = os.comments.list.handler(async ({ context, input }) => {
   log.set({ owner, repo, pull: number });
   try {
     const comments = await githubJson<GitHubReviewComment[]>(
-      `/repos/${owner}/${repo}/pulls/${number}/comments?per_page=100`,
+      `/repos/${owner}/${repo}/pulls/${number}/comments?per_page=100&page=${input.page}`,
       context.token
     );
     log.set({ outcome: 'ok', count: comments.length });
-    return comments.map(toPayload);
+    return {
+      comments: comments.map(toPayload),
+      nextPage: comments.length === 100 ? input.page + 1 : undefined,
+    };
   } catch (error) {
     return fail(error, 'Could not load comments.');
   }
@@ -313,69 +334,25 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
   const token = requireToken(context.token, 'comment');
 
   try {
-    // A reply names only the comment it answers. Everything else about where it
-    // lands, the path, the line, the side and the commit, comes from that
-    // comment, so a reply cannot drift off its thread.
-    if (input.replyToId != null) {
-      log.set({ replyToId: input.replyToId });
-      const reply = await githubWrite<GitHubReviewComment>(
-        'POST',
-        `/repos/${owner}/${repo}/pulls/${number}/comments/${String(input.replyToId)}/replies`,
-        token,
-        { body: input.body }
-      );
-      if (reply == null) {
-        throw new ORPCError('BAD_GATEWAY', {
-          status: 502,
-          message: 'GitHub accepted the reply but returned nothing.',
-        });
-      }
-      log.set({ outcome: 'replied', commentId: reply.id });
-      return toPayload(reply);
-    }
-
-    if (input.path == null || input.line == null) {
-      throw new ORPCError('BAD_REQUEST', {
-        status: 400,
-        message: 'This comment is missing a file or line number.',
-      });
-    }
-
-    // A review comment must name the commit it applies to.
-    const pullRequest = await githubJson<GitHubPullRequest>(
-      `/repos/${owner}/${repo}/pulls/${number}`,
-      token
+    const created = await submitPullComment(
+      input,
+      (path) => githubJson(path, token),
+      (path, body) =>
+        githubWrite<GitHubReviewComment>('POST', path, token, body)
     );
-
-    const created = await githubWrite<GitHubReviewComment>(
-      'POST',
-      `/repos/${owner}/${repo}/pulls/${number}/comments`,
-      token,
-      {
-        body: input.body,
-        commit_id: pullRequest.head.sha,
-        path: input.path,
-        line: input.line,
-        side: gitHubSideFromAnnotation(input.side ?? 'additions'),
-        ...(input.startLine != null && input.startLine !== input.line
-          ? {
-              start_line: input.startLine,
-              start_side: gitHubSideFromAnnotation(
-                input.startSide ?? 'additions'
-              ),
-            }
-          : {}),
-      }
-    );
-    if (created == null) {
+    if (created == null)
       throw new ORPCError('BAD_GATEWAY', {
         status: 502,
         message: 'GitHub accepted the comment but returned nothing.',
       });
-    }
     log.set({ outcome: 'created', commentId: created.id });
     return toPayload(created);
   } catch (error) {
+    if (error instanceof CommentInputError)
+      throw new ORPCError('BAD_REQUEST', {
+        status: 400,
+        message: error.message,
+      });
     if (error instanceof ORPCError) throw error;
     return fail(error, 'Could not post this comment.');
   }
@@ -488,7 +465,7 @@ const getServedCount = os.stats.served.handler(async () => {
 export const router = os.router({
   installations: { list: listInstallations },
   viewer: { get: getViewer },
-  pulls: { list: listPulls, get: getPull },
+  pulls: { list: listPulls, get: getPull, commits: listPullCommits },
   stats: { served: getServedCount },
   reviews: {
     mine: getMyReview,
@@ -509,8 +486,8 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
   const side = annotationSideFromGitHub(comment.side ?? 'RIGHT');
   // GitHub reports `line: null` for a comment whose line fell out of the diff
   // after a force push. `original_line` still points at where it was written.
-  const line = comment.line ?? comment.original_line ?? 1;
-  const startLine = comment.start_line ?? comment.original_start_line;
+  const line = comment.line;
+  const startLine = comment.start_line;
   return {
     githubId: comment.id,
     path: comment.path,
@@ -521,6 +498,11 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
     authorIsBot: comment.user?.type === 'Bot',
     body: comment.body,
     line,
+    commitSha: comment.commit_id,
+    originalCommitSha: comment.original_commit_id,
+    originalLine: comment.original_line,
+    originalStartLine: comment.original_start_line,
+    diffHunk: comment.diff_hunk,
     startLine: startLine ?? undefined,
     side,
     startSide:

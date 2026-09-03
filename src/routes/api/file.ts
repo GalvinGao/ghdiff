@@ -58,7 +58,7 @@ function textResponse(body: string, status: number): Response {
 function newSideRef(target: ReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
-      return `refs/pull/${target.number}/head`;
+      return target.commitSha ?? `refs/pull/${target.number}/head`;
     case 'github-commit':
       return target.sha;
     case 'github-compare':

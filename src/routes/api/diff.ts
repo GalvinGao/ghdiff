@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
+import { pullCommitDiffTarget } from '@/lib/pullCommits';
 import {
   type ReviewTarget,
   reviewTargetFromQuery,
@@ -22,6 +23,7 @@ import {
   pullFilesFetch,
   synthesizePatch,
 } from '@/lib/server/githubPatch';
+import { readPullCommits, requirePullCommit } from '@/lib/server/pullCommits';
 import { recordServe } from '@/lib/server/servedCount';
 
 // Returns the unified diff for one review target as text/plain.
@@ -138,6 +140,20 @@ async function gitHubResponse(
 ): Promise<Response> {
   const { token } = await resolveGitHubToken(request);
   log.set({ authenticated: token != null });
+  if (target.kind === 'github-pull' && target.commitSha != null) {
+    const commits = await readPullCommits(
+      (path) => githubJson(path, token),
+      target
+    );
+    try {
+      target = pullCommitDiffTarget(
+        target,
+        requirePullCommit(commits, target.commitSha)
+      );
+    } catch (error) {
+      throw new GitHubError(400, (error as Error).message);
+    }
+  }
   const failures: AttemptFailure[] = [];
 
   // 1. The web host. No file or line cap, and it streams.
