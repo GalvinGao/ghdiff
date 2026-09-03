@@ -5,6 +5,14 @@ import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 
 export interface InstallationsState {
   installations: readonly AppInstallation[];
+  /**
+   * Whether GitHub has answered at all yet. `installations` is empty before the
+   * first answer and empty for a reviewer installed nowhere, and those are two
+   * different things to put on screen — one is a wait and the other is the one
+   * state that explains every 404. It stays true through a `reload`, so a
+   * re-check keeps the list it is re-checking on screen.
+   */
+  answered: boolean;
   /** Where to install ghdiff, when this deployment has an App to install. */
   installUrl?: string;
   loading: boolean;
@@ -36,6 +44,7 @@ export function useInstallations(options: {
   const [installations, setInstallations] = useState<
     readonly AppInstallation[]
   >([]);
+  const [answered, setAnswered] = useState(false);
   const [installUrl, setInstallUrl] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -55,6 +64,7 @@ export function useInstallations(options: {
       if (controller.signal.aborted) return;
       setInstallations(result.installations);
       setInstallUrl(result.installUrl);
+      setAnswered(true);
       setError(undefined);
     } catch (cause) {
       if (controller.signal.aborted) return;
@@ -71,5 +81,5 @@ export function useInstallations(options: {
     return () => controllerRef.current?.abort();
   }, [load]);
 
-  return { installations, installUrl, loading, error, reload: load };
+  return { answered, installations, installUrl, loading, error, reload: load };
 }
