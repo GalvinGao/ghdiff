@@ -59,11 +59,12 @@ src/
     api/auth/refresh.ts    the one route that spends a refresh token
     api/auth/signout.ts    revokes at GitHub, then drops both cookies
   components/              the left bar, the review surface, and their chrome
-  hooks/                   client state: the session, color mode, patch,
-                           comments, pulls, pane widths, the URL fragment, the
-                           files a hunk expansion reads, and whether this is a
-                           phone
+  hooks/                   client state: the session, patch, comments, pulls,
+                           the URL fragment, the files a hunk expansion reads,
+                           and whether this is a phone
+  hooks/preferences.ts     every remembered setting, as one jotai atom each
   lib/                     pure domain logic, unit tested
+  lib/preferences.ts       what each of those settings is, and how it is stored
   lib/githubUrls.ts        every address on github.com this app links to
   lib/githubApp.ts         every address the ghdiff GitHub App has there
   lib/session.ts           the cookies, the two clocks, and where a redirect may go
@@ -297,12 +298,98 @@ action of its own. Only the step that is actually next takes `solid`, and the
 other two take `outline` — two filled controls on one screen was the first thing
 a measurement of that page caught.
 
+**The code font is a choice; the interface font is not.** A review is almost
+entirely code, so `--app-font-mono` is the one typeface worth offering — it sets
+the diff's own lines, the paths in the tree and the comment list, and every sha
+on screen. `src/lib/codeFonts.ts` holds the choices and their whole stacks, and
+`useCodeFont` applies one by setting that property on the document element,
+which is the same element `:root` matches, so the inline value wins over the
+stylesheet's default. `--app-font-mono-system` is the platform's own mono, and
+every stack ends in it: a face that fails to download still leaves a monospace
+behind it, and the system stack is written once. The control is a radio group in
+the review header's display menu, where each row is drawn in the face it names,
+because what a typeface looks like is the whole of what the choice is about.
+
+**The diff has to be told, because it draws in a shadow root.** `@pierre/diffs`
+reads `--diffs-font-family` and falls back to a stack of its own that happens to
+be the same one, so changing `--app-font-mono` alone moved the chrome and left
+the code as it was. `:root` in `src/globals.css` now points both of the
+library's properties at the app's two, which carries the reviewer's choice into
+the code and leaves one statement of each face rather than two free to drift.
+
+**Every face the selector offers advances 0.6em, and that is load-bearing.** The
+viewer measures the width of `0` once — `Metrics.init()` returns early on every
+call after the first, and its `document.fonts.ready` re-measure is a one-shot —
+so a face picked mid-review lays the diff out against the figure taken from the
+face before it. SF Mono, JetBrains Mono, Geist Mono and Fira Code all measure
+7.80px at 13px, which is why a switch needs no remount and why wrap points,
+selection rectangles and the horizontal extent all stay correct. Verified on
+ghostty-org/ghostty v1.3.0...v1.3.1, split and unified, wrapped and scrolled: no
+element overflowed. **A candidate whose advance is not 0.6em cannot simply be
+added to `CODE_FONTS`** — it needs the `CodeView` remounted on the change, and a
+remount costs the reviewer their scroll position.
+
+**Those three faces cost bytes only when one is picked.** Each is a fontsource
+**variable** package, so one file covers the weight range shiki and the chrome
+both draw from; a static package would cost a download per weight. `globals.css`
+imports all three statically, which is a couple of kilobytes of `@font-face`
+rules split by `unicode-range` and not one byte of woff2 until a face is chosen
+— the browser fetches a subset only when it has a character to draw with it. A
+face picked mid-review fetches exactly one file, the 40 KB latin subset. Lazily
+importing a stylesheet per press was the other answer and it loses: it arrives
+after the diff has already measured itself. None of it reaches the Worker, which
+is built from the modules and never from this stylesheet.
+
+**And the first paint has to be the chosen face, not just the chosen colour.**
+`CodeFontScript` sits beside `ColorModeScript` in the document head for a reason
+the colour scheme does not have: the measurement above is taken from whatever is
+on screen when the viewer initializes, so a face applied after mount is a layout
+computed against the wrong one. The script and the hook both read their stacks
+out of `codeFonts.ts`, so they cannot come to disagree about what a choice
+means.
+
+**A remembered setting is a jotai atom, and that is the whole of why it
+travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
+colour mode, the code font, the token, the watch list, the viewer's five
+controls, the bar's collapse, the two pane widths, and the comment author filter
+— as a key, a fallback, and the two directions between the value and the one
+string a browser can hold. `src/hooks/preferences.ts` turns each of those into
+one `atomWithStorage`, and `usePreference` is how a hook reads it.
+
+Three things follow, and each of them was a rule or a bug before it. The store
+is the owner, so two callers of a setting cannot come to disagree. A `storage`
+event is what one tab hears when another writes, so a reviewer with four tabs
+open changes the code font once — verified live for all nine, sign-out included.
+And a setting is `undefined` until the browser's copy has been read, which is
+where `hydrated` comes from: storage is read on mount and never during a render,
+so the server's markup and the first client render agree, and an unread watch
+list is not an empty one.
+
+Add a setting by adding its codec to `src/lib/preferences.ts` and its atom
+beside the others, then reading it with `usePreference`. The encodings there are
+the ones already deployed and are not free to change: a reviewer's stored value
+has to go on reading across a deploy, and three of those keys are read before
+the first paint by a script in the document head. `src/lib/preferences.test.ts`
+is where a new codec proves it can refuse what an older build wrote.
+
+Two settings are not settings and stay where they are. The comments and the
+viewed-file marks a browser keeps are per target, they are content rather than a
+preference, and `useReviewComments` and `useViewedFiles` go on reading their own
+key through `readStoredJson`.
+
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
-`useColorMode`, `useGitHubToken`, `useWatchedRepos`, and `useOpenPulls` once,
-above the bar and the page. Each of those reads browser storage, and a hook that
-reads storage owns a copy of what it read: two instances would let the bar and
-the page disagree about the token or the watch list. Call `useAppData()`; never
-call those four hooks in a screen.
+`useCodeFont`, `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and
+`useOpenPulls` once, above the bar and the page. Four of those now read an atom
+and could safely be called anywhere; `useOpenPulls` is the one that could not,
+because it is a request to GitHub and mounting it twice asks GitHub twice. So
+the rule stands as it was: call `useAppData()`, and do not call those five hooks
+in a screen.
+
+jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
+the Worker rather than for the browser. Without it every atom would resolve
+against one store held by the module, and a Worker isolate serves many requests
+in turn: a value written while one page rendered would be a value the next
+reader inherited.
 
 **The pull request list is repository, then author, then stack.**
 `groupPullsByRepo` in `src/lib/pulls.ts` produces that shape, `buildPullStacks`
@@ -510,14 +597,22 @@ hydrates the metadata object in place, and `items` keeps the same `fileDiff`
 reference through a filter change and a comment revision alike, so the lines
 stay expanded.
 
-**A big file is safe because each press is small.** The library reveals
-`expansionLineCount` lines — 100 — per press on a region larger than that, and
-it hides its own **Expand all** control, so the visible affordance is the
-bounded one; a shift-click is what asks for the whole region. Above 100 000
-lines it stops highlighting rather than tokenizing forever, and the virtualizer
-lays out what it needs. So the only limit worth stating is the byte one, and
-`MAX_FILE_BYTES` is 4 MiB. Verified with a 3 MB, 54 434-line file expanded end
-to end — split and unified — which laid out to a million pixels and scrolled.
+**A big file is safe because the limits hold, which is why the header can offer
+the whole of it.** The library reveals `expansionLineCount` lines — 100 — per
+press on a region larger than that, and it hides its own **Expand all** control
+on the separator, so the separator's visible affordance is the bounded one; a
+shift-click is what asks for the whole region there. `ExpandFileButton` in
+`ReviewViewer` is the unbounded press, beside the file's name where github.com
+puts the same control: it sends the library's own shift-click call —
+`expandHunk` with an infinite count, which each region clamps to its own size —
+to every gap and to the tail, one file per press and never the diff. It appears
+only where there is something to reveal, `change` and `rename-changed`: a new or
+deleted file arrives whole, and a pure rename has no lines at all. Above 100 000
+lines the library stops highlighting rather than tokenizing forever, and the
+virtualizer lays out what it needs. So the only limit worth stating is the byte
+one, and `MAX_FILE_BYTES` is 4 MiB. Verified with a 3 MB, 54 434-line file
+expanded end to end — split and unified — which laid out to a million pixels and
+scrolled.
 
 **Both ends hold that limit, because neither one can hold it alone.**
 `content-length` counts the bytes on the wire, and GitHub compresses: 4.8 MB of
@@ -532,6 +627,34 @@ always holds: the browser is where a file becomes a string, and the string is
 the cost the limit is about. Both ends read `MAX_FILE_BYTES` and
 `FILE_TOO_LARGE` from `src/lib/diffHydration.ts`, so they cannot come to differ
 about the figure or the sentence.
+
+**A changed line that says less than its colour claims is dimmed, and never
+hidden.** `findLineMarks` in `src/lib/lineMarks.ts` reads each file's own change
+blocks and names the pairs whose two sides differ only in whitespace — the
+`git diff -w` rule — which are a formatting pass, so both sides go quiet. All of
+it is text arithmetic over the patch, ready at parse time, and honest about its
+limit: this is not SemanticDiff's syntax tree, and `0x80` against `128` still
+reads as a change. Dim and never hide, because a hidden line would break the
+promise this app is built on — a comment anchored to GitHub's own diff lines —
+where a dim one can still be read, selected and commented on.
+
+**The marks travel through the one per-line door the viewer has.**
+`@pierre/diffs` draws each file in a shadow root and has no line-decoration
+option, but `onPostRender` hands over the file's container after every render
+pass, and `unsafeCSS` installs a stylesheet inside the root. So `applyLineMarks`
+in `src/components/diffLineMarks.ts` stamps `data-ghdiff-quiet` onto the rows
+each pass just built — matched by the library's own `data-line` and
+`data-line-type`, in split and unified alike — and `LINE_MARKS_CSS` says what
+the stamp looks like. A pass renders only the virtualized window, so a walk
+touches tens of rows, and it re-runs because the next pass rebuilds them. The
+display-menu switch costs no render at all: the stamps stay, and
+`--ghdiff-quiet-opacity` — a custom property set beside the viewer and inherited
+through the shadow boundary — is the whole toggle, the same trick `usePaneWidth`
+plays. Marks are cached in a WeakMap per metadata object, which hydration
+mutates in place and a filter change reuses, so an entry cannot go stale.
+`fileDiffCache` is protected in the library's types and a plain getter at
+runtime; the cast in `ReviewViewer` is the one place that leans on it, and a
+library upgrade must re-check it.
 
 One thing GitHub decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review
@@ -601,12 +724,29 @@ loses is what nobody has touched. Raising it past 100 buys nothing without
 pagination.
 
 **The review and the check axes need a credential.** `pulls.list` asks GraphQL
-for `reviewDecision` and the head commit's `statusCheckRollup`, which REST does
-not carry. GraphQL refuses an anonymous caller, so a signed-out caller gets the
-REST list and `PullSummary.status` stays **absent** — not `none`. Absent means
-"never asked", and `PullRow` leaves the square off the row rather than claim
-there is no review and no CI. It keeps the lane the square sits in, so the
-number after it starts on the same pixel either way.
+for `latestOpinionatedReviews`, `reviewDecision` and the head commit's
+`statusCheckRollup`, none of which REST carries. GraphQL refuses an anonymous
+caller, so a signed-out caller gets the REST list and `PullSummary.status` stays
+**absent** — not `none`. Absent means "never asked", and `PullRow` leaves the
+square off the row rather than claim there is no review and no CI. It keeps the
+lane the square sits in, so the number after it starts on the same pixel either
+way.
+
+**The review axis is the reviews, and `reviewDecision` only adds to them.** That
+field was the whole of the axis once, and it answers a different question:
+GitHub computes it against the base branch's own rule about who has to approve,
+so an unprotected repository answers `null` for every pull request it has, and
+even a protected one goes stale — two pull requests on one branch each carried
+one approval, in the same minute, and GitHub reported `APPROVED` for the first
+and `null` for the second. So `reviewFromSource` in `src/lib/pullStatus.ts`
+reads `latestOpinionatedReviews`, which is the newest verdict from each
+reviewer, and lets `reviewDecision` contribute `APPROVED` or `CHANGES_REQUESTED`
+on top. `REVIEW_REQUIRED` contributes nothing: it says a rule is unsatisfied,
+and one approval out of the two a rule wants is still somebody's approval.
+`DISMISSED` is the one state in that list which is not an opinion, and it counts
+as unread. A grey square under a header that read **Approved** was the whole
+complaint — `ReviewButton` asks `viewerLatestReview`, which is a review, and the
+two now agree.
 
 **A spent quota is one status, and the panel asks for a sign-in.** GitHub
 reports the primary rate limit as 403 on `api.github.com` and as 429 on the web
@@ -707,7 +847,9 @@ changes. The colours are Primer's, defined per scheme as `--app-status-*` in
 `src/globals.css`. floodgate paints the same square into the favicon of every
 pull request tab, so a colour must keep meaning the same thing in both places:
 change `src/lib/pullStatus.ts` and floodgate's `lib/pr-status.ts` together, or
-not at all.
+not at all. floodgate's `normalize` still reads `reviewDecision` alone, so its
+favicon is grey for the approved pull request whose square here is green. Carry
+`latestOpinionatedReviews` over there.
 
 **A phone gets one layout, and 480px is where it starts.** `--breakpoint-phone`
 in `src/globals.css` is 30rem, and `useIsPhone` states the same figure for the
@@ -735,9 +877,12 @@ own box throughout, which is what keeps the diff from being measured again on
 every toggle.
 
 Two columns of code on a phone is about twenty characters each, so
-`defaultControls` starts one unified. It is a default and nothing else: the
-control in the header writes `controls`, and from that press the screen is not
-consulted again.
+`defaultViewerControls` in `src/lib/viewerControls.ts` starts one unified. It is
+a default and nothing else: the control in the header writes the whole set to
+storage, and from that press the screen is not consulted again — this visit or
+the next. `null` is what says nobody has pressed anything, which is why
+`acceptViewerControls` refuses an object with none of the five fields in it
+rather than reading it as the default set: those two answers differ on a phone.
 
 **The header scrolls sideways, and only a measurement may say so.** More
 controls than 402px holds, so on a phone that row is `overflow-x-auto` and the
@@ -1003,6 +1148,91 @@ with an upstream review thread, so only `supportsGitHubComments` targets post to
 GitHub. Every other target keeps comments in browser storage, and the sidebar
 says so.
 
+**A file the reviewer has read is marked in its own header, and GitHub keeps
+that mark.** `markFileAsViewed` and `unmarkFileAsViewed` are the two mutations,
+`PullRequestChangedFile.viewerViewedState` reads it back, and all three are
+GraphQL only — REST answers with the patch and the counts and says nothing about
+who has read what. So a mark made here is the same mark github.com's own
+**Viewed** box draws, and a reviewer can start in one and finish in the other.
+The mark divides by target the way a comment does: a pull request's goes
+upstream, and a commit's or a compare range's stays in this browser, because
+GitHub holds no such state for either. Those two records never merge — a browser
+mark is about a diff GitHub is not tracking, and the pull request's is GitHub's
+own — so `useViewedFiles` reads one store and writes the same one.
+
+`viewedFiles.list` is what fills the boxes on arrival, and it needs a token,
+since the mark is the token's own user's. A caller with no token gets an empty
+list rather than an error, the way `reviews.mine` gets no review, and its press
+then fails with the sentence `requireToken` writes. A read that fails is
+reported nowhere: an unread mark and no mark draw the same empty box, and a
+press still lands, because `viewedFiles.set` names the file by its path alone.
+That is also why the router resolves the pull request's node id itself on every
+press rather than have the browser hold it — a browser that held it would have
+nothing to send for a press that arrived before the list did.
+
+`DISMISSED` is the third state and it counts as unread. GitHub writes it when a
+file changed after the reviewer marked it, and GitHub's own screen takes the
+tick off at that point: the mark was about lines that are no longer there.
+
+The box is drawn and not an `<input type="checkbox">`, for the reason
+`TaskMarker` draws its own: the browser paints a native one in the platform's
+blue, which is the single colour this app never uses. It goes in
+`renderHeaderMetadata`, which is the last child of the header's metadata row, so
+it lands to the right of the file's own `-N +N` and takes that row's gap.
+
+**A mark folds the file, and the fold is its own state.** That is what the mark
+is for: a diff read from the top gets shorter as the reviewer goes down it, and
+a review reopened tomorrow shows the files nobody has read yet. So the mark
+folds, taking the mark back opens, and the marks the store reported on load fold
+on arrival. But the two are not one value. A file read and then opened again
+from its chevron is still read, and a file folded from the chevron alone was
+never marked — so `ReviewScreen` holds `collapsedItemIds` beside the marks
+rather than reading one off the other.
+
+`CollapseFileButton` is the chevron, and `renderHeaderPrefix` is the only slot
+drawn to the left of the change-type icon, which is where github.com puts the
+same control. Its word comes from the browser's own `title` and not from
+`Tooltip`: the library lays each file out in a container it contains, and
+containment makes a stacking context, so a label drawn below that button is
+painted over by the next file whatever its z-index. A folded file is one header
+tall, and everything under it belongs to the file after it — which is exactly
+when this control is pressed. `ExpandFileButton` beside the name is not drawn on
+a folded file at all: there is nothing to reveal into.
+
+**That chevron is the hunk separator's expand column, continued up into the
+header.** A file with collapsed context draws the separator's own expand button
+one row below, in the same glyph, for the same kind of press, so the two are
+read as one column and have to be one column. The chevron therefore takes 32px
+around a 16px glyph and not the 28 around 13 every other icon button in this app
+takes, and `HEADER_PREFIX_PULL` gives back the 8px by which the header's 16px
+padding overshoots the separator's own inline inset. Both figures are the
+library's defaults, and neither is a custom property this app can read, so a
+change to either has to be answered in `ReviewViewer`. Untouched, the two
+chevrons sat six pixels and three pixels of glyph apart, which reads as one
+column that failed to line up rather than as two controls.
+
+`HEADER_METADATA_PULL` is the same idea at the other end of the row. A quiet
+button's horizontal padding is its hover box and not its text, so `Viewed`
+stopped short of the line the header's own padding draws, and its box sat
+further from `+N` than `+N` sits from `-N`. The button gives both back, and its
+hover box is then the only thing that reaches past either.
+
+**A jump opens the file it lands on, and one file is spared the fold.** A scroll
+to a folded file lands on a header and shows nothing, so the tree, the comment
+list and the URL fragment all go through `openFile`. That call also names the
+file in `openedByJumpRef`, and the fold seed leaves that one open: the address
+is applied the moment the diff is on screen, while the marks are a request that
+answers a moment later, so without it a link to a line in a file already read
+would fold itself shut under the reviewer.
+
+`CodeView` keys an item update off `id` and `version`, and this screen now
+writes two things onto an item — its comments and its fold. So the version is
+`comments.revision * 2 + (collapsed ? 1 : 0)`: doubling the revision leaves the
+low bit for the fold, and neither input can hide a change in the other. Only the
+items that carry something are rebuilt. The viewer relays out from the first
+item whose version moved, so rebuilding all of them would relay out the whole
+diff on every press.
+
 **`CommentMetadata` is one interface, not a union.** `DiffLineAnnotation<T>`
 resolves its metadata through a conditional type, so a union `T` distributes
 into a union of annotation shapes the viewer rejects. `kind` discriminates
@@ -1055,6 +1285,28 @@ A reply is the one thing that re-measures a card, because it adds a message to
 the thread the height was taken from. That is one relayout for one deliberate
 act, and it is the same relayout posting the first comment on a line already
 costs. Everything else stays fixed.
+
+**A comment says who wrote it with a picture, and the picture fits the row it
+lands in.** `src/components/AuthorAvatar.tsx` is that one square: round for a
+person, `rounded-sm` for an app, whose logo is drawn to fill a square and loses
+its corners to a circle. Its box is a `size` in pixels on the style attribute
+rather than a class, so a picture that arrives late or never arrives at all
+cannot resize what holds it. The three places it goes take three sizes for one
+reason each. The card in the diff takes **16px**, which fits inside the 20px
+line box the login already draws, so a card that has picked its height keeps it.
+The open thread takes 20px, and the sidebar's list takes 20px against a row
+already fixed at `ROW_HEIGHT`. The login sits beside every one of them, so the
+picture is `aria-hidden` and adds nothing to a reader who cannot see it.
+
+The panel's own heading carries none, and neither does the composer. That
+heading says `4 comments` above four different authors, so one picture there
+would name only the first of them.
+
+A comment the reviewer has just written is shown before GitHub answers, so
+`useReviewComments` takes `viewerAvatarUrl` alongside `viewerLogin` and puts it
+on that optimistic message. Without it the message draws its initial and then
+swaps to the picture a moment later, on the one comment the reviewer is watching
+most closely.
 
 **That layer is measured in the box it is about to have.** How tall a comment is
 is a question about the column it is read in, and the panel opens two or three
@@ -1127,6 +1379,17 @@ line it crosses. Scrolling writes nothing, the way github.com writes nothing. A
 fragment typed into the address bar raises `hashchange` and nothing else, and
 TanStack Router listens for `popstate` alone, so `useDiffAnchor` forwards that
 event to the router itself.
+
+**A fragment belongs to the page it was written on.** No `Link` in the app
+states a fragment, so the router empties the address the moment a reviewer
+leaves a review — and the viewer is taken down after that, reporting its
+selection away as it goes. `syncSelection` answers a selection of nothing with
+the last file's own fragment, so that write used to land on the page the
+reviewer had just arrived at: the home page wearing `#diff-src/lib/byteSize.ts`,
+or the next pull request wearing a file from the one before it. So
+`useDiffAnchor` drops the file it is holding the moment the fragment goes empty.
+An empty fragment names no file, and a file it does not hold is one it cannot
+write back.
 
 **A range anchor takes more than one frame.** `CodeView.scrollTo` resolves a
 range through `getLinePosition`, which answers only for a file the viewer has
@@ -1310,8 +1573,8 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 140 KiB of headroom is
+The Worker script is about 2.90 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 100 KiB of headroom is
 left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
 it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
 which carries the lazy loader for all 300-odd grammars, so importing anything
@@ -1319,6 +1582,11 @@ from that package pulls the whole registry into whichever bundle it lands in.
 The server never highlights, so none of those chunks is ever evaluated there.
 Headroom on the free plan is thin, and any new dependency in the server graph
 eats into it.
+
+A dependency that only a stylesheet imports is not in that graph. The three
+fontsource packages are reached from `globals.css`, which `__root.tsx` links as
+a `?url` stylesheet, so their woff2 files are written to `dist/client` and
+uploaded as assets. They cost the script nothing.
 
 ## Tests
 
@@ -1453,3 +1721,11 @@ on every run.
 copies give the two libraries two separate theme controllers, so the diff and
 the tree drift apart. `pnpm-workspace.yaml` overrides both to 1.0.1. Do not
 remove that override.
+
+jotai is the one state library in the graph, and it holds the remembered
+settings and nothing else. It cost about 9 KiB of the Worker's gzipped headroom,
+new modules included, which is what a hand-written store over `localStorage`,
+the `storage` event and a subscription per key would have cost anyway — with the
+tab synchronization and the read-on-mount contract left to be got right here
+rather than upstream. Everything else in this app is React state or a ref, and
+adding a second store would be the change to argue for.

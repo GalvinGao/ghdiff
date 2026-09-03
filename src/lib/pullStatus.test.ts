@@ -13,12 +13,16 @@ const HEAD = 'abc123';
 function source(options: {
   committedDate?: string;
   oid?: string;
+  opinions?: (string | null)[];
   requestedAt?: string;
   reviewDecision?: string | null;
   rollup?: string | null;
 }) {
   return {
     reviewDecision: options.reviewDecision ?? null,
+    latestOpinionatedReviews: {
+      nodes: (options.opinions ?? []).map((state) => ({ state })),
+    },
     headRefOid: HEAD,
     commits: {
       nodes: [
@@ -79,6 +83,60 @@ describe('normalizePullStatus', () => {
       normalizePullStatus(source({ reviewDecision: 'REVIEW_REQUIRED' })).review,
       'none'
     );
+  });
+
+  it('reads an approval that reviewDecision does not report', () => {
+    assert.equal(
+      normalizePullStatus(
+        source({ reviewDecision: null, opinions: ['APPROVED'] })
+      ).review,
+      'approved'
+    );
+  });
+
+  it('reads an approval a rule is not satisfied by', () => {
+    assert.equal(
+      normalizePullStatus(
+        source({ reviewDecision: 'REVIEW_REQUIRED', opinions: ['APPROVED'] })
+      ).review,
+      'approved'
+    );
+  });
+
+  it('lets a request for changes outrank an approval, from either source', () => {
+    assert.equal(
+      normalizePullStatus(
+        source({ opinions: ['APPROVED', 'CHANGES_REQUESTED'] })
+      ).review,
+      'changes'
+    );
+    assert.equal(
+      normalizePullStatus(
+        source({
+          reviewDecision: 'CHANGES_REQUESTED',
+          opinions: ['APPROVED'],
+        })
+      ).review,
+      'changes'
+    );
+  });
+
+  it('counts a dismissed review as no review', () => {
+    assert.equal(
+      normalizePullStatus(source({ opinions: ['DISMISSED'] })).review,
+      'none'
+    );
+  });
+
+  it('marks a push that came after a request for changes the reviews report', () => {
+    const status = normalizePullStatus(
+      source({
+        opinions: ['CHANGES_REQUESTED'],
+        requestedAt: '2026-08-19T00:00:00Z',
+        committedDate: '2026-08-20T00:00:00Z',
+      })
+    );
+    assert.equal(status.commitsSinceChanges, true);
   });
 
   it('marks a push that came after the request for changes', () => {

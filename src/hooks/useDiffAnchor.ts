@@ -22,10 +22,11 @@ import type { ReviewFileEntry } from '@/lib/reviewData';
  *
  * Reading and writing the same fragment would answer each other forever, so
  * `settledRef` holds the fragment this hook last wrote or last read, and each
- * direction stops on it. Two of the four things that change a fragment are this
+ * direction stops on it. Two of the things that change a fragment are this
  * hook's own writes — the reviewer opened a file, the selection in the diff
- * moved. The other two are the browser going back and an edit in the address
- * bar, and those are the ones the reading side has to answer.
+ * moved. The rest arrive from outside: the browser goes back, the address bar
+ * is edited, or the reviewer leaves the review and the router clears the
+ * fragment on the way. Those are the ones the reading side has to answer.
  *
  * Scrolling the diff does not write here. The file under the reviewer changes
  * on every wheel notch, and a history entry per notch would make the back
@@ -154,6 +155,14 @@ export function useDiffAnchor(options: {
     settledIndexRef.current = index;
 
     if (hash.length === 0) {
+      // An empty fragment names no file, so the file this hook was holding is
+      // no longer a place to fall back to. That matters most on the way out:
+      // leaving the review clears the address first and takes the viewer down
+      // after it, and the viewer reports its selection away as it goes.
+      // `syncSelection` answers a selection of nothing with the last file's own
+      // fragment, so without this line that report writes the diff's fragment
+      // onto the page the reviewer has just arrived at.
+      itemRef.current = undefined;
       apply(null);
       return undefined;
     }

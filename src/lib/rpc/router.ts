@@ -29,6 +29,7 @@ import {
 import { readAppConfig } from '@/lib/server/githubApp';
 import { readInstallations } from '@/lib/server/installations';
 import { readServedCount } from '@/lib/server/servedCount';
+import { isFileViewed } from '@/lib/viewedFiles';
 
 // The Worker's half of the contract. Nothing here is imported by the browser:
 // the client is built from `contract`, which holds no implementation, so this
@@ -56,6 +57,15 @@ const MAX_WATCHED_REPOS = 25;
  * hundred that are cut are the hundred nobody has touched.
  */
 const MAX_PULLS_PER_REPO = 100;
+/**
+ * How many pages of changed files the viewed-mark query reads. GitHub caps a
+ * `files` page at 100, so this is a thousand files, and a pull request larger
+ * than that gets its first thousand marks and no more. Nothing breaks past the
+ * cap: an unread mark draws an empty box, and `viewedFiles.set` addresses a
+ * file by its path alone, so a press on file 1001 still reaches GitHub.
+ */
+const MAX_VIEWED_FILE_PAGES = 10;
+const VIEWED_FILES_PAGE_SIZE = 100;
 
 /**
  * Turns a failure from GitHub into one the client can read. The status is what
@@ -389,6 +399,80 @@ const removeComment = os.comments.remove.handler(async ({ context, input }) => {
   }
 });
 
+const listViewedFiles = os.viewedFiles.list.handler(
+  async ({ context, input }) => {
+    const log = requestLog();
+    const { number, owner, repo } = input;
+    log.set({ owner, repo, pull: number });
+    // The mark belongs to the token's own user, and GraphQL refuses an
+    // anonymous caller, so there is nothing here to ask without one.
+    if (context.token == null) return { paths: [] };
+
+    try {
+      const paths: string[] = [];
+      let after: string | null = null;
+      for (let page = 0; page < MAX_VIEWED_FILE_PAGES; page++) {
+        const data: ViewedFilesQueryData = await githubGraphQL(
+          VIEWED_FILES_QUERY,
+          {
+            owner,
+            repo,
+            number,
+            first: VIEWED_FILES_PAGE_SIZE,
+            after,
+          },
+          context.token
+        );
+        const files = data.repository?.pullRequest?.files;
+        if (files == null) break;
+        for (const node of files.nodes ?? []) {
+          if (node?.path == null) continue;
+          if (isFileViewed(node.viewerViewedState)) paths.push(node.path);
+        }
+        if (files.pageInfo?.hasNextPage !== true) break;
+        after = files.pageInfo.endCursor ?? null;
+        if (after == null) break;
+      }
+      log.set({ outcome: 'ok', count: paths.length });
+      return { paths };
+    } catch (error) {
+      return fail(error, 'Could not load which files you have read.');
+    }
+  }
+);
+
+const setViewedFile = os.viewedFiles.set.handler(async ({ context, input }) => {
+  const log = requestLog();
+  const { number, owner, path, repo, viewed } = input;
+  log.set({ owner, repo, pull: number, viewed });
+  const token = requireToken(context.token, 'mark a file as viewed');
+
+  try {
+    // Both mutations address the pull request by its node id and nothing else,
+    // so the id is read first. The browser is not asked to hold it: it would
+    // then have to be handed to every press, and a press that arrived before
+    // the list did would have nothing to send.
+    const found = await githubGraphQL<PullNodeIdQueryData>(
+      PULL_NODE_ID_QUERY,
+      { owner, repo, number },
+      token
+    );
+    const pullRequestId = found.repository?.pullRequest?.id;
+    if (pullRequestId == null) {
+      throw new GitHubError(404, 'Not Found');
+    }
+    await githubGraphQL(
+      viewed ? MARK_FILE_VIEWED_MUTATION : UNMARK_FILE_VIEWED_MUTATION,
+      { pullRequestId, path },
+      token
+    );
+    log.set({ outcome: 'ok' });
+    return { ok: true as const };
+  } catch (error) {
+    return fail(error, 'Could not send that mark to GitHub.');
+  }
+});
+
 /**
  * The counter behind the footer's "Served" line. It is the one procedure that
  * asks nothing of GitHub, so it neither reads the token nor reports a GitHub
@@ -414,6 +498,10 @@ export const router = os.router({
     list: listComments,
     create: createComment,
     remove: removeComment,
+  },
+  viewedFiles: {
+    list: listViewedFiles,
+    set: setViewedFile,
   },
 });
 
@@ -448,6 +536,15 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
 // `reviews(last: 1, states: [CHANGES_REQUESTED])` is the one review that
 // matters here: the newest request for changes, so the author's newest commit
 // can be compared against it.
+//
+// `latestOpinionatedReviews` is the review axis itself, and `reviewFromSource`
+// says why `reviewDecision` cannot carry it alone. Twenty is the page, because
+// a pull request with more than twenty people who each left a verdict is a
+// pull request nobody is reading a list of squares for — past that the axis
+// misses a twenty-first reviewer's request for changes. `first` is the whole
+// page's own cap, so the nesting costs about twenty rate-limit points per
+// repository, against the five thousand an hour a token has. The list is
+// fetched once a session.
 const OPEN_PULLS_QUERY = `
 query($owner:String!,$repo:String!,$first:Int!){
   repository(owner:$owner,name:$repo){
@@ -458,6 +555,7 @@ query($owner:String!,$repo:String!,$first:Int!){
         author{ login avatarUrl }
         commits(last:1){nodes{commit{oid committedDate statusCheckRollup{state}}}}
         reviews(last:1,states:[CHANGES_REQUESTED]){nodes{submittedAt}}
+        latestOpinionatedReviews(first:20){nodes{state}}
       }
     }
   }
@@ -568,3 +666,59 @@ interface MyReviewQueryData {
     } | null;
   } | null;
 }
+
+// `viewerViewedState` is the whole question in one field: what this token's own
+// user has said about this file. REST has no equivalent — the pull request
+// files endpoint answers with the patch and the counts and says nothing about
+// who has read what — so this and the two mutations under it are GraphQL only.
+const VIEWED_FILES_QUERY = `
+query($owner:String!,$repo:String!,$number:Int!,$first:Int!,$after:String){
+  repository(owner:$owner,name:$repo){
+    pullRequest(number:$number){
+      files(first:$first,after:$after){
+        pageInfo{ hasNextPage endCursor }
+        nodes{ path viewerViewedState }
+      }
+    }
+  }
+}`;
+
+interface ViewedFilesQueryData {
+  repository?: {
+    pullRequest?: {
+      files?: {
+        pageInfo?: {
+          hasNextPage?: boolean | null;
+          endCursor?: string | null;
+        } | null;
+        nodes?:
+          | ({
+              path?: string | null;
+              viewerViewedState?: string | null;
+            } | null)[]
+          | null;
+      } | null;
+    } | null;
+  } | null;
+}
+
+const PULL_NODE_ID_QUERY = `
+query($owner:String!,$repo:String!,$number:Int!){
+  repository(owner:$owner,name:$repo){
+    pullRequest(number:$number){ id }
+  }
+}`;
+
+interface PullNodeIdQueryData {
+  repository?: { pullRequest?: { id?: string | null } | null } | null;
+}
+
+const MARK_FILE_VIEWED_MUTATION = `
+mutation($pullRequestId:ID!,$path:String!){
+  markFileAsViewed(input:{pullRequestId:$pullRequestId,path:$path}){ clientMutationId }
+}`;
+
+const UNMARK_FILE_VIEWED_MUTATION = `
+mutation($pullRequestId:ID!,$path:String!){
+  unmarkFileAsViewed(input:{pullRequestId:$pullRequestId,path:$path}){ clientMutationId }
+}`;

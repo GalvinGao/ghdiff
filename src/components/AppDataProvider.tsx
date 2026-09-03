@@ -6,6 +6,7 @@ import {
   useMemo,
 } from 'react';
 
+import { type CodeFontState, useCodeFont } from '@/hooks/useCodeFont';
 import { type ColorModeState, useColorMode } from '@/hooks/useColorMode';
 import {
   type GitHubSessionState,
@@ -19,20 +20,24 @@ import {
 
 // One owner for the state the whole app shares.
 //
-// The colour mode and the watch list each live in browser storage, and a hook
-// that reads storage owns a copy of what it read. That was fine while only one
-// screen was mounted at a time. The left bar is now on every page, so the bar and
-// the page under it would hold two copies: adding a repository in the home
-// page's dialog would leave the bar listing the old set until a reload. This
-// provider mounts each hook once, above both.
+// Three of these five read a setting out of browser storage, and each of those
+// three reads it through a jotai atom, so the store is the owner and two callers
+// cannot come to disagree — see `src/hooks/preferences.ts`.
 //
-// The session is here for a different reason. It reads nothing from storage —
-// the credential is in a cookie the browser sends by itself — but asking GitHub
-// who this is costs a request, and one answer serves the account menu, the
-// review header and every screen that needs to know whose name a comment will
-// carry.
+// The other two are requests to GitHub, and they are here for the opposite
+// reason: mounting either twice would ask GitHub twice. `useOpenPulls` is the
+// watch list's own question. `useGitHubSession` reads nothing from storage at
+// all — the credential is in a cookie the browser attaches by itself — but one
+// answer to "who is this" serves the account menu, the review header, and every
+// screen that needs to know whose name a comment will carry.
+//
+// So this provider stays, and the rule with it. It is the one place the five are
+// mounted, it is where the request's inputs are wired to the settings it depends
+// on, and it is what carries the answer to a bar and a page that are never
+// unmounted between pull requests.
 
 export interface AppData {
+  codeFont: CodeFontState;
   colorMode: ColorModeState;
   pulls: OpenPullsState;
   session: GitHubSessionState;
@@ -42,6 +47,7 @@ export interface AppData {
 const AppDataContext = createContext<AppData | null>(null);
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
+  const codeFont = useCodeFont();
   const colorMode = useColorMode();
   const session = useGitHubSession();
   const watched = useWatchedRepos();
@@ -64,8 +70,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [watching]);
 
   const value = useMemo<AppData>(
-    () => ({ colorMode, pulls, session, watched }),
-    [colorMode, pulls, session, watched]
+    () => ({ codeFont, colorMode, pulls, session, watched }),
+    [codeFont, colorMode, pulls, session, watched]
   );
 
   return (

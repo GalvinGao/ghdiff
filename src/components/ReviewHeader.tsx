@@ -21,7 +21,6 @@ import { GitHubTextLink } from '@/components/GitHubLink';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
 import { PullListButton } from '@/components/PullListButton';
 import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';
-import type { ViewerControls } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -33,12 +32,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
+import type { CodeFontState } from '@/hooks/useCodeFont';
 import type { ColorModeState } from '@/hooks/useColorMode';
 import { useEdgeFade } from '@/hooks/useEdgeFade';
 import type { GitHubSessionState } from '@/hooks/useGitHubSession';
 import type { PullDetailsState } from '@/hooks/usePullDetails';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { cn } from '@/lib/cn';
+import { CODE_FONTS, type CodeFontId } from '@/lib/codeFonts';
 import type { StatusTone } from '@/lib/pullStatus';
 import {
   describeSubmittedReview,
@@ -46,6 +47,7 @@ import {
   isOwnPullRequest,
   reviewVerdict,
 } from '@/lib/reviewDecision';
+import type { ViewerControls } from '@/lib/viewerControls';
 
 // The bar sits on the same surface as the sidebar and carries no boxes: a row of
 // bordered buttons across the top of a diff reads as a form to fill in, and the
@@ -68,6 +70,7 @@ const MARKERS: {
 ];
 
 interface ReviewHeaderProps {
+  codeFont: CodeFontState;
   colorMode: ColorModeState;
   controls: ViewerControls;
   /** True while the file list covers the diff. Phone layout only. */
@@ -93,6 +96,7 @@ interface ReviewHeaderProps {
 }
 
 export function ReviewHeader({
+  codeFont,
   colorMode,
   controls,
   filesOpen = false,
@@ -212,6 +216,32 @@ export function ReviewHeader({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60">
+            {/* First, because it is the setting that changes the most pixels.
+                Every row is drawn in the face it names: what a typeface looks
+                like is the whole of what the choice is about, and a list of
+                names in one face asks the reviewer to remember instead. */}
+            <DropdownMenuLabel>Code font</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={codeFont.font}
+              onValueChange={(value) => codeFont.setFont(value as CodeFontId)}
+            >
+              {CODE_FONTS.map((font) => (
+                <DropdownMenuRadioItem
+                  key={font.id}
+                  className="items-center"
+                  value={font.id}
+                >
+                  <span
+                    className="min-w-0 truncate"
+                    style={{ fontFamily: font.stack }}
+                  >
+                    {font.label}
+                  </span>
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+
+            <DropdownMenuSeparator />
             <DropdownMenuLabel>Change markers</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={controls.diffIndicators}
@@ -267,6 +297,19 @@ export function ReviewHeader({
               }
             >
               Change backgrounds
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={controls.dimWhitespace}
+              indicator="switch"
+              onSelect={(event) => event.preventDefault()}
+              onCheckedChange={(checked) =>
+                onControlsChange({
+                  ...controls,
+                  dimWhitespace: checked === true,
+                })
+              }
+            >
+              Dim whitespace changes
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>

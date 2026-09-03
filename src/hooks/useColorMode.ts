@@ -1,20 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 
-import { readStoredString, writeStoredString } from './useLocalStorage';
-import { COLOR_MODE_STORAGE_KEY } from '@/lib/storageKeys';
+import { colorModePreference, usePreference } from './preferences';
+import type { ColorMode } from '@/lib/preferences';
 
-export type ColorMode = 'system' | 'light' | 'dark';
+export type { ColorMode };
 export type ColorScheme = 'light' | 'dark';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
-function systemScheme(): ColorScheme {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light';
+function subscribeToSystemScheme(onChange: () => void): () => void {
+  const query = window.matchMedia(DARK_QUERY);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
 }
 
-function isColorMode(value: string | null): value is ColorMode {
-  return value === 'system' || value === 'light' || value === 'dark';
+/**
+ * The scheme the platform asks for. The server has no window and answers
+ * `light`, which React uses for the hydrating render as well, so the markup it
+ * is matching against cannot disagree with it.
+ */
+function useSystemScheme(): ColorScheme {
+  return useSyncExternalStore(
+    subscribeToSystemScheme,
+    () => (window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light'),
+    () => 'light'
+  );
 }
 
 export interface ColorModeState {
@@ -26,42 +36,28 @@ export interface ColorModeState {
 }
 
 /**
- * Owns the app color mode. ColorModeScript already applied the stored value
- * before paint; this hook takes over the same attribute and keeps it current
- * when the system scheme changes.
+ * Owns the app colour mode. ColorModeScript already applied the stored value
+ * before paint; this hook takes over the same attributes and keeps them current
+ * when the platform's scheme changes, and when another tab picks a mode.
+ *
+ * The scheme is derived and not held: `system` is an answer about where to look
+ * rather than a colour, so a mode arriving from another tab and a platform that
+ * turns dark at sunset both reach the attribute the same way.
  */
 export function useColorMode(): ColorModeState {
-  const [mode, setModeState] = useState<ColorMode>('system');
-  const [scheme, setScheme] = useState<ColorScheme>('light');
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    const stored = readStoredString(COLOR_MODE_STORAGE_KEY);
-    const initial: ColorMode = isColorMode(stored) ? stored : 'system';
-    setModeState(initial);
-    setScheme(initial === 'system' ? systemScheme() : initial);
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (mode !== 'system') return undefined;
-    const query = window.matchMedia(DARK_QUERY);
-    const onChange = () => setScheme(query.matches ? 'dark' : 'light');
-    query.addEventListener('change', onChange);
-    return () => query.removeEventListener('change', onChange);
-  }, [mode]);
+  const {
+    value: mode,
+    hydrated,
+    setValue: setMode,
+  } = usePreference(colorModePreference);
+  const systemScheme = useSystemScheme();
+  const scheme = mode === 'system' ? systemScheme : mode;
 
   useEffect(() => {
     if (!hydrated) return;
     document.documentElement.dataset.colorScheme = scheme;
     document.documentElement.dataset.colorMode = mode;
   }, [hydrated, mode, scheme]);
-
-  const setMode = useCallback((next: ColorMode) => {
-    setModeState(next);
-    setScheme(next === 'system' ? systemScheme() : next);
-    writeStoredString(COLOR_MODE_STORAGE_KEY, next);
-  }, []);
 
   return { mode, scheme, setMode, hydrated };
 }

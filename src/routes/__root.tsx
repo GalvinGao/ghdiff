@@ -2,6 +2,7 @@ import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '@/components/AppShell';
+import { CodeFontScript } from '@/components/CodeFontScript';
 import { ColorModeScript } from '@/components/ColorModeScript';
 import { NotFound } from '@/components/NotFound';
 import { WatchedReposScript } from '@/components/WatchedReposScript';
@@ -38,6 +39,7 @@ function RootDocument({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <ColorModeScript />
+        <CodeFontScript />
         <WatchedReposScript />
       </head>
       <body className="flex h-dvh flex-col">

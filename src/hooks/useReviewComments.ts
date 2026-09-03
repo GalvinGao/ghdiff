@@ -118,10 +118,16 @@ export function useReviewComments(options: {
   target: ReviewTarget;
   entries: readonly ReviewFileEntry[];
   viewerLogin?: string;
+  /**
+   * The signed-in account's picture. A comment written here is shown before
+   * GitHub answers, and without this it would draw the initial and then swap
+   * to the picture a moment later.
+   */
+  viewerAvatarUrl?: string;
   /** True once the diff is parsed. Comments only map onto known files. */
   ready: boolean;
 }): ReviewCommentsState {
-  const { entries, ready, target, viewerLogin } = options;
+  const { entries, ready, target, viewerAvatarUrl, viewerLogin } = options;
   const store: CommentStore = supportsGitHubComments(target)
     ? 'github'
     : 'local';
@@ -420,6 +426,7 @@ export function useReviewComments(options: {
           {
             key: `pending-${key}`,
             author: viewerLogin ?? 'you',
+            authorAvatarUrl: viewerAvatarUrl,
             body: trimmed,
             createdAt: new Date().toISOString(),
           },
@@ -436,7 +443,15 @@ export function useReviewComments(options: {
         ...commentPayloadRangeFields(range),
       });
     },
-    [pathByItemId, postToGitHub, replace, state.byItemId, store, viewerLogin]
+    [
+      pathByItemId,
+      postToGitHub,
+      replace,
+      state.byItemId,
+      store,
+      viewerAvatarUrl,
+      viewerLogin,
+    ]
   );
 
   const replyToThread = useCallback(
@@ -464,6 +479,7 @@ export function useReviewComments(options: {
           {
             key: pendingKey,
             author: viewerLogin ?? 'you',
+            authorAvatarUrl: viewerAvatarUrl,
             body: trimmed,
             createdAt: new Date().toISOString(),
           },
@@ -475,7 +491,7 @@ export function useReviewComments(options: {
       if (store !== 'github' || replyToId == null) return;
       void postReply(itemId, key, pendingKey, replyToId, trimmed);
     },
-    [postReply, replace, state.byItemId, store, viewerLogin]
+    [postReply, replace, state.byItemId, store, viewerAvatarUrl, viewerLogin]
   );
 
   const removeComment = useCallback(

@@ -71,7 +71,7 @@ export function PullRow({
       aria-current={isCurrent ? 'page' : undefined}
       onClick={onNavigate}
       className={cn(
-        'hover:bg-raised focus-visible:bg-raised block rounded-md px-2 py-1.5 text-sm outline-none',
+        'hover:bg-raised focus-visible:bg-raised block select-none rounded-md px-2 py-1.5 text-sm outline-none',
         isCurrent && 'bg-raised'
       )}
       title={`${pull.title}\n${pullStateLabel(pull.state)}${

@@ -1,6 +1,6 @@
+import { railWidthPreference } from './preferences';
 import { type PaneWidthState, usePaneWidth } from './usePaneWidth';
 import { SIDEBAR_MIN_WIDTH, VIEWER_MIN_WIDTH } from './useSidebarWidth';
-import { RAIL_WIDTH_STORAGE_KEY } from '@/lib/storageKeys';
 
 // The left bar's own width. The drag itself is `usePaneWidth`.
 //
@@ -25,10 +25,10 @@ const RAIL_PANE = {
   defaultWidth: RAIL_DEFAULT_WIDTH,
   maxWidth: RAIL_MAX_WIDTH,
   minWidth: RAIL_MIN_WIDTH,
+  preference: railWidthPreference,
   property: RAIL_WIDTH_PROPERTY,
   reserve: SIDEBAR_MIN_WIDTH + VIEWER_MIN_WIDTH,
   room: 'parent',
-  storageKey: RAIL_WIDTH_STORAGE_KEY,
 } as const;
 
 export function useRailWidth(): PaneWidthState {

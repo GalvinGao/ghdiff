@@ -1,15 +1,12 @@
 import { useCallback } from 'react';
 
-import { useStoredJson } from './useLocalStorage';
+import { usePreference, watchedReposPreference } from './preferences';
 import {
   dedupeWatchedRepos,
   formatWatchedRepo,
   parseWatchedRepo,
   type WatchedRepo,
 } from '@/lib/pulls';
-import { WATCHED_REPOS_STORAGE_KEY } from '@/lib/storageKeys';
-
-const EMPTY: WatchedRepo[] = [];
 
 export interface WatchedReposState {
   repos: WatchedRepo[];
@@ -19,12 +16,14 @@ export interface WatchedReposState {
   remove(repo: WatchedRepo): void;
 }
 
-/** The repositories whose open pull requests appear in the switcher. */
+/**
+ * The repositories whose open pull requests appear in the switcher.
+ *
+ * The list is one of the app's settings, so watching a repository on the home
+ * page reaches every other tab, left bar and all.
+ */
 export function useWatchedRepos(): WatchedReposState {
-  const { value, setValue, hydrated } = useStoredJson<WatchedRepo[]>(
-    WATCHED_REPOS_STORAGE_KEY,
-    EMPTY
-  );
+  const { value, setValue, hydrated } = usePreference(watchedReposPreference);
 
   const add = useCallback(
     (input: string) => {
