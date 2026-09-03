@@ -248,15 +248,6 @@ repository too.
 The home page is offered nothing. It has the editor in the open already, and it
 names no repository to offer.
 
-**The offer names a place, and a phone has a different one.** `PullRail` is
-`max-phone:hidden` and `PullListButton` stands in for it, so "the bar on the
-left" is false on the one screen that has no bar — a phone opens the same list
-from the leftmost control in the review header, and the **Watched repos** button
-sits at the foot of that window instead of at the foot of a bar. The offer names
-the place twice, so `WHERE_PULLS_ARE` states both readings once and `useIsPhone`
-picks between them. A second caller of that hook costs nothing: it is a media
-query and not a request.
-
 **And the offer shows the bar rather than describe it.** A reviewer is being
 asked to take a step on the strength of one sentence, and the sentence has to
 name a thing they have never seen. So `WatchOfferPreview` draws it: the status
@@ -286,6 +277,15 @@ advertisement cannot come to promise a state `PullStatusMark` does not paint.
 The whole illustration is `aria-hidden`: it illustrates the paragraph above it,
 and five marks each reading out their own `title` is noise in front of the two
 buttons.
+
+**The offer names a place, and a phone has a different one.** `PullRail` is
+`max-phone:hidden` and `PullListButton` stands in for it, so "the bar on the
+left" is false on the one screen that has no bar — a phone opens the same list
+from the leftmost control in the review header, and the **Watched repos** button
+sits at the foot of that window instead of at the foot of a bar. The offer names
+the place twice, so `WHERE_PULLS_ARE` states both readings once and `useIsPhone`
+picks between them. A second caller of that hook costs nothing: it is a media
+query and not a request.
 
 **A field's border is its promise of a click target.** The card around the home
 page's URL box is that border, and the `<input>` is only the middle of it: the
@@ -1747,8 +1747,8 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.92 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 79 KiB of headroom is
+The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 74 KiB of headroom is
 left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
 it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
 which carries the lazy loader for all 300-odd grammars, so importing anything
