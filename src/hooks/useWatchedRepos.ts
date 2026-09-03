@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { usePreference, watchedReposPreference } from './preferences';
 import {
   dedupeWatchedRepos,
-  formatWatchedRepo,
+  isSameWatchedRepo,
   parseWatchedRepo,
   type WatchedRepo,
 } from '@/lib/pulls';
@@ -37,10 +37,7 @@ export function useWatchedRepos(): WatchedReposState {
 
   const remove = useCallback(
     (repo: WatchedRepo) => {
-      const key = formatWatchedRepo(repo).toLowerCase();
-      setValue(
-        value.filter((item) => formatWatchedRepo(item).toLowerCase() !== key)
-      );
+      setValue(value.filter((item) => !isSameWatchedRepo(item, repo)));
     },
     [setValue, value]
   );

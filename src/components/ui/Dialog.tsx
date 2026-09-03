@@ -84,6 +84,12 @@ export function Dialog({
     <dialog
       ref={ref}
       aria-label={title}
+      // The entrance and the exit are in globals.css, keyed on this attribute.
+      // See the `dialog[data-app-dialog]` block there: the exit needs `display`
+      // and `overlay` transitioned as discrete properties, and the entrance
+      // needs `@starting-style`, neither of which is a class this app would
+      // want stacked four variants deep on every dialog.
+      data-app-dialog=""
       className={cn(
         'border-line bg-raised text-ink fixed inset-0 m-auto max-h-[85vh] w-[min(30rem,calc(100vw-2rem))]',
         'overflow-y-auto overscroll-contain rounded-xl border p-0 shadow-lg',

@@ -280,6 +280,100 @@ html[data-watching='no'] [data-app-rail] {
   }
 }
 
+/* A dialog arrives and leaves rather than appear and vanish.
+   `src/components/ui/Dialog.tsx` drives `showModal()` and `close()` from React
+   state, and both of those are instant: the element enters and leaves the top
+   layer in one frame, and a modal that materialises over a diff reads as the
+   page breaking rather than as the reviewer's own press.
+
+   A fade and a very small scale, and nothing else. The window is already the
+   only lit thing on a dimmed screen, so it needs no distance to travel — 3% is
+   enough to read as arriving and small enough that no text is legibly blurred
+   on the way.
+
+   The leaving half is the whole reason this is CSS and not a class. `close()`
+   drops the `open` attribute, and the UA stylesheet's `display: none` would
+   take the element away before a transition could run — so `display` and
+   `overlay` are transitioned as discrete properties, which holds both the box
+   and its place in the top layer until the fade is done. `@starting-style` is
+   the other half: a transition needs a value to start from, and an element that
+   was `display: none` a frame ago has none.
+
+   The backdrop carries its own copy, because `::backdrop` is not a child and
+   inherits nothing from the element.
+
+   This is stated here rather than in Tailwind classes because `@starting-style`
+   and `::backdrop` want four stacked variants apiece, and because the two
+   halves have to name the same duration. `--app-dialog-enter` is that duration,
+   once. */
+:root {
+  --app-dialog-enter: 160ms;
+  /* The same decelerating curve `AnimatedHeight` and `.ghdiff-pop-in` use, so
+     one press does not read as two different speeds. It crests at 1 and never
+     past it: an overshoot on a modal reads as a bounce, which is a louder
+     entrance than this one is asking for. */
+  --app-dialog-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+dialog[data-app-dialog] {
+  opacity: 0;
+  transform: scale(0.97);
+  transition:
+    opacity var(--app-dialog-enter) var(--app-dialog-ease),
+    transform var(--app-dialog-enter) var(--app-dialog-ease),
+    overlay var(--app-dialog-enter) allow-discrete,
+    display var(--app-dialog-enter) allow-discrete;
+}
+
+dialog[data-app-dialog][open] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@starting-style {
+  dialog[data-app-dialog][open] {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+dialog[data-app-dialog]::backdrop {
+  opacity: 0;
+  transition:
+    opacity var(--app-dialog-enter) var(--app-dialog-ease),
+    overlay var(--app-dialog-enter) allow-discrete,
+    display var(--app-dialog-enter) allow-discrete;
+}
+
+dialog[data-app-dialog][open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  dialog[data-app-dialog][open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* No travel and no scale, but the fade stays: without it the discrete
+   properties have nothing to wait for and `close()` is instant again, which is
+   the behaviour this block replaced. A 1 ms fade is not motion. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --app-dialog-enter: 1ms;
+  }
+
+  dialog[data-app-dialog] {
+    transform: none;
+  }
+
+  @starting-style {
+    dialog[data-app-dialog][open] {
+      transform: none;
+    }
+  }
+}
+
 /* Two small entrances, defined here rather than pulled in with
    tw-animate-css: `animate-in` is not a Tailwind v4 utility, and two
    keyframes do not earn a dependency. */
