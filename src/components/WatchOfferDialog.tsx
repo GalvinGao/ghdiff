@@ -3,9 +3,14 @@ import { useEffect, useState } from 'react';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { Button } from '@/components/ui/Button';
-import { Dialog } from '@/components/ui/Dialog';
+import { Dialog, dialogPrimaryAction } from '@/components/ui/Dialog';
 import { usePreference, watchOfferPreference } from '@/hooks/preferences';
 import { useIsPhone } from '@/hooks/useIsPhone';
+import {
+  formatWatchedRepo,
+  isSameWatchedRepo,
+  type WatchedRepo,
+} from '@/lib/pulls';
 import { describePullStatus, type PullReviewStatus } from '@/lib/pullStatus';
 
 // The one time this app asks for something instead of waiting to be told.
@@ -68,8 +73,12 @@ const PREVIEW_ROWS: PullReviewStatus[] = [
   // Faded, and deliberately not the row under it. Two rows reading the same
   // words is a repeat rather than a list going on.
   { check: 'failure', review: 'none' },
-  { check: 'success', review: 'approved' },
   { check: 'failure', review: 'changes' },
+  // The middle row, and the only square that is green on both halves. It is the
+  // answer a reviewer is looking for when they scan that column, so it sits
+  // where the eye lands first — the centre of five, and the centre of the three
+  // the fade leaves legible.
+  { check: 'success', review: 'approved' },
   { check: 'pending', review: 'none' },
   // Faded.
   { check: 'pending', review: 'approved' },
@@ -164,7 +173,7 @@ export function WatchOfferDialog({
   const {
     hydrated: offerHydrated,
     setValue: setOffered,
-    value: offered,
+    value: offeredRepos,
   } = usePreference(watchOfferPreference);
   // The repository this window is about, latched as it opens, and the whole of
   // whether it is open. Every condition that opened it stops holding the moment
@@ -181,16 +190,23 @@ export function WatchOfferDialog({
     // Both settings are read after mount, and an unread one is not an empty
     // one: without these two tests every reviewer is asked for the one paint
     // before storage answers.
-    if (!offerHydrated || offered) return;
-    if (!watchedHydrated || repos.length > 0) return;
-    setSubject(`${owner}/${repo}`);
-    // Written as the offer is made and not as it is answered. A reviewer who
-    // closes the window, reloads the page, or never comes back has been asked,
-    // and this is the write that says so.
-    setOffered(true);
+    if (!offerHydrated || !watchedHydrated) return;
+    if (repos.length > 0) return;
+    const subjectRepo: WatchedRepo = { owner, repo };
+    // Asked about this repository once, whatever they answered. A reviewer who
+    // said no to one is still worth asking about the next, which is why the
+    // record is a list and not a flag.
+    if (offeredRepos.some((entry) => isSameWatchedRepo(entry, subjectRepo))) {
+      return;
+    }
+    setSubject(formatWatchedRepo(subjectRepo));
+    // Written as the offer is made and not as it is answered, so a reviewer who
+    // closes the tab with the window open is not asked about this repository
+    // again either. Every way out of the window is a dismissal by then.
+    setOffered([...offeredRepos, subjectRepo]);
   }, [
     offerHydrated,
-    offered,
+    offeredRepos,
     owner,
     ready,
     repo,
@@ -230,7 +246,12 @@ export function WatchOfferDialog({
             to the ghdiff home page.
           </p>
           <div className="mt-4 flex justify-end">
-            <Button size="md" variant="solid" onClick={close}>
+            <Button
+              {...dialogPrimaryAction}
+              size="md"
+              variant="solid"
+              onClick={close}
+            >
               Keep reviewing
             </Button>
           </div>
@@ -259,6 +280,7 @@ export function WatchOfferDialog({
                 scrollbar across the whole window. Nothing is lost to the clip:
                 the title above carries the same name, and it wraps. */}
             <Button
+              {...dialogPrimaryAction}
               className="min-w-0 shrink"
               size="md"
               variant="solid"

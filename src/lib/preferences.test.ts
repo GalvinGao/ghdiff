@@ -175,17 +175,42 @@ describe('the left bar and the comment filter', () => {
 });
 
 describe('the watch offer', () => {
-  it('has never been made until the browser says it has', () => {
-    // The fallback is what every browser older than this setting reads, and it
-    // has to be the reading that lets the offer happen. A reviewer stored no
-    // such key, so `false` is the only safe answer.
-    assert.equal(WATCH_OFFER_PREFERENCE.fallback, false);
-    assert.equal(WATCH_OFFER_PREFERENCE.decode('true'), true);
-    assert.equal(WATCH_OFFER_PREFERENCE.decode('false'), false);
+  it('has been made for nobody until the browser names a repository', () => {
+    // The fallback is what a browser that has never been asked reads, and it
+    // has to be the reading that lets the offer happen.
+    assert.deepEqual(WATCH_OFFER_PREFERENCE.fallback, []);
   });
 
-  it('refuses a value that is not the boolean it wrote', () => {
-    assert.equal(WATCH_OFFER_PREFERENCE.decode('1'), undefined);
-    assert.equal(WATCH_OFFER_PREFERENCE.decode('"true"'), undefined);
+  it('reads back the repositories it recorded', () => {
+    const written = WATCH_OFFER_PREFERENCE.encode([
+      { owner: 'facebook', repo: 'react' },
+      { owner: 'ghostty-org', repo: 'ghostty' },
+    ]);
+    assert.notEqual(written, null);
+    assert.deepEqual(WATCH_OFFER_PREFERENCE.decode(written as string), [
+      { owner: 'facebook', repo: 'react' },
+      { owner: 'ghostty-org', repo: 'ghostty' },
+    ]);
+  });
+
+  it('refuses the boolean an older build wrote, and asks once more', () => {
+    // This key held `true` or `false` for one deploy. Neither is an array, so
+    // both read as the empty list — the offer is made again for the repository
+    // on screen, once, and recorded in the shape this build writes. A second
+    // key to remember the old shape would outlive the browsers that hold it.
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('true'), undefined);
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('false'), undefined);
+  });
+
+  it('keeps the rest of the list when one row is not a repository', () => {
+    assert.deepEqual(
+      WATCH_OFFER_PREFERENCE.decode(
+        '[{"owner":"a","repo":"b"},7,{"owner":"c"},{"owner":"d","repo":"e"}]'
+      ),
+      [
+        { owner: 'a', repo: 'b' },
+        { owner: 'd', repo: 'e' },
+      ]
+    );
   });
 });

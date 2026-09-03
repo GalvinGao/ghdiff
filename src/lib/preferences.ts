@@ -118,13 +118,24 @@ export const CODE_FONT_PREFERENCE = wordPreference<CodeFontId>(
   isCodeFont
 );
 
-/** No repository is watched, as one reference the fallback can keep. */
+/** No repository, as one reference every list's fallback can keep. */
 const NO_WATCHED_REPOS: WatchedRepo[] = [];
 
-export const WATCHED_REPOS_PREFERENCE = jsonPreference<WatchedRepo[]>(
-  WATCHED_REPOS_STORAGE_KEY,
-  NO_WATCHED_REPOS,
-  (value) => {
+/**
+ * A list of repositories, which two settings now are: the watch list, and the
+ * repositories the watch-list offer has already been made for.
+ *
+ * An entry that is not `{ owner, repo }` is dropped rather than refused, so one
+ * bad row does not cost a reviewer the rest of their list. A stored value that
+ * is not an array at all is refused, which is what carries the offer's own
+ * history across this change: it held `true` or `false` for one deploy, and
+ * neither is an array, so an older browser reads as the empty list and is
+ * offered the repository it is looking at once more. That is one dialog, once,
+ * and the alternative was a second key to remember a shape that lived for
+ * an afternoon.
+ */
+function repoListPreference(key: string): PreferenceCodec<WatchedRepo[]> {
+  return jsonPreference<WatchedRepo[]>(key, NO_WATCHED_REPOS, (value) => {
     if (!Array.isArray(value)) return undefined;
     const repos: WatchedRepo[] = [];
     for (const entry of value as unknown[]) {
@@ -135,7 +146,11 @@ export const WATCHED_REPOS_PREFERENCE = jsonPreference<WatchedRepo[]>(
       repos.push({ owner, repo });
     }
     return dedupeWatchedRepos(repos);
-  }
+  });
+}
+
+export const WATCHED_REPOS_PREFERENCE = repoListPreference(
+  WATCHED_REPOS_STORAGE_KEY
 );
 
 /**
@@ -150,18 +165,26 @@ export const VIEWER_CONTROLS_PREFERENCE = jsonPreference<ViewerControls | null>(
 );
 
 /**
- * Whether this browser has already been offered the watch list.
+ * The repositories the watch-list offer has already been made for.
  *
- * False is a reviewer who has never been asked, which is every browser that
- * predates this setting, so the offer reaches them on their next review. It is
- * a fact about the offer and not about the list: `WATCH_OFFER_PREFERENCE` stays
- * true after the reviewer empties the list again, because being asked twice is
- * the thing a one-time offer must not do.
+ * Per repository and not once per browser, because declining is an answer about
+ * the repository on screen and not about the feature: a reviewer who says no to
+ * one is still worth asking about the next. An empty list is a reviewer who has
+ * never been asked, which is the reading that lets the offer happen at all.
+ *
+ * It is a record of the asking and not of the answer, so Add lands here beside
+ * Not now. That costs nothing — the offer only reaches a reviewer whose watch
+ * list is empty, and Add is what fills it — and it buys the case an `onClose`
+ * cannot cover: a reviewer who closes the tab with the window open has been
+ * asked, and this is what remembers it.
+ *
+ * Nothing trims it. A reviewer who declines for every repository they ever open
+ * accumulates a row apiece, and forty bytes per row against a five megabyte
+ * store is not a reason to invent a cap whose whole effect would be to ask
+ * somebody twice.
  */
-export const WATCH_OFFER_PREFERENCE = jsonPreference<boolean>(
-  WATCH_OFFER_STORAGE_KEY,
-  false,
-  (value) => (typeof value === 'boolean' ? value : undefined)
+export const WATCH_OFFER_PREFERENCE = repoListPreference(
+  WATCH_OFFER_STORAGE_KEY
 );
 
 export const RAIL_COLLAPSED_PREFERENCE = jsonPreference<boolean>(

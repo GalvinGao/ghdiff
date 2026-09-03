@@ -215,21 +215,34 @@ who watches nothing, so on their first visit this section is the only way in.
 `PullRail` keeps `WatchedReposDialog` for the same editor, because a reviewer
 reading a diff cannot lose it to a navigation home.
 
-**A reviewer who watches nothing is asked, once.** `PullRail` draws nothing
-while the watch list is empty, so the one feature that makes ghdiff somewhere to
-stay is invisible to exactly the reviewer who has not found it yet — and a
-reviewer who arrived from the userscript button has never seen the home page,
-where the editor sits in the open. `WatchOfferDialog` goes to them instead, on
-the repository they are already reading, and offers to watch it in one press.
+**A reviewer who watches nothing is asked once per repository.** `PullRail`
+draws nothing while the watch list is empty, so the one feature that makes
+ghdiff somewhere to stay is invisible to exactly the reviewer who has not found
+it yet — and a reviewer who arrived from the userscript button has never seen
+the home page, where the editor sits in the open. `WatchOfferDialog` goes to
+them instead, on the repository they are already reading, and offers to watch it
+in one press.
 
 Three things keep that from being a nag, and each of them is why it is a
 component rather than a condition inside `PullRail`.
 
-It is asked once per browser. `watchOfferPreference` records that the offer
-happened, not what the reviewer answered, so **Not now** is final and a reviewer
-who later empties the list is not asked a second time. The write lands as the
-window opens rather than as it is answered: a reviewer who closes the tab, or
-reloads, has been asked.
+It is asked once per repository. `watchOfferPreference` holds the repositories
+the offer has been made for, so **Not now** is final for the repository on
+screen and says nothing about the next one — declining is an answer about this
+diff, not about the feature, and a reviewer who has not found the bar yet is
+still worth asking when they open somebody else's code. It records the asking
+and not the answer, so Add lands there beside Not now: that costs nothing, since
+the offer only reaches a reviewer whose watch list is empty and Add is what
+fills it, and it buys the case no `onClose` can cover — a reviewer who closes
+the tab with the window open has been asked, and the write on open is what
+remembers it. Nothing trims the list: forty bytes a row against a five megabyte
+store is no reason for a cap whose only effect would be to ask somebody twice.
+
+That key held a bare `true` or `false` for one deploy, and the codec refuses
+anything that is not an array, so a browser from that afternoon reads as the
+empty list and is offered the repository in front of it once more. One dialog,
+once. It is the one place the encoding rule below has been broken on purpose,
+and the alternative was a second key to remember a shape that outlived nothing.
 
 It waits for the diff, which is why `ReviewScreen` mounts it and `AppShell` does
 not — `ready` is `patch.state === 'ready'`. A diff that would not load draws
@@ -254,6 +267,10 @@ name a thing they have never seen. So `WatchOfferPreview` draws it: the status
 square is the whole point of the bar, and three of them say the three answers a
 reviewer scans that column for — approved and green, changes requested with a
 check failed, nobody looked yet and the checks still running.
+
+The green square is the middle row of the five, and the middle of the three the
+fade leaves legible. It is the answer a reviewer scans that column for, so it
+sits where the eye lands first.
 
 Five rows, because a list of exactly three reads as all there is. The first and
 the last fade under one `mask-image` gradient whose stops sit at a fifth and
@@ -462,10 +479,10 @@ leave all four stranded on the document element.
 
 **A remembered setting is a jotai atom, and that is the whole of why it
 travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
-colour mode, the code font, the token, the watch list, whether that list has
-been offered, the viewer's five controls, the bar's collapse, the two pane
-widths, and the comment author filter — as a key, a fallback, and the two
-directions between the value and the one string a browser can hold.
+colour mode, the code font, the token, the watch list, the repositories that
+list has been offered for, the viewer's five controls, the bar's collapse, the
+two pane widths, and the comment author filter — as a key, a fallback, and the
+two directions between the value and the one string a browser can hold.
 `src/hooks/preferences.ts` turns each of those into one `atomWithStorage`, and
 `usePreference` is how a hook reads it.
 
@@ -483,7 +500,10 @@ beside the others, then reading it with `usePreference`. The encodings there are
 the ones already deployed and are not free to change: a reviewer's stored value
 has to go on reading across a deploy, and three of those keys are read before
 the first paint by a script in the document head. `src/lib/preferences.test.ts`
-is where a new codec proves it can refuse what an older build wrote.
+is where a new codec proves it can refuse what an older build wrote. The
+watch-list offer's key is the one exception on record, written up with the offer
+itself above: it held a boolean for a single deploy, and refusing that boolean
+is what carries the browsers still holding one.
 
 Two settings are not settings and stay where they are. The comments and the
 viewed-file marks a browser keeps are per target, they are content rather than a
@@ -1562,6 +1582,42 @@ background, and the top layer, so a dialog opened from inside a portaled menu is
 not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
 every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
+
+**What `showModal()` does not bring is a landing place.** It focuses the first
+focusable thing it finds, and in every dialog here that is the close button in
+the title bar — so the browser arrived with Enter bound to shutting the window
+the reviewer had just opened. Two things outrank it, in order: the first field,
+because a dialog with one is a dialog you came to type in, and then the control
+the dialog names with `dialogPrimaryAction`.
+
+That naming is the caller's and cannot be inferred, which is the whole reason
+for the attribute. Reading it off the accent — this app draws one filled control
+per screen — is right for the watch-list offer and wrong twice over:
+`ReviewSubmitDialog` offers three verdicts and GitHub gives none of them a
+default, and the account dialog's one button is **Sign out**. A rule that
+guessed would bind Enter to signing the reviewer out. So a dialog with no
+obvious default names nothing and keeps the close button, which is the right
+answer for a window that is only there to be read.
+
+**And every dialog travels between its content heights.** A dialog is centred by
+`m-auto`, so a jump moves all four edges at once and reads as a second window
+arriving in place of the first — the offer going from its question to its
+answer, a row leaving the watch list, a list of pull requests landing where a
+skeleton was. `Dialog` wraps its body in `AnimatedHeight` for all of them, and
+the sticky title bar stays outside that box: the height being measured is the
+body's.
+
+One `AnimatedHeight` inside another is the ordinary case now, because
+`GitHubAccountPanel` keeps its own around the installations alone — the identity
+line above it and **Sign out** below it should not move for an answer that
+arrives between them. The inner box owns the travel. The outer would otherwise
+chase it, since a ResizeObserver reports the inner height on every frame of its
+transition and the outer would restart its own each time, easing an ease. So a
+box with an animating descendant drops its transition and follows frame by
+frame, which is `has-[[data-animating]]` — `:has()` looks at descendants and
+never at self, so the attribute a box sets on itself does not turn its own
+travel off. It is the division `PullRail` already makes for a drag: the gesture
+writes the figure and the transition stands aside.
 
 **A skeleton is a guess at the answer's own shape, and the account panel guesses
 three.** The identity at the top of `GitHubAccountPanel` is on screen the moment
