@@ -22,6 +22,17 @@ export interface RepoRef {
 export const GHDIFF_REPO: RepoRef = { owner: 'GalvinGao', repo: 'ghdiff' };
 
 /** The repository's own page. */
+/**
+ * Where a reviewer manages their fine-grained personal access tokens, which is
+ * where the one an older ghdiff asked for is deleted. Removing it from this
+ * browser does not revoke it at GitHub, so the migration notice sends them here.
+ * Classic tokens live one page over, under `/settings/tokens`; the form ghdiff
+ * used to pre-fill made fine-grained ones, so this is the page that will have it.
+ */
+export function personalAccessTokensUrl(): string {
+  return `${GITHUB}/settings/personal-access-tokens`;
+}
+
 export function repoUrl({ owner, repo }: RepoRef): string {
   return `${GITHUB}/${owner}/${repo}`;
 }

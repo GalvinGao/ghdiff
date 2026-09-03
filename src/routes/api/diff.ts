@@ -12,7 +12,7 @@ import {
   githubDiff,
   githubJson,
   githubWebDiff,
-  readGitHubToken,
+  resolveGitHubToken,
 } from '@/lib/server/github';
 import {
   commitFilesFetch,
@@ -136,7 +136,7 @@ async function gitHubResponse(
   request: Request,
   log: ReturnType<typeof requestLog>
 ): Promise<Response> {
-  const token = readGitHubToken(request);
+  const { token } = await resolveGitHubToken(request);
   log.set({ authenticated: token != null });
   const failures: AttemptFailure[] = [];
 

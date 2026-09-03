@@ -11,7 +11,6 @@ import {
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
-  GITHUB_TOKEN_PREFERENCE,
   type PreferenceCodec,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
@@ -149,7 +148,6 @@ export function usePreference<T>(handle: PreferenceHandle<T>): Preference<T> {
 
 export const colorModePreference = preference(COLOR_MODE_PREFERENCE);
 export const codeFontPreference = preference(CODE_FONT_PREFERENCE);
-export const gitHubTokenPreference = preference(GITHUB_TOKEN_PREFERENCE);
 export const watchedReposPreference = preference(WATCHED_REPOS_PREFERENCE);
 export const viewerControlsPreference = preference(VIEWER_CONTROLS_PREFERENCE);
 export const railCollapsedPreference = preference(RAIL_COLLAPSED_PREFERENCE);

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { type CSSProperties, useMemo } from 'react';
 
 import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
@@ -50,6 +51,18 @@ export function PullRequestList({
   }, [data]);
 
   const failures = data?.failures ?? [];
+  // The account to name on the setup page, when every failure shares one. Two
+  // accounts failing is a general question, and `undefined` is what asks it.
+  // `null` is the third answer: nothing failed, or nobody is signed in, and there
+  // is nothing to offer at all.
+  // On `data` and not on `failures`: the latter is `data?.failures ?? []`, so it
+  // is a fresh array on every render where nothing has arrived yet.
+  const failedAccount = useMemo(() => {
+    const rows = data?.failures ?? [];
+    if (rows.length === 0 || data?.viewer == null) return null;
+    const owners = new Set(rows.map((failure) => failure.repo.split('/')[0]));
+    return owners.size === 1 ? [...owners][0] : undefined;
+  }, [data]);
 
   return (
     <>
@@ -167,20 +180,45 @@ export function PullRequestList({
               {failure.repo}: {failure.message}
             </p>
           ))}
+          {/* The offer this list used to be missing. GitHub answers "Could not
+              resolve to a Repository" both for a repository that is not there
+              and for one the App is not installed on, in the same words, so this
+              cannot say which — and it does not claim to. What it can do is name
+              the one cause a reviewer can act on, which is the far more likely of
+              the two for a repository they put on this list themselves.
+
+              Only when signed in: a signed-out reviewer's failures are about a
+              credential, and the account menu is already asking for one. And only
+              once, because a line per failing repository would bury the rows
+              above it. */}
+          {failedAccount !== null && (
+            <Link
+              className="text-ink-faint hover:text-ink hover:bg-surface block rounded px-2 py-1 text-xs underline"
+              onClick={onNavigate}
+              search={{
+                account: failedAccount,
+                from: undefined,
+                migrated: undefined,
+              }}
+              to="/setup"
+            >
+              Set up private access
+            </Link>
+          )}
         </div>
       )}
 
-      {/* `data.viewer`, not the browser's token: a single-user deployment can
-          put the token in `GITHUB_TOKEN`, and the server resolves a viewer from
-          it that the browser knows nothing about.
+      {/* `data.viewer`, not whether this browser signed in: a single-user
+          deployment can put a token in `GITHUB_TOKEN`, and the server resolves
+          a viewer from it that the browser knows nothing about.
 
           Only under rows. The note names what a row would gain — the status
           square, and the mark on the reviewer's own pull requests — so under an
-          empty list it asks for a token and promises nothing. */}
+          empty list it asks for a sign-in and promises nothing. */}
       {groups.length > 0 && data != null && data.viewer == null && (
         <p className="text-ink-faint border-line mt-1 border-t px-2 py-1.5 text-xs">
-          Add a GitHub token to see review and check state, and to mark your own
-          pull requests.
+          Signed out, no row shows a status square or a mark on your own pull
+          requests. Signing in supplies both.
         </p>
       )}
     </>

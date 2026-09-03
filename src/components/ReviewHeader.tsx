@@ -16,8 +16,8 @@ import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { ColorModeToggle } from '@/components/ColorModeToggle';
+import { GitHubAccountControl } from '@/components/GitHubAccountControl';
 import { GitHubTextLink } from '@/components/GitHubLink';
-import { GitHubTokenControl } from '@/components/GitHubTokenControl';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
 import { PullListButton } from '@/components/PullListButton';
 import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';
@@ -35,7 +35,7 @@ import {
 import type { CodeFontState } from '@/hooks/useCodeFont';
 import type { ColorModeState } from '@/hooks/useColorMode';
 import { useEdgeFade } from '@/hooks/useEdgeFade';
-import type { GitHubTokenState } from '@/hooks/useGitHubToken';
+import type { GitHubSessionState } from '@/hooks/useGitHubSession';
 import type { PullDetailsState } from '@/hooks/usePullDetails';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { cn } from '@/lib/cn';
@@ -44,6 +44,7 @@ import type { StatusTone } from '@/lib/pullStatus';
 import {
   describeSubmittedReview,
   type ReviewVerdict,
+  isOwnPullRequest,
   reviewVerdict,
 } from '@/lib/reviewDecision';
 import type { ViewerControls } from '@/lib/viewerControls';
@@ -91,7 +92,7 @@ interface ReviewHeaderProps {
   targetLabel: string;
   /** The same thing on github.com. */
   targetUrl: string;
-  token: GitHubTokenState;
+  session: GitHubSessionState;
 }
 
 export function ReviewHeader({
@@ -107,7 +108,7 @@ export function ReviewHeader({
   showBrand = false,
   targetLabel,
   targetUrl,
-  token,
+  session,
 }: ReviewHeaderProps) {
   const split = controls.diffStyle === 'split';
   const [reviewing, setReviewing] = useState(false);
@@ -170,6 +171,14 @@ export function ReviewHeader({
             <ReviewButton review={review} onOpen={() => setReviewing(true)} />
             <ReviewSubmitDialog
               open={reviewing}
+              // Both halves are already in scope: the author arrives with the
+              // details the title card reads, and the viewer with the session.
+              // GitHub refuses an approval from whoever opened the pull
+              // request, so the buttons need to know before they offer one.
+              ownPullRequest={isOwnPullRequest(
+                pull?.data?.author,
+                session.viewer?.login
+              )}
               review={review}
               targetLabel={targetLabel}
               onClose={() => setReviewing(false)}
@@ -306,7 +315,7 @@ export function ReviewHeader({
         </DropdownMenu>
 
         <span aria-hidden="true" className="bg-line mx-1 h-4 w-px" />
-        <GitHubTokenControl token={token} />
+        <GitHubAccountControl session={session} />
       </div>
     </header>
   );

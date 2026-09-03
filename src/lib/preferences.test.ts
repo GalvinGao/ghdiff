@@ -5,7 +5,6 @@ import {
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
-  GITHUB_TOKEN_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
@@ -22,7 +21,6 @@ const ALL: PreferenceCodec<unknown>[] = [
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
-  GITHUB_TOKEN_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
@@ -38,8 +36,6 @@ describe('every preference', () => {
 
   it('never acts on a stored value that is not its own shape', () => {
     for (const codec of ALL) {
-      // A token is the one setting that takes any word, so it is skipped here.
-      if (codec === GITHUB_TOKEN_PREFERENCE) continue;
       // Two answers are correct and they mean the same thing to a reader: the
       // codec refuses outright, or it answers with the fallback it would have
       // been given anyway. A setting whose fallback is already `null` — a pane
@@ -89,20 +85,6 @@ describe('the code font', () => {
 
   it('refuses a face this build no longer offers', () => {
     assert.equal(CODE_FONT_PREFERENCE.decode('comic'), undefined);
-  });
-});
-
-describe('the token', () => {
-  it('trims what the reviewer pasted', () => {
-    assert.equal(GITHUB_TOKEN_PREFERENCE.decode('  ghp_abc \n'), 'ghp_abc');
-  });
-
-  it('reads a blank as no token', () => {
-    assert.equal(GITHUB_TOKEN_PREFERENCE.decode('   '), null);
-  });
-
-  it('removes the key when there is no token', () => {
-    assert.equal(GITHUB_TOKEN_PREFERENCE.encode(null), null);
   });
 });
 

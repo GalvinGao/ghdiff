@@ -1,0 +1,54 @@
+# What `pnpm dev` and `pnpm preview` read. Copy this to `.dev.vars` and fill it
+# in; that file is gitignored and this one is the list of names.
+#
+# Every line here is optional. ghdiff with none of them serves every public diff
+# and offers no sign-in, which is a working deployment and not a broken one. The
+# one exception is SESSION_SECRET: unset means no sign-in, and set to something
+# that is not a key throws on the first request rather than sign everybody out
+# in silence.
+
+# --- The GitHub App -----------------------------------------------------------
+#
+# Register a dev App of your own rather than sharing the production one, so a
+# laptop never holds the production secret. Its callback URL is
+# http://localhost:3000/api/auth/callback — ghdiff derives that from the origin
+# the request arrives on, so the App only has to have it registered.
+#
+# Repository permissions, and no others: Contents read, Pull requests read and
+# write, Commit statuses read, Checks read. Turn on "Request user authorization
+# (OAuth) during installation" and leave "user-to-server token expiration" on.
+# AGENTS.md says why for each.
+
+# From the App's settings page. Looks like Iv23li… — not a secret, but it lives
+# here beside the one that is.
+GITHUB_APP_CLIENT_ID=
+
+# Generate it on the App's settings page. Signs the code exchange, the refresh,
+# and the revocation on sign-out. Never reaches the browser.
+GITHUB_APP_CLIENT_SECRET=
+
+# The App's name in a URL, which is what the install link is built from. For an
+# App at github.com/apps/ghdiff-dev this is `ghdiff-dev`.
+GITHUB_APP_SLUG=
+
+# --- The session cookie -------------------------------------------------------
+#
+# Seals the httpOnly cookie that holds the reviewer's tokens. 32 or more bytes,
+# base64url:
+#
+#   node -e "console.log(Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url'))"
+#
+# A comma-separated list, newest first. The first key seals every new cookie and
+# every key is tried on the way in, so a rotation is two entries for a while and
+# costs nobody their session. One key alone would sign out every reviewer.
+SESSION_SECRET=
+
+# --- The single-user fallback -------------------------------------------------
+#
+# A personal access token the server falls back to when a request carries no
+# Authorization header and no session cookie. Nothing in the interface asks for
+# one; this is here so a deployment for one person can skip the browser step,
+# and so curl can authenticate. A viewer resolved from it has no sign-out to
+# offer, which is what `fromSession` on `viewer.get` is for.
+#
+# GITHUB_TOKEN=

@@ -4,7 +4,7 @@ import type { CommentPayload, ThreadComment } from './comments.ts';
 //
 // GitHub returns a flat list. A reply carries `replyToId` pointing at the
 // comment it answers, which may itself be a reply, so the root is found by
-// walking that chain. On troph-team/lilja#584 this turns 28 rows into 9
+// walking that chain. On one busy pull request this turns 28 rows into 9
 // threads, which is 9 cards in the diff instead of 28.
 //
 // A comment kept in this browser has no GitHub id, so a reply to it has no id

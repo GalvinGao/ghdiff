@@ -1,7 +1,7 @@
 import type { FileDiffContentsLoader, FileDiffMetadata } from '@pierre/diffs';
 import { useCallback, useState } from 'react';
 
-import { withGitHubToken } from './useGitHubToken';
+import { fetchWithRefresh } from '@/lib/authFetch';
 import {
   FILE_TOO_LARGE,
   MAX_FILE_BYTES,
@@ -37,9 +37,8 @@ export interface DiffFileLoader {
 
 export function useDiffFileLoader(options: {
   target: ReviewTarget;
-  token?: string;
 }): DiffFileLoader {
-  const { target, token } = options;
+  const { target } = options;
   const [error, setError] = useState<string | undefined>(undefined);
   // A string, not the target: the route's loader re-runs and hands down a new
   // object for the same review.
@@ -48,7 +47,7 @@ export function useDiffFileLoader(options: {
   const loadDiffFiles = useCallback<FileDiffContentsLoader>(
     async (fileDiff: FileDiffMetadata) => {
       try {
-        const contents = await fetchFile(query, fileDiff.name, token);
+        const contents = await fetchFile(query, fileDiff.name);
         setError(undefined);
         const newFile = { name: fileDiff.name, contents };
         // A pure rename has no hunks and no old side to rebuild; the library
@@ -74,7 +73,7 @@ export function useDiffFileLoader(options: {
         throw cause;
       }
     },
-    [query, token]
+    [query]
   );
 
   const dismissError = useCallback(() => setError(undefined), []);
@@ -82,14 +81,10 @@ export function useDiffFileLoader(options: {
   return { loadDiffFiles, error, dismissError };
 }
 
-async function fetchFile(
-  query: string,
-  path: string,
-  token: string | undefined
-): Promise<string> {
-  const response = await fetch(
+async function fetchFile(query: string, path: string): Promise<string> {
+  const response = await fetchWithRefresh(
     `/api/file?${query}&path=${encodeURIComponent(path)}`,
-    withGitHubToken(token)
+    { cache: 'no-store' }
   );
   if (!response.ok) {
     const body = await response.text();

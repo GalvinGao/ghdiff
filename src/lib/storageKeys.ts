@@ -4,7 +4,12 @@
 // browser-only import.
 export const COLOR_MODE_STORAGE_KEY = 'ghdiff-color-mode';
 export const CODE_FONT_STORAGE_KEY = 'ghdiff-code-font';
-export const GITHUB_TOKEN_STORAGE_KEY = 'ghdiff-github-token';
+/**
+ * Where a personal access token used to live, before the GitHub App. Nothing
+ * writes it any more and nothing reads it for a credential: `useGitHubSession`
+ * deletes it on mount, and that is the only mention of it left.
+ */
+export const LEGACY_GITHUB_TOKEN_STORAGE_KEY = 'ghdiff-github-token';
 export const WATCHED_REPOS_STORAGE_KEY = 'ghdiff-watched-repos';
 export const VIEWER_CONTROLS_STORAGE_KEY = 'ghdiff-viewer-controls';
 export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';

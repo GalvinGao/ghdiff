@@ -1,21 +1,35 @@
 // Minimal GitHub REST client.
 //
-// The token never reaches the server's environment by default: the browser
-// holds the user's personal access token and forwards it on each request, the
-// same way diffs-hub does. GITHUB_TOKEN is honoured as a fallback so a
-// single-user deployment can skip the browser step.
+// The token never reaches the server's disk. A reviewer who signed in through
+// the GitHub App has it in a sealed cookie the browser holds and no script can
+// read; a caller that names its own on the `Authorization` header is honoured
+// ahead of that, which is what keeps curl and a script working; and
+// GITHUB_TOKEN is the last fallback, so a single-user deployment can skip the
+// browser step. `resolveGitHubToken` is where those three meet.
 
+import { gitHubErrorMessage } from '../githubError.ts';
 import { rateLimitedStatus } from '../rateLimit.ts';
+import { accessTokenUsable, withinMaxAge } from '../session.ts';
+import { readKeyring, readSession } from './session.ts';
 
 const GITHUB_API_ROOT = 'https://api.github.com';
 const GITHUB_API_VERSION = '2022-11-28';
 // GitHub answers 403 "Request forbidden by administrative rules" to a request
 // that carries no User-Agent. Node's fetch sends one of its own; workerd sends
-// none, so every request from this client names itself.
-const USER_AGENT = 'ghdiff';
+// none, so every request from this client names itself. Exported because the
+// App's own three calls in `./githubApp.ts` go to two hosts this module does
+// not, and the rule is about every request to GitHub rather than about this
+// client.
+export const USER_AGENT = 'ghdiff';
 const JSON_MEDIA_TYPE = 'application/vnd.github+json';
 const DIFF_MEDIA_TYPE = 'application/vnd.github.diff';
 const RAW_MEDIA_TYPE = 'application/vnd.github.raw';
+
+/** A token, and whether the sealed session cookie is where it came from. */
+export interface ResolvedToken {
+  token?: string;
+  fromSession: boolean;
+}
 
 export class GitHubError extends Error {
   readonly status: number;
@@ -27,15 +41,51 @@ export class GitHubError extends Error {
   }
 }
 
-/** Reads the caller's token from the request, then from the environment. */
-export function readGitHubToken(request: Request): string | undefined {
+/**
+ * The token this request speaks with, from the three places one can come from,
+ * most specific first.
+ *
+ * The header wins because a caller that named a credential meant that one. The
+ * sealed session cookie is next, and it is the ordinary case for a reviewer in a
+ * browser. `GITHUB_TOKEN` is last, and it is a single-user deployment's way to
+ * skip the browser step entirely.
+ *
+ * `accessTokenUsable` is asked without the refresh skew, deliberately: a token
+ * five minutes from its expiry still works, and answering with nothing here
+ * would drop a signed-in reviewer to anonymous for those five minutes rather
+ * than let `/api/auth/refresh` mend it behind them.
+ *
+ * `fromSession` travels with it because the account menu needs it: a viewer
+ * resolved from `GITHUB_TOKEN` has no sign-out to offer, and one resolved from
+ * the cookie does. Nothing else in the app reads it.
+ */
+export async function resolveGitHubToken(
+  request: Request
+): Promise<ResolvedToken> {
   const header = request.headers.get('authorization');
   const bearer = header?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
   if (bearer != null && bearer.length > 0) {
-    return bearer;
+    return { token: bearer, fromSession: false };
   }
+
+  const keyring = readKeyring();
+  if (keyring != null) {
+    const session = await readSession(request, keyring);
+    const now = Date.now();
+    if (
+      session != null &&
+      withinMaxAge(session, now) &&
+      accessTokenUsable(session, now)
+    ) {
+      return { token: session.accessToken, fromSession: true };
+    }
+  }
+
   const fromEnv = process.env.GITHUB_TOKEN?.trim();
-  return fromEnv != null && fromEnv.length > 0 ? fromEnv : undefined;
+  return {
+    token: fromEnv != null && fromEnv.length > 0 ? fromEnv : undefined,
+    fromSession: false,
+  };
 }
 
 function headers(token: string | undefined, accept: string): HeadersInit {
@@ -51,21 +101,7 @@ function headers(token: string | undefined, accept: string): HeadersInit {
 }
 
 async function readErrorMessage(response: Response): Promise<string> {
-  const body = await response.text();
-  try {
-    const parsed: unknown = JSON.parse(body);
-    if (
-      typeof parsed === 'object' &&
-      parsed != null &&
-      'message' in parsed &&
-      typeof parsed.message === 'string'
-    ) {
-      return parsed.message;
-    }
-  } catch {
-    // Fall through to the raw body.
-  }
-  return body.trim().length > 0 ? body.trim() : response.statusText;
+  return gitHubErrorMessage(await response.text(), response.statusText);
 }
 
 /** GET a JSON resource. Throws GitHubError on a non-2xx response. */
@@ -276,6 +312,25 @@ export function encodeRefForPath(ref: string): string {
 // with a signed URL. Only the first hop needs the token: fetch drops the
 // Authorization header on a cross-origin redirect, and the signed target does
 // not want it.
+//
+// **That host does not authenticate a GitHub App user-to-server token.** It was
+// measured, not assumed. A public pull request with no credential answers from
+// `web-diff`; the same route with a live `ghu_` token on a private pull request
+// answers from `api-diff`, which means the web attempt failed even though the
+// token was sent and was good enough for `/user`. github.com's `.diff` endpoint
+// takes a personal access token and refuses a `ghu_` one.
+//
+// So a private diff is capped after all: 300 files and 20000 lines from the API,
+// then `synthesizePatch` from the file list, which is where GitHub starts leaving
+// out the `patch` field on large files. A 162-file private pull request came back
+// with 96 of its files carrying no lines. `describeSynthesisGaps` is what says so
+// on screen, and there is no dishonesty in the chain — but a reviewer on a large
+// private diff loses content they used to get.
+//
+// A `Bearer` header still reaches this host, because a personal access token
+// still works here. `resolveGitHubToken` honours that header ahead of the cookie,
+// which is the seam a future fallback can use without putting a token form back
+// in front of everybody.
 
 const GITHUB_WEB_HOST = 'https://github.com';
 

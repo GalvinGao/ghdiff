@@ -8,7 +8,10 @@ import {
 
 import { type CodeFontState, useCodeFont } from '@/hooks/useCodeFont';
 import { type ColorModeState, useColorMode } from '@/hooks/useColorMode';
-import { type GitHubTokenState, useGitHubToken } from '@/hooks/useGitHubToken';
+import {
+  type GitHubSessionState,
+  useGitHubSession,
+} from '@/hooks/useGitHubSession';
 import { type OpenPullsState, useOpenPulls } from '@/hooks/useOpenPulls';
 import {
   useWatchedRepos,
@@ -17,22 +20,27 @@ import {
 
 // One owner for the state the whole app shares.
 //
-// Four of these five read a setting out of browser storage, and each of those
-// four reads it through a jotai atom, so the store is the owner and two callers
-// cannot come to disagree — see `src/hooks/preferences.ts`. `useOpenPulls` is
-// the one that has no atom behind it: it is a request to GitHub, and mounting
-// it twice would ask GitHub twice.
+// Three of these five read a setting out of browser storage, and each of those
+// three reads it through a jotai atom, so the store is the owner and two callers
+// cannot come to disagree — see `src/hooks/preferences.ts`.
 //
-// So this provider stays, and the rule with it. It is the one place the five
-// are mounted, it is where the request's inputs are wired to the settings it
-// depends on, and it is what carries the answer to a bar and a page that are
-// never unmounted between pull requests.
+// The other two are requests to GitHub, and they are here for the opposite
+// reason: mounting either twice would ask GitHub twice. `useOpenPulls` is the
+// watch list's own question. `useGitHubSession` reads nothing from storage at
+// all — the credential is in a cookie the browser attaches by itself — but one
+// answer to "who is this" serves the account menu, the review header, and every
+// screen that needs to know whose name a comment will carry.
+//
+// So this provider stays, and the rule with it. It is the one place the five are
+// mounted, it is where the request's inputs are wired to the settings it depends
+// on, and it is what carries the answer to a bar and a page that are never
+// unmounted between pull requests.
 
 export interface AppData {
   codeFont: CodeFontState;
   colorMode: ColorModeState;
   pulls: OpenPullsState;
-  token: GitHubTokenState;
+  session: GitHubSessionState;
   watched: WatchedReposState;
 }
 
@@ -41,12 +49,11 @@ const AppDataContext = createContext<AppData | null>(null);
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const codeFont = useCodeFont();
   const colorMode = useColorMode();
-  const token = useGitHubToken();
+  const session = useGitHubSession();
   const watched = useWatchedRepos();
   const pulls = useOpenPulls({
-    ready: token.hydrated && watched.hydrated,
+    ready: watched.hydrated,
     repos: watched.repos,
-    token: token.token,
   });
 
   // The document's own answer to whether the left bar is there.
@@ -63,8 +70,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [watching]);
 
   const value = useMemo<AppData>(
-    () => ({ codeFont, colorMode, pulls, token, watched }),
-    [codeFont, colorMode, pulls, token, watched]
+    () => ({ codeFont, colorMode, pulls, session, watched }),
+    [codeFont, colorMode, pulls, session, watched]
   );
 
   return (

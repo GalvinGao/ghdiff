@@ -117,7 +117,6 @@ function toStoredRows(
 export function useReviewComments(options: {
   target: ReviewTarget;
   entries: readonly ReviewFileEntry[];
-  token?: string;
   viewerLogin?: string;
   /**
    * The signed-in account's picture. A comment written here is shown before
@@ -128,8 +127,7 @@ export function useReviewComments(options: {
   /** True once the diff is parsed. Comments only map onto known files. */
   ready: boolean;
 }): ReviewCommentsState {
-  const { entries, ready, target, token, viewerAvatarUrl, viewerLogin } =
-    options;
+  const { entries, ready, target, viewerAvatarUrl, viewerLogin } = options;
   const store: CommentStore = supportsGitHubComments(target)
     ? 'github'
     : 'local';
@@ -259,7 +257,7 @@ export function useReviewComments(options: {
     try {
       const comments = await rpc.comments.list(
         { number: pullNumber, owner: pullOwner, repo: pullRepo },
-        { context: { token }, signal: controller.signal }
+        { signal: controller.signal }
       );
       place(
         comments.map((payload) => ({
@@ -273,16 +271,7 @@ export function useReviewComments(options: {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [
-    itemIdByPath,
-    pullNumber,
-    pullOwner,
-    pullRepo,
-    ready,
-    storageKey,
-    store,
-    token,
-  ]);
+  }, [itemIdByPath, pullNumber, pullOwner, pullRepo, ready, storageKey, store]);
 
   useEffect(() => {
     void load();
@@ -324,10 +313,12 @@ export function useReviewComments(options: {
     ) => {
       if (pullOwner == null || pullRepo == null || pullNumber == null) return;
       try {
-        const comment = await rpc.comments.create(
-          { number: pullNumber, owner: pullOwner, repo: pullRepo, ...input },
-          { context: { token } }
-        );
+        const comment = await rpc.comments.create({
+          number: pullNumber,
+          owner: pullOwner,
+          repo: pullRepo,
+          ...input,
+        });
         replace(itemId, key, (metadata) => ({
           ...metadata,
           kind: 'thread',
@@ -359,7 +350,7 @@ export function useReviewComments(options: {
         }));
       }
     },
-    [pullNumber, pullOwner, pullRepo, replace, token]
+    [pullNumber, pullOwner, pullRepo, replace]
   );
 
   const postReply = useCallback(
@@ -372,16 +363,13 @@ export function useReviewComments(options: {
     ) => {
       if (pullOwner == null || pullRepo == null || pullNumber == null) return;
       try {
-        const comment = await rpc.comments.create(
-          {
-            body,
-            number: pullNumber,
-            owner: pullOwner,
-            repo: pullRepo,
-            replyToId,
-          },
-          { context: { token } }
-        );
+        const comment = await rpc.comments.create({
+          body,
+          number: pullNumber,
+          owner: pullOwner,
+          repo: pullRepo,
+          replyToId,
+        });
         // The optimistic message becomes the real one, in place. Its position
         // is already right: GitHub sorts replies by creation time and this is
         // the newest, so the thread does not reorder under the reader.
@@ -414,7 +402,7 @@ export function useReviewComments(options: {
         }));
       }
     },
-    [pullNumber, pullOwner, pullRepo, replace, token]
+    [pullNumber, pullOwner, pullRepo, replace]
   );
 
   const saveDraft = useCallback(
@@ -535,10 +523,11 @@ export function useReviewComments(options: {
           // Newest first, because GitHub refuses to delete a comment that
           // still has replies pointing at it.
           for (const githubId of [...githubIds].reverse()) {
-            await rpc.comments.remove(
-              { commentId: githubId, owner: pullOwner, repo: pullRepo },
-              { context: { token } }
-            );
+            await rpc.comments.remove({
+              commentId: githubId,
+              owner: pullOwner,
+              repo: pullRepo,
+            });
           }
         } catch {
           setError('Could not delete that thread on GitHub. Reload to check.');
@@ -546,7 +535,7 @@ export function useReviewComments(options: {
       };
       void remove();
     },
-    [pullOwner, pullRepo, replace, state.byItemId, store, token]
+    [pullOwner, pullRepo, replace, state.byItemId, store]
   );
 
   const reload = useCallback(() => {

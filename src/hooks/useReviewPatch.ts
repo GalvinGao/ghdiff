@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { withGitHubToken } from './useGitHubToken';
+import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
 import {
   buildReviewData,
@@ -50,15 +50,8 @@ const NOTICE_HEADER = 'x-ghdiff-notice';
  */
 export function useReviewPatch(options: {
   target: ReviewTarget;
-  token?: string;
-  /**
-   * False until the stored token has been read. Loading before then sends one
-   * unauthenticated request, which a private repository answers with 404, and
-   * the reviewer sees an error flash before the real load.
-   */
-  tokenReady: boolean;
 }): ReviewPatchState {
-  const { target, token, tokenReady } = options;
+  const { target } = options;
   const [data, setData] = useState<ReviewData>(EMPTY_REVIEW_DATA);
   const [state, setState] = useState<PatchLoadState>('fetching');
   const [error, setError] = useState<string | undefined>(undefined);
@@ -71,7 +64,6 @@ export function useReviewPatch(options: {
   const cacheKey = reviewTargetKey(target);
 
   const load = useCallback(async () => {
-    if (!tokenReady) return;
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -83,10 +75,10 @@ export function useReviewPatch(options: {
     setState('fetching');
 
     try {
-      const response = await fetch(
-        `/api/diff?${query}`,
-        withGitHubToken(token, { signal: controller.signal })
-      );
+      const response = await fetchWithRefresh(`/api/diff?${query}`, {
+        cache: 'no-store',
+        signal: controller.signal,
+      });
       setNotice(response.headers.get(NOTICE_HEADER) ?? undefined);
       // Read a chunk at a time so the wait has a figure on it. A patch of tens
       // of megabytes is a long stare at one sentence, and the count of what has
@@ -128,7 +120,7 @@ export function useReviewPatch(options: {
       );
       setState('error');
     }
-  }, [cacheKey, query, token, tokenReady]);
+  }, [cacheKey, query]);
 
   useEffect(() => {
     void load();

@@ -5,9 +5,10 @@ import { type MouseEvent, useRef, useState } from 'react';
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { ExampleTargets } from '@/components/ExampleTargets';
-import { GitHubTokenForm } from '@/components/GitHubTokenForm';
+import { GitHubAccountPanel } from '@/components/GitHubAccountPanel';
 import { PullListButton } from '@/components/PullListButton';
 import { Button } from '@/components/ui/Button';
+import { buttonClass } from '@/components/ui/buttonClass';
 import { Dialog } from '@/components/ui/Dialog';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { UserscriptInstall } from '@/components/UserscriptInstall';
@@ -29,10 +30,10 @@ const CARD =
 
 export function HomeScreen() {
   const navigate = useNavigate();
-  const { colorMode, token, watched } = useAppData();
+  const { colorMode, session, watched } = useAppData();
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
-  const [editingToken, setEditingToken] = useState(false);
+  const [editingAccount, setEditingAccount] = useState(false);
   const targetField = useRef<HTMLInputElement>(null);
 
   // The card's border is the field's promise of a click target, and the field
@@ -54,7 +55,7 @@ export function HomeScreen() {
     targetField.current?.focus();
   }
 
-  const viewer = token.viewer;
+  const viewer = session.viewer;
 
   return (
     // `m-auto` on the column below, not `items-center`: auto margins take the
@@ -167,29 +168,58 @@ export function HomeScreen() {
           {/* The rule is the wrapper's. `quiet` already sets a transparent
               border on all four sides of the button, so colouring one of them
               from here would fight it. */}
+          {/* Two different controls, because the two states are two different
+              errands. Signed out it is a link to `/setup`: signing in is only
+              the first of the two things GitHub needs from a reviewer, and a
+              press that went straight to GitHub left the second one to be
+              discovered as a 404 later. Signed in there is an account to look at
+              and a sign-out to reach, and a dialog is where those live.
+
+              A `Link` and not a `Button` with a navigation in its `onClick`, so
+              a middle-click, a right-click and the keyboard all behave the way
+              the rest of the web does. */}
           <div className="border-line border-t">
-            <Button
-              className="h-10 w-full justify-center rounded-none"
-              size="md"
-              variant="quiet"
-              onClick={() => setEditingToken(true)}
-            >
-              {viewer != null ? (
-                <>
-                  <ViewerAvatar size={18} viewer={viewer} />
-                  <span className="min-w-0 truncate">
-                    {viewerDisplayName(viewer)}
-                  </span>
-                </>
-              ) : (
-                <>
-                  Add a GitHub token
-                  <IconArrow className="rotate-180" size={14} />
-                </>
-              )}
-            </Button>
+            {viewer != null ? (
+              <Button
+                className="h-10 w-full justify-center rounded-none"
+                onClick={() => setEditingAccount(true)}
+                size="md"
+                variant="quiet"
+              >
+                <ViewerAvatar size={18} viewer={viewer} />
+                <span className="min-w-0 truncate">
+                  {viewerDisplayName(viewer)}
+                </span>
+              </Button>
+            ) : (
+              <Link
+                className={buttonClass({
+                  className: 'h-10 w-full justify-center rounded-none',
+                  size: 'md',
+                  variant: 'quiet',
+                })}
+                search={{
+                  account: undefined,
+                  from: undefined,
+                  migrated: undefined,
+                }}
+                to="/setup"
+              >
+                Set up access for private repositories
+                <IconArrow className="rotate-180" size={14} />
+              </Link>
+            )}
           </div>
         </div>
+
+        {/* Under the row, not inside the dialog the button used to open: the
+            dialog is only reachable once signed in, and this is what a reviewer
+            whose sign-in failed needs to read. */}
+        {(session.authError ?? session.viewerError) != null && (
+          <p className="text-removed mt-2 text-xs">
+            {session.authError ?? session.viewerError}
+          </p>
+        )}
 
         {/* Pasting a URL is the page's own answer, and this is the answer for
             the reviewer who never leaves github.com. It follows the form
@@ -226,11 +256,11 @@ export function HomeScreen() {
 
         <Dialog
           className="p-4"
-          open={editingToken}
-          title="GitHub token"
-          onClose={() => setEditingToken(false)}
+          open={editingAccount}
+          title="GitHub account"
+          onClose={() => setEditingAccount(false)}
         >
-          <GitHubTokenForm token={token} />
+          <GitHubAccountPanel active={editingAccount} session={session} />
         </Dialog>
 
         <p className="text-ink-faint mt-10 text-xs">

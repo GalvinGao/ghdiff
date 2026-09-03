@@ -4,7 +4,7 @@ import type { CommentListSection } from './comments.ts';
 //
 // A review on a busy repository arrives with two kinds of comment on it. A
 // person wrote one kind and a review bot wrote the other, and the bot usually
-// wrote most of them: on troph-team/lilja#584 one bot accounted for 19 of the
+// wrote most of them: on one such pull request one bot accounted for 19 of the
 // 28 review comments. Reading what your colleagues said means reading past all
 // of that, so the sidebar can hold one kind at a time.
 //

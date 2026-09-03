@@ -72,9 +72,9 @@ const ROLLUP_CHECK: Record<string, CheckState> = {
  * question this axis asks. GitHub computes that field against the base
  * branch's own rule about who has to approve, so a repository with no such rule
  * answers `null` for every pull request it has, approved or not — and even
- * where there is a rule the field goes stale: troph-team/lilja#700 and #701
- * each carried one APPROVED review, on the same branch, in the same minute, and
- * GitHub reported `APPROVED` for the first and `null` for the second. The
+ * where there is a rule the field goes stale: two pull requests on one branch
+ * each carried one APPROVED review, in the same minute, and GitHub reported
+ * `APPROVED` for the first and `null` for the second. The
  * square went grey for a pull request the reviewer had just approved, while the
  * header beside it read **Approved** — that button asks `viewerLatestReview`,
  * which is a review and not a policy.

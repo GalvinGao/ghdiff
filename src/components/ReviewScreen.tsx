@@ -50,7 +50,11 @@ import {
   EMPTY_FILTER_STATE,
   type ReviewFilterState,
 } from '@/lib/reviewFilter';
-import { describeReviewTarget, type ReviewTarget } from '@/lib/reviewTarget';
+import {
+  describeReviewTarget,
+  type ReviewTarget,
+  reviewTargetSplat,
+} from '@/lib/reviewTarget';
 import { buildTreeStatIndex } from '@/lib/treeStats';
 import { defaultViewerControls } from '@/lib/viewerControls';
 
@@ -64,12 +68,12 @@ const NO_ITEMS: ReadonlySet<string> = new Set<string>();
 
 export function ReviewScreen({ target }: { target: ReviewTarget }) {
   // The left bar owns these, so the diff and the bar cannot disagree about who
-  // the token belongs to or which repositories are watched.
+  // the reviewer is signed in as or which repositories are watched.
   const {
     codeFont,
     colorMode,
     pulls: openPulls,
-    token,
+    session,
     watched,
   } = useAppData();
   const workersReady = useWorkerPoolReady();
@@ -119,11 +123,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     commentAuthorFilterPreference
   );
 
-  const patch = useReviewPatch({
-    target,
-    token: token.token,
-    tokenReady: token.hydrated,
-  });
+  const patch = useReviewPatch({ target });
   // Depends on the three parts, not on the target: a server component hands the
   // target down, so its identity changes on every read of the RSC payload.
   const pullTarget = target.kind === 'github-pull' ? target : undefined;
@@ -131,23 +131,20 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     number: pullTarget?.number,
     owner: pullTarget?.owner,
     repo: pullTarget?.repo,
-    token: token.token,
   });
   const review = useSubmitReview({
     number: pullTarget?.number,
     owner: pullTarget?.owner,
     repo: pullTarget?.repo,
-    token: token.token,
   });
   // Only reached when a reviewer expands a hunk's unmodified lines, so it costs
   // nothing on a review nobody expands.
-  const files = useDiffFileLoader({ target, token: token.token });
+  const files = useDiffFileLoader({ target });
   const comments = useReviewComments({
     target,
     entries: patch.data.entries,
-    token: token.token,
-    viewerLogin: token.viewer?.login,
-    viewerAvatarUrl: token.viewer?.avatarUrl,
+    viewerLogin: session.viewer?.login,
+    viewerAvatarUrl: session.viewer?.avatarUrl,
     ready: patch.state === 'ready',
   });
   // The whole patch, not the filtered list: a mark belongs to the file and not
@@ -155,7 +152,6 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const viewedFiles = useViewedFiles({
     target,
     entries: patch.data.entries,
-    token: token.token,
     ready: patch.state === 'ready',
   });
 
@@ -489,7 +485,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         // A verdict changes the review half of the square the left bar draws on
         // every row, so the list it came from is asked again.
         onReviewSubmitted={openPulls.reload}
-        token={token}
+        session={session}
       />
 
       {patch.state === 'ready' && workersReady ? (
@@ -594,12 +590,25 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           state={patch.state === 'ready' ? 'starting' : patch.state}
           status={patch.status}
           target={target}
-          token={token}
+          targetPath={`/${reviewTargetSplat(target)}`}
+          session={session}
         />
       )}
 
       {patch.notice != null && (
         <ReviewNotice tone="muted">{patch.notice}</ReviewNotice>
+      )}
+      {/* A sign-in comes back to the diff it left from, so a sign-in that
+          failed has to say so here. It is the same strip a failed comment
+          lands on, and it is dismissable for the same reason: the diff is
+          still readable and the reviewer may simply press Sign in again. */}
+      {session.authError != null && session.authError !== dismissedError && (
+        <ReviewNotice
+          onDismiss={() => setDismissedError(session.authError)}
+          tone="error"
+        >
+          {session.authError}
+        </ReviewNotice>
       )}
       {comments.error != null && comments.error !== dismissedError && (
         <ReviewNotice

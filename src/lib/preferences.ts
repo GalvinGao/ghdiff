@@ -9,7 +9,6 @@ import {
   CODE_FONT_STORAGE_KEY,
   COLOR_MODE_STORAGE_KEY,
   COMMENT_AUTHOR_FILTER_STORAGE_KEY,
-  GITHUB_TOKEN_STORAGE_KEY,
   RAIL_COLLAPSED_STORAGE_KEY,
   RAIL_WIDTH_STORAGE_KEY,
   SIDEBAR_WIDTH_STORAGE_KEY,
@@ -117,24 +116,6 @@ export const CODE_FONT_PREFERENCE = wordPreference<CodeFontId>(
   DEFAULT_CODE_FONT,
   isCodeFont
 );
-
-/**
- * The personal access token, which is a preference in the sense that matters
- * here: the browser keeps it, the server never does, and every tab of this
- * browser is the same reviewer signed in once.
- *
- * `null` is no token, and it removes the key rather than writing an empty
- * string, so signing out leaves nothing behind to read.
- */
-export const GITHUB_TOKEN_PREFERENCE: PreferenceCodec<string | null> = {
-  key: GITHUB_TOKEN_STORAGE_KEY,
-  fallback: null,
-  decode: (raw) => {
-    const trimmed = raw.trim();
-    return trimmed.length === 0 ? null : trimmed;
-  },
-  encode: (value) => value,
-};
 
 /** No repository is watched, as one reference the fallback can keep. */
 const NO_WATCHED_REPOS: WatchedRepo[] = [];

@@ -2,6 +2,7 @@ import { oc, type } from '@orpc/contract';
 import * as z from 'zod';
 
 import type { CommentPayload } from '@/lib/comments';
+import type { AppInstallation } from '@/lib/installations';
 import type { PullDetails } from '@/lib/pullDetails';
 import type { OpenPullsData } from '@/lib/pulls';
 import type { SubmittedReview } from '@/lib/reviewDecision';
@@ -38,10 +39,31 @@ const side = z.enum(['additions', 'deletions']);
 export const contract = {
   viewer: {
     /**
-     * Who the token belongs to. A caller with no token is not an error: it
-     * answers with no viewer, and the form asks for one.
+     * Who the request speaks as. A caller with no credential is not an error: it
+     * answers with no viewer, and the screen offers a sign-in.
+     *
+     * `fromSession` is what separates a reviewer who signed in from a deployment
+     * running on `GITHUB_TOKEN`. Both have a viewer and both post comments as
+     * that account, and only the first has a sign-out to offer — so the menu
+     * reads this rather than guessing from the viewer alone.
      */
-    get: oc.output(type<{ viewer?: GitHubViewer }>()),
+    get: oc.output(type<{ viewer?: GitHubViewer; fromSession?: boolean }>()),
+  },
+
+  installations: {
+    /**
+     * Where this reviewer has ghdiff installed, and where to install it again.
+     * The setup page is the only caller: signing in and being able to read a
+     * diff are two different facts under a GitHub App, and this is the second
+     * one.
+     *
+     * A caller with no credential is not an error. It answers with an empty list
+     * and the install address, which is exactly what step one of that page is
+     * about to say anyway.
+     */
+    list: oc.output(
+      type<{ installations: AppInstallation[]; installUrl?: string }>()
+    ),
   },
 
   pulls: {

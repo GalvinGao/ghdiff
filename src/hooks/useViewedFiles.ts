@@ -38,11 +38,10 @@ export interface ViewedFilesState {
 export function useViewedFiles(options: {
   target: ReviewTarget;
   entries: readonly ReviewFileEntry[];
-  token?: string;
   /** True once the diff is parsed. A mark only means something on a file. */
   ready: boolean;
 }): ViewedFilesState {
-  const { entries, ready, target, token } = options;
+  const { entries, ready, target } = options;
 
   // The target arrives from a loader, so its object identity changes on every
   // re-run of that loader. Everything below depends on these derived values
@@ -56,8 +55,8 @@ export function useViewedFiles(options: {
   const [viewed, setViewedFiles] = useState<ReadonlySet<string>>(NO_FILES);
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(NO_FILES);
   const [error, setError] = useState<string | undefined>(undefined);
-  // One load at a time. A new target, or a new token, cancels the request in
-  // flight so a slow answer cannot overwrite a newer one.
+  // One load at a time. A new target cancels the request in flight, so a slow
+  // answer cannot overwrite a newer one.
   const controllerRef = useRef<AbortController | null>(null);
 
   // GitHub names a file by its path; this app names it by its item id, which
@@ -100,7 +99,7 @@ export function useViewedFiles(options: {
     try {
       const answer = await rpc.viewedFiles.list(
         { number: pullNumber, owner: pullOwner, repo: pullRepo },
-        { context: { token }, signal: controller.signal }
+        { signal: controller.signal }
       );
       if (controller.signal.aborted) return;
       const next = new Set<string>();
@@ -118,16 +117,7 @@ export function useViewedFiles(options: {
       // the boxes would have said for a reviewer who has read nothing — and a
       // press still reaches GitHub, because a press names only a path.
     }
-  }, [
-    itemIdByPath,
-    pullNumber,
-    pullOwner,
-    pullRepo,
-    ready,
-    storageKey,
-    store,
-    token,
-  ]);
+  }, [itemIdByPath, pullNumber, pullOwner, pullRepo, ready, storageKey, store]);
 
   useEffect(() => {
     void load();
@@ -162,16 +152,13 @@ export function useViewedFiles(options: {
 
       void (async () => {
         try {
-          await rpc.viewedFiles.set(
-            {
-              number: pullNumber,
-              owner: pullOwner,
-              path,
-              repo: pullRepo,
-              viewed: next,
-            },
-            { context: { token } }
-          );
+          await rpc.viewedFiles.set({
+            number: pullNumber,
+            owner: pullOwner,
+            path,
+            repo: pullRepo,
+            viewed: next,
+          });
         } catch (cause) {
           // Put the box back. GitHub is the record for a pull request, and a
           // tick it did not take is a tick this app must not go on drawing —
@@ -188,7 +175,7 @@ export function useViewedFiles(options: {
         }
       })();
     },
-    [pathByItemId, pullNumber, pullOwner, pullRepo, storageKey, store, token]
+    [pathByItemId, pullNumber, pullOwner, pullRepo, storageKey, store]
   );
 
   const dismissError = useCallback(() => setError(undefined), []);
