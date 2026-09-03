@@ -215,6 +215,78 @@ who watches nothing, so on their first visit this section is the only way in.
 `PullRail` keeps `WatchedReposDialog` for the same editor, because a reviewer
 reading a diff cannot lose it to a navigation home.
 
+**A reviewer who watches nothing is asked, once.** `PullRail` draws nothing
+while the watch list is empty, so the one feature that makes ghdiff somewhere to
+stay is invisible to exactly the reviewer who has not found it yet — and a
+reviewer who arrived from the userscript button has never seen the home page,
+where the editor sits in the open. `WatchOfferDialog` goes to them instead, on
+the repository they are already reading, and offers to watch it in one press.
+
+Three things keep that from being a nag, and each of them is why it is a
+component rather than a condition inside `PullRail`.
+
+It is asked once per browser. `watchOfferPreference` records that the offer
+happened, not what the reviewer answered, so **Not now** is final and a reviewer
+who later empties the list is not asked a second time. The write lands as the
+window opens rather than as it is answered: a reviewer who closes the tab, or
+reloads, has been asked.
+
+It waits for the diff, which is why `ReviewScreen` mounts it and `AppShell` does
+not — `ready` is `patch.state === 'ready'`. A diff that would not load draws
+`ReviewStatusPanel`, a failure with a fix in it and usually the 404 that sends
+the reviewer to `/setup`, and a modal over that is a question stacked on a
+problem. It also keeps the one offer for a repository the reviewer can read: a
+404 leaves the setting alone, and the next diff that loads is offered.
+
+And the press names the repository, so the label truncates rather than widen the
+row. A name is as long as its owner made it, and this dialog scrolls vertically
+— a box with `overflow-y: auto` takes an `overflow-x` of `auto` whether it asked
+for one or not, so the overflow would arrive as a scrollbar across the window.
+Nothing is lost to the clip, because the header above the diff names the
+repository too.
+
+The home page is offered nothing. It has the editor in the open already, and it
+names no repository to offer.
+
+**And the offer shows the bar rather than describe it.** A reviewer is being
+asked to take a step on the strength of one sentence, and the sentence has to
+name a thing they have never seen. So `WatchOfferPreview` draws it: the status
+square is the whole point of the bar, and three of them say the three answers a
+reviewer scans that column for — approved and green, changes requested with a
+check failed, nobody looked yet and the checks still running.
+
+Five rows, because a list of exactly three reads as all there is. The first and
+the last fade under one `mask-image` gradient whose stops sit at a fifth and
+four fifths of the column, which is the whole of "fade one, three solid, fade
+one" — and a mask reads alpha and never colour, so `transparent` to `#000`
+serves both schemes with one figure. That is also why it is a mask rather than a
+gradient painted over the rows: a paint would have to name the dialog's own
+background and would drift the day that token moves.
+
+The square is drawn at 30px where the real bar gives it 13, and the words beside
+it stay at 12. In the bar the square is a mark on a row of text; here it is the
+subject, and a mark at label size would read as a bullet in front of a list of
+sentences. Nothing about the bar's figures follows from these two. No panel
+behind it and the block centred, because a bordered box reads as a control to
+press and this is a picture — `w-fit` on the column is what centres the block
+while leaving every square on one pixel.
+
+Every word in it comes from `describePullStatus`, the same function that names
+the square for a screen reader on every row of the real bar, so the
+advertisement cannot come to promise a state `PullStatusMark` does not paint.
+The whole illustration is `aria-hidden`: it illustrates the paragraph above it,
+and five marks each reading out their own `title` is noise in front of the two
+buttons.
+
+**The offer names a place, and a phone has a different one.** `PullRail` is
+`max-phone:hidden` and `PullListButton` stands in for it, so "the bar on the
+left" is false on the one screen that has no bar — a phone opens the same list
+from the leftmost control in the review header, and the **Watched repos** button
+sits at the foot of that window instead of at the foot of a bar. The offer names
+the place twice, so `WHERE_PULLS_ARE` states both readings once and `useIsPhone`
+picks between them. A second caller of that hook costs nothing: it is a media
+query and not a request.
+
 **A field's border is its promise of a click target.** The card around the home
 page's URL box is that border, and the `<input>` is only the middle of it: the
 row's padding, the gap, and the space around **Review** are not the field, so a
@@ -390,20 +462,21 @@ leave all four stranded on the document element.
 
 **A remembered setting is a jotai atom, and that is the whole of why it
 travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
-colour mode, the code font, the token, the watch list, the viewer's five
-controls, the bar's collapse, the two pane widths, and the comment author filter
-— as a key, a fallback, and the two directions between the value and the one
-string a browser can hold. `src/hooks/preferences.ts` turns each of those into
-one `atomWithStorage`, and `usePreference` is how a hook reads it.
+colour mode, the code font, the token, the watch list, whether that list has
+been offered, the viewer's five controls, the bar's collapse, the two pane
+widths, and the comment author filter — as a key, a fallback, and the two
+directions between the value and the one string a browser can hold.
+`src/hooks/preferences.ts` turns each of those into one `atomWithStorage`, and
+`usePreference` is how a hook reads it.
 
 Three things follow, and each of them was a rule or a bug before it. The store
 is the owner, so two callers of a setting cannot come to disagree. A `storage`
 event is what one tab hears when another writes, so a reviewer with four tabs
-open changes the code font once — verified live for all nine, sign-out included.
-And a setting is `undefined` until the browser's copy has been read, which is
-where `hydrated` comes from: storage is read on mount and never during a render,
-so the server's markup and the first client render agree, and an unread watch
-list is not an empty one.
+open changes the code font once — verified live for the nine that were there
+then, sign-out included. And a setting is `undefined` until the browser's copy
+has been read, which is where `hydrated` comes from: storage is read on mount
+and never during a render, so the server's markup and the first client render
+agree, and an unread watch list is not an empty one.
 
 Add a setting by adding its codec to `src/lib/preferences.ts` and its atom
 beside the others, then reading it with `usePreference`. The encodings there are
@@ -1674,8 +1747,8 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.90 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 100 KiB of headroom is
+The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 74 KiB of headroom is
 left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
 it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
 which carries the lazy loader for all 300-odd grammars, so importing anything

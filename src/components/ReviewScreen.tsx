@@ -15,6 +15,7 @@ import { ReviewSidebar } from '@/components/ReviewSidebar';
 import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
 import { isSameSelection, ReviewViewer } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
+import { WatchOfferDialog } from '@/components/WatchOfferDialog';
 import {
   commentAuthorFilterPreference,
   usePreference,
@@ -628,6 +629,15 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           {viewedFiles.error}
         </ReviewNotice>
       )}
+
+      {/* The offer of a watch list, for a reviewer who has none. It asks
+          nothing until the diff is up: a modal over `ReviewStatusPanel` would
+          be a question stacked on a failure. See WatchOfferDialog. */}
+      <WatchOfferDialog
+        owner={target.owner}
+        ready={patch.state === 'ready'}
+        repo={target.repo}
+      />
     </>
   );
 }

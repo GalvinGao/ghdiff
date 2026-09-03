@@ -16,6 +16,13 @@ export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'ghdiff-sidebar-width';
 export const RAIL_WIDTH_STORAGE_KEY = 'ghdiff-rail-width';
 export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
+/**
+ * Whether this browser has been offered the watch list. The offer is made once
+ * and never again, so the key records that it happened rather than what the
+ * reviewer answered: a reviewer who said no is not asked twice, and one who
+ * later empties the list is not asked again either.
+ */
+export const WATCH_OFFER_STORAGE_KEY = 'ghdiff-watch-offer';
 
 /** Comments for one review target, when they cannot go to GitHub. */
 export function localCommentsStorageKey(targetKey: string): string {

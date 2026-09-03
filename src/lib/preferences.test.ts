@@ -10,12 +10,13 @@ import {
   SIDEBAR_WIDTH_PREFERENCE,
   type PreferenceCodec,
   VIEWER_CONTROLS_PREFERENCE,
+  WATCH_OFFER_PREFERENCE,
   WATCHED_REPOS_PREFERENCE,
 } from './preferences.ts';
 import { DEFAULT_VIEWER_CONTROLS } from './viewerControls.ts';
 
-// Read as one kind, so a rule below is asked of every codec rather than of the
-// nine separately. The two directions are methods, which TypeScript treats as
+// Read as one kind, so a rule below is asked of every codec rather than of each
+// one separately. The two directions are methods, which TypeScript treats as
 // bivariant, so one `unknown` codec stands for all of them.
 const ALL: PreferenceCodec<unknown>[] = [
   CODE_FONT_PREFERENCE,
@@ -25,6 +26,7 @@ const ALL: PreferenceCodec<unknown>[] = [
   RAIL_WIDTH_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
+  WATCH_OFFER_PREFERENCE,
   WATCHED_REPOS_PREFERENCE,
 ];
 
@@ -169,5 +171,21 @@ describe('the left bar and the comment filter', () => {
     assert.equal(COMMENT_AUTHOR_FILTER_PREFERENCE.decode('"people"'), 'people');
     assert.equal(COMMENT_AUTHOR_FILTER_PREFERENCE.decode('"bots"'), 'bots');
     assert.equal(COMMENT_AUTHOR_FILTER_PREFERENCE.decode('all'), undefined);
+  });
+});
+
+describe('the watch offer', () => {
+  it('has never been made until the browser says it has', () => {
+    // The fallback is what every browser older than this setting reads, and it
+    // has to be the reading that lets the offer happen. A reviewer stored no
+    // such key, so `false` is the only safe answer.
+    assert.equal(WATCH_OFFER_PREFERENCE.fallback, false);
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('true'), true);
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('false'), false);
+  });
+
+  it('refuses a value that is not the boolean it wrote', () => {
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('1'), undefined);
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('"true"'), undefined);
   });
 });

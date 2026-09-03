@@ -13,6 +13,7 @@ import {
   RAIL_WIDTH_STORAGE_KEY,
   SIDEBAR_WIDTH_STORAGE_KEY,
   VIEWER_CONTROLS_STORAGE_KEY,
+  WATCH_OFFER_STORAGE_KEY,
   WATCHED_REPOS_STORAGE_KEY,
 } from './storageKeys.ts';
 import { acceptViewerControls, type ViewerControls } from './viewerControls.ts';
@@ -146,6 +147,21 @@ export const VIEWER_CONTROLS_PREFERENCE = jsonPreference<ViewerControls | null>(
   VIEWER_CONTROLS_STORAGE_KEY,
   null,
   (value) => acceptViewerControls(value) ?? null
+);
+
+/**
+ * Whether this browser has already been offered the watch list.
+ *
+ * False is a reviewer who has never been asked, which is every browser that
+ * predates this setting, so the offer reaches them on their next review. It is
+ * a fact about the offer and not about the list: `WATCH_OFFER_PREFERENCE` stays
+ * true after the reviewer empties the list again, because being asked twice is
+ * the thing a one-time offer must not do.
+ */
+export const WATCH_OFFER_PREFERENCE = jsonPreference<boolean>(
+  WATCH_OFFER_STORAGE_KEY,
+  false,
+  (value) => (typeof value === 'boolean' ? value : undefined)
 );
 
 export const RAIL_COLLAPSED_PREFERENCE = jsonPreference<boolean>(
