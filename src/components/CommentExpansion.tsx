@@ -150,19 +150,13 @@ export function CommentExpansion({
       if (panelRef.current?.contains(event.target) === true) return;
       close();
     };
-    // Scrolling the diff moves the card out from under the layer, so the layer
-    // closes rather than floating over an unrelated line.
-    const onScroll = () => close();
-
     document.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('pointerdown', onPointerDown, true);
-    window.addEventListener('scroll', onScroll, true);
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', close);
     return () => {
       document.removeEventListener('keydown', onKeyDown, true);
       document.removeEventListener('pointerdown', onPointerDown, true);
-      window.removeEventListener('scroll', onScroll, true);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', close);
     };
   }, [close]);
 
