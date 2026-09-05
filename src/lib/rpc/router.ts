@@ -25,6 +25,7 @@ import {
   githubGraphQL,
   githubJson,
   githubWrite,
+  SIGN_IN_EXPIRED,
 } from '@/lib/server/github';
 import { readAppConfig } from '@/lib/server/githubApp';
 import { readInstallations } from '@/lib/server/installations';
@@ -44,9 +45,34 @@ export interface RpcContext {
   token?: string;
   /** True when that token came out of the sealed session cookie. */
   fromSession?: boolean;
+  /**
+   * True when the cookie holds a session whose access token is spent and whose
+   * refresh token is live. No procedure sees that state: the middleware below
+   * answers it for all of them.
+   */
+  refreshDue?: boolean;
 }
 
-const os = implement(contract).$context<RpcContext>();
+// The one middleware, and it stands over every procedure. A cookie that is due a
+// refresh is answered 401 before any procedure runs, because a 401 is the only
+// answer the client refreshes on: `withRefresh` asks `/api/auth/refresh` and
+// sends the call again with the mended cookie. It is an `ORPCError` and not a
+// bare response from the route, so that the one time a reviewer reads it — a
+// refresh that failed — the client decodes a sentence rather than a body it
+// cannot parse. The message is the one `/api/diff` and `/api/file` print for
+// the same state, stated once beside `resolveGitHubToken`.
+const os = implement(contract)
+  .$context<RpcContext>()
+  .use(({ context, next }) => {
+    if (context.refreshDue === true) {
+      requestLog().set({ outcome: 'refresh-due' });
+      throw new ORPCError('UNAUTHORIZED', {
+        status: 401,
+        message: SIGN_IN_EXPIRED,
+      });
+    }
+    return next();
+  });
 
 const MAX_WATCHED_REPOS = 25;
 /**

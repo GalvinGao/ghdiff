@@ -13,6 +13,7 @@ import {
   githubRaw,
   githubWebRaw,
   resolveGitHubToken,
+  SIGN_IN_EXPIRED,
 } from '@/lib/server/github';
 
 // One file's contents, as text/plain, at the commit the target's diff ends on.
@@ -135,7 +136,14 @@ const getFile = withEvlog(
       ref,
     });
 
-    const { token } = await resolveGitHubToken(request);
+    const { token, refreshDue } = await resolveGitHubToken(request);
+    // A cookie whose token has died is answered before either source is asked:
+    // the 401 is what sends the browser to refresh it, and the same request
+    // arrives again with a live one.
+    if (refreshDue) {
+      log.set({ outcome: 'refresh-due' });
+      return textResponse(SIGN_IN_EXPIRED, 401);
+    }
     log.set({
       authenticated: token != null,
       source: token == null ? 'web-raw' : 'api-contents',

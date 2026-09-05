@@ -1150,9 +1150,33 @@ and the overwhelmingly likely somebody is another tab whose new cookie the
 browser is holding right now — a cookie this request cannot see, because the
 browser sent the old one before the new one existed. So the route breaks nothing
 and lets the caller retry, and the retry carries the newer cookie. In the other
-case — a refresh token spent by somebody who should not have it — that retry
-gets 401 and the client stops there. The wrong guess costs one request; the
-opposite wrong guess would sign a reviewer out for having two tabs open.
+case — a refresh token spent where this browser will never see the result,
+revoked at github.com or taken — the retry carries the same dead cookie and gets
+the same 401, and `withRefresh` ends the session on that second 401 through
+`/api/auth/signout`, the route that already knows how to end one. It is the one
+place that sees both answers: a 401 after a 204 is the proof the race had no
+winner here, and without that press a cookie no refresh can mend would cost a
+refresh and an error on every load for the rest of its thirty days. The wrong
+guess costs one request; the opposite wrong guess would sign a reviewer out for
+having two tabs open.
+
+**A spent token is answered 401, because nothing else asks for a refresh.**
+`withRefresh` calls the refresh route after a 401 and at no other time, and for
+one deploy no read produced one: `resolveGitHubToken` found the dead token,
+answered with no token, and every read went on anonymously — `viewer.get` said
+nobody was signed in and a private diff came back Not Found, eight hours into a
+sign-in good for thirty days. Only a write reached `requireToken`'s 401, so
+pressing Approve mended a session a page load could not. `refreshDue` in
+`src/lib/session.ts` names the one state — inside the ceiling, access token
+spent, refresh token live — and the three routes that read the cookie answer it
+with 401 before GitHub is asked: the RPC handler through one middleware over
+every procedure, so the client decodes a sentence rather than a body it cannot
+parse, and `/api/diff` and `/api/file` as `text/plain`. It outranks
+`GITHUB_TOKEN`, or that reviewer's ninth hour would be spent as the deployment's
+own account. A session past the ceiling or with no refresh token gets no 401 and
+is anonymous, as it always was: there is nothing to send the browser to fetch.
+`describeReviewFailure` gives the status the setup button, since by the time a
+401 reaches the panel the refresh has failed and the session is gone.
 
 Inside one tab the same job is a promise. `withRefresh` in
 `src/lib/authFetch.ts` wraps every call this app makes to its own Worker: a 401
