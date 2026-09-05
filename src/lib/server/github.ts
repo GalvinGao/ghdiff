@@ -9,7 +9,7 @@
 
 import { gitHubErrorMessage } from '../githubError.ts';
 import { rateLimitedStatus } from '../rateLimit.ts';
-import { accessTokenUsable, withinMaxAge } from '../session.ts';
+import { accessTokenUsable, refreshDue, withinMaxAge } from '../session.ts';
 import { readKeyring, readSession } from './session.ts';
 
 const GITHUB_API_ROOT = 'https://api.github.com';
@@ -29,7 +29,24 @@ const RAW_MEDIA_TYPE = 'application/vnd.github.raw';
 export interface ResolvedToken {
   token?: string;
   fromSession: boolean;
+  /**
+   * True when the cookie holds a session whose access token is spent and whose
+   * refresh token is live. There is no token to speak with, and the route must
+   * answer 401 rather than go on without one: that answer is what sends the
+   * browser to `/api/auth/refresh`, and the same request comes back a moment
+   * later with a token in its cookie. See `refreshDue` in `@/lib/session`.
+   */
+  refreshDue: boolean;
 }
+
+/**
+ * What a request that is due a refresh answers with, when the answer is read at
+ * all. The browser refreshes and asks again before a reviewer sees it, so this
+ * reaches a screen only when the refresh itself failed — and then the session
+ * behind it is gone, and the sentence is true.
+ */
+export const SIGN_IN_EXPIRED =
+  'Your GitHub sign-in is no longer valid. Set up access again to continue.';
 
 export class GitHubError extends Error {
   readonly status: number;
@@ -55,6 +72,17 @@ export class GitHubError extends Error {
  * would drop a signed-in reviewer to anonymous for those five minutes rather
  * than let `/api/auth/refresh` mend it behind them.
  *
+ * A cookie whose token has died is not the same as no cookie, and it is not
+ * answered the same way. `refreshDue` names the one reading — inside the
+ * ceiling, access token spent, refresh token live — and the route that asked
+ * answers it with 401 before anything is asked of GitHub. The client refreshes
+ * on a 401 and on nothing else, so a route that went on anonymously would leave
+ * the cookie unmended for the rest of its thirty days: no viewer, Not Found for
+ * every private diff, and a reviewer told to sign in eight hours after they did.
+ * It outranks `GITHUB_TOKEN`, or that reviewer's ninth hour would be spent as
+ * the deployment's own account. A session past the ceiling or with no refresh
+ * token is nobody signed in, and falls through as it always did.
+ *
  * `fromSession` travels with it because the account menu needs it: a viewer
  * resolved from `GITHUB_TOKEN` has no sign-out to offer, and one resolved from
  * the cookie does. Nothing else in the app reads it.
@@ -65,19 +93,24 @@ export async function resolveGitHubToken(
   const header = request.headers.get('authorization');
   const bearer = header?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
   if (bearer != null && bearer.length > 0) {
-    return { token: bearer, fromSession: false };
+    return { token: bearer, fromSession: false, refreshDue: false };
   }
 
   const keyring = readKeyring();
   if (keyring != null) {
     const session = await readSession(request, keyring);
     const now = Date.now();
-    if (
-      session != null &&
-      withinMaxAge(session, now) &&
-      accessTokenUsable(session, now)
-    ) {
-      return { token: session.accessToken, fromSession: true };
+    if (session != null) {
+      if (withinMaxAge(session, now) && accessTokenUsable(session, now)) {
+        return {
+          token: session.accessToken,
+          fromSession: true,
+          refreshDue: false,
+        };
+      }
+      if (refreshDue(session, now)) {
+        return { token: undefined, fromSession: false, refreshDue: true };
+      }
     }
   }
 
@@ -85,6 +118,7 @@ export async function resolveGitHubToken(
   return {
     token: fromEnv != null && fromEnv.length > 0 ? fromEnv : undefined,
     fromSession: false,
+    refreshDue: false,
   };
 }
 

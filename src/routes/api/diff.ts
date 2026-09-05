@@ -13,6 +13,7 @@ import {
   githubJson,
   githubWebDiff,
   resolveGitHubToken,
+  SIGN_IN_EXPIRED,
 } from '@/lib/server/github';
 import {
   commitFilesFetch,
@@ -109,8 +110,17 @@ const getDiff = withEvlog(
     }
     log.set({ target: reviewTargetKey(target), targetKind: target.kind });
 
+    // A cookie whose token has died is answered before GitHub is asked: the 401
+    // is what sends the browser to refresh it, and the same request arrives
+    // again with a live one. Not a serve, since no source answered.
+    const { token, refreshDue } = await resolveGitHubToken(request);
+    if (refreshDue) {
+      log.set({ outcome: 'refresh-due' });
+      return textResponse(SIGN_IN_EXPIRED, 401);
+    }
+
     try {
-      const response = await gitHubResponse(target, request, log);
+      const response = await gitHubResponse(target, token, log);
       // One serve, counted. `gitHubResponse` returns only when a source
       // answered, so a 404 or a spent quota is not a serve. The write itself
       // happens after this response has gone.
@@ -133,10 +143,9 @@ export const Route = createFileRoute('/api/diff')({
 
 async function gitHubResponse(
   target: ReviewTarget,
-  request: Request,
+  token: string | undefined,
   log: ReturnType<typeof requestLog>
 ): Promise<Response> {
-  const { token } = await resolveGitHubToken(request);
   log.set({ authenticated: token != null });
   const failures: AttemptFailure[] = [];
 

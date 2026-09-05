@@ -63,6 +63,22 @@ describe('describeReviewFailure', () => {
     assert.doesNotMatch(failure.message, /sign in/i);
   });
 
+  it('sends a 401 to setup, whatever the screen still believes', () => {
+    // The browser refreshes and asks again before the panel sees a 401, so one
+    // that arrives is a refresh that failed and a session that is gone. What the
+    // screen read about the sign-in before that is stale, and the next step is
+    // the same either way.
+    for (const signedIn of [false, true]) {
+      const failure = describeReviewFailure({
+        signedIn,
+        message: 'Your GitHub sign-in is no longer valid.',
+        status: 401,
+      });
+      assert.equal(failure.action, 'setup', String(signedIn));
+      assert.match(failure.message, /sign-in/i);
+    }
+  });
+
   it('keeps the message from the server for every other status', () => {
     const failure = describeReviewFailure({
       signedIn: false,
