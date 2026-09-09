@@ -23,6 +23,7 @@ import { GitHubTextLink } from '@/components/GitHubLink';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
 import { PullListButton } from '@/components/PullListButton';
 import { pullStateLabel } from '@/components/PullStateIcon';
+import { PullStateIcon } from '@/components/PullStateIcon';
 import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';
 import { Button } from '@/components/ui/Button';
 import {
@@ -437,9 +438,9 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {
   // Stamped when the card opens, so the ages it shows are read from one instant
   // and no clock runs behind a closed menu.
   const [openedAt, setOpenedAt] = useState<number | null>(null);
-  const title = pull.data?.title;
+  const details = pull.data;
 
-  if (title == null) {
+  if (details == null) {
     return pull.loading ? (
       <span
         aria-hidden="true"
@@ -447,6 +448,7 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {
       />
     ) : null;
   }
+  const { title } = details;
 
   return (
     <DropdownMenu
@@ -464,6 +466,7 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {
           title={title}
           variant="chrome"
         >
+          <PullStateIcon state={details.state} />
           <span className="text-ink min-w-0 truncate font-medium">{title}</span>
         </Button>
       </DropdownMenuTrigger>

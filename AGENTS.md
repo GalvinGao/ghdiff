@@ -803,9 +803,9 @@ display-menu switch costs no render at all: the stamps stay, and
 through the shadow boundary — is the whole toggle, the same trick `usePaneWidth`
 plays. Marks are cached in a WeakMap per metadata object, which hydration
 mutates in place and a filter change reuses, so an entry cannot go stale.
-`fileDiffCache` is protected in the library's types and a plain getter at
-runtime; the cast in `ReviewViewer` is the one place that leans on it, and a
-library upgrade must re-check it.
+`CodeView` adds the current item context as `onPostRender`'s fourth argument, so
+`ReviewViewer` passes `item.fileDiff` to both annotation passes through that
+public contract rather than reaching into the renderer's protected cache.
 
 One thing GitHub decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review
@@ -813,6 +813,36 @@ comment API refuses one. The failure arrives as GitHub's own sentence in the
 strip along the foot of the screen, which is where every other comment failure
 already lands. A commit and a compare range keep their comments in the browser
 and take them anywhere.
+
+**A cron expression says when it runs beside the code.** `src/lib/cron.ts`
+recognizes whole quoted literals, bare `cron` / `schedule` fields, and entries
+in `crontab`, `*.cron`, and `cron.d/` files. A syntax gate keeps the input to
+standard five-field cron, then `cron-schedule` validates and expands it into
+sorted, distinct field values. The gate is necessary even with a parser:
+`cron-schedule` accepts numeric prefixes such as `1W` as 1. `normalizeField`
+turns the parsed values into concise input for the English-only `cronstrue`
+descriptor, which does not validate schedules itself. Six- and seven-field
+dialects are left alone rather than guessing whether a field is seconds or a
+year. Named months and weekdays, lists, ranges, steps and standard aliases are
+read; `@reboot` names startup rather than inventing a period.
+
+Two readings need more than the library's default words. A step resets at the
+field boundary, so `*/35` is minute 0 and 35 of each hour, not an interval of 35
+minutes. Overlapping lists and Sunday aliases are deduplicated before a
+description is written. Restricted day-of-month and day-of-week fields are OR in
+standard cron, so their descriptions are explicitly joined with **or**. That
+decision uses the original fields: Vixie cron records a leading star, not a star
+anywhere in a list, and normalization must not erase that distinction. No
+timezone is inferred from the reviewer's browser.
+
+`diffCronSchedules.ts` uses the same `onPostRender` and `unsafeCSS` seam as the
+whitespace marks. It reads only rendered rows and caches by node, text and path,
+so highlighting, hydration and virtualized replacements get a fresh answer. The
+hint is absolutely positioned generated content after the code: it changes
+neither the source text selected for copying nor the virtualizer's line height.
+A narrow pane clips the hint; the row's native tooltip holds the complete
+expression, description and timezone caveat. Split and unified views use the
+same path, including deleted lines.
 
 **The wait says how much has arrived, and never how much is left.** A patch of
 tens of megabytes is a long stare at one sentence — oven-sh/bun#30412 is 43.3 MB
