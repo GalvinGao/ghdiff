@@ -194,3 +194,43 @@ export function DropdownMenuSeparator({
     />
   );
 }
+
+export const DropdownMenuSub = Primitive.Sub;
+
+export function DropdownMenuSubTrigger({
+  children,
+  className,
+  ...props
+}: ComponentProps<typeof Primitive.SubTrigger>) {
+  return (
+    <Primitive.SubTrigger
+      className={cn(
+        'flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none select-none data-[highlighted]:bg-surface data-[state=open]:bg-surface',
+        className
+      )}
+      {...props}
+    >
+      <span className="min-w-0 flex-1">{children}</span>
+      <span aria-hidden="true" className="rtl:rotate-180">
+        ›
+      </span>
+    </Primitive.SubTrigger>
+  );
+}
+
+export function DropdownMenuSubContent({
+  className,
+  ...props
+}: ComponentProps<typeof Primitive.SubContent>) {
+  return (
+    <Primitive.Portal>
+      <Primitive.SubContent
+        className={cn(
+          'border-line bg-raised text-ink z-50 max-h-[min(28rem,var(--radix-dropdown-menu-content-available-height))] min-w-48 overflow-y-auto overscroll-contain rounded-lg border p-1 shadow-lg',
+          className
+        )}
+        {...props}
+      />
+    </Primitive.Portal>
+  );
+}

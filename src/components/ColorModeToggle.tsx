@@ -2,6 +2,11 @@ import { IconColorAuto, IconColorDark, IconColorLight } from '@pierre/icons';
 
 import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
+import {
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from '@/components/ui/DropdownMenu';
 import type { ColorModeState } from '@/hooks/useColorMode';
 import { wipeOriginFromClick } from '@/lib/colorSchemeWipe';
 
@@ -48,5 +53,36 @@ export function ColorModeToggle({
     >
       <Icon size={15} />
     </Button>
+  );
+}
+
+export function ColorModeMenuItems({
+  colorMode,
+}: {
+  colorMode: ColorModeState;
+}) {
+  return (
+    <>
+      <DropdownMenuLabel>
+        {m.color_mode_toggle_color_mode({ value: LABEL[colorMode.mode] })}
+      </DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={colorMode.mode}>
+        {ORDER.map((mode) => {
+          const Icon = ICON[mode];
+          return (
+            <DropdownMenuRadioItem
+              key={mode}
+              value={mode}
+              onClick={(event) =>
+                colorMode.setMode(mode, wipeOriginFromClick(event))
+              }
+            >
+              <Icon size={15} />
+              {LABEL[mode]}
+            </DropdownMenuRadioItem>
+          );
+        })}
+      </DropdownMenuRadioGroup>
+    </>
   );
 }
