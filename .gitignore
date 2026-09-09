@@ -20,3 +20,7 @@ coverage/
 .DS_Store
 Thumbs.db
 .playwright-mcp/
+
+# Compiled from messages/*.json before development, tests, and builds.
+src/paraglide/
+project.inlang/cache/

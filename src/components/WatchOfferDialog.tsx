@@ -1,5 +1,8 @@
+import { ParaglideMessage } from '@inlang/paraglide-js-react';
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { Button } from '@/components/ui/Button';
@@ -12,6 +15,12 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { describePullStatus, type PullReviewStatus } from '@/lib/pullStatus';
+
+const watchMarkup = {
+  strong: ({ children }: { children?: ReactNode }) => (
+    <span className="text-ink font-medium">{children}</span>
+  ),
+};
 
 // The one time this app asks for something instead of waiting to be told.
 //
@@ -132,10 +141,6 @@ function WatchOfferPreview() {
  * readings sit here rather than at the sentences that need them, because the
  * offer names the place twice and two copies would drift.
  */
-const WHERE_PULLS_ARE = {
-  phone: 'the pull request list at the top left',
-  wide: 'the bar on the left',
-};
 
 /** What the window is about, which is what its title is written from. */
 interface OfferState {
@@ -151,8 +156,10 @@ interface OfferState {
  * one: the reviewer has not been offered anything yet.
  */
 function dialogTitle({ added, subject }: OfferState): string {
-  if (subject == null) return 'Watch this repository?';
-  return added ? `${subject} is now watched` : `Watch ${subject}?`;
+  if (subject == null) return m.watch_offer_dialog_watch_this_repository();
+  return added
+    ? m.watch_offer_added_title({ subject })
+    : m.watch_offer_dialog_watch({ subject: subject });
 }
 
 export function WatchOfferDialog({
@@ -169,7 +176,6 @@ export function WatchOfferDialog({
   // Which sentence the offer tells. `useIsPhone` is a media query and no
   // request, so a second caller of it costs nothing.
   const isPhone = useIsPhone();
-  const where = isPhone ? WHERE_PULLS_ARE.phone : WHERE_PULLS_ARE.wide;
   const {
     hydrated: offerHydrated,
     setValue: setOffered,
@@ -223,27 +229,24 @@ export function WatchOfferDialog({
       {added ? (
         <>
           <p className="text-ink-muted text-sm">
-            Its open pull requests are now in {where}.
+            {isPhone ? m.watch_offer_added_phone() : m.watch_offer_added_wide()}
           </p>
           {/* The way back to the editor is in the same two places the list is,
               so this sentence follows the screen as well: on a phone the
               button sits at the foot of that list rather than at the foot of
               a bar that is not drawn. */}
           <p className="text-ink-faint mt-2 text-xs">
-            To watch more repositories,{' '}
-            {isPhone ? (
-              <>
-                open that list and use{' '}
-                <span className="text-ink font-medium">Watched repos</span>, or
-                go
-              </>
-            ) : (
-              <>
-                use <span className="text-ink font-medium">Watched repos</span>{' '}
-                at the bottom of the bar or go
-              </>
-            )}{' '}
-            to the ghdiff home page.
+            <ParaglideMessage
+              message={
+                isPhone ? m.watch_offer_more_phone : m.watch_offer_more_wide
+              }
+              inputs={{
+                label: isPhone
+                  ? m.pull_list_button_watched_repos()
+                  : m.pull_rail_watched_repos(),
+              }}
+              markup={watchMarkup}
+            />
           </p>
           <div className="mt-4 flex justify-end">
             <Button
@@ -252,23 +255,24 @@ export function WatchOfferDialog({
               variant="solid"
               onClick={close}
             >
-              Keep reviewing
+              {m.watch_offer_dialog_keep_reviewing()}
             </Button>
           </div>
         </>
       ) : (
         <>
           <p className="text-ink-muted text-sm">
-            See its open pull requests in {where}, each with its review and its
-            checks. Move between them without returning to GitHub.
+            {isPhone
+              ? m.watch_offer_preview_phone()
+              : m.watch_offer_preview_wide()}
           </p>
           <WatchOfferPreview />
           <p className="text-ink-faint text-xs">
-            Your watch list stays in this browser.
+            {m.watch_offer_dialog_your_watch_list_stays_in_this_browser()}
           </p>
           <div className="mt-4 flex justify-end gap-2">
             <Button size="md" variant="outline" onClick={close}>
-              Not now
+              {m.watch_offer_dialog_not_now()}
             </Button>
             {/* The label carries a repository name, and a name is as long as
                 its owner made it. `shrink` undoes the `shrink-0` every button
@@ -292,7 +296,9 @@ export function WatchOfferDialog({
                 if (subject != null && watched.add(subject)) setAdded(true);
               }}
             >
-              <span className="truncate">Watch {subject}</span>
+              <span className="truncate">
+                {m.watch_offer_action({ subject: subject ?? '' })}
+              </span>
             </Button>
           </div>
         </>

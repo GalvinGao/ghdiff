@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import type {
   ReviewEvent,
   SubmittedReview,
@@ -109,7 +110,12 @@ export function useSubmitReview(options: {
         // without write access to the repository, in its own words. Those
         // words are the whole of what the reviewer needs, so they are what the
         // dialog shows.
-        setError(rpcErrorMessage(cause, 'Could not submit this review.'));
+        setError(
+          rpcErrorMessage(
+            cause,
+            m.use_submit_review_could_not_submit_this_review()
+          )
+        );
         return undefined;
       } finally {
         setPending(undefined);

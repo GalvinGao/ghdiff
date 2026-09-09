@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { m } from '../paraglide/messages.js';
 import { EXAMPLE_TARGETS } from '@/lib/exampleTargets';
 import { reviewTargetDisplayPath, reviewTargetSplat } from '@/lib/reviewTarget';
 
@@ -28,9 +29,12 @@ export function ExampleTargets() {
             // the colour already under it and nothing happened. This is the
             // same pair the `outline` button uses, for the same reason.
             className="group hover:bg-surface focus-visible:bg-surface flex items-baseline gap-3 rounded-md px-2 py-1.5 outline-none"
-            title={`${example.title} — ${example.note}`}
+            title={m.example_targets_label({
+              title: example.title,
+              note: example.note,
+            })}
           >
-            <span className="text-ink min-w-0 flex-1 truncate">
+            <span className="text-ink min-w-0 flex-1 truncate" dir="ltr">
               <span className="text-ink-faint">/</span>
               {reviewTargetDisplayPath(example.target)}
             </span>

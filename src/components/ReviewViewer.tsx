@@ -22,6 +22,7 @@ import {
   useRef,
 } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
 import {
@@ -333,7 +334,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       renderHeaderMetadata={renderHeaderMetadata}
       renderHeaderPrefix={renderHeaderPrefix}
       className={cn(
-        'cv-scrollbar bg-canvas relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto',
+        '[direction:ltr] cv-scrollbar bg-canvas relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto',
         // `none`, not `contain`: contain stops the scroll from chaining to the
         // page but still lets this element bounce, and the bounce exposes an
         // unpainted strip at the end of the diff.
@@ -410,7 +411,9 @@ function CollapseFileButton({
   itemId: string;
   onToggle(itemId: string, collapsed: boolean): void;
 }) {
-  const label = collapsed ? 'Show the diff' : 'Hide the diff';
+  const label = collapsed
+    ? m.review_viewer_show_the_diff()
+    : m.review_viewer_hide_the_diff();
   return (
     <Button
       aria-expanded={!collapsed}
@@ -457,8 +460,6 @@ function canExpandWholeFile(fileDiff: FileDiffMetadata): boolean {
   return fileDiff.type === 'change' || fileDiff.type === 'rename-changed';
 }
 
-const EXPAND_WHOLE_FILE_LABEL = 'Show the whole file';
-
 /**
  * The whole file is safe where a single press is: the file was already turned
  * away at `MAX_FILE_BYTES` if it could not be afforded, and the virtualizer
@@ -478,7 +479,9 @@ function ExpandFileButton({
   loading: boolean;
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }) {
-  const label = loading ? 'Loading unmodified lines' : EXPAND_WHOLE_FILE_LABEL;
+  const label = loading
+    ? 'Loading unmodified lines'
+    : m.review_viewer_show_the_whole_file();
   return (
     <Tooltip className="[[data-ghdiff-expanded]_&]:hidden" label={label}>
       <Button
@@ -537,7 +540,7 @@ function ViewedToggle({
       variant="quiet"
     >
       <CheckBox checked={viewed} />
-      Viewed
+      {m.review_viewer_viewed()}
     </Button>
   );
 }

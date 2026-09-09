@@ -38,6 +38,8 @@
     "src/routeTree.gen.ts",
     "worker-configuration.d.ts",
     "*.patch",
-    "*.diff"
+    "*.diff",
+    "src/paraglide/**",
+    "public/ghdiff.user.js"
   ]
 }

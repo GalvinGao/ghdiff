@@ -21,6 +21,7 @@ import {
   PLACEHOLDER_SYNTAXES,
   type PlaceholderSyntax,
 } from '@/lib/lenses/localization/placeholders';
+import { m } from '@/paraglide/messages.js';
 
 // Where one repository keeps its translations, and how they are written.
 //
@@ -200,7 +201,7 @@ export function LocalizationSettingsDialog({
 
         <div className="flex justify-end gap-2 pt-1">
           <Button size="sm" variant="quiet" onClick={onClose}>
-            Cancel
+            {m.confirm_inline_cancel()}
           </Button>
           <Button
             size="sm"

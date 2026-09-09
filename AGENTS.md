@@ -139,12 +139,14 @@ A route file holds one `Route` export. A page route sets `component`; an API
 route sets `server.handlers` and no component, which is what keeps it off the
 client. `@/*` resolves to `./src/*`, for both tsc and Vite.
 
-`public/` is Vite's own directory and this app has one file in it. Nothing
-bundles that file: the build copies it to `dist/client`, wrangler uploads it
-with the rest of the assets, and Cloudflare answers `/ghdiff.user.js` from the
-asset store before the Worker runs — which is why the splat route does not catch
-it. oxlint and oxfmt both read it, so it is plain JavaScript the two tools
-accept.
+`public/` is Vite's own directory and this app has one file in it. The app does
+not bundle that artifact: the build copies it to `dist/client`, wrangler uploads
+it with the rest of the assets, and Cloudflare answers `/ghdiff.user.js` from
+the asset store before the Worker runs — which is why the splat route does not
+catch it. The artifact is generated from `src/userscript.js` by
+`scripts/build-userscript.mjs`, which bundles its Paraglide messages and
+preserves the userscript metadata. Lint and format the source, not the generated
+artifact. See [I18N.md](I18N.md) for catalog ownership and localization checks.
 
 ## Rules this project holds to
 
@@ -372,9 +374,9 @@ buttons.
 left" is false on the one screen that has no bar — a phone opens the same list
 from the leftmost control in the review header, and the **Watched repos** button
 sits at the foot of that window instead of at the foot of a bar. The offer names
-the place twice, so `WHERE_PULLS_ARE` states both readings once and `useIsPhone`
-picks between them. A second caller of that hook costs nothing: it is a media
-query and not a request.
+the place twice, so complete phone and desktop catalog messages state both
+readings and `useIsPhone` picks between them. A second caller of that hook costs
+nothing: it is a media query and not a request.
 
 **A field's border is its promise of a click target.** The card around the home
 page's URL box is that border, and the `<input>` is only the middle of it: the

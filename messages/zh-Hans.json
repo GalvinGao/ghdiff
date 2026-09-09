@@ -1,0 +1,613 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "自动",
+  "color_mode_toggle_light": "浅色",
+  "color_mode_toggle_dark": "深色",
+  "color_mode_toggle_color_mode_switch_to": "颜色模式：{value}。切换为{value2}。",
+  "color_mode_toggle_color_mode": "颜色模式：{value}",
+  "comment_author_filter_bar_comment_authors": "评论作者",
+  "comment_author_filter_bar_all": "全部",
+  "comment_author_filter_bar_comments_a_person_opened": "个人发起的评论",
+  "comment_author_filter_bar_people": "个人",
+  "comment_author_filter_bar_comments_a_github_app_opened": "GitHub App 发起的评论",
+  "comment_author_filter_bar_bots": "机器人",
+  "comment_body_done": "已完成",
+  "comment_body_not_done": "未完成",
+  "comment_composer_leave_a_comment": "发表评论",
+  "comment_composer_comment": "评论",
+  "comment_composer_cancel": "取消",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd 或 Ctrl + Enter",
+  "comment_expansion_comment": "评论",
+  "comment_thread_card_open_thread_by": "打开 {author} 发起的讨论",
+  "comment_thread_card_posting": "正在发布…",
+  "comment_thread_card_click_to_open": "点击打开",
+  "comment_thread_card_delete": "删除",
+  "comment_thread_card_close": "关闭",
+  "comment_thread_card_on_github": "在 GitHub 上",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "这条评论尚未同步到 GitHub，因此无法回复。",
+  "comment_thread_card_reply_on_github": "在 GitHub 上回复",
+  "comment_thread_card_reply_in_this_browser": "在此浏览器中回复",
+  "comment_thread_card_sending": "正在发送…",
+  "comment_thread_card_reply": "回复",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd 或 Ctrl + Enter",
+  "comments_list_no_comments_here": "这里没有评论。",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "你在这里留下的评论会发布到 GitHub。",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub 不支持为提交或比较范围创建审查讨论串。评论仅保留在此浏览器中。",
+  "comments_list_posting": "正在发布",
+  "comments_list_failed": "失败",
+  "comments_list_go_to": "前往 {path}",
+  "confirm_inline_cancel": "取消",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "新增",
+  "filter_menu_modified": "已修改",
+  "filter_menu_renamed": "已重命名",
+  "filter_menu_deleted": "已删除",
+  "filter_menu_filter_files": "筛选文件",
+  "filter_menu_file_rules": "文件规则",
+  "filter_menu_git_status": "Git 状态",
+  "filter_menu_clear_filters": "清除筛选条件",
+  "filter_menu_all_files": "所有文件",
+  "git_hub_account_control_set_up_access": "设置访问权限",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "你留下的评论会以此账户身份发布到 GitHub。",
+  "git_hub_account_panel_install_on_another_account": "安装到其他账户",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff 尚未安装到任何账户。完成设置后即可读取你的代码。",
+  "git_hub_account_panel_open_setup_guide": "打开设置指南",
+  "git_hub_account_panel_sign_out": "退出登录",
+  "git_hub_account_panel_accounts_with_access": "有访问权限的账户",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "将在 github.com 打开设置，以添加或移除仓库。",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "正在检查 ghdiff 可以读取哪些 GitHub 账户…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "打开任意 GitHub 拉取请求、提交或比较范围。",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "使用预设路径规则缩小文件列表范围。",
+  "home_screen_read_and_leave_comments": "阅读并留下评论。",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "粘贴 GitHub 拉取请求、提交或比较 URL，或输入 owner/repo#123。",
+  "home_screen_github_pull_request_commit_or_compare_url": "GitHub 拉取请求、提交或比较 URL",
+  "home_screen_open_this_diff": "打开此差异",
+  "home_screen_review": "审查",
+  "home_screen_set_up_access_for_private_repositories": "设置私有仓库的访问权限",
+  "home_screen_userscript": "用户脚本",
+  "home_screen_examples": "示例",
+  "home_screen_watched_repos": "关注的仓库",
+  "home_screen_github_account": "GitHub 账户",
+  "home_screen_source_on_github": "GitHub 上的源代码",
+  "home_screen_review_the_commit_this_build_was_made_from": "在 ghdiff 中审查构建此版本所用的提交 {sha}",
+  "installation_row_current_diff": "当前差异",
+  "installation_row_configure": "配置",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff 无法读取该 URL",
+  "not_found_a_review_needs_a_github_pull_request_a": "审查需要 GitHub 拉取请求、提交或比较范围。",
+  "not_found_open_a_different_review": "打开其他审查",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "拖动以调整大小。双击以重置。",
+  "pull_details_card_loading_pull_request": "正在加载拉取请求…",
+  "pull_details_card_no_details_yet": "暂无详情。",
+  "pull_details_card_files": "文件",
+  "pull_details_card_added_lines": "新增行",
+  "pull_details_card_deleted_lines": "删除行",
+  "pull_details_card_commits": "提交",
+  "pull_details_card_description": "说明",
+  "pull_list_button_open_pull_requests": "开放的拉取请求",
+  "pull_list_button_watched_repos": "关注的仓库",
+  "pull_list_button_reload_the_pull_requests": "重新加载拉取请求",
+  "pull_list_button_loading_the_pull_requests": "正在加载拉取请求",
+  "pull_rail_open_pull_requests": "开放的拉取请求",
+  "pull_rail_pull_request_bar_width": "拉取请求栏宽度",
+  "pull_rail_show_the_pull_requests": "显示拉取请求",
+  "pull_rail_hide_the_pull_requests": "隐藏拉取请求",
+  "pull_rail_watched_repos": "关注的仓库",
+  "pull_rail_reload_the_pull_requests": "重新加载拉取请求",
+  "pull_rail_loading_the_pull_requests": "正在加载拉取请求",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "将仓库添加到列表，即可查看其开放的拉取请求。",
+  "pull_request_list_open_on_github": "在 GitHub 上打开 {owner}/{repo}",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=*": "在 GitHub 上查看 {formatted} 个未关闭的拉取请求"
+      }
+    }
+  ],
+  "pull_request_list_you": "你",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "在 GitHub 上打开 {author} 在 {owner}/{repo} 中的开放拉取请求",
+  "pull_request_list_set_up_private_access": "设置私有访问权限",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "未登录时，任何行都不会显示状态方块或你自己的拉取请求标记。登录后两者都会显示。",
+  "pull_request_list_stack": "堆栈",
+  "pull_request_list_loading_open_pull_requests": "正在加载开放的拉取请求…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "草稿",
+  "pull_row_currently_viewing": "当前正在查看",
+  "pull_state_icon_open": "开放",
+  "pull_state_icon_draft": "草稿",
+  "pull_state_icon_merged": "已合并",
+  "pull_state_icon_closed": "已关闭",
+  "review_header_bars": "竖条",
+  "review_header_signs": "符号",
+  "review_header_none": "无",
+  "review_header_hide_the_file_list": "隐藏文件列表",
+  "review_header_show_the_file_list": "显示文件列表",
+  "review_header_open_on_github": "在 GitHub 上打开 {targetLabel}",
+  "review_header_switch_to_unified_view": "切换到统一视图",
+  "review_header_switch_to_split_view": "切换到分屏视图",
+  "review_header_split_view": "分屏视图",
+  "review_header_unified_view": "统一视图",
+  "review_header_display_settings": "显示设置",
+  "review_header_code_font": "代码字体",
+  "review_header_change_markers": "更改标记",
+  "review_header_wrap_long_lines": "换行显示长行",
+  "review_header_line_numbers": "行号",
+  "review_header_change_backgrounds": "更改背景",
+  "review_header_dim_whitespace_changes": "淡化空白字符更改",
+  "review_header_approve_request_changes_or_comment": "批准、要求修改或评论",
+  "review_header_review": "审查",
+  "review_header_review_it_again": "{value} 再次审查。",
+  "review_screen_sidebar_width": "侧边栏宽度",
+  "review_screen_dismiss": "关闭",
+  "review_sidebar_sidebar_sections": "侧边栏分区",
+  "review_sidebar_files": "文件",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=*, comments=*": "{threadNumber} 个讨论串，{commentNumber} 条评论"
+      }
+    }
+  ],
+  "review_sidebar_comments": "评论",
+  "review_sidebar_hide_the_path_search": "隐藏路径搜索",
+  "review_sidebar_search_by_path": "按路径搜索",
+  "review_sidebar_the_current_filter_hides_all_files": "当前筛选条件隐藏了所有文件。",
+  "review_sidebar_clear_filters": "清除筛选条件",
+  "review_sidebar_added_lines": "新增行",
+  "review_sidebar_deleted_lines": "删除行",
+  "review_sidebar_search_files_by_path": "按路径搜索文件",
+  "review_sidebar_path_contains": "路径包含…",
+  "review_sidebar_clear_the_path_search": "清除路径搜索",
+  "review_status_panel_fetching_the_diff": "正在获取差异",
+  "review_status_panel_reading_the_patch_for_this_review": "正在读取此审查的补丁。",
+  "review_status_panel_preparing_the_diff": "正在准备差异",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "正在解析补丁并构建文件列表。",
+  "review_status_panel_starting_the_highlighters": "正在启动高亮器",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "后台工作线程正在准备为你的代码着色。",
+  "review_status_panel_set_up_repository_access": "设置仓库访问权限",
+  "review_status_panel_try_again": "重试",
+  "review_submit_dialog_add_a_note_github_needs_one": "添加说明。GitHub 需要说明。",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub 不允许批准你自己的拉取请求。",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub 不允许对你自己的拉取请求要求修改。",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "你可以评论自己的拉取请求。GitHub 不允许进行其他操作。",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "添加说明。GitHub 需要说明才能要求修改或评论。",
+  "review_submit_dialog_submit_a_review": "提交审查",
+  "review_submit_dialog_review_body": "审查内容",
+  "review_submit_dialog_leave_a_note_with_your_review": "为审查留下说明",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "显示差异",
+  "review_viewer_hide_the_diff": "隐藏差异",
+  "review_viewer_show_the_whole_file": "显示完整文件",
+  "review_viewer_viewed": "已查看",
+  "setup_screen_set_up_private_repository_access": "设置私有仓库访问权限",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub 只允许 ghdiff 读取你授予其访问权限的仓库。按顺序完成以下三步。",
+  "setup_screen_sign_in_to_github": "登录 GitHub",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "登录后，GitHub 就能确认你使用的账户。你留下的评论都会以此账户身份发布。",
+  "setup_screen_sign_in_with_github": "使用 GitHub 登录",
+  "setup_screen_grant_repository_access": "授予仓库访问权限",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "登录仅用于识别你的身份。选择 ghdiff 可以读取的账户和仓库。",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "登录仅用于识别你的身份。将 ghdiff 安装到 {account}，并确保此仓库在其访问列表中。",
+  "setup_screen_accounts_with_access": "有访问权限的账户",
+  "setup_screen_install_ghdiff": "安装 ghdiff",
+  "setup_screen_install_on_another_account": "安装到其他账户",
+  "setup_screen_checking": "正在检查…",
+  "setup_screen_check_again": "再次检查",
+  "setup_screen_open_the_diff": "打开差异",
+  "setup_screen_go_to_the_home_page_to_paste_a": "前往首页，粘贴拉取请求、提交或比较 URL。",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "返回你的差异。ghdiff 会使用更新后的权限重新获取它。",
+  "setup_screen_go_to_ghdiff_home": "前往 ghdiff 首页",
+  "setup_screen_return_to_the_diff": "返回差异",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "此 ghdiff 部署尚未设置 GitHub App。你仍可查看任何公开差异。",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff 现已使用 GitHub App",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff 已从此浏览器移除你的旧个人访问令牌，且不再要求提供令牌。在你于 GitHub 设置中删除它之前，GitHub 仍会接受该令牌。",
+  "setup_screen_delete_the_token_on_github": "在 GitHub 上删除令牌",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "在 github.com 上添加 ghdiff 按钮",
+  "userscript_install_install": "安装",
+  "watch_offer_dialog_watch_this_repository": "将此仓库添加到关注列表？",
+  "watch_offer_dialog_watch": "将 {subject} 添加到关注列表？",
+  "watch_offer_dialog_keep_reviewing": "继续审查",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "你的关注列表仅保存在此浏览器中。",
+  "watch_offer_dialog_not_now": "暂不",
+  "watched_repos_dialog_watched_repositories": "关注的仓库",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff 会列出这些仓库中未关闭的拉取请求。此列表仅保存在此浏览器中。",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "以 owner/repo 格式输入仓库。",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "要添加到关注列表的仓库",
+  "watched_repos_editor_add": "添加",
+  "watched_repos_editor_nothing_watched_yet": "关注列表中尚无仓库。",
+  "watched_repos_editor_remove": "移除",
+  "dialog_close": "关闭",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "无法从 GitHub 读取该文件。",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "该文件自生成此差异后已在 GitHub 上发生更改。重新加载以查看未修改的行。",
+  "use_diff_file_loader_request_failed": "请求失败 ({status})。",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "无法确认当前登录的账户。",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "无法读取 ghdiff 的安装范围。",
+  "use_open_pulls_could_not_load_pull_requests": "无法加载拉取请求。",
+  "use_pull_details_could_not_load_this_pull_request": "无法加载此拉取请求。",
+  "use_review_comments_could_not_load_comments": "无法加载评论。",
+  "use_review_comments_could_not_post_that_comment_to_github": "无法将该评论发布到 GitHub。",
+  "use_review_comments_could_not_post_this_reply_to_github": "无法将此回复发布到 GitHub。",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "无法在 GitHub 上删除该讨论串。重新加载以检查。",
+  "use_review_patch_request_failed": "请求失败 ({status})。",
+  "use_review_patch_could_not_load_that_diff": "无法加载该差异。",
+  "use_submit_review_could_not_submit_this_review": "无法提交此审查。",
+  "use_viewed_files_could_not_send_that_mark_to_github": "无法将该标记发送到 GitHub。",
+  "code_fonts_system": "系统",
+  "diff_hydration_that_file_is_too_large_to_show_its": "该文件过大，无法显示未修改的行。",
+  "example_targets_rewrite_bun_in_rust": "用 Rust 重写 Bun",
+  "example_targets_2_188_files_1_0m_lines": "2,188 个文件 · 100 万行",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "其中最大的一项。统一差异为 43 MB，涉及 6,755 个提交。",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "解决 Maimai NET 导入 PR 的冲突",
+  "example_targets_25_files_494k_lines": "25 个文件 · 49.4 万行",
+  "example_targets_one_generated_json_file_holds_465_486_of": "一个生成的 JSON 文件包含其中 465,486 行。",
+  "example_targets_deps_update_v8_to_14_1": "deps：更新 V8 至 14.1",
+  "example_targets_3_420_files_268k_lines": "3,420 个文件 · 26.8 万行",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "范围最广的文件树。由于超过 API 差异大小限制，ghdiff 会从 GitHub 网站加载。",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty：移除所有 libc++ 和 libc++ ABI 依赖",
+  "example_targets_25_files_88k_lines": "25 个文件 · 8.8 万行",
+  "example_targets_large_and_still_a_diff_a_person_can": "很大，但人仍能读完这份差异。",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 到 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53 个文件 · 2.6 千行",
+  "example_targets_a_compare_range_of_one_release_100_commits": "一个发布版本的比较范围。100 个提交，评论仅保存在本地。",
+  "filter_rules_all_files": "所有文件",
+  "filter_rules_show_every_file_in_the_diff": "显示差异中的每个文件。",
+  "filter_rules_hide_tests": "隐藏测试",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "隐藏测试文件、fixture 和快照。",
+  "filter_rules_tests_only": "仅测试",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "仅显示测试文件、fixture 和快照。",
+  "filter_rules_source_only": "仅源代码",
+  "filter_rules_show_only_code_files_that_are_not_tests": "仅显示非测试且非生成的代码文件。",
+  "filter_rules_docs_only": "仅文档",
+  "filter_rules_show_only_markdown_and_other_prose_files": "仅显示 Markdown 和其他文本文件。",
+  "filter_rules_config_only": "仅配置",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "仅显示清单、lint 配置和 CI 文件。",
+  "filter_rules_hide_generated": "隐藏生成文件",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "隐藏锁文件、快照和构建输出。",
+  "filter_rules_generated_only": "仅生成文件",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "仅显示锁文件、快照和构建输出。",
+  "github_app_sign_in_was_not_completed_on_github_try": "未在 GitHub 上完成登录。准备好后重试。",
+  "github_app_the_sign_in_session_timed_out_on_github": "GitHub 上的登录会话已超时。重新开始登录流程。",
+  "github_app_security_verification_failed_during_github_sign_in_start": "GitHub 登录期间安全验证失败。从 ghdiff 重新开始流程。",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub 无法完成登录。稍后重试。",
+  "installations_all_repositories": "所有仓库",
+  "installations_no_repositories_selected": "未选择任何仓库",
+  "pull_details_just_now": "刚刚",
+  "pull_status_approved": "已批准",
+  "pull_status_changes_requested": "已请求更改",
+  "pull_status_no_review_yet": "尚未审查",
+  "pull_status_checks_passing": "检查通过",
+  "pull_status_checks_running": "检查正在运行",
+  "pull_status_a_check_failed": "有一项检查失败",
+  "pull_status_no_checks": "没有检查",
+  "pull_status_changes_requested_new_commits_since": "已请求更改，之后有新提交",
+  "review_data_commit": "提交 {value}",
+  "review_decision_approve": "批准",
+  "review_decision_approving": "正在批准…",
+  "review_decision_request_changes": "请求更改",
+  "review_decision_requesting": "正在请求更改…",
+  "review_decision_comment": "评论",
+  "review_decision_commenting": "正在评论…",
+  "review_decision_approved": "已批准",
+  "review_decision_changes_requested": "已请求更改",
+  "review_decision_commented": "已评论",
+  "review_decision_you_approved_this_pull_request": "你已批准此拉取请求。",
+  "review_decision_you_requested_changes_on_this_pull_request": "你已对此拉取请求请求更改。",
+  "review_decision_you_commented_on_this_pull_request": "你已评论此拉取请求。",
+  "review_decision_github_recorded_your_review": "GitHub 已记录你的审查。",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "服务器没有响应。你的连接可能离线，或请求已超时。",
+  "review_failure_you_used_all_5_000_github_requests_for": "你已用完本小时全部 5,000 次 GitHub 请求。等待几分钟让限额重置后再试。",
+  "review_failure_hourly_github_rate_limit_reached": "已达到 GitHub 每小时速率限制",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub 将未认证请求限制为每小时 60 次。设置访问权限后可立即获得每小时 5,000 次请求。",
+  "review_failure_github_rate_limit_reached": "已达到 GitHub 速率限制",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "你的 GitHub 登录已失效，且 ghdiff 无法刷新。重新设置访问权限以查看此差异。",
+  "review_failure_github_sign_in_expired": "GitHub 登录已过期",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "GitHub 返回“未找到”，原因可能是 ghdiff 未安装到此仓库或缺少访问权限。设置访问权限以授予权限。",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff 需要访问此仓库",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "未登录时，GitHub 会对私有仓库返回“未找到”。设置访问权限以查看此差异。",
+  "review_failure_repository_not_found_or_private": "仓库未找到或为私有仓库",
+  "review_failure_could_not_load_the_diff": "无法加载差异",
+  "contract_enter_a_valid_github_username_or_repository_name": "输入有效的 GitHub 用户名或仓库名称。",
+  "contract_comment_cannot_be_empty": "评论不能为空。",
+  "router_could_not_check_who_you_are_signed_in": "无法检查当前登录的账户。",
+  "router_could_not_read_where_ghdiff_is_installed": "无法读取 ghdiff 的安装位置。",
+  "router_could_not_load_this_repository": "无法加载此仓库。",
+  "router_could_not_load_this_pull_request": "无法加载此拉取请求。",
+  "router_could_not_load_your_review_of_this_pull": "无法加载你对此拉取请求的审查。",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub 已接受审查，但未返回任何内容。",
+  "router_could_not_submit_this_review": "无法提交此审查。",
+  "router_could_not_load_comments": "无法加载评论。",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub 已接受回复，但未返回任何内容。",
+  "router_this_comment_is_missing_a_file_or_line": "此评论缺少文件或行号。",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub 已接受评论，但未返回任何内容。",
+  "router_could_not_post_this_comment": "无法发布此评论。",
+  "router_could_not_delete_this_comment": "无法删除此评论。",
+  "router_could_not_load_which_files_you_have_read": "无法加载你已读的文件。",
+  "router_not_found": "未找到",
+  "router_could_not_send_that_mark_to_github": "无法将该标记发送到 GitHub。",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "此 ghdiff 尚未设置 GitHub App，因此无法让你登录。",
+  "github_your_github_sign_in_is_no_longer_valid": "你的 GitHub 登录已失效。重新设置访问权限以继续。",
+  "github_github_rejected_that_query": "GitHub 拒绝了该查询。",
+  "github_github_returned_no_data_for_that_query": "GitHub 未返回该查询的数据。",
+  "github_github_has_no_such_file_on_that_commit": "GitHub 的该提交中没有此文件。私有仓库需要令牌。",
+  "github_app_github_would_not_revoke_that_token": "GitHub 未撤销该令牌。",
+  "github_app_github_answered_for_that_token_request": "GitHub 对该令牌请求返回了 {status}。",
+  "github_app_github_refused_that": "GitHub 拒绝了该操作：{error}。",
+  "github_app_github_answered_with_no_access_token": "GitHub 返回时未提供访问令牌。",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub 最多列出此差异中的 {fileCount} 个文件，因此后续文件未包含在内。",
+  "installations_an_account": "一个账户",
+  "stream_text_that_response_is_too_large_to_read": "该响应过大，无法读取。",
+  "diff_that_review_target_is_not_valid": "该审查目标无效。",
+  "diff_could_not_load_that_diff": "无法加载该差异。",
+  "diff_that_request_to_github_failed": "向 GitHub 发出的请求失败。",
+  "file_that_review_target_is_not_valid": "该审查目标无效。",
+  "file_that_file_path_is_not_valid": "该文件路径无效。",
+  "file_could_not_load_that_file": "无法加载该文件。",
+  "route_no_such_procedure": "不存在此过程。",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} 个文件",
+        "countPlural=*": "{formatted} 个文件"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} 个提交",
+        "countPlural=*": "{formatted} 个提交"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} 条评论",
+        "countPlural=*": "{formatted} 条评论"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} 条回复",
+        "countPlural=*": "{formatted} 条回复"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} 个仓库",
+        "countPlural=*": "{formatted} 个仓库"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "已提供 {formatted} 份差异",
+        "countPlural=*": "已提供 {formatted} 份差异"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "已隐藏 {formatted} 项",
+        "countPlural=*": "已隐藏 {formatted} 项"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{base} · {formatted} 个状态",
+        "countPlural=*": "{base} · {formatted} 个状态"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "由 {formatted} 个拉取请求组成的堆叠",
+        "countPlural=*": "由 {formatted} 个拉取请求组成的堆叠"
+      }
+    }
+  ],
+  "comment_line": "评论第 {line} 行",
+  "comment_line_range": "评论第 {start} 至 {end} 行",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} 个文件{#total}，共 {total} 个{/total}"
+      }
+    }
+  ],
+  "home_credits": "差异由 {#diffs}CodeView{/diffs} 提供，文件列表由 {#trees}FileTree{/trees} 提供。",
+  "watch_offer_added_phone": "其未关闭的拉取请求现已显示在左上角的拉取请求列表中。",
+  "watch_offer_added_wide": "其未关闭的拉取请求现已显示在左侧栏中。",
+  "watch_offer_more_phone": "要将更多仓库添加到关注列表，打开该列表并使用 {#strong}{label}{/strong}，或前往 ghdiff 首页。",
+  "watch_offer_more_wide": "要将更多仓库添加到关注列表，使用栏底的 {#strong}{label}{/strong}，或前往 ghdiff 首页。",
+  "watch_offer_preview_phone": "在左上角的拉取请求列表中查看其未关闭的拉取请求；每项都显示审查状态和自动检查结果。无需返回 GitHub 即可在它们之间切换。",
+  "watch_offer_preview_wide": "在左侧栏中查看其未关闭的拉取请求；每项都显示审查状态和自动检查结果。无需返回 GitHub 即可在它们之间切换。",
+  "watch_offer_action": "将 {subject} 添加到关注列表",
+  "watch_offer_added_title": "已将 {subject} 添加到关注列表",
+  "pull_opened_age": "创建时间：{age}",
+  "pull_updated_age": "更新时间：{age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} 个文件，{added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "{repositories} 中没有未关闭的拉取请求。",
+  "review_submit_scope": "这是对 {#strong}{target}{/strong} 整个拉取请求的审查。行评论会发布到你撰写的位置。",
+  "review_previous_verdict": "{verdict}。新的审查将取而代之。",
+  "setup_not_installed": "ghdiff 尚未安装到 {#strong}{account}{/strong}。如果这是组织，组织所有者可能需要批准安装。",
+  "setup_no_repositories": "ghdiff 已安装到 {#strong}{account}{/strong}，但尚未覆盖任何仓库。打开其设置以选择要审查的仓库。",
+  "userscript_manager_description": "这会在拉取请求的 Files changed 旁和提交的 Browse files 旁添加按钮。需要用户脚本管理器，例如 {#manager}Tampermonkey{/manager}。",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} 合入 {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "提交审查前，设置 GitHub 访问权限。",
+  "auth_required_delete": "删除评论前，设置 GitHub 访问权限。",
+  "auth_required_viewed": "将文件标记为已查看前，设置 GitHub 访问权限。",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} 字节"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "将 github.com 替换为 ghdiff.com，即可打开任意 GitHub 拉取请求、提交或比较范围。使用预设路径规则缩小文件列表范围，并将行评论发布回 GitHub。",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "要在 GitHub 上删除这条评论吗？此操作无法撤销。",
+        "count=*, countPlural=*": "要在 GitHub 上删除此讨论串中的全部 {formatted} 条评论吗？此操作无法撤销。"
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub 判定 {formatted} 个文件过大而无法生成差异，因此不显示行：{path}。",
+        "count=*, countPlural=*": "GitHub 判定 {formatted} 个文件过大而无法生成差异，因此不显示行。"
+      }
+    }
+  ],
+  "userscript_open_pull": "在 ghdiff 中打开此拉取请求",
+  "userscript_open_commit": "在 ghdiff 中打开此提交",
+  "userscript_description": "在每个 GitHub 拉取请求的标签栏中，以及每个提交的 Browse files 旁添加 ghdiff 按钮。",
+  "diff_expand_all": "全部展开",
+  "diff_no_newline": "文件末尾没有换行符",
+  "tree_git_contains_changes": "包含 Git 状态项",
+  "review_bytes_read": "已读取 {amount}",
+  "tree_git_added": "Git 状态：新增",
+  "tree_git_deleted": "Git 状态：已删除",
+  "tree_git_ignored": "Git 状态：已忽略",
+  "tree_git_modified": "Git 状态：已修改",
+  "tree_git_renamed": "Git 状态：已重命名",
+  "tree_git_untracked": "Git 状态：未跟踪",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} 行未修改内容"
+      }
+    }
+  ],
+  "locale_language": "选择语言",
+  "app_render_error": "ghdiff 无法显示此页面。重新加载页面后重试。"
+}

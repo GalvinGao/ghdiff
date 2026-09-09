@@ -2,6 +2,7 @@ import { IconFilter, IconXSquircle } from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
 import { useMemo } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -40,25 +41,33 @@ const STATUS_ITEMS: {
 }[] = [
   {
     status: 'added',
-    label: 'Added',
+    get label() {
+      return m.filter_menu_added();
+    },
     short: 'A',
     color: 'light-dark(#16a994, #00cab1)',
   },
   {
     status: 'modified',
-    label: 'Modified',
+    get label() {
+      return m.filter_menu_modified();
+    },
     short: 'M',
     color: 'light-dark(#1ca1c7, #08c0ef)',
   },
   {
     status: 'renamed',
-    label: 'Renamed',
+    get label() {
+      return m.filter_menu_renamed();
+    },
     short: 'R',
     color: 'light-dark(#d5a910, #ffd452)',
   },
   {
     status: 'deleted',
-    label: 'Deleted',
+    get label() {
+      return m.filter_menu_deleted();
+    },
     short: 'D',
     color: 'light-dark(#ff2e3f, #ff6762)',
   },
@@ -103,7 +112,7 @@ export function FilterMenu({
         <Button
           variant="outline"
           size="sm"
-          aria-label="Filter files"
+          aria-label={m.filter_menu_filter_files()}
           className={cn('w-full', active && 'border-accent/70')}
         >
           <IconFilter
@@ -113,7 +122,7 @@ export function FilterMenu({
           <span className="truncate">{activeLabel(state)}</span>
           {hiddenCount > 0 && (
             <span className="text-accent ml-auto shrink-0 tabular-nums">
-              {hiddenCount} hidden
+              {m.filter_hidden_count({ count: hiddenCount })}
             </span>
           )}
         </Button>
@@ -125,7 +134,7 @@ export function FilterMenu({
         align="start"
         className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-64"
       >
-        <DropdownMenuLabel>File rules</DropdownMenuLabel>
+        <DropdownMenuLabel>{m.filter_menu_file_rules()}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={state.presetId}
           onValueChange={(value) =>
@@ -166,7 +175,7 @@ export function FilterMenu({
         {statusItems.length > 1 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Git status</DropdownMenuLabel>
+            <DropdownMenuLabel>{m.filter_menu_git_status()}</DropdownMenuLabel>
             {statusItems.map((item) => (
               <DropdownMenuCheckboxItem
                 key={item.status}
@@ -203,7 +212,7 @@ export function FilterMenu({
           onSelect={() => onChange(EMPTY_FILTER_STATE)}
         >
           <IconXSquircle className="opacity-60" size={14} />
-          Clear filters
+          {m.filter_menu_clear_filters()}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -229,7 +238,7 @@ function PresetStatLine({
       )}
     >
       <span className="text-ink-faint">
-        {stat.files} {stat.files === 1 ? 'file' : 'files'}
+        {m.common_file_count({ count: stat.files })}
       </span>
       <span className="text-added">+{stat.addedLines}</span>
       <span className="text-removed">-{stat.deletedLines}</span>
@@ -239,9 +248,9 @@ function PresetStatLine({
 
 function activeLabel(state: ReviewFilterState): string {
   const preset = FILTER_PRESETS.find((item) => item.id === state.presetId);
-  const base = preset?.label ?? 'All files';
+  const base = preset?.label ?? m.filter_menu_all_files();
   if (state.statuses.size > 0) {
-    return `${base} · ${state.statuses.size} status`;
+    return m.filter_status_summary({ base, count: state.statuses.size });
   }
   return base;
 }

@@ -1,4 +1,5 @@
 import type { CommentListEntry, CommentListSection } from './comments.ts';
+import { m } from '@/paraglide/messages.js';
 
 // The comment shapes the tests build. Test-only, so nothing here reaches a
 // bundle. Both test files need the same shapes, and a `CommentListEntry` has
@@ -14,7 +15,7 @@ export function commentThread(
   overrides: Partial<CommentListEntry> = {}
 ): CommentListEntry {
   const key = overrides.key ?? 'k1';
-  const author = overrides.author ?? 'you';
+  const author = overrides.author ?? m.pull_request_list_you();
   const body = overrides.body ?? 'hello';
   return {
     itemId: 'src/a.ts',

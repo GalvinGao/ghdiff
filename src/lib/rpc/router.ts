@@ -1,5 +1,6 @@
 import { implement, ORPCError } from '@orpc/server';
 
+import { m } from '../../paraglide/messages.js';
 import { contract } from './contract.ts';
 import { readSignedAttachments } from '@/lib/attachments';
 import { composeCommentIssue } from '@/lib/commentIssue';
@@ -80,7 +81,7 @@ const os = implement(contract)
       requestLog().set({ outcome: 'refresh-due' });
       throw new ORPCError('UNAUTHORIZED', {
         status: 401,
-        message: SIGN_IN_EXPIRED,
+        message: SIGN_IN_EXPIRED(),
       });
     }
     return next();
@@ -140,11 +141,11 @@ function codeForStatus(status: number): string {
 }
 
 /** Every write needs a token, and saying so beats GitHub's own 401. */
-function requireToken(token: string | undefined, action: string): string {
+function requireToken(token: string | undefined, message: string): string {
   if (token == null) {
     throw new ORPCError('UNAUTHORIZED', {
       status: 401,
-      message: `Add a GitHub token before you ${action}.`,
+      message,
     });
   }
   return token;
@@ -167,7 +168,7 @@ const getViewer = os.viewer.get.handler(async ({ context }) => {
     };
   } catch (error) {
     log.set({ outcome: 'error' });
-    return fail(error, 'Could not check who you are signed in as.');
+    return fail(error, m.router_could_not_check_who_you_are_signed_in());
   }
 });
 
@@ -185,7 +186,7 @@ const listInstallations = os.installations.list.handler(async ({ context }) => {
     return { installations, installUrl };
   } catch (error) {
     log.set({ outcome: 'error' });
-    return fail(error, 'Could not read where ghdiff is installed.');
+    return fail(error, m.router_could_not_read_where_ghdiff_is_installed());
   }
 });
 
@@ -223,7 +224,7 @@ const listPulls = os.pulls.list.handler(async ({ context, input }) => {
           message:
             error instanceof GitHubError
               ? error.message
-              : 'Could not load this repository.',
+              : m.router_could_not_load_this_repository(),
         });
       }
     })
@@ -249,7 +250,7 @@ const getPull = os.pulls.get.handler(async ({ context, input }) => {
     log.set({ outcome: 'ok', state: details.state });
     return details;
   } catch (error) {
-    return fail(error, 'Could not load this pull request.');
+    return fail(error, m.router_could_not_load_this_pull_request());
   }
 });
 
@@ -286,7 +287,7 @@ const getMyReview = os.reviews.mine.handler(async ({ context, input }) => {
       },
     };
   } catch (error) {
-    return fail(error, 'Could not load your review of this pull request.');
+    return fail(error, m.router_could_not_load_your_review_of_this_pull());
   }
 });
 
@@ -319,7 +320,7 @@ const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
   const log = requestLog();
   const { body, event, number, owner, repo } = input;
   log.set({ owner, repo, pull: number, event });
-  const token = requireToken(context.token, 'submit a review');
+  const token = requireToken(context.token, m.auth_required_review());
 
   try {
     // An empty body is left off rather than sent as `""`. GitHub takes both for
@@ -339,7 +340,9 @@ const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
     if (review == null) {
       throw new ORPCError('BAD_GATEWAY', {
         status: 502,
-        message: 'GitHub accepted the review but returned nothing.',
+        get message() {
+          return m.router_github_accepted_the_review_but_returned_nothing();
+        },
       });
     }
     log.set({ outcome: 'submitted', reviewId: review.id, state: review.state });
@@ -352,7 +355,7 @@ const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
   } catch (error) {
     // GitHub's own words are worth more than ours here: it is the one that
     // knows a reviewer cannot approve their own pull request.
-    return fail(error, 'Could not submit this review.');
+    return fail(error, m.router_could_not_submit_this_review());
   }
 });
 
@@ -371,7 +374,7 @@ const listComments = os.comments.list.handler(async ({ context, input }) => {
     log.set({ outcome: 'ok', count: comments.length });
     return comments.map(toPayload);
   } catch (error) {
-    return fail(error, 'Could not load comments.');
+    return fail(error, m.router_could_not_load_comments());
   }
 });
 
@@ -428,7 +431,9 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
       if (reply == null) {
         throw new ORPCError('BAD_GATEWAY', {
           status: 502,
-          message: 'GitHub accepted the reply but returned nothing.',
+          get message() {
+            return m.router_github_accepted_the_reply_but_returned_nothing();
+          },
         });
       }
       log.set({ outcome: 'replied', commentId: reply.id });
@@ -438,7 +443,9 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
     if (input.path == null || input.line == null) {
       throw new ORPCError('BAD_REQUEST', {
         status: 400,
-        message: 'This comment is missing a file or line number.',
+        get message() {
+          return m.router_this_comment_is_missing_a_file_or_line();
+        },
       });
     }
 
@@ -471,14 +478,16 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
     if (created == null) {
       throw new ORPCError('BAD_GATEWAY', {
         status: 502,
-        message: 'GitHub accepted the comment but returned nothing.',
+        get message() {
+          return m.router_github_accepted_the_comment_but_returned_nothing();
+        },
       });
     }
     log.set({ outcome: 'created', commentId: created.id });
     return toPayload(created);
   } catch (error) {
     if (error instanceof ORPCError) throw error;
-    return fail(error, 'Could not post this comment.');
+    return fail(error, m.router_could_not_post_this_comment());
   }
 });
 
@@ -539,7 +548,7 @@ const removeComment = os.comments.remove.handler(async ({ context, input }) => {
   const log = requestLog();
   const { commentId, owner, repo } = input;
   log.set({ owner, repo, commentId });
-  const token = requireToken(context.token, 'delete a comment');
+  const token = requireToken(context.token, m.auth_required_delete());
   try {
     await githubWrite(
       'DELETE',
@@ -549,7 +558,7 @@ const removeComment = os.comments.remove.handler(async ({ context, input }) => {
     log.set({ outcome: 'deleted' });
     return { ok: true as const };
   } catch (error) {
-    return fail(error, 'Could not delete this comment.');
+    return fail(error, m.router_could_not_delete_this_comment());
   }
 });
 
@@ -590,7 +599,7 @@ const listViewedFiles = os.viewedFiles.list.handler(
       log.set({ outcome: 'ok', count: paths.length });
       return { paths };
     } catch (error) {
-      return fail(error, 'Could not load which files you have read.');
+      return fail(error, m.router_could_not_load_which_files_you_have_read());
     }
   }
 );
@@ -599,7 +608,7 @@ const setViewedFile = os.viewedFiles.set.handler(async ({ context, input }) => {
   const log = requestLog();
   const { number, owner, path, repo, viewed } = input;
   log.set({ owner, repo, pull: number, viewed });
-  const token = requireToken(context.token, 'mark a file as viewed');
+  const token = requireToken(context.token, m.auth_required_viewed());
 
   try {
     // Both mutations address the pull request by its node id and nothing else,
@@ -613,7 +622,7 @@ const setViewedFile = os.viewedFiles.set.handler(async ({ context, input }) => {
     );
     const pullRequestId = found.repository?.pullRequest?.id;
     if (pullRequestId == null) {
-      throw new GitHubError(404, 'Not Found');
+      throw new GitHubError(404, m.router_not_found());
     }
     await githubGraphQL(
       viewed ? MARK_FILE_VIEWED_MUTATION : UNMARK_FILE_VIEWED_MUTATION,
@@ -623,7 +632,7 @@ const setViewedFile = os.viewedFiles.set.handler(async ({ context, input }) => {
     log.set({ outcome: 'ok' });
     return { ok: true as const };
   } catch (error) {
-    return fail(error, 'Could not send that mark to GitHub.');
+    return fail(error, m.router_could_not_send_that_mark_to_github());
   }
 });
 
@@ -750,7 +759,7 @@ async function readOpenPullsGraphQL(
   );
   // A token that cannot see the repository gets a 200 with a null repository.
   if (data.repository == null) {
-    throw new GitHubError(404, 'Not Found');
+    throw new GitHubError(404, m.router_not_found());
   }
 
   const pulls: PullSummary[] = [];

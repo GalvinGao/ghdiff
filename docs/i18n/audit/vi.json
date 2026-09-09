@@ -1,0 +1,1954 @@
+{
+  "locale": "vi",
+  "auditor": "codex/gpt-5.6-terra",
+  "fallbackReason": "Antigravity interrupted stream and timeout with no output",
+  "initialSourceSha256": "8c239bbcc87799c690b5b0e64dc662da257e49487c1d5d2f009cb211c084b292",
+  "catalogSha256": "983711b35fe51244837c61b5a70715d1544abc2b73061af2e1cc6d22bf2da4c1",
+  "hashFormat": "UTF-8 sorted JSON without separator whitespace for catalogSha256",
+  "reviewedMessageCount": 387,
+  "selectionNotes": {
+    "_selection": "Chọn bản dịch tiếng Việt ngắn gọn, trực tiếp theo giọng UI; giữ nguyên ghdiff, GitHub, định danh kỹ thuật, placeholder và thẻ markup. Các biến thể số giữ khai báo đầu vào và nhánh wildcard đầy đủ; tiếng Việt không cần biến đổi danh từ theo số."
+  },
+  "findings": {
+    "color_mode_toggle_auto": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn, tự nhiên cho chế độ tự động.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_light": {
+      "verdict": "keep",
+      "reason": "Nhãn chế độ sáng ngắn gọn, phù hợp UI.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_dark": {
+      "verdict": "keep",
+      "reason": "Nhãn chế độ tối ngắn gọn, phù hợp UI.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode_switch_to": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên cả trạng thái hiện tại và hành động chuyển đổi, với placeholder chính xác.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode": {
+      "verdict": "keep",
+      "reason": "Cấu trúc nhãn trạng thái tự nhiên, giữ nguyên placeholder.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comment_authors": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ rõ ràng và tự nhiên cho bộ lọc.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_all": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc chuẩn, ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_person_opened": {
+      "verdict": "change",
+      "reason": "“mở” không tự nhiên cho hành động tạo bình luận; “tạo” rõ nghĩa hơn.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_people": {
+      "verdict": "keep",
+      "reason": "Phân biệt tự nhiên với bot trong ngữ cảnh bộ lọc tác giả.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_github_app_opened": {
+      "verdict": "change",
+      "reason": "“mở” không tự nhiên khi nói GitHub App tạo bình luận; giữ nguyên tên GitHub App.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_bots": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn, phổ biến trong ngữ cảnh kỹ thuật.",
+      "uncertainty": "none"
+    },
+    "comment_body_done": {
+      "verdict": "keep",
+      "reason": "Trạng thái hoàn tất ngắn gọn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "comment_body_not_done": {
+      "verdict": "keep",
+      "reason": "Phủ định trạng thái hoàn tất rõ ràng.",
+      "uncertainty": "none"
+    },
+    "comment_composer_leave_a_comment": {
+      "verdict": "keep",
+      "reason": "Lời gọi hành động tự nhiên, đúng ngữ cảnh soạn bình luận.",
+      "uncertainty": "none"
+    },
+    "comment_composer_comment": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động ngắn gọn, đúng thuật ngữ.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cancel": {
+      "verdict": "keep",
+      "reason": "Nhãn hủy chuẩn cho UI.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "Phím Cmd, Ctrl và Enter được giữ nguyên; cách diễn đạt gọn và tự nhiên.",
+      "uncertainty": "none"
+    },
+    "comment_expansion_comment": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn gọn, phù hợp ngữ cảnh bình luận.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_open_thread_by": {
+      "verdict": "change",
+      "reason": "Bản dịch cũ biến “open” thành mệnh lệnh; bản mới diễn đạt đúng trạng thái chuỗi thảo luận.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_posting": {
+      "verdict": "keep",
+      "reason": "Trạng thái đang gửi tự nhiên, giữ dấu chấm lửng.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_click_to_open": {
+      "verdict": "keep",
+      "reason": "Ngắn gọn, tự nhiên cho thao tác mở.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_delete": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác chuẩn, ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_close": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác chuẩn.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_on_github": {
+      "verdict": "keep",
+      "reason": "Tự nhiên và giữ nguyên GitHub.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": {
+      "verdict": "change",
+      "reason": "Bản gốc nói bình luận không thể nhận phản hồi, không phải người dùng chưa thể trả lời.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_on_github": {
+      "verdict": "keep",
+      "reason": "Giữ rõ nơi thực hiện thao tác.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Giữ rõ giới hạn trong trình duyệt hiện tại.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_sending": {
+      "verdict": "keep",
+      "reason": "Trạng thái đang diễn ra tự nhiên.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác chuẩn.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên tên phím và cách diễn đạt rõ ràng.",
+      "uncertainty": "none"
+    },
+    "comments_list_no_comments_here": {
+      "verdict": "keep",
+      "reason": "Tự nhiên, ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "comments_list_comments_you_leave_here_are_posted_to_github": {
+      "verdict": "keep",
+      "reason": "Giữ rõ bình luận sẽ được đăng lên GitHub.",
+      "uncertainty": "none"
+    },
+    "comments_list_github_has_no_review_thread_for_commits_or": {
+      "verdict": "keep",
+      "reason": "Giữ ranh giới giữa GitHub và dữ liệu cục bộ trong trình duyệt.",
+      "uncertainty": "none"
+    },
+    "comments_list_posting": {
+      "verdict": "keep",
+      "reason": "Phù hợp cho nhãn trạng thái ngắn.",
+      "uncertainty": "none"
+    },
+    "comments_list_failed": {
+      "verdict": "keep",
+      "reason": "Phù hợp cho nhãn trạng thái ngắn.",
+      "uncertainty": "none"
+    },
+    "comments_list_go_to": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder và là nhãn điều hướng tự nhiên.",
+      "uncertainty": "none"
+    },
+    "confirm_inline_cancel": {
+      "verdict": "keep",
+      "reason": "Nhãn hủy chuẩn.",
+      "uncertainty": "none"
+    },
+    "example_targets_label": {
+      "verdict": "keep",
+      "reason": "Chỉ gồm placeholder và dấu phân cách, không cần thay đổi.",
+      "uncertainty": "none"
+    },
+    "filter_menu_added": {
+      "verdict": "keep",
+      "reason": "Mô tả trạng thái tệp đúng nghĩa.",
+      "uncertainty": "none"
+    },
+    "filter_menu_modified": {
+      "verdict": "keep",
+      "reason": "Mô tả trạng thái tệp đúng nghĩa.",
+      "uncertainty": "none"
+    },
+    "filter_menu_renamed": {
+      "verdict": "keep",
+      "reason": "Mô tả trạng thái tệp đúng nghĩa.",
+      "uncertainty": "none"
+    },
+    "filter_menu_deleted": {
+      "verdict": "keep",
+      "reason": "Mô tả trạng thái tệp đúng nghĩa.",
+      "uncertainty": "none"
+    },
+    "filter_menu_filter_files": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc rõ ràng.",
+      "uncertainty": "none"
+    },
+    "filter_menu_file_rules": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ tự nhiên trong ngữ cảnh lọc tệp.",
+      "uncertainty": "none"
+    },
+    "filter_menu_git_status": {
+      "verdict": "change",
+      "reason": "Viết hoa Git theo tên công nghệ.",
+      "uncertainty": "none"
+    },
+    "filter_menu_clear_filters": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác tự nhiên.",
+      "uncertainty": "none"
+    },
+    "filter_menu_all_files": {
+      "verdict": "keep",
+      "reason": "Nhãn phạm vi rõ ràng.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_control_set_up_access": {
+      "verdict": "keep",
+      "reason": "Giữ đúng ý thiết lập quyền truy cập.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": {
+      "verdict": "keep",
+      "reason": "Giữ rõ tài khoản được dùng để đăng bình luận.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác tự nhiên.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": {
+      "verdict": "change",
+      "reason": "Làm rõ chính ghdiff sẽ đọc mã, thay vì cấu trúc mơ hồ về việc đọc mã.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_open_setup_guide": {
+      "verdict": "keep",
+      "reason": "Nhãn điều hướng rõ ràng.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_sign_out": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác chuẩn.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Giữ đúng phạm vi quyền truy cập.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên github.com và mô tả chính xác thao tác ngoài ứng dụng.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": {
+      "verdict": "keep",
+      "reason": "Nêu đúng trạng thái kiểm tra và giới hạn đọc.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_any_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "Tự nhiên, đầy đủ các loại đích GitHub.",
+      "uncertainty": "none"
+    },
+    "home_screen_narrow_the_file_list_with_preset_path_rules": {
+      "verdict": "keep",
+      "reason": "Giữ đúng tác dụng thu hẹp danh sách bằng quy tắc có sẵn.",
+      "uncertainty": "none"
+    },
+    "home_screen_read_and_leave_comments": {
+      "verdict": "keep",
+      "reason": "Ngắn gọn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "home_screen_paste_a_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên định danh owner/repo#123 và ý nghĩa URL.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_pull_request_commit_or_compare_url": {
+      "verdict": "keep",
+      "reason": "Nhãn trường rõ ràng.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_this_diff": {
+      "verdict": "change",
+      "reason": "Diễn đạt lại để “diff” là phần thay đổi đang được mở, tự nhiên hơn trong tiếng Việt.",
+      "uncertainty": "none"
+    },
+    "home_screen_review": {
+      "verdict": "change",
+      "reason": "“Xem xét” phù hợp hơn cho thao tác review mã so với đánh giá chung.",
+      "uncertainty": "none"
+    },
+    "home_screen_set_up_access_for_private_repositories": {
+      "verdict": "keep",
+      "reason": "Giữ rõ quyền truy cập dành cho kho mã riêng tư.",
+      "uncertainty": "none"
+    },
+    "home_screen_userscript": {
+      "verdict": "keep",
+      "reason": "Tên kỹ thuật được giữ nguyên.",
+      "uncertainty": "none"
+    },
+    "home_screen_examples": {
+      "verdict": "keep",
+      "reason": "Nhãn chuẩn, ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "home_screen_watched_repos": {
+      "verdict": "keep",
+      "reason": "Diễn đạt trạng thái danh sách kho mã cục bộ, không gợi ý đăng ký GitHub.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_account": {
+      "verdict": "keep",
+      "reason": "Nhãn rõ ràng, giữ nguyên GitHub.",
+      "uncertainty": "none"
+    },
+    "home_screen_source_on_github": {
+      "verdict": "keep",
+      "reason": "Nhãn liên kết tự nhiên.",
+      "uncertainty": "none"
+    },
+    "home_screen_review_the_commit_this_build_was_made_from": {
+      "verdict": "change",
+      "reason": "Đồng nhất động từ review với ngữ cảnh xem xét mã.",
+      "uncertainty": "none"
+    },
+    "installation_row_current_diff": {
+      "verdict": "change",
+      "reason": "Dùng cùng cách gọi phần thay đổi như nhãn mở diff.",
+      "uncertainty": "none"
+    },
+    "installation_row_configure": {
+      "verdict": "keep",
+      "reason": "Nhãn cấu hình phù hợp.",
+      "uncertainty": "none"
+    },
+    "not_found_ghdiff_cannot_read_that_url": {
+      "verdict": "keep",
+      "reason": "Giữ rõ giới hạn khả năng đọc URL.",
+      "uncertainty": "none"
+    },
+    "not_found_a_review_needs_a_github_pull_request_a": {
+      "verdict": "keep",
+      "reason": "Giữ đủ ba loại đích hợp lệ và không suy đoán nguyên nhân lỗi.",
+      "uncertainty": "none"
+    },
+    "not_found_open_a_different_review": {
+      "verdict": "keep",
+      "reason": "Hướng dẫn bước tiếp theo rõ ràng.",
+      "uncertainty": "none"
+    },
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": {
+      "verdict": "keep",
+      "reason": "Hướng dẫn thao tác chính xác và ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_loading_pull_request": {
+      "verdict": "keep",
+      "reason": "Trạng thái tải tự nhiên.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_no_details_yet": {
+      "verdict": "keep",
+      "reason": "Giữ ý chưa có dữ liệu, không khẳng định không tồn tại.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_files": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_added_lines": {
+      "verdict": "change",
+      "reason": "Thêm bị động “được” để chỉ các dòng đã được thêm.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_deleted_lines": {
+      "verdict": "change",
+      "reason": "Thêm bị động “bị” để chỉ các dòng đã bị xóa.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_commits": {
+      "verdict": "keep",
+      "reason": "Commit là thuật ngữ kỹ thuật thông dụng trong giao diện lập trình.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_description": {
+      "verdict": "keep",
+      "reason": "Nhãn chuẩn.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Diễn đạt đúng trạng thái pull request đang mở.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_watched_repos": {
+      "verdict": "keep",
+      "reason": "Giữ nghĩa danh sách theo dõi cục bộ.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Trạng thái đang tải rõ ràng.",
+      "uncertainty": "none"
+    },
+    "pull_rail_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Diễn đạt đúng trạng thái pull request đang mở.",
+      "uncertainty": "none"
+    },
+    "pull_rail_pull_request_bar_width": {
+      "verdict": "keep",
+      "reason": "Nhãn trợ năng rõ ràng.",
+      "uncertainty": "none"
+    },
+    "pull_rail_show_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "pull_rail_hide_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "pull_rail_watched_repos": {
+      "verdict": "keep",
+      "reason": "Giữ nghĩa danh sách theo dõi cục bộ.",
+      "uncertainty": "none"
+    },
+    "pull_rail_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "pull_rail_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Trạng thái đang tải rõ ràng.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": {
+      "verdict": "keep",
+      "reason": "Nêu rõ hành động theo dõi để hiện pull request, không nhầm với đăng ký GitHub.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_on_github": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên cả hai placeholder và đích GitHub.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_the_open_pull_requests_on_github": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder số lượng và ý nghĩa điều hướng.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_you": {
+      "verdict": "keep",
+      "reason": "Đại từ ngắn gọn, tự nhiên trong ngữ cảnh tác giả.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_s_open_pull_requests_in_on_github": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên các placeholder và quan hệ sở hữu tự nhiên.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_set_up_private_access": {
+      "verdict": "keep",
+      "reason": "Giữ đúng ý thiết lập quyền truy cập riêng tư.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_signed_out_no_row_shows_a_status_square": {
+      "verdict": "change",
+      "reason": "Bổ sung quan hệ nguyên nhân rõ ràng và diễn đạt kết quả hiển thị tự nhiên hơn.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_stack": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_loading_open_pull_requests": {
+      "verdict": "change",
+      "reason": "Thêm lượng từ số nhiều tự nhiên cho danh sách pull request.",
+      "uncertainty": "none"
+    },
+    "pull_row_label": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder và dấu phân cách.",
+      "uncertainty": "none"
+    },
+    "pull_row_draft": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ phù hợp.",
+      "uncertainty": "none"
+    },
+    "pull_row_currently_viewing": {
+      "verdict": "keep",
+      "reason": "Nhãn trạng thái ngắn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_open": {
+      "verdict": "keep",
+      "reason": "Trạng thái phù hợp.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_draft": {
+      "verdict": "keep",
+      "reason": "Trạng thái phù hợp.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_merged": {
+      "verdict": "keep",
+      "reason": "Trạng thái phù hợp.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_closed": {
+      "verdict": "keep",
+      "reason": "Trạng thái phù hợp.",
+      "uncertainty": "none"
+    },
+    "review_header_bars": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn, phù hợp ngữ cảnh hiển thị.",
+      "uncertainty": "none"
+    },
+    "review_header_signs": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn, phù hợp ngữ cảnh hiển thị.",
+      "uncertainty": "none"
+    },
+    "review_header_none": {
+      "verdict": "keep",
+      "reason": "Tự nhiên và ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "review_header_hide_the_file_list": {
+      "verdict": "keep",
+      "reason": "Thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_header_show_the_file_list": {
+      "verdict": "keep",
+      "reason": "Thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_header_open_on_github": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder và tên thương hiệu.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_unified_view": {
+      "verdict": "change",
+      "reason": "Bổ sung “chế độ xem” để nhất quán với nhãn chế độ.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_split_view": {
+      "verdict": "change",
+      "reason": "Bổ sung “chế độ xem” để nhất quán với nhãn chế độ.",
+      "uncertainty": "none"
+    },
+    "review_header_split_view": {
+      "verdict": "change",
+      "reason": "Thêm “xem” để làm rõ đây là chế độ hiển thị.",
+      "uncertainty": "none"
+    },
+    "review_header_unified_view": {
+      "verdict": "change",
+      "reason": "Thêm “xem” để làm rõ đây là chế độ hiển thị.",
+      "uncertainty": "none"
+    },
+    "review_header_display_settings": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ UI tự nhiên.",
+      "uncertainty": "none"
+    },
+    "review_header_code_font": {
+      "verdict": "change",
+      "reason": "“Phông chữ mã” đầy đủ và tự nhiên hơn.",
+      "uncertainty": "none"
+    },
+    "review_header_change_markers": {
+      "verdict": "keep",
+      "reason": "Nghĩa chính xác.",
+      "uncertainty": "none"
+    },
+    "review_header_wrap_long_lines": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác ngắn, rõ nghĩa.",
+      "uncertainty": "none"
+    },
+    "review_header_line_numbers": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ chuẩn.",
+      "uncertainty": "none"
+    },
+    "review_header_change_backgrounds": {
+      "verdict": "keep",
+      "reason": "Nhãn cài đặt phù hợp.",
+      "uncertainty": "none"
+    },
+    "review_header_dim_whitespace_changes": {
+      "verdict": "change",
+      "reason": "Thêm “các” giúp cụm danh từ tự nhiên hơn.",
+      "uncertainty": "none"
+    },
+    "review_header_approve_request_changes_or_comment": {
+      "verdict": "keep",
+      "reason": "Bảo toàn ba hành động review riêng biệt.",
+      "uncertainty": "none"
+    },
+    "review_header_review": {
+      "verdict": "keep",
+      "reason": "Phù hợp cho nhãn hành động review.",
+      "uncertainty": "none"
+    },
+    "review_header_review_it_again": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder và câu mệnh lệnh ngắn.",
+      "uncertainty": "none"
+    },
+    "review_screen_sidebar_width": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ UI phù hợp.",
+      "uncertainty": "none"
+    },
+    "review_screen_dismiss": {
+      "verdict": "keep",
+      "reason": "Nhãn đóng/bỏ qua ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_sidebar_sections": {
+      "verdict": "change",
+      "reason": "Thêm “các” để cấu trúc danh từ tự nhiên hơn.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_files": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn, phù hợp.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_threads_comments": {
+      "verdict": "change",
+      "reason": "Tiếng Việt không chia số danh từ; chuyển các nhánh plural sang nhánh reachable other và wildcard đầy đủ.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_comments": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ UI phù hợp.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_hide_the_path_search": {
+      "verdict": "keep",
+      "reason": "Thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_by_path": {
+      "verdict": "keep",
+      "reason": "Nhãn ngắn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_the_current_filter_hides_all_files": {
+      "verdict": "keep",
+      "reason": "Nêu đúng hậu quả của bộ lọc hiện tại.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_filters": {
+      "verdict": "keep",
+      "reason": "Thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_added_lines": {
+      "verdict": "change",
+      "reason": "Dạng bị động tự nhiên hơn cho các dòng được thêm.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_deleted_lines": {
+      "verdict": "change",
+      "reason": "Dạng bị động tự nhiên hơn cho các dòng bị xóa.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_files_by_path": {
+      "verdict": "keep",
+      "reason": "Nhãn rõ nghĩa.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_path_contains": {
+      "verdict": "keep",
+      "reason": "Placeholder ngắn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_the_path_search": {
+      "verdict": "keep",
+      "reason": "Thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_fetching_the_diff": {
+      "verdict": "change",
+      "reason": "“diff” là thuật ngữ kỹ thuật thông dụng và gọn hơn trong ngữ cảnh này.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_reading_the_patch_for_this_review": {
+      "verdict": "keep",
+      "reason": "Câu trạng thái tự nhiên.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_preparing_the_diff": {
+      "verdict": "change",
+      "reason": "“diff” là thuật ngữ kỹ thuật thông dụng và gọn hơn trong ngữ cảnh này.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": {
+      "verdict": "keep",
+      "reason": "Bảo toàn hai bước xử lý riêng biệt.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_starting_the_highlighters": {
+      "verdict": "change",
+      "reason": "Dùng số nhiều để phù hợp với “highlighters”.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": {
+      "verdict": "change",
+      "reason": "“Đang chuẩn bị” tự nhiên hơn và vẫn giữ nghĩa tiến trình chưa hoàn tất.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_set_up_repository_access": {
+      "verdict": "keep",
+      "reason": "Bảo toàn phạm vi quyền truy cập kho mã.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_try_again": {
+      "verdict": "keep",
+      "reason": "Nhãn khôi phục ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one": {
+      "verdict": "change",
+      "reason": "Làm rõ GitHub cần một ghi chú, không phải chính hành động thêm.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": {
+      "verdict": "change",
+      "reason": "“Không cho phép” tự nhiên hơn và giữ giới hạn của GitHub.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": {
+      "verdict": "change",
+      "reason": "“Không cho phép” tự nhiên hơn và giữ giới hạn của GitHub.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": {
+      "verdict": "change",
+      "reason": "Diễn đạt giới hạn “nothing else” tự nhiên hơn.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": {
+      "verdict": "change",
+      "reason": "Làm rõ GitHub cần một ghi chú cho hai hành động được nêu.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_submit_a_review": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động phù hợp.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_review_body": {
+      "verdict": "keep",
+      "reason": "Nhãn trường rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_leave_a_note_with_your_review": {
+      "verdict": "keep",
+      "reason": "Hướng dẫn rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_label": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên hai placeholder và dấu phân cách.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_diff": {
+      "verdict": "change",
+      "reason": "“diff” là thuật ngữ kỹ thuật tự nhiên trong trình xem mã.",
+      "uncertainty": "none"
+    },
+    "review_viewer_hide_the_diff": {
+      "verdict": "change",
+      "reason": "“diff” là thuật ngữ kỹ thuật tự nhiên trong trình xem mã.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_whole_file": {
+      "verdict": "keep",
+      "reason": "Thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "review_viewer_viewed": {
+      "verdict": "keep",
+      "reason": "Trạng thái ngắn, phù hợp.",
+      "uncertainty": "none"
+    },
+    "setup_screen_set_up_private_repository_access": {
+      "verdict": "keep",
+      "reason": "Bảo toàn phạm vi kho mã riêng tư.",
+      "uncertainty": "none"
+    },
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": {
+      "verdict": "change",
+      "reason": "Dùng “các kho mã mà” tự nhiên hơn, vẫn giữ ranh giới quyền truy cập.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_to_github": {
+      "verdict": "change",
+      "reason": "“Đăng nhập vào” tự nhiên hơn với tên dịch vụ.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_identifies_your_account_to_github_any_comments": {
+      "verdict": "change",
+      "reason": "“Đăng bằng tài khoản này” tự nhiên hơn và giữ hệ quả về danh tính đăng bài.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_with_github": {
+      "verdict": "keep",
+      "reason": "Nhãn đăng nhập chuẩn.",
+      "uncertainty": "none"
+    },
+    "setup_screen_grant_repository_access": {
+      "verdict": "keep",
+      "reason": "Thao tác quyền truy cập rõ ràng.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": {
+      "verdict": "keep",
+      "reason": "Bảo toàn phân biệt đăng nhập và cấp quyền kho mã.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": {
+      "verdict": "change",
+      "reason": "Thêm “của nó” để tham chiếu danh sách quyền truy cập rõ ràng, giữ nguyên placeholder.",
+      "uncertainty": "none"
+    },
+    "setup_screen_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Nhãn chính xác.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_ghdiff": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên tên sản phẩm.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Nhãn thao tác rõ ràng.",
+      "uncertainty": "none"
+    },
+    "setup_screen_checking": {
+      "verdict": "keep",
+      "reason": "Trạng thái tiến trình phù hợp.",
+      "uncertainty": "none"
+    },
+    "setup_screen_check_again": {
+      "verdict": "keep",
+      "reason": "Nhãn khôi phục ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "setup_screen_open_the_diff": {
+      "verdict": "change",
+      "reason": "“diff” là thuật ngữ kỹ thuật tự nhiên trong nút mở thay đổi.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_the_home_page_to_paste_a": {
+      "verdict": "keep",
+      "reason": "Tự nhiên, giữ nguyên các loại URL kỹ thuật.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": {
+      "verdict": "change",
+      "reason": "Bổ sung chủ thể quyền để sát nghĩa updated permissions.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_ghdiff_home": {
+      "verdict": "keep",
+      "reason": "Nhãn điều hướng ngắn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_the_diff": {
+      "verdict": "keep",
+      "reason": "Nhãn điều hướng ngắn, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": {
+      "verdict": "keep",
+      "reason": "Giữ rõ việc chưa cấu hình và giới hạn chỉ diff công khai.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_now_uses_a_github_app": {
+      "verdict": "keep",
+      "reason": "Ngắn gọn, giữ nguyên GitHub App.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": {
+      "verdict": "keep",
+      "reason": "Bảo toàn trình duyệt cục bộ, việc không còn yêu cầu token và hệ quả trên GitHub.",
+      "uncertainty": "none"
+    },
+    "setup_screen_delete_the_token_on_github": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động rõ ràng.",
+      "uncertainty": "none"
+    },
+    "userscript_install_add_a_ghdiff_button_to_github_com": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên ghdiff và github.com.",
+      "uncertainty": "none"
+    },
+    "userscript_install_install": {
+      "verdict": "keep",
+      "reason": "Nhãn cài đặt chuẩn.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch_this_repository": {
+      "verdict": "keep",
+      "reason": "Dùng thuật ngữ kho mã và động từ Theo dõi nhất quán.",
+      "uncertainty": "Theo dõi có thể gợi liên tưởng theo dõi GitHub, nhưng ngữ cảnh danh sách cục bộ kèm theo đã làm rõ."
+    },
+    "watch_offer_dialog_watch": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder và cấu trúc câu hỏi tự nhiên.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_keep_reviewing": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động phù hợp bối cảnh review.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Nêu rõ danh sách chỉ lưu tại trình duyệt này.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_not_now": {
+      "verdict": "keep",
+      "reason": "Từ chối trung tính, tự nhiên.",
+      "uncertainty": "none"
+    },
+    "watched_repos_dialog_watched_repositories": {
+      "verdict": "keep",
+      "reason": "Nhãn danh sách rõ nghĩa.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": {
+      "verdict": "keep",
+      "reason": "Giữ rõ pull request đang mở và danh sách chỉ cục bộ.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_enter_a_repository_as_owner_repo": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên định dạng owner/repo.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_owner_repo": {
+      "verdict": "keep",
+      "reason": "Định danh đầu vào được giữ nguyên.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_repository_to_watch": {
+      "verdict": "keep",
+      "reason": "Nhãn trường ngắn và rõ.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_add": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động chuẩn.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_nothing_watched_yet": {
+      "verdict": "keep",
+      "reason": "Phân biệt đúng danh sách trống với không có pull request mở.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_remove": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động chuẩn.",
+      "uncertainty": "none"
+    },
+    "dialog_close": {
+      "verdict": "keep",
+      "reason": "Nhãn đóng chuẩn.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_could_not_read_that_file_from_github": {
+      "verdict": "keep",
+      "reason": "Thông báo lỗi rõ và đúng chủ thể GitHub.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên thay đổi kể từ khi diff được tạo và bước tải lại.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_request_failed": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder trạng thái.",
+      "uncertainty": "none"
+    },
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Diễn đạt tự nhiên trạng thái tài khoản đăng nhập.",
+      "uncertainty": "none"
+    },
+    "use_installations_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "change",
+      "reason": "Xác định nơi cài đặt tự nhiên và đúng nghĩa hơn đọc nơi cài đặt.",
+      "uncertainty": "none"
+    },
+    "use_open_pulls_could_not_load_pull_requests": {
+      "verdict": "keep",
+      "reason": "Thông báo lỗi ngắn, rõ.",
+      "uncertainty": "none"
+    },
+    "use_pull_details_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Thông báo lỗi ngắn, rõ.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Thông báo lỗi ngắn, rõ.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_that_comment_to_github": {
+      "verdict": "keep",
+      "reason": "Giữ đúng hành động đăng bình luận lên GitHub.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_this_reply_to_github": {
+      "verdict": "keep",
+      "reason": "Giữ đúng hành động đăng phản hồi lên GitHub.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên thất bại và bước kiểm tra qua tải lại.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_request_failed": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên placeholder trạng thái.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Thông báo lỗi ngắn, rõ.",
+      "uncertainty": "none"
+    },
+    "use_submit_review_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Giữ đúng hành động gửi review.",
+      "uncertainty": "none"
+    },
+    "use_viewed_files_could_not_send_that_mark_to_github": {
+      "verdict": "change",
+      "reason": "Trạng thái đánh dấu tự nhiên hơn dấu đó và vẫn không suy diễn thêm hành động.",
+      "uncertainty": "Tên chính xác của trạng thái đánh dấu không được nêu."
+    },
+    "code_fonts_system": {
+      "verdict": "keep",
+      "reason": "Nhãn lựa chọn phông hệ thống chuẩn.",
+      "uncertainty": "none"
+    },
+    "diff_hydration_that_file_is_too_large_to_show_its": {
+      "verdict": "keep",
+      "reason": "Giữ rõ giới hạn kích thước và chỉ các dòng chưa sửa đổi.",
+      "uncertainty": "none"
+    },
+    "example_targets_rewrite_bun_in_rust": {
+      "verdict": "keep",
+      "reason": "Tiêu đề thay đổi tự nhiên, giữ nguyên Bun và Rust.",
+      "uncertainty": "none"
+    },
+    "example_targets_2_188_files_1_0m_lines": {
+      "verdict": "keep",
+      "reason": "Định dạng số Việt Nam phù hợp.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_largest_of_them_43_mb_of_unified": {
+      "verdict": "change",
+      "reason": "Dùng trải trên tự nhiên hơn qua khi mô tả số commit.",
+      "uncertainty": "none"
+    },
+    "example_targets_resolve_maimai_net_import_pr_conflicts": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên tên riêng Maimai NET và nghĩa xung đột pull request.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_494k_lines": {
+      "verdict": "keep",
+      "reason": "Định dạng số và đơn vị tự nhiên.",
+      "uncertainty": "none"
+    },
+    "example_targets_one_generated_json_file_holds_465_486_of": {
+      "verdict": "keep",
+      "reason": "Giữ rõ một tệp JSON được tạo chứa số dòng nêu trên.",
+      "uncertainty": "none"
+    },
+    "example_targets_deps_update_v8_to_14_1": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên tiền tố và định danh kỹ thuật.",
+      "uncertainty": "none"
+    },
+    "example_targets_3_420_files_268k_lines": {
+      "verdict": "keep",
+      "reason": "Định dạng số và đơn vị tự nhiên.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_widest_file_tree_past_the_api_diff": {
+      "verdict": "change",
+      "reason": "Bản cũ nói lấy ngoài máy chủ web, đảo nghĩa với comes off the web host.",
+      "uncertainty": "none"
+    },
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên mọi định danh kỹ thuật.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_88k_lines": {
+      "verdict": "keep",
+      "reason": "Định dạng số và đơn vị tự nhiên.",
+      "uncertainty": "none"
+    },
+    "example_targets_large_and_still_a_diff_a_person_can": {
+      "verdict": "keep",
+      "reason": "Giữ được ý lớn nhưng vẫn có thể đọc hết.",
+      "uncertainty": "none"
+    },
+    "example_targets_ghostty_1_3_0_to_1_3_1": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên tên và phiên bản.",
+      "uncertainty": "none"
+    },
+    "example_targets_53_files_2_6k_lines": {
+      "verdict": "keep",
+      "reason": "Định dạng số và đơn vị tự nhiên.",
+      "uncertainty": "none"
+    },
+    "example_targets_a_compare_range_of_one_release_100_commits": {
+      "verdict": "keep",
+      "reason": "Giữ rõ compare range, số commit và bình luận chỉ cục bộ.",
+      "uncertainty": "none"
+    },
+    "filter_rules_all_files": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc rõ.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_every_file_in_the_diff": {
+      "verdict": "keep",
+      "reason": "Diễn đạt đúng phạm vi mọi tệp trong diff.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_tests": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Giữ đủ ba loại tệp.",
+      "uncertainty": "none"
+    },
+    "filter_rules_tests_only": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Giữ đúng giới hạn chỉ ba loại tệp.",
+      "uncertainty": "none"
+    },
+    "filter_rules_source_only": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc tự nhiên.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_code_files_that_are_not_tests": {
+      "verdict": "keep",
+      "reason": "Giữ cả hai phủ định: không phải kiểm thử và không được tạo.",
+      "uncertainty": "none"
+    },
+    "filter_rules_docs_only": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc tự nhiên.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_markdown_and_other_prose_files": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên Markdown và các tệp văn xuôi khác.",
+      "uncertainty": "none"
+    },
+    "filter_rules_config_only": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên manifest, lint và CI.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_generated": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc rõ.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Giữ đủ lock file, snapshot và đầu ra bản dựng.",
+      "uncertainty": "none"
+    },
+    "filter_rules_generated_only": {
+      "verdict": "keep",
+      "reason": "Nhãn bộ lọc rõ.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Giữ đúng giới hạn chỉ các loại tệp nêu trên.",
+      "uncertainty": "none"
+    },
+    "github_app_sign_in_was_not_completed_on_github_try": {
+      "verdict": "keep",
+      "reason": "Giữ rõ đăng nhập chưa hoàn tất và điều kiện thử lại.",
+      "uncertainty": "none"
+    },
+    "github_app_the_sign_in_session_timed_out_on_github": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên thời hạn phiên và bước tiếp theo.",
+      "uncertainty": "none"
+    },
+    "github_app_security_verification_failed_during_github_sign_in_start": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên thất bại xác minh và điểm bắt đầu lại là ghdiff.",
+      "uncertainty": "none"
+    },
+    "github_app_github_could_not_complete_the_sign_in_try": {
+      "verdict": "keep",
+      "reason": "Thông báo ngắn, giữ nguyên nguyên nhân không chắc chắn.",
+      "uncertainty": "none"
+    },
+    "installations_all_repositories": {
+      "verdict": "keep",
+      "reason": "Nhãn trạng thái rõ.",
+      "uncertainty": "none"
+    },
+    "installations_no_repositories_selected": {
+      "verdict": "keep",
+      "reason": "Giữ rõ trạng thái chưa chọn.",
+      "uncertainty": "none"
+    },
+    "pull_details_just_now": {
+      "verdict": "keep",
+      "reason": "Cụm thời gian ngắn, tự nhiên cho giao diện.",
+      "uncertainty": "none"
+    },
+    "pull_status_approved": {
+      "verdict": "keep",
+      "reason": "Trạng thái review đã được chấp thuận được giữ rõ.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa trạng thái đánh giá.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_review_yet": {
+      "verdict": "keep",
+      "reason": "Tự nhiên và phân biệt với kiểm tra tự động.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_passing": {
+      "verdict": "change",
+      "reason": "Bổ sung số nhiều và nghĩa tất cả kiểm tra đều đạt.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_running": {
+      "verdict": "change",
+      "reason": "Dạng số nhiều tự nhiên hơn cho kiểm tra tự động.",
+      "uncertainty": "none"
+    },
+    "pull_status_a_check_failed": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa một kiểm tra thất bại.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_checks": {
+      "verdict": "change",
+      "reason": "Cần từ chỉ định tự nhiên cho trạng thái không có kiểm tra.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested_new_commits_since": {
+      "verdict": "keep",
+      "reason": "Giữ đúng quan hệ thời gian với commit mới.",
+      "uncertainty": "none"
+    },
+    "review_data_commit": {
+      "verdict": "keep",
+      "reason": "Commit là thuật ngữ kỹ thuật quen thuộc; placeholder được giữ nguyên.",
+      "uncertainty": "none"
+    },
+    "review_decision_approve": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động ngắn, đúng ngữ cảnh duyệt đánh giá.",
+      "uncertainty": "none"
+    },
+    "review_decision_approving": {
+      "verdict": "keep",
+      "reason": "Dạng đang xử lý tự nhiên.",
+      "uncertainty": "none"
+    },
+    "review_decision_request_changes": {
+      "verdict": "keep",
+      "reason": "Đúng là quyết định đánh giá, không hàm ý sửa tệp.",
+      "uncertainty": "none"
+    },
+    "review_decision_requesting": {
+      "verdict": "change",
+      "reason": "Cần nêu rõ đang yêu cầu thay đổi.",
+      "uncertainty": "none"
+    },
+    "review_decision_comment": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động phù hợp.",
+      "uncertainty": "none"
+    },
+    "review_decision_commenting": {
+      "verdict": "keep",
+      "reason": "Dạng đang xử lý tự nhiên.",
+      "uncertainty": "none"
+    },
+    "review_decision_approved": {
+      "verdict": "keep",
+      "reason": "Đúng trạng thái đã duyệt.",
+      "uncertainty": "none"
+    },
+    "review_decision_changes_requested": {
+      "verdict": "keep",
+      "reason": "Đúng trạng thái yêu cầu thay đổi.",
+      "uncertainty": "none"
+    },
+    "review_decision_commented": {
+      "verdict": "keep",
+      "reason": "Đúng trạng thái đã bình luận.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_approved_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Tự nhiên và giữ đúng chủ thể.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_requested_changes_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Giữ rõ đây là yêu cầu thay đổi trong đánh giá.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_commented_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Tự nhiên và đầy đủ.",
+      "uncertainty": "none"
+    },
+    "review_decision_github_recorded_your_review": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa GitHub đã ghi nhận đánh giá.",
+      "uncertainty": "none"
+    },
+    "review_failure_the_server_didn_t_respond_your_connection_might": {
+      "verdict": "keep",
+      "reason": "Giữ tính khả năng và cả hai nguyên nhân.",
+      "uncertainty": "none"
+    },
+    "review_failure_you_used_all_5_000_github_requests_for": {
+      "verdict": "keep",
+      "reason": "Giữ giới hạn, khung thời gian và bước khôi phục.",
+      "uncertainty": "none"
+    },
+    "review_failure_hourly_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Nhãn lỗi ngắn, chính xác.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": {
+      "verdict": "keep",
+      "reason": "Giữ ranh giới chưa xác thực và lợi ích thiết lập quyền truy cập.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa nhãn lỗi.",
+      "uncertainty": "none"
+    },
+    "review_failure_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Giữ việc ghdiff không thể làm mới đăng nhập và bước tiếp theo.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_sign_in_expired": {
+      "verdict": "keep",
+      "reason": "Tự nhiên và ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": {
+      "verdict": "keep",
+      "reason": "Giữ hai khả năng: chưa cài ghdiff hoặc thiếu quyền.",
+      "uncertainty": "none"
+    },
+    "review_failure_ghdiff_needs_access_to_this_repository": {
+      "verdict": "keep",
+      "reason": "Đúng ranh giới quyền truy cập.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returns_not_found_for_private_repositories_when": {
+      "verdict": "keep",
+      "reason": "Giữ điều kiện đã đăng xuất và tính riêng tư.",
+      "uncertainty": "none"
+    },
+    "review_failure_repository_not_found_or_private": {
+      "verdict": "keep",
+      "reason": "Giữ tính không chắc chắn giữa không tìm thấy và riêng tư.",
+      "uncertainty": "none"
+    },
+    "review_failure_could_not_load_the_diff": {
+      "verdict": "keep",
+      "reason": "Nêu đúng thao tác thất bại.",
+      "uncertainty": "none"
+    },
+    "contract_enter_a_valid_github_username_or_repository_name": {
+      "verdict": "keep",
+      "reason": "Rõ ràng và tự nhiên.",
+      "uncertainty": "none"
+    },
+    "contract_comment_cannot_be_empty": {
+      "verdict": "keep",
+      "reason": "Thông báo xác thực ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "router_could_not_check_who_you_are_signed_in": {
+      "verdict": "change",
+      "reason": "Cấu trúc mới tự nhiên hơn và giữ nghĩa không thể xác định tài khoản.",
+      "uncertainty": "none"
+    },
+    "router_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "Giữ đúng thông tin vị trí cài đặt.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_repository": {
+      "verdict": "keep",
+      "reason": "Đúng thao tác thất bại.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Đúng thao tác thất bại.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_your_review_of_this_pull": {
+      "verdict": "keep",
+      "reason": "Giữ rõ đánh giá thuộc về người dùng.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_review_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Giữ sự đối lập đã chấp nhận nhưng không có dữ liệu trả về.",
+      "uncertainty": "none"
+    },
+    "router_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Đúng thao tác gửi đánh giá.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Ngắn gọn, đúng nghĩa.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_reply_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Giữ đầy đủ kết quả mâu thuẫn.",
+      "uncertainty": "none"
+    },
+    "router_this_comment_is_missing_a_file_or_line": {
+      "verdict": "keep",
+      "reason": "Giữ rõ thiếu tệp hoặc số dòng.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_comment_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Giữ đầy đủ kết quả mâu thuẫn.",
+      "uncertainty": "none"
+    },
+    "router_could_not_post_this_comment": {
+      "verdict": "keep",
+      "reason": "Đúng thao tác đăng bình luận.",
+      "uncertainty": "none"
+    },
+    "router_could_not_delete_this_comment": {
+      "verdict": "keep",
+      "reason": "Đúng thao tác xóa bình luận.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_which_files_you_have_read": {
+      "verdict": "keep",
+      "reason": "Giữ nghĩa danh sách tệp đã đọc.",
+      "uncertainty": "none"
+    },
+    "router_not_found": {
+      "verdict": "keep",
+      "reason": "Bản dịch chuẩn cho trạng thái không tìm thấy.",
+      "uncertainty": "none"
+    },
+    "router_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "Giữ đối tượng dấu đánh dấu và đích GitHub.",
+      "uncertainty": "none"
+    },
+    "auth_route_this_ghdiff_has_no_github_app_set_up": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên nhân cấu hình GitHub App và hệ quả không thể đăng nhập.",
+      "uncertainty": "none"
+    },
+    "github_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Giữ trạng thái đăng nhập và bước khôi phục.",
+      "uncertainty": "none"
+    },
+    "github_github_rejected_that_query": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa truy vấn bị từ chối.",
+      "uncertainty": "none"
+    },
+    "github_github_returned_no_data_for_that_query": {
+      "verdict": "keep",
+      "reason": "Giữ rõ không có dữ liệu trả về.",
+      "uncertainty": "none"
+    },
+    "github_github_has_no_such_file_on_that_commit": {
+      "verdict": "keep",
+      "reason": "Giữ điều kiện commit và yêu cầu token cho kho riêng tư.",
+      "uncertainty": "none"
+    },
+    "github_app_github_would_not_revoke_that_token": {
+      "verdict": "change",
+      "reason": "Diễn đạt từ chối thu hồi tự nhiên và rõ hơn.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_for_that_token_request": {
+      "verdict": "keep",
+      "reason": "Giữ placeholder trạng thái nguyên vẹn.",
+      "uncertainty": "none"
+    },
+    "github_app_github_refused_that": {
+      "verdict": "keep",
+      "reason": "Giữ chi tiết lỗi và placeholder.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_with_no_access_token": {
+      "verdict": "keep",
+      "reason": "Giữ rõ phản hồi không có access token.",
+      "uncertainty": "none"
+    },
+    "github_patch_github_lists_at_most_files_for_this_diff": {
+      "verdict": "keep",
+      "reason": "Giữ giới hạn số tệp và hệ quả tệp sau vắng mặt.",
+      "uncertainty": "none"
+    },
+    "installations_an_account": {
+      "verdict": "keep",
+      "reason": "Cụm danh từ tự nhiên.",
+      "uncertainty": "none"
+    },
+    "stream_text_that_response_is_too_large_to_read": {
+      "verdict": "keep",
+      "reason": "Đúng giới hạn kích thước phản hồi.",
+      "uncertainty": "none"
+    },
+    "diff_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa mục tiêu đánh giá không hợp lệ.",
+      "uncertainty": "none"
+    },
+    "diff_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Đúng thao tác thất bại.",
+      "uncertainty": "none"
+    },
+    "diff_that_request_to_github_failed": {
+      "verdict": "keep",
+      "reason": "Giữ rõ yêu cầu đến GitHub thất bại.",
+      "uncertainty": "none"
+    },
+    "file_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa mục tiêu đánh giá không hợp lệ.",
+      "uncertainty": "none"
+    },
+    "file_that_file_path_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa đường dẫn tệp không hợp lệ.",
+      "uncertainty": "none"
+    },
+    "file_could_not_load_that_file": {
+      "verdict": "keep",
+      "reason": "Đúng thao tác thất bại.",
+      "uncertainty": "none"
+    },
+    "route_no_such_procedure": {
+      "verdict": "keep",
+      "reason": "Đúng nghĩa không có thủ tục tương ứng.",
+      "uncertainty": "none"
+    },
+    "common_file_count": {
+      "verdict": "keep",
+      "reason": "Tiếng Việt không cần biến đổi danh từ; khai báo và nhánh wildcard được giữ.",
+      "uncertainty": "none"
+    },
+    "common_commit_count": {
+      "verdict": "keep",
+      "reason": "Tiếng Việt không cần biến đổi số nhiều; commit được giữ là thuật ngữ kỹ thuật.",
+      "uncertainty": "none"
+    },
+    "common_comment_count": {
+      "verdict": "keep",
+      "reason": "Danh từ đếm không đổi theo số trong tiếng Việt.",
+      "uncertainty": "none"
+    },
+    "common_reply_count": {
+      "verdict": "keep",
+      "reason": "Danh từ đếm không đổi theo số trong tiếng Việt.",
+      "uncertainty": "none"
+    },
+    "common_repository_count": {
+      "verdict": "keep",
+      "reason": "Danh từ đếm không đổi theo số trong tiếng Việt.",
+      "uncertainty": "none"
+    },
+    "home_served_count": {
+      "verdict": "keep",
+      "reason": "Giữ đúng số lượng định dạng và nghĩa đã phục vụ.",
+      "uncertainty": "none"
+    },
+    "filter_hidden_count": {
+      "verdict": "keep",
+      "reason": "Dạng đếm tiếng Việt tự nhiên.",
+      "uncertainty": "none"
+    },
+    "filter_status_summary": {
+      "verdict": "keep",
+      "reason": "Giữ base, dấu phân cách và số lượng định dạng.",
+      "uncertainty": "none"
+    },
+    "stack_pull_count": {
+      "verdict": "keep",
+      "reason": "Giữ đúng cấu trúc ngăn xếp và thuật ngữ pull request.",
+      "uncertainty": "none"
+    },
+    "comment_line": {
+      "verdict": "keep",
+      "reason": "Giữ placeholder số dòng và tự nhiên trong giao diện.",
+      "uncertainty": "none"
+    },
+    "comment_line_range": {
+      "verdict": "keep",
+      "reason": "Tự nhiên, giữ nguyên phạm vi dòng và các placeholder.",
+      "uncertainty": "none"
+    },
+    "sidebar_file_summary": {
+      "verdict": "change",
+      "reason": "Tiếng Việt không có nhánh số ít CLDR có thể đạt được; giữ nhánh wildcard duy nhất.",
+      "uncertainty": "none"
+    },
+    "home_credits": {
+      "verdict": "change",
+      "reason": "“Khác biệt” đơn lẻ không tự nhiên ở bề mặt ghi công; thêm danh từ chỉ phần hiển thị.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_phone": {
+      "verdict": "keep",
+      "reason": "Giữ đúng điểm đến trên điện thoại và ý nghĩa danh sách cục bộ.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_wide": {
+      "verdict": "keep",
+      "reason": "Giữ đúng thanh bên trái trên màn hình rộng.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_phone": {
+      "verdict": "keep",
+      "reason": "Giữ nhãn điều khiển, điểm đến và hành động theo dõi cục bộ.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_wide": {
+      "verdict": "keep",
+      "reason": "Tự nhiên và giữ đúng vị trí điều khiển trong thanh.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_phone": {
+      "verdict": "keep",
+      "reason": "Phân biệt trạng thái đánh giá với các kiểm tra và giữ điều hướng trên điện thoại.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_wide": {
+      "verdict": "keep",
+      "reason": "Giữ phân biệt đánh giá và kiểm tra tự động.",
+      "uncertainty": "none"
+    },
+    "watch_offer_action": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động ngắn gọn, phù hợp thuật ngữ đã chọn.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_title": {
+      "verdict": "keep",
+      "reason": "Diễn đạt trạng thái đã được thêm vào danh sách theo dõi.",
+      "uncertainty": "none"
+    },
+    "pull_opened_age": {
+      "verdict": "keep",
+      "reason": "Ngắn gọn và phù hợp nhãn thời gian.",
+      "uncertainty": "none"
+    },
+    "pull_updated_age": {
+      "verdict": "keep",
+      "reason": "Ngắn gọn và phù hợp nhãn thời gian.",
+      "uncertainty": "none"
+    },
+    "tree_directory_summary": {
+      "verdict": "change",
+      "reason": "Loại bỏ nhánh số ít CLDR không thể đạt được trong tiếng Việt.",
+      "uncertainty": "none"
+    },
+    "pull_list_empty": {
+      "verdict": "keep",
+      "reason": "Giữ rõ trạng thái không có pull request đang mở.",
+      "uncertainty": "none"
+    },
+    "review_submit_scope": {
+      "verdict": "keep",
+      "reason": "Giữ phạm vi toàn pull request và vị trí đăng bình luận dòng.",
+      "uncertainty": "none"
+    },
+    "review_previous_verdict": {
+      "verdict": "keep",
+      "reason": "Giữ hậu quả rằng đánh giá mới thay thế đánh giá trước.",
+      "uncertainty": "none"
+    },
+    "setup_not_installed": {
+      "verdict": "keep",
+      "reason": "Giữ tính bất định và ranh giới quyền phê duyệt của chủ sở hữu tổ chức.",
+      "uncertainty": "none"
+    },
+    "setup_no_repositories": {
+      "verdict": "keep",
+      "reason": "Giữ trạng thái đã cài đặt nhưng chưa bao phủ kho mã nào, cùng bước tiếp theo.",
+      "uncertainty": "none"
+    },
+    "userscript_manager_description": {
+      "verdict": "keep",
+      "reason": "Giữ nguyên tên các điều khiển GitHub, vị trí nút và yêu cầu trình quản lý userscript.",
+      "uncertainty": "none"
+    },
+    "pull_row_tooltip": {
+      "verdict": "keep",
+      "reason": "Cấu trúc tooltip và các placeholder được giữ nguyên.",
+      "uncertainty": "Cụm từ nhánh nguồn–đích phụ thuộc cách UI diễn giải “into”, nhưng bản dịch vẫn sát nghĩa."
+    },
+    "pull_status_description": {
+      "verdict": "keep",
+      "reason": "Các giá trị động đã là mô tả hoàn chỉnh; dấu phân cách được giữ nguyên.",
+      "uncertainty": "none"
+    },
+    "auth_required_review": {
+      "verdict": "keep",
+      "reason": "Giữ điều kiện phải thiết lập quyền truy cập trước khi gửi đánh giá.",
+      "uncertainty": "none"
+    },
+    "auth_required_delete": {
+      "verdict": "keep",
+      "reason": "Giữ điều kiện quyền truy cập trước thao tác xóa.",
+      "uncertainty": "none"
+    },
+    "auth_required_viewed": {
+      "verdict": "keep",
+      "reason": "Giữ điều kiện quyền truy cập trước khi đánh dấu tệp đã xem.",
+      "uncertainty": "none"
+    },
+    "bytes_count": {
+      "verdict": "change",
+      "reason": "Tiếng Việt dùng cùng dạng đơn vị cho mọi số; chỉ cần wildcard.",
+      "uncertainty": "none"
+    },
+    "bytes_kilobytes": {
+      "verdict": "keep",
+      "reason": "Đơn vị và placeholder được giữ nguyên.",
+      "uncertainty": "none"
+    },
+    "bytes_megabytes": {
+      "verdict": "keep",
+      "reason": "Đơn vị và placeholder được giữ nguyên.",
+      "uncertainty": "none"
+    },
+    "app_description": {
+      "verdict": "keep",
+      "reason": "Giữ đầy đủ các loại mục tiêu, quy tắc đường dẫn và việc đăng bình luận trở lại GitHub.",
+      "uncertainty": "none"
+    },
+    "thread_delete_confirmation": {
+      "verdict": "change",
+      "reason": "Tiếng Việt không cần biến thể số nhiều; câu vẫn giữ thao tác phá hủy và hậu quả không thể hoàn tác.",
+      "uncertainty": "none"
+    },
+    "github_patch_missing_files": {
+      "verdict": "change",
+      "reason": "Giữ nhánh chính xác count=1 để hiện path, đồng thời loại bỏ nhánh số ít CLDR không thể đạt được.",
+      "uncertainty": "none"
+    },
+    "userscript_open_pull": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động rõ ràng, giữ nguyên ghdiff.",
+      "uncertainty": "none"
+    },
+    "userscript_open_commit": {
+      "verdict": "keep",
+      "reason": "Nhãn hành động rõ ràng, giữ nguyên ghdiff.",
+      "uncertainty": "none"
+    },
+    "userscript_description": {
+      "verdict": "keep",
+      "reason": "Giữ đúng hai vị trí chèn nút và tên điều khiển Browse files.",
+      "uncertainty": "none"
+    },
+    "diff_expand_all": {
+      "verdict": "keep",
+      "reason": "Nhãn điều khiển tự nhiên, ngắn gọn.",
+      "uncertainty": "none"
+    },
+    "diff_no_newline": {
+      "verdict": "keep",
+      "reason": "Thông báo kỹ thuật chính xác.",
+      "uncertainty": "none"
+    },
+    "tree_git_contains_changes": {
+      "verdict": "keep",
+      "reason": "Giữ đúng ý mục thuộc trạng thái git.",
+      "uncertainty": "none"
+    },
+    "review_bytes_read": {
+      "verdict": "keep",
+      "reason": "Giữ placeholder và trạng thái đã đọc.",
+      "uncertainty": "none"
+    },
+    "tree_git_added": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ trạng thái git chính xác.",
+      "uncertainty": "none"
+    },
+    "tree_git_deleted": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ trạng thái git chính xác.",
+      "uncertainty": "none"
+    },
+    "tree_git_ignored": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ trạng thái git chính xác.",
+      "uncertainty": "none"
+    },
+    "tree_git_modified": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ trạng thái git chính xác.",
+      "uncertainty": "none"
+    },
+    "tree_git_renamed": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ trạng thái git chính xác.",
+      "uncertainty": "none"
+    },
+    "tree_git_untracked": {
+      "verdict": "keep",
+      "reason": "Thuật ngữ trạng thái git chính xác.",
+      "uncertainty": "none"
+    },
+    "diff_unmodified_lines": {
+      "verdict": "change",
+      "reason": "Tiếng Việt không có nhánh số ít CLDR có thể đạt được; wildcard giữ nguyên nghĩa.",
+      "uncertainty": "none"
+    }
+  },
+  "followUpFindings": {
+    "locale_language": "Bản dịch phù hợp làm nhãn trợ năng cho nút chọn ngôn ngữ.",
+    "thread_delete_confirmation": "Khôi phục bộ chọn số lượng chính xác; chỉ count=1 là một bình luận, mọi số lượng khác hiển thị số đã định dạng và nghĩa là tất cả bình luận trong chuỗi.",
+    "app_render_error": "OK",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "Đổi “lớn nhất” thành “rộng nhất” để giữ nghĩa về phạm vi.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "单一 other 类别；所有验证值均匹配 wildcard。"
+  },
+  "reconciledKeys": [
+    "pull_request_list_open_the_open_pull_requests_on_github",
+    "example_targets_the_widest_file_tree_past_the_api_diff",
+    "watch_offer_more_phone",
+    "watch_offer_more_wide",
+    "app_render_error"
+  ],
+  "humanNativeSpeakerReview": false
+}

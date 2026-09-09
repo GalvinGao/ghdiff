@@ -1,0 +1,613 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "自動",
+  "color_mode_toggle_light": "ライト",
+  "color_mode_toggle_dark": "ダーク",
+  "color_mode_toggle_color_mode_switch_to": "カラーモード: {value}。{value2}に切り替えます。",
+  "color_mode_toggle_color_mode": "カラーモード: {value}",
+  "comment_author_filter_bar_comment_authors": "コメントの投稿者",
+  "comment_author_filter_bar_all": "すべて",
+  "comment_author_filter_bar_comments_a_person_opened": "ユーザーが開始したコメント",
+  "comment_author_filter_bar_people": "ユーザー",
+  "comment_author_filter_bar_comments_a_github_app_opened": "GitHub Appが開始したコメント",
+  "comment_author_filter_bar_bots": "ボット",
+  "comment_body_done": "完了",
+  "comment_body_not_done": "未完了",
+  "comment_composer_leave_a_comment": "コメントを残す",
+  "comment_composer_comment": "コメント",
+  "comment_composer_cancel": "キャンセル",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd または Ctrl + Enter",
+  "comment_expansion_comment": "コメント",
+  "comment_thread_card_open_thread_by": "{author}が開始したスレッドを開く",
+  "comment_thread_card_posting": "投稿中…",
+  "comment_thread_card_click_to_open": "クリックして開く",
+  "comment_thread_card_delete": "削除",
+  "comment_thread_card_close": "閉じる",
+  "comment_thread_card_on_github": "GitHub で開く",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "このコメントはまだ GitHub に投稿されていないため、返信を付けられません。",
+  "comment_thread_card_reply_on_github": "GitHub で返信",
+  "comment_thread_card_reply_in_this_browser": "このブラウザで返信",
+  "comment_thread_card_sending": "送信中…",
+  "comment_thread_card_reply": "返信",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd または Ctrl + Enter",
+  "comments_list_no_comments_here": "コメントはありません。",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "ここで残したコメントは GitHub に投稿されます。",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub にはコミットまたは比較範囲のレビュー用スレッドがありません。コメントはこのブラウザ内に保存されます。",
+  "comments_list_posting": "投稿中",
+  "comments_list_failed": "失敗",
+  "comments_list_go_to": "{path} に移動",
+  "confirm_inline_cancel": "キャンセル",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "追加",
+  "filter_menu_modified": "変更",
+  "filter_menu_renamed": "名前変更",
+  "filter_menu_deleted": "削除",
+  "filter_menu_filter_files": "ファイルを絞り込む",
+  "filter_menu_file_rules": "ファイルルール",
+  "filter_menu_git_status": "Git ステータス",
+  "filter_menu_clear_filters": "フィルターをクリア",
+  "filter_menu_all_files": "すべてのファイル",
+  "git_hub_account_control_set_up_access": "アクセスを設定する",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "残したコメントはこのアカウントで GitHub に投稿されます。",
+  "git_hub_account_panel_install_on_another_account": "別のアカウントにインストール",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff はどのアカウントにもインストールされていません。コードを閲覧するには設定してください。",
+  "git_hub_account_panel_open_setup_guide": "設定ガイドを開く",
+  "git_hub_account_panel_sign_out": "サインアウト",
+  "git_hub_account_panel_accounts_with_access": "アクセス可能なアカウント",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "github.com の設定を開き、リポジトリを追加または削除します。",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "ghdiff が読み取れる GitHub アカウントを確認中…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "GitHub のプルリクエスト、コミット、または比較範囲を開けます。",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "プリセットのパスルールでファイル一覧を絞り込めます。",
+  "home_screen_read_and_leave_comments": "コメントを読んで残せます。",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "GitHub のプルリクエスト、コミット、比較範囲の URL を貼り付けるか、owner/repo#123 を入力してください。",
+  "home_screen_github_pull_request_commit_or_compare_url": "GitHub のプルリクエスト、コミット、または比較 URL",
+  "home_screen_open_this_diff": "この差分を開く",
+  "home_screen_review": "レビュー",
+  "home_screen_set_up_access_for_private_repositories": "プライベートリポジトリへのアクセスを設定",
+  "home_screen_userscript": "ユーザースクリプト",
+  "home_screen_examples": "例",
+  "home_screen_watched_repos": "ウォッチ中のリポジトリ",
+  "home_screen_github_account": "GitHub アカウント",
+  "home_screen_source_on_github": "GitHub でソースを表示",
+  "home_screen_review_the_commit_this_build_was_made_from": "このビルド元のコミット {sha} を ghdiff でレビュー",
+  "installation_row_current_diff": "現在の差分",
+  "installation_row_configure": "設定する",
+  "not_found_ghdiff_cannot_read_that_url": "この URL は ghdiff で読み取れません",
+  "not_found_a_review_needs_a_github_pull_request_a": "レビューには GitHub のプルリクエスト、コミット、または比較範囲が必要です。",
+  "not_found_open_a_different_review": "別のレビューを開く",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "ドラッグしてサイズ変更。ダブルクリックでリセット。",
+  "pull_details_card_loading_pull_request": "プルリクエストを読み込み中…",
+  "pull_details_card_no_details_yet": "詳細はまだありません。",
+  "pull_details_card_files": "ファイル",
+  "pull_details_card_added_lines": "追加行",
+  "pull_details_card_deleted_lines": "削除行",
+  "pull_details_card_commits": "コミット",
+  "pull_details_card_description": "説明",
+  "pull_list_button_open_pull_requests": "オープン中のプルリクエスト",
+  "pull_list_button_watched_repos": "ウォッチ中のリポジトリ",
+  "pull_list_button_reload_the_pull_requests": "プルリクエストを再読み込み",
+  "pull_list_button_loading_the_pull_requests": "プルリクエストを読み込み中",
+  "pull_rail_open_pull_requests": "オープン中のプルリクエスト",
+  "pull_rail_pull_request_bar_width": "プルリクエスト一覧バーの幅",
+  "pull_rail_show_the_pull_requests": "プルリクエストを表示",
+  "pull_rail_hide_the_pull_requests": "プルリクエストを非表示",
+  "pull_rail_watched_repos": "ウォッチ中のリポジトリ",
+  "pull_rail_reload_the_pull_requests": "プルリクエストを再読み込み",
+  "pull_rail_loading_the_pull_requests": "プルリクエストを読み込み中",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "リポジトリをウォッチすると、オープン中のプルリクエストを確認できます。",
+  "pull_request_list_open_on_github": "GitHub で {owner}/{repo} を開く",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=*": "オープン中のプルリクエスト {formatted} 件を GitHub で開く"
+      }
+    }
+  ],
+  "pull_request_list_you": "自分",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "GitHub で {owner}/{repo} の {author} のオープン中プルリクエストを開く",
+  "pull_request_list_set_up_private_access": "プライベートアクセスを設定",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "サインアウト中は、どの行にもステータスの四角形や自分のプルリクエストの印は表示されません。サインインすると両方が表示されます。",
+  "pull_request_list_stack": "スタック",
+  "pull_request_list_loading_open_pull_requests": "オープン中のプルリクエストを読み込み中…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "下書き",
+  "pull_row_currently_viewing": "現在表示中",
+  "pull_state_icon_open": "オープン",
+  "pull_state_icon_draft": "下書き",
+  "pull_state_icon_merged": "マージ済み",
+  "pull_state_icon_closed": "クローズ済み",
+  "review_header_bars": "バー",
+  "review_header_signs": "記号",
+  "review_header_none": "なし",
+  "review_header_hide_the_file_list": "ファイル一覧を隠す",
+  "review_header_show_the_file_list": "ファイル一覧を表示",
+  "review_header_open_on_github": "GitHub で {targetLabel} を開く",
+  "review_header_switch_to_unified_view": "統合表示に切り替え",
+  "review_header_switch_to_split_view": "分割表示に切り替え",
+  "review_header_split_view": "分割表示",
+  "review_header_unified_view": "統合表示",
+  "review_header_display_settings": "表示設定",
+  "review_header_code_font": "コードフォント",
+  "review_header_change_markers": "変更マーカー",
+  "review_header_wrap_long_lines": "長い行を折り返す",
+  "review_header_line_numbers": "行番号",
+  "review_header_change_backgrounds": "変更箇所の背景",
+  "review_header_dim_whitespace_changes": "空白のみの変更を薄く表示",
+  "review_header_approve_request_changes_or_comment": "承認、変更をリクエスト、またはコメント",
+  "review_header_review": "レビュー",
+  "review_header_review_it_again": "{value} もう一度レビューする。",
+  "review_screen_sidebar_width": "サイドバーの幅",
+  "review_screen_dismiss": "閉じる",
+  "review_sidebar_sidebar_sections": "サイドバーのセクション",
+  "review_sidebar_files": "ファイル",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=*, comments=*": "{threadNumber} 件のスレッド、{commentNumber} 件のコメント"
+      }
+    }
+  ],
+  "review_sidebar_comments": "コメント",
+  "review_sidebar_hide_the_path_search": "パス検索を隠す",
+  "review_sidebar_search_by_path": "パスで検索",
+  "review_sidebar_the_current_filter_hides_all_files": "現在のフィルターにより、すべてのファイルが非表示になっています。",
+  "review_sidebar_clear_filters": "フィルターをクリア",
+  "review_sidebar_added_lines": "追加行",
+  "review_sidebar_deleted_lines": "削除行",
+  "review_sidebar_search_files_by_path": "パスでファイルを検索",
+  "review_sidebar_path_contains": "パスに含む…",
+  "review_sidebar_clear_the_path_search": "パス検索をクリア",
+  "review_status_panel_fetching_the_diff": "差分を取得中",
+  "review_status_panel_reading_the_patch_for_this_review": "このレビューのパッチを読み込み中です。",
+  "review_status_panel_preparing_the_diff": "差分を準備中",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "パッチを解析し、ファイル一覧を作成中です。",
+  "review_status_panel_starting_the_highlighters": "ハイライターを起動中",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "バックグラウンドワーカーがコードの色付けを準備中です。",
+  "review_status_panel_set_up_repository_access": "リポジトリへのアクセスを設定",
+  "review_status_panel_try_again": "再試行",
+  "review_submit_dialog_add_a_note_github_needs_one": "メモを追加してください。GitHub で必要です。",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub では自分のプルリクエストを承認できません。",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub では自分のプルリクエストに変更をリクエストできません。",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "自分のプルリクエストにはコメントできます。GitHub ではそれ以外はできません。",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "メモを追加してください。変更をリクエストまたはコメントするには、GitHub でメモが必要です。",
+  "review_submit_dialog_submit_a_review": "レビューを送信",
+  "review_submit_dialog_review_body": "レビュー本文",
+  "review_submit_dialog_leave_a_note_with_your_review": "レビューにメモを添える",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "差分を表示",
+  "review_viewer_hide_the_diff": "差分を隠す",
+  "review_viewer_show_the_whole_file": "ファイル全体を表示",
+  "review_viewer_viewed": "確認済み",
+  "setup_screen_set_up_private_repository_access": "プライベートリポジトリへのアクセスを設定",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub は、アクセスを許可したリポジトリだけを ghdiff に読ませます。次の 3 ステップを順に完了してください。",
+  "setup_screen_sign_in_to_github": "GitHub にサインイン",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "これにより GitHub にアカウントが識別されます。残したコメントはこのアカウントで投稿されます。",
+  "setup_screen_sign_in_with_github": "GitHub でサインイン",
+  "setup_screen_grant_repository_access": "リポジトリへのアクセスを許可",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "サインインは本人確認だけを行います。ghdiff が読めるアカウントとリポジトリを選択してください。",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "サインインは本人確認だけを行います。{account} に ghdiff をインストールし、このリポジトリがアクセス一覧に含まれていることを確認してください。",
+  "setup_screen_accounts_with_access": "アクセス可能なアカウント",
+  "setup_screen_install_ghdiff": "ghdiff をインストール",
+  "setup_screen_install_on_another_account": "別のアカウントにインストール",
+  "setup_screen_checking": "確認中…",
+  "setup_screen_check_again": "もう一度確認",
+  "setup_screen_open_the_diff": "差分を開く",
+  "setup_screen_go_to_the_home_page_to_paste_a": "ホームページに移動して、プルリクエスト、コミット、または比較 URL を貼り付けてください。",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "差分に戻ってください。更新後の権限で ghdiff が再取得します。",
+  "setup_screen_go_to_ghdiff_home": "ghdiff のホームへ移動",
+  "setup_screen_return_to_the_diff": "差分に戻る",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "この ghdiff デプロイには GitHub App が設定されていません。公開差分は引き続き表示できます。",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff は GitHub App を使用するようになりました",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff はこのブラウザから以前の個人アクセストークンを削除し、要求しなくなりました。そのトークンは GitHub の設定で削除するまで GitHub では有効です。",
+  "setup_screen_delete_the_token_on_github": "GitHub でトークンを削除",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "github.com に ghdiff ボタンを追加",
+  "userscript_install_install": "インストール",
+  "watch_offer_dialog_watch_this_repository": "このリポジトリをウォッチしますか？",
+  "watch_offer_dialog_watch": "{subject} をウォッチしますか？",
+  "watch_offer_dialog_keep_reviewing": "レビューを続ける",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "ウォッチリストはこのブラウザ内に保存されます。",
+  "watch_offer_dialog_not_now": "今はしない",
+  "watched_repos_dialog_watched_repositories": "ウォッチ中のリポジトリ",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff はこれらのリポジトリのオープン中プルリクエストを一覧表示します。リストはこのブラウザ内に保存されます。",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "リポジトリを owner/repo 形式で入力してください。",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "ウォッチするリポジトリ",
+  "watched_repos_editor_add": "追加",
+  "watched_repos_editor_nothing_watched_yet": "まだウォッチ中のリポジトリはありません。",
+  "watched_repos_editor_remove": "削除",
+  "dialog_close": "閉じる",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "GitHub からそのファイルを読み取れませんでした。",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "この差分の作成後、GitHub 上でそのファイルが変更されています。再読み込みすると未変更の行を確認できます。",
+  "use_diff_file_loader_request_failed": "リクエストに失敗しました（{status}）。",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "サインイン中のアカウントを確認できませんでした。",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "ghdiff のインストール先を読み取れませんでした。",
+  "use_open_pulls_could_not_load_pull_requests": "プルリクエストを読み込めませんでした。",
+  "use_pull_details_could_not_load_this_pull_request": "このプルリクエストを読み込めませんでした。",
+  "use_review_comments_could_not_load_comments": "コメントを読み込めませんでした。",
+  "use_review_comments_could_not_post_that_comment_to_github": "そのコメントを GitHub に投稿できませんでした。",
+  "use_review_comments_could_not_post_this_reply_to_github": "この返信を GitHub に投稿できませんでした。",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "GitHub でそのスレッドを削除できませんでした。再読み込みして確認してください。",
+  "use_review_patch_request_failed": "リクエストに失敗しました（{status}）。",
+  "use_review_patch_could_not_load_that_diff": "その差分を読み込めませんでした。",
+  "use_submit_review_could_not_submit_this_review": "このレビューを送信できませんでした。",
+  "use_viewed_files_could_not_send_that_mark_to_github": "そのマークを GitHub に送信できませんでした。",
+  "code_fonts_system": "システム",
+  "diff_hydration_that_file_is_too_large_to_show_its": "そのファイルは大きすぎるため、未変更の行を表示できません。",
+  "example_targets_rewrite_bun_in_rust": "Bun を Rust で書き直す",
+  "example_targets_2_188_files_1_0m_lines": "2,188 ファイル · 100 万行",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "最大の例。6,755 コミットにわたる 43 MB の統合差分です。",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Maimai NET インポート PR の競合を解決",
+  "example_targets_25_files_494k_lines": "25 ファイル · 49.4 万行",
+  "example_targets_one_generated_json_file_holds_465_486_of": "生成された JSON ファイル 1 つに、そのうち 465,486 行が含まれます。",
+  "example_targets_deps_update_v8_to_14_1": "deps: V8 を 14.1 に更新",
+  "example_targets_3_420_files_268k_lines": "3,420 ファイル · 26.8 万行",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "最も広範なファイルツリーです。API の差分サイズ上限を超えるため、ghdiff は GitHub のウェブサイトから読み込みます。",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: すべての libc++ と libc++ ABI 依存関係を削除",
+  "example_targets_25_files_88k_lines": "25 ファイル · 8.8 万行",
+  "example_targets_large_and_still_a_diff_a_person_can": "大規模でも、人が最後まで読める差分です。",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 から 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53 ファイル · 2.6 千行",
+  "example_targets_a_compare_range_of_one_release_100_commits": "1 リリース分の比較範囲です。100 コミットで、コメントはローカルに保存されます。",
+  "filter_rules_all_files": "すべてのファイル",
+  "filter_rules_show_every_file_in_the_diff": "差分内のすべてのファイルを表示します。",
+  "filter_rules_hide_tests": "テストを隠す",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "テストファイル、フィクスチャ、スナップショットを隠します。",
+  "filter_rules_tests_only": "テストのみ",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "テストファイル、フィクスチャ、スナップショットのみを表示します。",
+  "filter_rules_source_only": "ソースのみ",
+  "filter_rules_show_only_code_files_that_are_not_tests": "テストでも生成物でもないコードファイルのみを表示します。",
+  "filter_rules_docs_only": "ドキュメントのみ",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Markdown とその他の文章ファイルのみを表示します。",
+  "filter_rules_config_only": "設定のみ",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "マニフェスト、lint 設定、CI ファイルのみを表示します。",
+  "filter_rules_hide_generated": "生成物を隠す",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "ロックファイル、スナップショット、ビルド出力を隠します。",
+  "filter_rules_generated_only": "生成物のみ",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "ロックファイル、スナップショット、ビルド出力のみを表示します。",
+  "github_app_sign_in_was_not_completed_on_github_try": "GitHub でサインインが完了しませんでした。準備ができたらもう一度試してください。",
+  "github_app_the_sign_in_session_timed_out_on_github": "GitHub 上のサインインセッションがタイムアウトしました。サインインを最初からやり直してください。",
+  "github_app_security_verification_failed_during_github_sign_in_start": "GitHub サインイン中のセキュリティ検証に失敗しました。ghdiff から最初からやり直してください。",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub でサインインを完了できませんでした。少し待ってからもう一度試してください。",
+  "installations_all_repositories": "すべてのリポジトリ",
+  "installations_no_repositories_selected": "選択されたリポジトリはありません",
+  "pull_details_just_now": "たった今",
+  "pull_status_approved": "承認済み",
+  "pull_status_changes_requested": "変更がリクエストされました",
+  "pull_status_no_review_yet": "レビューはまだありません",
+  "pull_status_checks_passing": "チェック成功",
+  "pull_status_checks_running": "チェック実行中",
+  "pull_status_a_check_failed": "チェックが 1 件失敗",
+  "pull_status_no_checks": "チェックなし",
+  "pull_status_changes_requested_new_commits_since": "変更がリクエストされ、その後に新しいコミットがあります",
+  "review_data_commit": "コミット {value}",
+  "review_decision_approve": "承認",
+  "review_decision_approving": "承認中…",
+  "review_decision_request_changes": "変更をリクエスト",
+  "review_decision_requesting": "変更をリクエスト中…",
+  "review_decision_comment": "コメント",
+  "review_decision_commenting": "コメント中…",
+  "review_decision_approved": "承認済み",
+  "review_decision_changes_requested": "変更がリクエストされました",
+  "review_decision_commented": "コメント済み",
+  "review_decision_you_approved_this_pull_request": "このプルリクエストを承認しました。",
+  "review_decision_you_requested_changes_on_this_pull_request": "このプルリクエストに変更をリクエストしました。",
+  "review_decision_you_commented_on_this_pull_request": "このプルリクエストにコメントしました。",
+  "review_decision_github_recorded_your_review": "GitHub にレビューが記録されました。",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "サーバーから応答がありませんでした。接続がオフラインか、リクエストがタイムアウトした可能性があります。",
+  "review_failure_you_used_all_5_000_github_requests_for": "この時間帯の GitHub リクエスト 5,000 件を使い切りました。上限がリセットされるまで数分待ってから、もう一度試してください。",
+  "review_failure_hourly_github_rate_limit_reached": "GitHub の時間ごとのレート制限に達しました",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub は未認証のリクエストを 1 時間あたり 60 件に制限します。アクセスを設定すると、すぐに 1 時間あたり 5,000 件利用できます。",
+  "review_failure_github_rate_limit_reached": "GitHub のレート制限に達しました",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "GitHub のサインインは無効になり、ghdiff は更新できませんでした。この差分を表示するにはアクセスを設定し直してください。",
+  "review_failure_github_sign_in_expired": "GitHub のサインインの有効期限が切れました",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "ghdiff がこのリポジトリにインストールされていないか、アクセス権がないため、GitHub は Not Found を返しました。権限を付与するにはアクセスを設定してください。",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff にはこのリポジトリへのアクセスが必要です",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "サインアウト中は、プライベートリポジトリに対して GitHub が Not Found を返します。この差分を表示するにはアクセスを設定してください。",
+  "review_failure_repository_not_found_or_private": "リポジトリが見つからないか、プライベートです",
+  "review_failure_could_not_load_the_diff": "差分を読み込めませんでした",
+  "contract_enter_a_valid_github_username_or_repository_name": "有効な GitHub ユーザー名またはリポジトリ名を入力してください。",
+  "contract_comment_cannot_be_empty": "コメントは空にできません。",
+  "router_could_not_check_who_you_are_signed_in": "サインイン中のアカウントを確認できませんでした。",
+  "router_could_not_read_where_ghdiff_is_installed": "ghdiff のインストール先を読み取れませんでした。",
+  "router_could_not_load_this_repository": "このリポジトリを読み込めませんでした。",
+  "router_could_not_load_this_pull_request": "このプルリクエストを読み込めませんでした。",
+  "router_could_not_load_your_review_of_this_pull": "このプルリクエストに対するレビューを読み込めませんでした。",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub はレビューを受け付けましたが、何も返しませんでした。",
+  "router_could_not_submit_this_review": "このレビューを送信できませんでした。",
+  "router_could_not_load_comments": "コメントを読み込めませんでした。",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub は返信を受け付けましたが、何も返しませんでした。",
+  "router_this_comment_is_missing_a_file_or_line": "このコメントにはファイルまたは行番号がありません。",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub はコメントを受け付けましたが、何も返しませんでした。",
+  "router_could_not_post_this_comment": "このコメントを投稿できませんでした。",
+  "router_could_not_delete_this_comment": "このコメントを削除できませんでした。",
+  "router_could_not_load_which_files_you_have_read": "確認済みのファイル情報を読み込めませんでした。",
+  "router_not_found": "見つかりません",
+  "router_could_not_send_that_mark_to_github": "そのマークを GitHub に送信できませんでした。",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "この ghdiff には GitHub App が設定されていないため、サインインできません。",
+  "github_your_github_sign_in_is_no_longer_valid": "GitHub のサインインは無効になりました。続けるにはアクセスを設定し直してください。",
+  "github_github_rejected_that_query": "GitHub がそのクエリを拒否しました。",
+  "github_github_returned_no_data_for_that_query": "GitHub がそのクエリに対するデータを返しませんでした。",
+  "github_github_has_no_such_file_on_that_commit": "GitHub にはそのコミットにそのファイルがありません。プライベートリポジトリにはトークンが必要です。",
+  "github_app_github_would_not_revoke_that_token": "GitHub はそのトークンを取り消しませんでした。",
+  "github_app_github_answered_for_that_token_request": "GitHub はそのトークンリクエストに {status} を返しました。",
+  "github_app_github_refused_that": "GitHub が拒否しました: {error}。",
+  "github_app_github_answered_with_no_access_token": "GitHub はアクセストークンなしで応答しました。",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub はこの差分について最大 {fileCount} ファイルまでしか一覧表示しないため、後続のファイルは含まれません。",
+  "installations_an_account": "アカウント",
+  "stream_text_that_response_is_too_large_to_read": "その応答は大きすぎるため読み取れません。",
+  "diff_that_review_target_is_not_valid": "そのレビュー対象は無効です。",
+  "diff_could_not_load_that_diff": "その差分を読み込めませんでした。",
+  "diff_that_request_to_github_failed": "GitHub へのリクエストに失敗しました。",
+  "file_that_review_target_is_not_valid": "そのレビュー対象は無効です。",
+  "file_that_file_path_is_not_valid": "そのファイルパスは無効です。",
+  "file_could_not_load_that_file": "そのファイルを読み込めませんでした。",
+  "route_no_such_procedure": "そのようなプロシージャはありません。",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} ファイル",
+        "countPlural=*": "{formatted} ファイル"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} コミット",
+        "countPlural=*": "{formatted} コミット"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} コメント",
+        "countPlural=*": "{formatted} コメント"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 件の返信",
+        "countPlural=*": "{formatted} 件の返信"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} リポジトリ",
+        "countPlural=*": "{formatted} リポジトリ"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 件の差分を提供",
+        "countPlural=*": "{formatted} 件の差分を提供"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 件を非表示",
+        "countPlural=*": "{formatted} 件を非表示"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{base} · {formatted} 件のステータス",
+        "countPlural=*": "{base} · {formatted} 件のステータス"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 件のプルリクエストのスタック",
+        "countPlural=*": "{formatted} 件のプルリクエストのスタック"
+      }
+    }
+  ],
+  "comment_line": "{line} 行目にコメント",
+  "comment_line_range": "{start} 行目から {end} 行目にコメント",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} ファイル{#total}/{total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "差分は {#diffs}CodeView{/diffs}、ファイル一覧は {#trees}FileTree{/trees} により提供されています。",
+  "watch_offer_added_phone": "オープン中のプルリクエストが、左上のプルリクエスト一覧に表示されます。",
+  "watch_offer_added_wide": "オープン中のプルリクエストが、左側のバーに表示されます。",
+  "watch_offer_more_phone": "さらにリポジトリをウォッチするには、その一覧を開いて {#strong}{label}{/strong} を使用するか、ghdiff のホームページに移動してください。",
+  "watch_offer_more_wide": "さらにリポジトリをウォッチするには、バーの下部にある {#strong}{label}{/strong} を使用するか、ghdiff のホームページに移動してください。",
+  "watch_offer_preview_phone": "左上のプルリクエスト一覧で、各プルリクエストのレビューとチェックを確認できます。GitHub に戻らずに移動できます。",
+  "watch_offer_preview_wide": "左側のバーで、各プルリクエストのレビューとチェックを確認できます。GitHub に戻らずに移動できます。",
+  "watch_offer_action": "{subject} をウォッチ",
+  "watch_offer_added_title": "{subject} をウォッチ中です",
+  "pull_opened_age": "作成: {age}",
+  "pull_updated_age": "更新: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} ファイル、{added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "{repositories} にオープン中のプルリクエストはありません。",
+  "review_submit_scope": "これは {#strong}{target}{/strong} のプルリクエスト全体に対するレビューです。行コメントは記入した場所に投稿されます。",
+  "review_previous_verdict": "{verdict} 新しいレビューがこれに置き換わります。",
+  "setup_not_installed": "ghdiff はまだ {#strong}{account}{/strong} にインストールされていません。組織の場合、所有者によるインストール承認が必要なことがあります。",
+  "setup_no_repositories": "ghdiff は {#strong}{account}{/strong} にインストールされていますが、対象リポジトリはまだありません。設定を開き、レビューするリポジトリを選択してください。",
+  "userscript_manager_description": "プルリクエストでは Files changed の横に、コミットでは Browse files の横にボタンを追加します。{#manager}Tampermonkey{/manager} などのユーザースクリプトマネージャーが必要です。",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} から {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "レビューを送信する前に GitHub アクセスを設定してください。",
+  "auth_required_delete": "コメントを削除する前に GitHub アクセスを設定してください。",
+  "auth_required_viewed": "ファイルを確認済みにする前に GitHub アクセスを設定してください。",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} バイト"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "github.com を ghdiff.com に置き換えるだけで、GitHub のプルリクエスト、コミット、比較範囲を開けます。プリセットのパスルールでファイル一覧を絞り込み、行コメントを GitHub に投稿できます。",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub でこのコメントを削除しますか？この操作は元に戻せません。",
+        "count=*, countPlural=*": "GitHub でこのスレッド内の {formatted} 件のコメントをすべて削除しますか？この操作は元に戻せません。"
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub は {formatted} ファイルが大きすぎて差分を作成できないと判断したため、行を表示しません: {path}。",
+        "count=*, countPlural=*": "GitHub は {formatted} ファイルが大きすぎて差分を作成できないと判断したため、行を表示しません。"
+      }
+    }
+  ],
+  "userscript_open_pull": "このプルリクエストを ghdiff で開く",
+  "userscript_open_commit": "このコミットを ghdiff で開く",
+  "userscript_description": "すべての GitHub プルリクエストのタブ行と、すべてのコミットの Browse files の横に ghdiff ボタンを追加します。",
+  "diff_expand_all": "すべて展開",
+  "diff_no_newline": "ファイル末尾に改行がありません",
+  "tree_git_contains_changes": "Git ステータス項目を含む",
+  "review_bytes_read": "{amount} 読み込み済み",
+  "tree_git_added": "Git ステータス: 追加",
+  "tree_git_deleted": "Git ステータス: 削除",
+  "tree_git_ignored": "Git ステータス: 無視",
+  "tree_git_modified": "Git ステータス: 変更",
+  "tree_git_renamed": "Git ステータス: 名前変更",
+  "tree_git_untracked": "Git ステータス: 未追跡",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} 行の未変更行"
+      }
+    }
+  ],
+  "locale_language": "言語",
+  "app_render_error": "ghdiffでこのページを表示できませんでした。ページを再読み込みして、もう一度お試しください。"
+}

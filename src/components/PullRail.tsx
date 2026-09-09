@@ -6,6 +6,8 @@ import {
 import { Link } from '@tanstack/react-router';
 import { type Ref, useMemo, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
+import { getLocale } from '../paraglide/runtime.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import {
@@ -42,6 +44,7 @@ import {
   useRailWidth,
 } from '@/hooks/useRailWidth';
 import { cn } from '@/lib/cn';
+import { textDirection } from '@/lib/locale';
 import {
   flattenStacks,
   groupPullsByRepo,
@@ -116,11 +119,12 @@ export function PullRail() {
   return (
     <>
       <aside
+        dir={textDirection(getLocale())}
         ref={(node) => {
           asideRef.current = node;
           attachRail(node);
         }}
-        aria-label="Open pull requests"
+        aria-label={m.pull_rail_open_pull_requests()}
         // `relative`, because the seam hangs off this element's own right edge
         // rather than taking a column of its own. The width is a custom
         // property, because the drag writes that property straight onto this
@@ -207,7 +211,7 @@ export function PullRail() {
             thing to resize. */}
         {!collapsed && (
           <PaneResizeHandle
-            label="Pull request bar width"
+            label={m.pull_rail_pull_request_bar_width()}
             max={RAIL_MAX_WIDTH}
             min={RAIL_MIN_WIDTH}
             onKeyDown={onRailHandleKeyDown}
@@ -266,8 +270,8 @@ function RailContent({
   scrollRef,
 }: RailContentProps) {
   const collapseLabel = collapsed
-    ? 'Show the pull requests'
-    : 'Hide the pull requests';
+    ? m.pull_rail_show_the_pull_requests()
+    : m.pull_rail_hide_the_pull_requests();
   return (
     <>
       <div
@@ -367,21 +371,24 @@ function RailContent({
             variant="chrome"
             onClick={onEdit}
           >
-            <span className="truncate">Watched repos</span>
+            <span className="truncate">{m.pull_rail_watched_repos()}</span>
           </Button>
           <Button
-            aria-label="Reload the pull requests"
+            aria-label={m.pull_rail_reload_the_pull_requests()}
             className="ml-auto"
             disabled={pulls.loading}
             size="icon-sm"
-            title="Reload the pull requests"
+            title={m.pull_rail_reload_the_pull_requests()}
             variant="chrome"
             onClick={pulls.reload}
           >
             {/* `Spinner` is the app's one turning glyph, so a reload that is
                 under way looks the same here as beside a list. */}
             {pulls.loading ? (
-              <Spinner label="Loading the pull requests" size={14} />
+              <Spinner
+                label={m.pull_rail_loading_the_pull_requests()}
+                size={14}
+              />
             ) : (
               <IconReload size={14} />
             )}

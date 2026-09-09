@@ -1,0 +1,606 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "Otomatis",
+  "color_mode_toggle_light": "Terang",
+  "color_mode_toggle_dark": "Gelap",
+  "color_mode_toggle_color_mode_switch_to": "Mode warna: {value}. Beralih ke {value2}.",
+  "color_mode_toggle_color_mode": "Mode warna: {value}",
+  "comment_author_filter_bar_comment_authors": "Penulis komentar",
+  "comment_author_filter_bar_all": "Semua",
+  "comment_author_filter_bar_comments_a_person_opened": "Komentar yang dibuat oleh seseorang",
+  "comment_author_filter_bar_people": "Orang",
+  "comment_author_filter_bar_comments_a_github_app_opened": "Komentar yang dibuat oleh Aplikasi GitHub",
+  "comment_author_filter_bar_bots": "Bot",
+  "comment_body_done": "Selesai",
+  "comment_body_not_done": "Belum selesai",
+  "comment_composer_leave_a_comment": "Tinggalkan komentar",
+  "comment_composer_comment": "Komentar",
+  "comment_composer_cancel": "Batal",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd atau Ctrl dengan Enter",
+  "comment_expansion_comment": "Komentar",
+  "comment_thread_card_open_thread_by": "Buka utas dari {author}",
+  "comment_thread_card_posting": "Memposting…",
+  "comment_thread_card_click_to_open": "Klik untuk membuka",
+  "comment_thread_card_delete": "Hapus",
+  "comment_thread_card_close": "Tutup",
+  "comment_thread_card_on_github": "Di GitHub",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Komentar ini belum sampai ke GitHub, sehingga belum dapat menerima balasan.",
+  "comment_thread_card_reply_on_github": "Balas di GitHub",
+  "comment_thread_card_reply_in_this_browser": "Balas di browser ini",
+  "comment_thread_card_sending": "Mengirim…",
+  "comment_thread_card_reply": "Balas",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd atau Ctrl dengan Enter",
+  "comments_list_no_comments_here": "Tidak ada komentar di sini.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "Komentar yang ditinggalkan di sini dikirim ke GitHub.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub tidak memiliki utas tinjauan untuk commit atau rentang perbandingan. Komentar tetap berada di browser ini.",
+  "comments_list_posting": "mengirim",
+  "comments_list_failed": "gagal",
+  "comments_list_go_to": "Buka {path}",
+  "confirm_inline_cancel": "Batal",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "Ditambahkan",
+  "filter_menu_modified": "Diubah",
+  "filter_menu_renamed": "Diganti nama",
+  "filter_menu_deleted": "Dihapus",
+  "filter_menu_filter_files": "Filter file",
+  "filter_menu_file_rules": "Aturan file",
+  "filter_menu_git_status": "Status Git",
+  "filter_menu_clear_filters": "Hapus semua filter",
+  "filter_menu_all_files": "Semua file",
+  "git_hub_account_control_set_up_access": "Siapkan akses",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Komentar yang ditinggalkan akan masuk ke GitHub melalui akun ini.",
+  "git_hub_account_panel_install_on_another_account": "Pasang di akun lain",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff belum dipasang di akun mana pun. Siapkan agar ghdiff dapat membaca kode Anda.",
+  "git_hub_account_panel_open_setup_guide": "Buka panduan penyiapan",
+  "git_hub_account_panel_sign_out": "Keluar",
+  "git_hub_account_panel_accounts_with_access": "Akun dengan akses",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "Membuka pengaturan di github.com untuk menambahkan atau menghapus repositori.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "Memeriksa akun GitHub yang dapat diakses ghdiff…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "Buka pull request, commit, atau rentang perbandingan GitHub.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "Persempit daftar file dengan aturan jalur bawaan.",
+  "home_screen_read_and_leave_comments": "Baca dan tinggalkan komentar.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "Tempel URL pull request, commit, atau perbandingan GitHub, atau ketik owner/repo#123.",
+  "home_screen_github_pull_request_commit_or_compare_url": "URL pull request, commit, atau perbandingan GitHub",
+  "home_screen_open_this_diff": "Buka perbedaan ini",
+  "home_screen_review": "Tinjau",
+  "home_screen_set_up_access_for_private_repositories": "Siapkan akses ke repositori privat",
+  "home_screen_userscript": "Userscript",
+  "home_screen_examples": "Contoh",
+  "home_screen_watched_repos": "Repositori yang dipantau",
+  "home_screen_github_account": "Akun GitHub",
+  "home_screen_source_on_github": "Sumber di GitHub",
+  "home_screen_review_the_commit_this_build_was_made_from": "Tinjau commit asal build ini, {sha}, di ghdiff",
+  "installation_row_current_diff": "perbedaan saat ini",
+  "installation_row_configure": "Konfigurasi",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff tidak dapat membaca URL tersebut",
+  "not_found_a_review_needs_a_github_pull_request_a": "Peninjauan memerlukan pull request, commit, atau rentang perbandingan GitHub.",
+  "not_found_open_a_different_review": "Buka peninjauan lain",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "Seret untuk mengubah ukuran. Klik dua kali untuk mereset.",
+  "pull_details_card_loading_pull_request": "Memuat pull request…",
+  "pull_details_card_no_details_yet": "Belum ada detail.",
+  "pull_details_card_files": "File",
+  "pull_details_card_added_lines": "Baris ditambahkan",
+  "pull_details_card_deleted_lines": "Baris dihapus",
+  "pull_details_card_commits": "Commit",
+  "pull_details_card_description": "Deskripsi",
+  "pull_list_button_open_pull_requests": "Pull request terbuka",
+  "pull_list_button_watched_repos": "Repositori yang dipantau",
+  "pull_list_button_reload_the_pull_requests": "Muat ulang pull request",
+  "pull_list_button_loading_the_pull_requests": "Memuat pull request",
+  "pull_rail_open_pull_requests": "Pull request terbuka",
+  "pull_rail_pull_request_bar_width": "Lebar bilah pull request",
+  "pull_rail_show_the_pull_requests": "Tampilkan pull request",
+  "pull_rail_hide_the_pull_requests": "Sembunyikan pull request",
+  "pull_rail_watched_repos": "Repositori yang dipantau",
+  "pull_rail_reload_the_pull_requests": "Muat ulang pull request",
+  "pull_rail_loading_the_pull_requests": "Memuat pull request",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "Pantau repositori untuk melihat pull request terbukanya.",
+  "pull_request_list_open_on_github": "Buka {owner}/{repo} di GitHub",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=*": "Buka {formatted} pull request terbuka di GitHub"
+      }
+    }
+  ],
+  "pull_request_list_you": "Anda",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "Buka pull request terbuka milik {author} di {owner}/{repo} pada GitHub",
+  "pull_request_list_set_up_private_access": "Siapkan akses privat",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "Belum masuk; tidak ada baris yang menampilkan kotak status atau penanda pada pull request Anda sendiri. Dengan masuk, keduanya akan tersedia.",
+  "pull_request_list_stack": "Tumpukan",
+  "pull_request_list_loading_open_pull_requests": "Memuat pull request terbuka…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "Draf",
+  "pull_row_currently_viewing": "Sedang Anda lihat",
+  "pull_state_icon_open": "Terbuka",
+  "pull_state_icon_draft": "Draf",
+  "pull_state_icon_merged": "Digabungkan",
+  "pull_state_icon_closed": "Ditutup",
+  "review_header_bars": "Batang",
+  "review_header_signs": "Tanda",
+  "review_header_none": "Tidak ada",
+  "review_header_hide_the_file_list": "Sembunyikan daftar file",
+  "review_header_show_the_file_list": "Tampilkan daftar file",
+  "review_header_open_on_github": "Buka {targetLabel} di GitHub",
+  "review_header_switch_to_unified_view": "Beralih ke tampilan terpadu",
+  "review_header_switch_to_split_view": "Beralih ke tampilan terpisah",
+  "review_header_split_view": "Tampilan terpisah",
+  "review_header_unified_view": "Tampilan terpadu",
+  "review_header_display_settings": "Pengaturan tampilan",
+  "review_header_code_font": "Font kode",
+  "review_header_change_markers": "Penanda perubahan",
+  "review_header_wrap_long_lines": "Bungkus baris panjang",
+  "review_header_line_numbers": "Nomor baris",
+  "review_header_change_backgrounds": "Latar belakang perubahan",
+  "review_header_dim_whitespace_changes": "Redupkan perubahan spasi",
+  "review_header_approve_request_changes_or_comment": "Setujui, minta perubahan, atau beri komentar",
+  "review_header_review": "Tinjau",
+  "review_header_review_it_again": "Tinjau {value} lagi.",
+  "review_screen_sidebar_width": "Lebar bilah samping",
+  "review_screen_dismiss": "Tutup",
+  "review_sidebar_sidebar_sections": "Bagian bilah samping",
+  "review_sidebar_files": "File",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=other, comments=other": "{threadNumber} utas, {commentNumber} komentar",
+        "threads=*, comments=*": "{threadNumber} utas, {commentNumber} komentar"
+      }
+    }
+  ],
+  "review_sidebar_comments": "Komentar",
+  "review_sidebar_hide_the_path_search": "Sembunyikan pencarian jalur",
+  "review_sidebar_search_by_path": "Cari berdasarkan jalur",
+  "review_sidebar_the_current_filter_hides_all_files": "Filter saat ini menyembunyikan semua file.",
+  "review_sidebar_clear_filters": "Hapus filter",
+  "review_sidebar_added_lines": "Baris ditambahkan",
+  "review_sidebar_deleted_lines": "Baris dihapus",
+  "review_sidebar_search_files_by_path": "Cari file berdasarkan jalur",
+  "review_sidebar_path_contains": "Jalur berisi…",
+  "review_sidebar_clear_the_path_search": "Hapus pencarian jalur",
+  "review_status_panel_fetching_the_diff": "Mengambil perbedaan",
+  "review_status_panel_reading_the_patch_for_this_review": "Membaca patch untuk tinjauan ini.",
+  "review_status_panel_preparing_the_diff": "Menyiapkan perbedaan",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "Mengurai patch dan membuat daftar file.",
+  "review_status_panel_starting_the_highlighters": "Memulai penyorot sintaks",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "Worker latar belakang sedang bersiap mewarnai kode Anda.",
+  "review_status_panel_set_up_repository_access": "Siapkan akses repositori",
+  "review_status_panel_try_again": "Coba lagi",
+  "review_submit_dialog_add_a_note_github_needs_one": "Tambahkan catatan. GitHub memerlukannya.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub menolak persetujuan pada pull request Anda sendiri.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub menolak permintaan perubahan pada pull request Anda sendiri.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Anda dapat berkomentar pada pull request sendiri. GitHub tidak mengizinkan tindakan lain.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "Tambahkan catatan. GitHub memerlukannya untuk meminta perubahan atau berkomentar.",
+  "review_submit_dialog_submit_a_review": "Kirim tinjauan",
+  "review_submit_dialog_review_body": "Isi tinjauan",
+  "review_submit_dialog_leave_a_note_with_your_review": "Tinggalkan catatan bersama tinjauan Anda",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "Tampilkan perbedaan",
+  "review_viewer_hide_the_diff": "Sembunyikan perbedaan",
+  "review_viewer_show_the_whole_file": "Tampilkan seluruh file",
+  "review_viewer_viewed": "Sudah dilihat",
+  "setup_screen_set_up_private_repository_access": "Siapkan akses repositori privat",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub hanya mengizinkan ghdiff membaca repositori yang Anda beri akses. Selesaikan tiga langkah ini secara berurutan.",
+  "setup_screen_sign_in_to_github": "Masuk ke GitHub",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "Ini mengidentifikasi akun Anda kepada GitHub. Komentar apa pun yang Anda tinggalkan akan diposting atas nama akun ini.",
+  "setup_screen_sign_in_with_github": "Masuk dengan GitHub",
+  "setup_screen_grant_repository_access": "Berikan akses repositori",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Masuk hanya digunakan untuk mengidentifikasi Anda. Pilih akun dan repositori yang dapat dibaca ghdiff.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "Masuk hanya digunakan untuk mengidentifikasi Anda. Instal ghdiff pada {account} dan pastikan repositori ini termasuk dalam daftar aksesnya.",
+  "setup_screen_accounts_with_access": "Akun dengan akses",
+  "setup_screen_install_ghdiff": "Instal ghdiff",
+  "setup_screen_install_on_another_account": "Instal di akun lain",
+  "setup_screen_checking": "Memeriksa…",
+  "setup_screen_check_again": "Periksa lagi",
+  "setup_screen_open_the_diff": "Buka perbedaan",
+  "setup_screen_go_to_the_home_page_to_paste_a": "Buka beranda untuk menempelkan URL pull request, commit, atau compare.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Kembali ke diff. ghdiff akan mengambilnya lagi menggunakan izin yang telah diperbarui.",
+  "setup_screen_go_to_ghdiff_home": "Ke beranda ghdiff",
+  "setup_screen_return_to_the_diff": "Kembali ke diff",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Deployment ghdiff ini belum menyiapkan GitHub App. Anda tetap dapat melihat diff publik apa pun.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff kini menggunakan GitHub App",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff telah menghapus personal access token lama dari browser ini dan tidak lagi memintanya. GitHub masih menerima token tersebut hingga Anda menghapusnya di pengaturan GitHub.",
+  "setup_screen_delete_the_token_on_github": "Hapus token di GitHub",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "Tambahkan tombol ghdiff ke github.com",
+  "userscript_install_install": "Instal",
+  "watch_offer_dialog_watch_this_repository": "Pantau repositori ini?",
+  "watch_offer_dialog_watch": "Pantau {subject}?",
+  "watch_offer_dialog_keep_reviewing": "Lanjutkan meninjau",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Daftar pantauan tetap di browser ini.",
+  "watch_offer_dialog_not_now": "Nanti saja",
+  "watched_repos_dialog_watched_repositories": "Repositori yang dipantau",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff menampilkan pull request terbuka untuk repositori ini. Daftar tetap di browser ini.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "Masukkan repositori dalam format owner/repo.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "Repositori untuk dipantau",
+  "watched_repos_editor_add": "Tambahkan",
+  "watched_repos_editor_nothing_watched_yet": "Belum ada repositori yang dipantau.",
+  "watched_repos_editor_remove": "Hapus",
+  "dialog_close": "Tutup",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "Tidak dapat membaca file tersebut dari GitHub.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "File tersebut telah berubah di GitHub sejak diff ini dibuat. Muat ulang untuk melihat baris yang tidak diubah.",
+  "use_diff_file_loader_request_failed": "Permintaan gagal ({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "Tidak dapat memeriksa akun yang sedang digunakan untuk masuk.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "Tidak dapat membaca tempat ghdiff diinstal.",
+  "use_open_pulls_could_not_load_pull_requests": "Tidak dapat memuat pull request.",
+  "use_pull_details_could_not_load_this_pull_request": "Tidak dapat memuat pull request ini.",
+  "use_review_comments_could_not_load_comments": "Tidak dapat memuat komentar.",
+  "use_review_comments_could_not_post_that_comment_to_github": "Tidak dapat mengirim komentar tersebut ke GitHub.",
+  "use_review_comments_could_not_post_this_reply_to_github": "Tidak dapat mengirim balasan ini ke GitHub.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "Tidak dapat menghapus utas tersebut di GitHub. Muat ulang untuk memeriksa.",
+  "use_review_patch_request_failed": "Permintaan gagal ({status}).",
+  "use_review_patch_could_not_load_that_diff": "Tidak dapat memuat diff tersebut.",
+  "use_submit_review_could_not_submit_this_review": "Tidak dapat mengirim tinjauan ini.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "Tidak dapat mengirim tanda tersebut ke GitHub.",
+  "code_fonts_system": "Sistem",
+  "diff_hydration_that_file_is_too_large_to_show_its": "File tersebut terlalu besar untuk menampilkan baris yang tidak diubah.",
+  "example_targets_rewrite_bun_in_rust": "Tulis ulang Bun dalam Rust",
+  "example_targets_2_188_files_1_0m_lines": "2.188 file · 1,0 jt. baris",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "Yang terbesar di antaranya. Diff terpadu 43 MB dari 6.755 commit.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Selesaikan konflik PR impor Maimai NET",
+  "example_targets_25_files_494k_lines": "25 file · 494 rb. baris",
+  "example_targets_one_generated_json_file_holds_465_486_of": "Satu file JSON yang dihasilkan memuat 465.486 dari baris tersebut.",
+  "example_targets_deps_update_v8_to_14_1": "deps: perbarui V8 ke 14.1",
+  "example_targets_3_420_files_268k_lines": "3.420 file · 268 rb. baris",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "Pohon file terluas. Karena melebihi batas ukuran perbedaan API, ghdiff memuatnya dari situs web GitHub.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: Hapus semua dependensi libc++ dan libc++ ABI",
+  "example_targets_25_files_88k_lines": "25 file · 88 rb. baris",
+  "example_targets_large_and_still_a_diff_a_person_can": "Besar, tetapi tetap diff yang dapat dibaca seseorang hingga selesai.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 hingga 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53 file · 2,6 rb. baris",
+  "example_targets_a_compare_range_of_one_release_100_commits": "Rentang compare satu rilis. 100 commit, dan komentar tetap lokal.",
+  "filter_rules_all_files": "Semua file",
+  "filter_rules_show_every_file_in_the_diff": "Tampilkan setiap file dalam diff.",
+  "filter_rules_hide_tests": "Sembunyikan pengujian",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "Sembunyikan file pengujian, fixture, dan snapshot.",
+  "filter_rules_tests_only": "Hanya pengujian",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "Tampilkan hanya file pengujian, fixture, dan snapshot.",
+  "filter_rules_source_only": "Hanya kode sumber",
+  "filter_rules_show_only_code_files_that_are_not_tests": "Tampilkan hanya file kode yang bukan pengujian dan bukan hasil pembuatan otomatis.",
+  "filter_rules_docs_only": "Hanya dokumentasi",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Tampilkan hanya file Markdown dan file teks lainnya.",
+  "filter_rules_config_only": "Hanya konfigurasi",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "Tampilkan hanya manifes, konfigurasi lint, dan file CI.",
+  "filter_rules_hide_generated": "Sembunyikan hasil pembuatan otomatis",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "Sembunyikan file lock, snapshot, dan keluaran build.",
+  "filter_rules_generated_only": "Hanya hasil pembuatan otomatis",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "Tampilkan hanya file lock, snapshot, dan keluaran build.",
+  "github_app_sign_in_was_not_completed_on_github_try": "Proses masuk belum diselesaikan di GitHub. Coba lagi saat siap.",
+  "github_app_the_sign_in_session_timed_out_on_github": "Sesi masuk di GitHub telah habis waktu. Mulai lagi proses masuk.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "Verifikasi keamanan gagal saat proses masuk ke GitHub. Mulai lagi prosesnya dari ghdiff.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub tidak dapat menyelesaikan proses masuk. Coba lagi sebentar lagi.",
+  "installations_all_repositories": "Semua repositori",
+  "installations_no_repositories_selected": "Tidak ada repositori yang dipilih",
+  "pull_details_just_now": "baru saja",
+  "pull_status_approved": "Disetujui",
+  "pull_status_changes_requested": "Perubahan diminta",
+  "pull_status_no_review_yet": "Belum ada tinjauan",
+  "pull_status_checks_passing": "pemeriksaan lulus",
+  "pull_status_checks_running": "pemeriksaan sedang berjalan",
+  "pull_status_a_check_failed": "satu pemeriksaan gagal",
+  "pull_status_no_checks": "tidak ada pemeriksaan",
+  "pull_status_changes_requested_new_commits_since": "Perubahan diminta, ada commit baru sejak itu",
+  "review_data_commit": "Commit {value}",
+  "review_decision_approve": "Setujui",
+  "review_decision_approving": "Menyetujui…",
+  "review_decision_request_changes": "Minta perubahan",
+  "review_decision_requesting": "Meminta perubahan…",
+  "review_decision_comment": "Komentar",
+  "review_decision_commenting": "Mengirim komentar…",
+  "review_decision_approved": "Disetujui",
+  "review_decision_changes_requested": "Perubahan diminta",
+  "review_decision_commented": "Diberi komentar",
+  "review_decision_you_approved_this_pull_request": "Anda menyetujui pull request ini.",
+  "review_decision_you_requested_changes_on_this_pull_request": "Anda meminta perubahan pada pull request ini.",
+  "review_decision_you_commented_on_this_pull_request": "Anda mengomentari pull request ini.",
+  "review_decision_github_recorded_your_review": "GitHub telah mencatat tinjauan Anda.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "Server tidak merespons. Koneksi mungkin terputus, atau permintaan kehabisan waktu.",
+  "review_failure_you_used_all_5_000_github_requests_for": "Anda telah menggunakan seluruh 5.000 permintaan GitHub untuk jam ini. Tunggu beberapa menit hingga batasnya diatur ulang, lalu coba lagi.",
+  "review_failure_hourly_github_rate_limit_reached": "Batas permintaan GitHub per jam tercapai",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub membatasi permintaan tanpa autentikasi hingga 60 per jam. Atur akses untuk segera mendapatkan 5.000 permintaan per jam.",
+  "review_failure_github_rate_limit_reached": "Batas permintaan GitHub tercapai",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "Proses masuk GitHub Anda tidak lagi valid, dan ghdiff tidak dapat memperbaruinya. Atur akses lagi untuk melihat perbedaan ini.",
+  "review_failure_github_sign_in_expired": "Proses masuk GitHub telah kedaluwarsa",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "GitHub mengembalikan Tidak Ditemukan karena ghdiff tidak terpasang di repositori ini atau akses tidak tersedia. Atur akses untuk memberikan izin.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff memerlukan akses ke repositori ini",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "GitHub mengembalikan Tidak Ditemukan untuk repositori privat saat Anda tidak masuk. Atur akses untuk melihat perbedaan ini.",
+  "review_failure_repository_not_found_or_private": "Repositori tidak ditemukan atau privat",
+  "review_failure_could_not_load_the_diff": "Tidak dapat memuat perbedaan",
+  "contract_enter_a_valid_github_username_or_repository_name": "Masukkan nama pengguna GitHub atau nama repositori yang valid.",
+  "contract_comment_cannot_be_empty": "Komentar tidak boleh kosong.",
+  "router_could_not_check_who_you_are_signed_in": "Tidak dapat memeriksa akun yang digunakan untuk masuk.",
+  "router_could_not_read_where_ghdiff_is_installed": "Tidak dapat membaca tempat ghdiff dipasang.",
+  "router_could_not_load_this_repository": "Tidak dapat memuat repositori ini.",
+  "router_could_not_load_this_pull_request": "Tidak dapat memuat pull request ini.",
+  "router_could_not_load_your_review_of_this_pull": "Tidak dapat memuat tinjauan Anda untuk pull request ini.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub menerima ulasan ini, tetapi tidak mengembalikan apa pun.",
+  "router_could_not_submit_this_review": "Tidak dapat mengirimkan ulasan ini.",
+  "router_could_not_load_comments": "Tidak dapat memuat komentar.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub menerima balasan ini, tetapi tidak mengembalikan apa pun.",
+  "router_this_comment_is_missing_a_file_or_line": "Komentar ini tidak memiliki file atau nomor baris.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub menerima komentar ini, tetapi tidak mengembalikan apa pun.",
+  "router_could_not_post_this_comment": "Tidak dapat mengirim komentar ini.",
+  "router_could_not_delete_this_comment": "Tidak dapat menghapus komentar ini.",
+  "router_could_not_load_which_files_you_have_read": "Tidak dapat memuat file yang telah dibaca.",
+  "router_not_found": "Tidak ditemukan",
+  "router_could_not_send_that_mark_to_github": "Tidak dapat mengirim tanda itu ke GitHub.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "GitHub App belum disiapkan untuk ghdiff ini, sehingga Anda tidak dapat masuk.",
+  "github_your_github_sign_in_is_no_longer_valid": "Sesi masuk GitHub Anda tidak lagi berlaku. Siapkan akses lagi untuk melanjutkan.",
+  "github_github_rejected_that_query": "GitHub menolak kueri itu.",
+  "github_github_returned_no_data_for_that_query": "GitHub tidak mengembalikan data untuk kueri itu.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub tidak memiliki file tersebut pada commit itu. Repositori privat memerlukan token.",
+  "github_app_github_would_not_revoke_that_token": "GitHub tidak mau mencabut token itu.",
+  "github_app_github_answered_for_that_token_request": "GitHub merespons {status} untuk permintaan token itu.",
+  "github_app_github_refused_that": "GitHub menolak permintaan itu: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub merespons tanpa token akses.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub mencantumkan paling banyak {fileCount} file untuk perbedaan ini, sehingga file setelahnya tidak ada.",
+  "installations_an_account": "sebuah akun",
+  "stream_text_that_response_is_too_large_to_read": "Respons itu terlalu besar untuk dibaca.",
+  "diff_that_review_target_is_not_valid": "Target ulasan itu tidak valid.",
+  "diff_could_not_load_that_diff": "Tidak dapat memuat perbedaan itu.",
+  "diff_that_request_to_github_failed": "Permintaan ke GitHub itu gagal.",
+  "file_that_review_target_is_not_valid": "Target ulasan itu tidak valid.",
+  "file_that_file_path_is_not_valid": "Jalur file itu tidak valid.",
+  "file_could_not_load_that_file": "Tidak dapat memuat file itu.",
+  "route_no_such_procedure": "Prosedur tersebut tidak ada.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} file"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} commit"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} komentar"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} balasan"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} repositori"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "Menyajikan {formatted} perbedaan"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} disembunyikan"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{base} · {formatted} status"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "Tumpukan berisi {formatted} pull request"
+      }
+    }
+  ],
+  "comment_line": "Komentar pada baris {line}",
+  "comment_line_range": "Komentar pada baris {start} hingga {end}",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} file{#total} dari {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "Perbedaan melalui {#diffs}CodeView{/diffs} dan daftar file melalui {#trees}FileTree{/trees}.",
+  "watch_offer_added_phone": "Pull request terbukanya kini ada di daftar pull request di kiri atas.",
+  "watch_offer_added_wide": "Pull request terbukanya kini ada di bilah sebelah kiri.",
+  "watch_offer_more_phone": "Untuk memantau lebih banyak repositori, buka daftar itu dan gunakan {#strong}{label}{/strong}, atau buka halaman beranda ghdiff.",
+  "watch_offer_more_wide": "Untuk memantau lebih banyak repositori, gunakan {#strong}{label}{/strong} di bagian bawah bilah, atau buka halaman beranda ghdiff.",
+  "watch_offer_preview_phone": "Lihat pull request terbukanya di daftar pull request di kiri atas, masing-masing dengan status ulasan dan pemeriksaannya. Berpindahlah di antaranya tanpa kembali ke GitHub.",
+  "watch_offer_preview_wide": "Lihat pull request terbukanya di bilah sebelah kiri, masing-masing dengan status ulasan dan pemeriksaannya. Berpindahlah di antaranya tanpa kembali ke GitHub.",
+  "watch_offer_action": "Pantau {subject}",
+  "watch_offer_added_title": "{subject} kini dipantau",
+  "pull_opened_age": "Dibuka: {age}",
+  "pull_updated_age": "Diperbarui: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} file, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "Tidak ada pull request terbuka di {repositories}.",
+  "review_submit_scope": "Ini adalah ulasan untuk seluruh pull request {#strong}{target}{/strong}. Komentar baris diposting di tempat Anda menulisnya.",
+  "review_previous_verdict": "{verdict} Ulasan baru akan menggantikannya.",
+  "setup_not_installed": "ghdiff belum terpasang di {#strong}{account}{/strong}. Jika ini organisasi, pemilik mungkin perlu menyetujui pemasangannya.",
+  "setup_no_repositories": "ghdiff terpasang di {#strong}{account}{/strong}, tetapi belum mencakup repositori apa pun. Buka pengaturannya untuk memilih repositori yang Anda ulas.",
+  "userscript_manager_description": "Ini menambahkan tombol di samping Files changed pada pull request dan di samping Browse files pada commit. Fitur ini memerlukan pengelola userscript seperti {#manager}Tampermonkey{/manager}.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} ke {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "Siapkan akses GitHub sebelum mengirimkan ulasan.",
+  "auth_required_delete": "Siapkan akses GitHub sebelum menghapus komentar.",
+  "auth_required_viewed": "Siapkan akses GitHub sebelum menandai file sebagai sudah dilihat.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} byte"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "Buka pull request, commit, atau rentang perbandingan GitHub apa pun dengan mengganti github.com menjadi ghdiff.com. Saring daftar file dengan aturan jalur bawaan, lalu kirim komentar baris kembali ke GitHub.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "Hapus komentar ini di GitHub? Tindakan ini tidak dapat dibatalkan.",
+        "count=*, countPlural=other": "Hapus semua {formatted} komentar dalam utas ini di GitHub? Tindakan ini tidak dapat dibatalkan.",
+        "count=*, countPlural=*": "Hapus semua {formatted} komentar dalam utas ini di GitHub? Tindakan ini tidak dapat dibatalkan."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub menilai {formatted} file terlalu besar untuk dibuat diff, sehingga tidak ada baris yang ditampilkan: {path}.",
+        "count=*, countPlural=*": "GitHub menilai {formatted} file terlalu besar untuk dibuat diff, sehingga tidak ada baris yang ditampilkan."
+      }
+    }
+  ],
+  "userscript_open_pull": "Buka pull request ini di ghdiff",
+  "userscript_open_commit": "Buka commit ini di ghdiff",
+  "userscript_description": "Menambahkan tombol ghdiff ke baris tab setiap pull request GitHub dan di samping Browse files pada setiap commit.",
+  "diff_expand_all": "Luaskan semua",
+  "diff_no_newline": "Tidak ada baris baru di akhir file",
+  "tree_git_contains_changes": "Berisi item status git",
+  "review_bytes_read": "{amount} telah dibaca",
+  "tree_git_added": "Status git: ditambahkan",
+  "tree_git_deleted": "Status git: dihapus",
+  "tree_git_ignored": "Status git: diabaikan",
+  "tree_git_modified": "Status git: diubah",
+  "tree_git_renamed": "Status git: diganti nama",
+  "tree_git_untracked": "Status git: tidak dilacak",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} baris tidak diubah"
+      }
+    }
+  ],
+  "locale_language": "Bahasa Indonesia",
+  "app_render_error": "ghdiff tidak dapat menampilkan halaman ini. Muat ulang halaman untuk mencoba lagi."
+}

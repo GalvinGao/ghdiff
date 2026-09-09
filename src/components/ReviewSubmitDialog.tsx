@@ -1,6 +1,9 @@
+import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import { IconXSquircle } from '@pierre/icons';
+import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { VERDICT_COLOR, VERDICT_ICON } from '@/components/reviewVerdictStyle';
 import { Button } from '@/components/ui/Button';
@@ -17,6 +20,12 @@ import {
   reviewVerdict,
   type TeamReview,
 } from '@/lib/reviewDecision';
+
+const reviewMarkup = {
+  strong: ({ children }: { children?: ReactNode }) => (
+    <span className="text-ink font-medium">{children}</span>
+  ),
+};
 
 // The verdict on the pull request as a whole.
 //
@@ -45,10 +54,11 @@ const VARIANT: Record<ReviewEvent, 'danger' | 'outline' | 'solid'> = {
  * should not have to work out which of the two they pressed.
  */
 function blockTip(event: ReviewEvent, block: ReviewBlock): string {
-  if (block === 'needs-note') return 'Add a note. GitHub needs one.';
+  if (block === 'needs-note')
+    return m.review_submit_dialog_add_a_note_github_needs_one();
   return event === 'APPROVE'
-    ? 'GitHub refuses an approval on your own pull request.'
-    : 'GitHub refuses requested changes on your own pull request.';
+    ? m.review_submit_dialog_github_refuses_an_approval_on_your_own_pull()
+    : m.review_submit_dialog_github_refuses_requested_changes_on_your_own_pull();
 }
 
 export function ReviewSubmitDialog({
@@ -143,9 +153,9 @@ export function ReviewSubmitDialog({
       reviewBlock({ body, event: spec.event, ownPullRequest }) === 'needs-note'
   );
   const standingLine = ownPullRequest
-    ? 'You can comment on your own pull request. GitHub allows nothing else.'
+    ? m.review_submit_dialog_you_can_comment_on_your_own_pull_request()
     : needsNote
-      ? 'Add a note. GitHub needs one to request changes or comment.'
+      ? m.review_submit_dialog_add_a_note_github_needs_one_to_request()
       : undefined;
 
   return (
@@ -154,7 +164,7 @@ export function ReviewSubmitDialog({
       id={id}
       popover="auto"
       role="dialog"
-      aria-label="Submit a review"
+      aria-label={m.review_submit_dialog_submit_a_review()}
       className="border-line bg-raised text-ink fixed m-0 overflow-y-auto overscroll-contain rounded-xl border p-0 shadow-lg"
       onBeforeToggle={(event) => {
         if (event.newState === 'open') positionPopover();
@@ -162,9 +172,11 @@ export function ReviewSubmitDialog({
       onToggle={(event) => onOpenChange(event.newState === 'open')}
     >
       <div className="border-line flex items-center gap-2 border-b px-3 py-2">
-        <h2 className="text-sm font-semibold">Submit a review</h2>
+        <h2 className="text-sm font-semibold">
+          {m.review_submit_dialog_submit_a_review()}
+        </h2>
         <Button
-          aria-label="Close"
+          aria-label={m.dialog_close()}
           className="ml-auto"
           size="icon-sm"
           variant="quiet"
@@ -179,9 +191,11 @@ export function ReviewSubmitDialog({
       {team.length > 0 && <TeamReviews now={openedAt} reviews={team} />}
       <div className="p-3">
         <p className="text-ink-muted text-xs">
-          This is a review of the whole pull request for{' '}
-          <span className="text-ink font-medium">{targetLabel}</span>. Line
-          comments are posted where you write them.
+          <ParaglideMessage
+            message={m.review_submit_scope}
+            inputs={{ target: targetLabel }}
+            markup={reviewMarkup}
+          />
         </p>
 
         {/* Why the button that opened this says `Approved` rather than `Review`.
@@ -189,7 +203,9 @@ export function ReviewSubmitDialog({
           the way to change a decision rather than a duplicate of it. */}
         {latest != null && (
           <p className="text-ink-muted mt-2 text-xs">
-            {describeSubmittedReview(latest)} A new one takes its place.
+            {m.review_previous_verdict({
+              verdict: describeSubmittedReview(latest),
+            })}
           </p>
         )}
 
@@ -197,13 +213,13 @@ export function ReviewSubmitDialog({
             landscape iPhones. Native popover autofocus runs on each opening. */}
         <textarea
           autoFocus
-          aria-label="Review body"
+          aria-label={m.review_submit_dialog_review_body()}
           className={cn(
             'border-line bg-canvas text-ink placeholder:text-ink-faint focus-visible:border-accent',
             'mt-2 w-full resize-y rounded-md border p-2 text-sm [@media(pointer:coarse)]:text-base focus-visible:outline-none'
           )}
           disabled={busy}
-          placeholder="Leave a note with your review"
+          placeholder={m.review_submit_dialog_leave_a_note_with_your_review()}
           rows={5}
           value={body}
           onChange={(event) => setBody(event.target.value)}

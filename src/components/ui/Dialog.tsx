@@ -1,9 +1,12 @@
 import { IconXSquircle } from '@pierre/icons';
 import { type ReactNode, useEffect, useRef } from 'react';
 
+import { m } from '../../paraglide/messages.js';
+import { getLocale } from '../../paraglide/runtime.js';
 import { AnimatedHeight } from '@/components/ui/AnimatedHeight';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
+import { textDirection } from '@/lib/locale';
 
 // The platform's own dialog, driven by React state.
 //
@@ -88,6 +91,7 @@ export function Dialog({
 
   return (
     <dialog
+      dir={textDirection(getLocale())}
       ref={ref}
       aria-label={title}
       // The entrance and the exit are in globals.css, keyed on this attribute.
@@ -119,10 +123,10 @@ export function Dialog({
           {title}
         </h2>
         <Button
-          aria-label="Close"
+          aria-label={m.dialog_close()}
           className="ml-auto"
           size="icon-sm"
-          title="Close"
+          title={m.dialog_close()}
           variant="quiet"
           onClick={onClose}
         >

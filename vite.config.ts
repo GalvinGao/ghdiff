@@ -1,4 +1,5 @@
 import { cloudflare } from '@cloudflare/vite-plugin';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import viteReact from '@vitejs/plugin-react';
@@ -6,6 +7,9 @@ import { nitro } from 'nitro/vite';
 import { execFileSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import { z } from 'zod';
+
+import { i18nConfig } from './i18n.config.mjs';
+import { pierreI18n } from './scripts/pierre-i18n.mjs';
 
 /**
  * The commit this build was made from, for the line in the home page's footer.
@@ -44,6 +48,9 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  environments: {
+    ssr: { build: { minify: true } },
+  },
   // Read at config time, in Node, and written into both bundles as a string.
   // Nothing at runtime can ask a Worker which commit it is. The target goes
   // the same way: which server runtime this build serves is answered at build
@@ -57,6 +64,8 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   plugins: [
+    paraglideVitePlugin(i18nConfig),
+    pierreI18n(),
     tailwindcss(),
     // The server runs on workerd in development as well as in production, so a
     // Node-only API cannot pass `pnpm dev` and then fail after a deploy. The
@@ -85,5 +94,6 @@ export default defineConfig({
     // import into one file: the highlight worker then loads 834 kB up front
     // instead of 211 kB plus one grammar chunk per language it meets.
     format: 'es',
+    plugins: () => [pierreI18n()],
   },
 });

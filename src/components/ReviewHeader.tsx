@@ -15,9 +15,11 @@ import { GitPullRequestClosedIcon } from '@primer/octicons-react/GitPullRequestC
 import { Link } from '@tanstack/react-router';
 import { useId, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { GitHubAccountControl } from '@/components/GitHubAccountControl';
 import { GitHubTextLink } from '@/components/GitHubLink';
+import { LanguageMenu } from '@/components/LanguageMenu';
 import { LensBadge } from '@/components/lenses/LensFrame';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
 import { PullListButton } from '@/components/PullListButton';
@@ -76,10 +78,28 @@ const MARKERS: {
   label: string;
   value: DiffIndicators;
 }[] = [
-  { icon: IconCodeStyleBars, label: 'Bars', value: 'bars' },
+  {
+    icon: IconCodeStyleBars,
+    get label() {
+      return m.review_header_bars();
+    },
+    value: 'bars',
+  },
   // 'classic' is the library's name for the +/- signs in the gutter.
-  { icon: IconSymbolDiffstat, label: 'Signs', value: 'classic' },
-  { icon: IconEyeSlash, label: 'None', value: 'none' },
+  {
+    icon: IconSymbolDiffstat,
+    get label() {
+      return m.review_header_signs();
+    },
+    value: 'classic',
+  },
+  {
+    icon: IconEyeSlash,
+    get label() {
+      return m.review_header_none();
+    },
+    value: 'none',
+  },
 ];
 
 interface ReviewHeaderProps {
@@ -170,6 +190,7 @@ export function ReviewHeader({
     // every wider screen, or the menus this row opens would be clipped by
     // their own bar.
     <header
+      dir="ltr"
       ref={fadeRef}
       className="border-line bg-surface max-phone:gap-0.5 max-phone:overflow-x-auto max-phone:px-2 flex h-11 shrink-0 items-center gap-1 border-b px-3"
       data-app-topbar=""
@@ -182,10 +203,18 @@ export function ReviewHeader({
       {onToggleFiles != null && (
         <Button
           aria-expanded={filesOpen}
-          aria-label={filesOpen ? 'Hide the file list' : 'Show the file list'}
+          aria-label={
+            filesOpen
+              ? m.review_header_hide_the_file_list()
+              : m.review_header_show_the_file_list()
+          }
           className="phone:hidden shrink-0"
           size="icon"
-          title={filesOpen ? 'Hide the file list' : 'Show the file list'}
+          title={
+            filesOpen
+              ? m.review_header_hide_the_file_list()
+              : m.review_header_show_the_file_list()
+          }
           variant="chrome"
           onClick={onToggleFiles}
         >
@@ -248,9 +277,17 @@ export function ReviewHeader({
           </>
         )}
         <Button
-          aria-label={split ? 'Switch to unified view' : 'Switch to split view'}
+          aria-label={
+            split
+              ? m.review_header_switch_to_unified_view()
+              : m.review_header_switch_to_split_view()
+          }
           size="icon"
-          title={split ? 'Split view' : 'Unified view'}
+          title={
+            split
+              ? m.review_header_split_view()
+              : m.review_header_unified_view()
+          }
           variant="chrome"
           onClick={() =>
             onControlsChange({
@@ -261,6 +298,7 @@ export function ReviewHeader({
         >
           {split ? <IconDiffSplit size={15} /> : <IconDiffUnified size={15} />}
         </Button>
+        <LanguageMenu />
         <ColorModeToggle colorMode={colorMode} />
 
         {/* modal={false}, so the diff still scrolls while the menu is open and
@@ -268,9 +306,9 @@ export function ReviewHeader({
         <DropdownMenu modal={false} open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button
-              aria-label="Display settings"
+              aria-label={m.review_header_display_settings()}
               size="icon"
-              title="Display settings"
+              title={m.review_header_display_settings()}
               variant="chrome"
             >
               <IconGearFill size={15} />
@@ -286,7 +324,7 @@ export function ReviewHeader({
                 Every row is drawn in the face it names: what a typeface looks
                 like is the whole of what the choice is about, and a list of
                 names in one face asks the reviewer to remember instead. */}
-            <DropdownMenuLabel>Code font</DropdownMenuLabel>
+            <DropdownMenuLabel>{m.review_header_code_font()}</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={codeFont.font}
               onValueChange={(value) => codeFont.setFont(value as CodeFontId)}
@@ -308,7 +346,9 @@ export function ReviewHeader({
             </DropdownMenuRadioGroup>
 
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Change markers</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {m.review_header_change_markers()}
+            </DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={controls.diffIndicators}
               onValueChange={(value) =>
@@ -342,7 +382,7 @@ export function ReviewHeader({
                 })
               }
             >
-              Wrap long lines
+              {m.review_header_wrap_long_lines()}
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               checked={controls.lineNumbers}
@@ -352,7 +392,7 @@ export function ReviewHeader({
                 onControlsChange({ ...controls, lineNumbers: checked === true })
               }
             >
-              Line numbers
+              {m.review_header_line_numbers()}
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               checked={controls.backgrounds}
@@ -362,7 +402,7 @@ export function ReviewHeader({
                 onControlsChange({ ...controls, backgrounds: checked === true })
               }
             >
-              Change backgrounds
+              {m.review_header_change_backgrounds()}
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               checked={controls.dimWhitespace}
@@ -375,7 +415,7 @@ export function ReviewHeader({
                 })
               }
             >
-              Dim whitespace changes
+              {m.review_header_dim_whitespace_changes()}
             </DropdownMenuCheckboxItem>
 
             {/* Last, and behind a separator, because it is the one switch here
@@ -527,14 +567,14 @@ function ReviewButton({
     return (
       <Button
         size="sm"
-        title="Approve, request changes, or comment"
+        title={m.review_header_approve_request_changes_or_comment()}
         variant="chrome"
         id={`${popoverId}-trigger`}
         popoverTarget={popoverId}
         aria-haspopup="dialog"
       >
         <IconInReview size={14} />
-        Review
+        {m.review_header_review()}
       </Button>
     );
   }
@@ -543,7 +583,9 @@ function ReviewButton({
   return (
     <Button
       size="sm"
-      title={`${describeSubmittedReview(latest)} Review it again.`}
+      title={m.review_header_review_it_again({
+        value: describeSubmittedReview(latest),
+      })}
       variant="chrome"
       id={`${popoverId}-trigger`}
       popoverTarget={popoverId}

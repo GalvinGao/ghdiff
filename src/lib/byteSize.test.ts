@@ -5,7 +5,7 @@ import { formatBytes } from './byteSize.ts';
 
 test('counts bytes up to the first thousand', () => {
   assert.equal(formatBytes(0), '0 bytes');
-  assert.equal(formatBytes(1), '1 bytes');
+  assert.equal(formatBytes(1), '1 byte');
   assert.equal(formatBytes(999), '999 bytes');
 });
 
