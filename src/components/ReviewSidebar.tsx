@@ -22,6 +22,7 @@ import type {
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import { countComments, countThreads } from '@/lib/commentSections';
+import type { RawThread } from '@/lib/commentThreads';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
 import {
   EMPTY_FILTER_STATE,
@@ -33,6 +34,7 @@ import type { TreeStatIndex } from '@/lib/treeStats';
 type Tab = 'files' | 'comments';
 
 interface ReviewSidebarProps {
+  unplacedThreads: readonly RawThread[];
   /** The file the diff is scrolled to, which the tree follows. */
   activeItemId?: string;
   /** Where the caller puts this: a column beside the diff, or over it. */
@@ -62,6 +64,7 @@ interface ReviewSidebarProps {
 }
 
 export function ReviewSidebar({
+  unplacedThreads,
   activeItemId,
   activeThreadKey,
   className,
@@ -86,14 +89,16 @@ export function ReviewSidebar({
   const [tab, setTab] = useState<Tab>('files');
   // The field is shown on demand, and closing it clears the query. A path
   // filter that hides files from a closed field would hide them for good.
-  const [searching, setSearching] = useState(false);
+  const [searching, setSearching] = useState(filter.query.length > 0);
   const closeSearch = () => {
     setSearching(false);
     if (filter.query.length > 0) onFilterChange({ ...filter, query: '' });
   };
 
-  const commentCount = countComments(commentSections);
-  const threadCount = countThreads(commentSections);
+  const commentCount =
+    countComments(commentSections) +
+    unplacedThreads.reduce((sum, thread) => sum + thread.comments.length, 0);
+  const threadCount = countThreads(commentSections) + unplacedThreads.length;
 
   return (
     <aside
@@ -171,16 +176,20 @@ export function ReviewSidebar({
           {treeSource.paths.length === 0 ? (
             <div className="px-3 py-3">
               <p className="text-ink-muted text-sm">
-                The current filter hides all files.
+                {totalFileCount === 0
+                  ? 'No file changes in this diff.'
+                  : 'The current filter hides all files.'}
               </p>
-              <Button
-                className="mt-2"
-                size="sm"
-                variant="outline"
-                onClick={() => onFilterChange(EMPTY_FILTER_STATE)}
-              >
-                Clear filters
-              </Button>
+              {totalFileCount > 0 && (
+                <Button
+                  className="mt-2"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onFilterChange(EMPTY_FILTER_STATE)}
+                >
+                  Clear filters
+                </Button>
+              )}
             </div>
           ) : (
             <ReviewFileTree
@@ -199,6 +208,7 @@ export function ReviewSidebar({
           className="h-full min-h-0"
         >
           <CommentsList
+            unplacedThreads={unplacedThreads}
             activeKey={activeThreadKey}
             onSelectFile={onSelectItem}
             onSelectThread={onSelectComment}

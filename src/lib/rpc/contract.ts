@@ -3,6 +3,7 @@ import * as z from 'zod';
 
 import type { CommentPayload } from '@/lib/comments';
 import type { AppInstallation } from '@/lib/installations';
+import type { PullCommitsData } from '@/lib/pullCommits';
 import type { PullDetails } from '@/lib/pullDetails';
 import type { OpenPullsData } from '@/lib/pulls';
 import type { SubmittedReview } from '@/lib/reviewDecision';
@@ -67,6 +68,7 @@ export const contract = {
   },
 
   pulls: {
+    commits: oc.input(pullRef).output(type<PullCommitsData>()),
     /** The open pull requests of the watched repositories, flat. */
     list: oc
       .input(z.object({ repos: z.array(repoRef) }))
@@ -135,7 +137,9 @@ export const contract = {
   },
 
   comments: {
-    list: oc.input(pullRef).output(type<CommentPayload[]>()),
+    list: oc
+      .input(pullRef.extend({ page: z.int().positive().default(1) }))
+      .output(type<{ comments: CommentPayload[]; nextPage?: number }>()),
 
     /**
      * A new comment, or a reply to one. A reply names only the comment it
@@ -147,6 +151,10 @@ export const contract = {
         pullRef.extend({
           body: z.string().trim().min(1, 'Comment cannot be empty.'),
           replyToId: z.int().positive().optional(),
+          commitSha: z
+            .string()
+            .regex(/^[0-9a-f]{40}$/)
+            .optional(),
           path: z.string().min(1).optional(),
           line: z.int().positive().optional(),
           side: side.optional(),
