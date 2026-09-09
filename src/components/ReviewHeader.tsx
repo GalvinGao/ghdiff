@@ -16,10 +16,10 @@ import { Link } from '@tanstack/react-router';
 import { useId, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
-import { ColorModeToggle } from '@/components/ColorModeToggle';
+import { ColorModeMenuItems } from '@/components/ColorModeToggle';
 import { GitHubAccountControl } from '@/components/GitHubAccountControl';
 import { GitHubTextLink } from '@/components/GitHubLink';
-import { LanguageMenu } from '@/components/LanguageMenu';
+import { LanguageSubmenu } from '@/components/LanguageMenu';
 import { LensBadge } from '@/components/lenses/LensFrame';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
 import { PullListButton } from '@/components/PullListButton';
@@ -298,8 +298,6 @@ export function ReviewHeader({
         >
           {split ? <IconDiffSplit size={15} /> : <IconDiffUnified size={15} />}
         </Button>
-        <LanguageMenu />
-        <ColorModeToggle colorMode={colorMode} />
 
         {/* modal={false}, so the diff still scrolls while the menu is open and
             a setting can be judged against the code it changes. */}
@@ -314,13 +312,12 @@ export function ReviewHeader({
               <IconGearFill size={15} />
             </Button>
           </DropdownMenuTrigger>
-          {/* Every row here is one this menu always draws, so the whole of it
-              is as tall as it will ever be — 472px with the untracked switch,
-              which the shared 28rem cap cut by 24. The untracked switch is the
-              row that lands under that edge, and it is the one the command's
-              own startup line sends a developer here to find. */}
           <DropdownMenuContent align="end" className="w-60" height="viewport">
-            {/* First, because it is the setting that changes the most pixels.
+            <LanguageSubmenu />
+            <DropdownMenuSeparator />
+            <ColorModeMenuItems colorMode={colorMode} />
+            <DropdownMenuSeparator />
+            {/* Code font changes the appearance of the diff.
                 Every row is drawn in the face it names: what a typeface looks
                 like is the whole of what the choice is about, and a list of
                 names in one face asks the reviewer to remember instead. */}
