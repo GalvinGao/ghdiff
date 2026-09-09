@@ -1,4 +1,4 @@
-import type { FileDiffMetadata } from '@pierre/diffs';
+import type { FileDiffMetadata, SelectionSide } from '@pierre/diffs';
 
 import { findLineMarks, type LineMarks } from '@/lib/lineMarks';
 
@@ -18,8 +18,11 @@ import { findLineMarks, type LineMarks } from '@/lib/lineMarks';
 // through the shadow boundary, and flipping it is a style write that costs no
 // render — the same trick usePaneWidth plays.
 //
-// The rows are matched by the library's own `data-line` (the side's line
-// number) and `data-line-type`, which its selection and event code also read.
+// `forEachRenderedRow` is the one reading of the library's row attributes, for
+// this mark and for the search's. The rows are matched by its own `data-line`
+// and `data-line-type`, which its selection and event code also read, and the
+// column by the `data-deletions`, `data-additions` or `data-unified` on the
+// `code` element around them.
 
 /** Installed into every file's shadow root through the `unsafeCSS` option. */
 export const LINE_MARKS_CSS = `
@@ -27,6 +30,50 @@ export const LINE_MARKS_CSS = `
   opacity: var(--ghdiff-quiet-opacity, 0.5);
 }
 `;
+
+/** One row of code as the viewer drew it. */
+export interface RenderedRow {
+  row: HTMLElement;
+  /** The line number the row carries, which is a number on `side`. */
+  line: number;
+  /**
+   * The side of the diff the row is drawn for. In a split view that is its
+   * own column; in a unified view a deleted line is the old side and every
+   * other row the new one, a context line included.
+   */
+  side: SelectionSide;
+}
+
+/**
+ * Walks the code rows a render pass left in one file's shadow root, in
+ * document order. Gutter cells carry `data-column-number` and not `data-line`,
+ * so they are never visited.
+ */
+export function forEachRenderedRow(
+  root: ShadowRoot,
+  visit: (row: RenderedRow) => void
+): void {
+  for (const column of root.querySelectorAll<HTMLElement>('code[data-code]')) {
+    const columnSide: SelectionSide | undefined = column.hasAttribute(
+      'data-deletions'
+    )
+      ? 'deletions'
+      : column.hasAttribute('data-additions')
+        ? 'additions'
+        : undefined;
+    const rows = column.querySelectorAll<HTMLElement>(
+      '[data-content] > [data-line]'
+    );
+    for (const row of rows) {
+      const side =
+        columnSide ??
+        (row.dataset.lineType === 'change-deletion'
+          ? 'deletions'
+          : 'additions');
+      visit({ row, line: Number(row.dataset.line), side });
+    }
+  }
+}
 
 /**
  * Marks are pure arithmetic over a file's own change blocks, so they are
@@ -57,15 +104,11 @@ export function applyLineMarks(
 
   const marks = marksFor(fileDiff);
   if (marks == null) return;
-  const rows = root.querySelectorAll<HTMLElement>(
-    '[data-line][data-line-type="change-deletion"], [data-line][data-line-type="change-addition"]'
-  );
-  for (const row of rows) {
-    const line = Number(row.getAttribute('data-line'));
-    const deletion = row.getAttribute('data-line-type') === 'change-deletion';
-    const quiet = deletion ? marks.quietDeletions : marks.quietAdditions;
-    if (quiet.has(line)) {
-      row.setAttribute('data-ghdiff-quiet', '');
-    }
-  }
+  forEachRenderedRow(root, ({ row, line, side }) => {
+    const type = row.dataset.lineType;
+    if (type !== 'change-deletion' && type !== 'change-addition') return;
+    const quiet =
+      side === 'deletions' ? marks.quietDeletions : marks.quietAdditions;
+    if (quiet.has(line)) row.setAttribute('data-ghdiff-quiet', '');
+  });
 }

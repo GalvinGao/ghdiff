@@ -9,6 +9,7 @@ import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
+import { DiffSearchBar } from '@/components/DiffSearchBar';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
@@ -24,6 +25,7 @@ import {
 import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
 import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
+import { useDiffSearch } from '@/hooks/useDiffSearch';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useReviewComments } from '@/hooks/useReviewComments';
@@ -44,6 +46,7 @@ import {
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
+import type { SearchMatch } from '@/lib/diffSearch';
 import { reviewTargetUrl } from '@/lib/githubUrls';
 import {
   applyReviewFilter,
@@ -62,7 +65,9 @@ import { defaultViewerControls } from '@/lib/viewerControls';
 // Frames a range anchor is given to resolve. The scroll to the file is what
 // renders it, and the range can only be measured once it has been. Four frames
 // is long enough for that and short enough that a reviewer who starts scrolling
-// straight away is not fought for it.
+// straight away is not fought for it. A search jump takes the same four, for
+// the file it opens on the way: the fold comes off on the render after the
+// press, and a line asked for before that lands on the folded header.
 const ANCHOR_RANGE_ATTEMPTS = 4;
 
 const NO_ITEMS: ReadonlySet<string> = new Set<string>();
@@ -105,8 +110,8 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<CodeViewHandle<CommentMetadata> | null>(null);
-  // The frame waiting to try a range anchor again. See handleApplyAnchor.
-  const anchorFramesRef = useRef<number | null>(null);
+  // The frame waiting to ask the viewer for a place again. See runOnFrames.
+  const frameLoopRef = useRef<number | null>(null);
   // The file a jump has opened since the marks were last read. See the fold
   // seed below, which is the only thing that reads it.
   const openedByJumpRef = useRef<string | undefined>(undefined);
@@ -314,13 +319,53 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     return undefined;
   }, [commentSections, selectedLines]);
 
-  useEffect(
-    () => () => {
-      if (anchorFramesRef.current != null) {
-        cancelAnimationFrame(anchorFramesRef.current);
-      }
+  const stopFrameLoop = useCallback(() => {
+    if (frameLoopRef.current != null) {
+      cancelAnimationFrame(frameLoopRef.current);
+      frameLoopRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => stopFrameLoop, [stopFrameLoop]);
+
+  /**
+   * Asks the viewer for the same place on each of the next few frames. A line
+   * or a range resolves only once the viewer has laid the file out the way it
+   * will be drawn, and the press that asks for it is often the press that
+   * changes that layout: a scroll that renders the file, a fold coming off.
+   * Each attempt asks for the same place, so the one that lands is the only
+   * one that moves anything. One loop at a time: a new jump cancels the frames
+   * the last one still had.
+   */
+  const runOnFrames = useCallback(
+    (step: () => void) => {
+      stopFrameLoop();
+      let remaining = ANCHOR_RANGE_ATTEMPTS;
+      const tick = () => {
+        frameLoopRef.current = null;
+        step();
+        remaining -= 1;
+        if (remaining > 0) frameLoopRef.current = requestAnimationFrame(tick);
+      };
+      frameLoopRef.current = requestAnimationFrame(tick);
     },
-    []
+    [stopFrameLoop]
+  );
+
+  /**
+   * What every jump does before it scrolls. The file list is closed, because
+   * on a phone it is over the diff and the jump is a request to see the diff.
+   * The file is opened, because a scroll to a folded file lands on its header.
+   * And the tree is told, because a scroll the viewer was asked to make is one
+   * it never reports.
+   */
+  const landOn = useCallback(
+    (itemId: string) => {
+      setFilesOpen(false);
+      openFile(itemId);
+      selectActiveItem(itemId);
+    },
+    [openFile, selectActiveItem]
   );
 
   // Puts the reviewer where the URL fragment says. A fragment that names lines
@@ -329,10 +374,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
   const handleApplyAnchor = useCallback(
     (anchored: DiffAnchorTarget | null) => {
       const viewer = viewerRef.current;
-      if (anchorFramesRef.current != null) {
-        cancelAnimationFrame(anchorFramesRef.current);
-        anchorFramesRef.current = null;
-      }
+      stopFrameLoop();
       if (viewer == null) return;
       if (anchored == null) {
         clearViewerSelection(viewer, setSelectedLines);
@@ -363,18 +405,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       // only for a file the viewer has already rendered, and the file a fragment
       // names is almost always far off screen when the fragment arrives. An
       // unresolvable range is dropped in silence, so the scroll above is what
-      // renders the file and these frames are what catch it once it has. Each
-      // attempt asks for the same place, so the one that lands is the only one
-      // that moves anything.
+      // renders the file and these frames are what catch it once it has.
       //
       // `start`, not `center`: the viewer puts a range aligned to the start
       // directly under its own sticky header, so the file at the top of the
       // screen is the file the fragment names. A centred range leaves the file
       // above it owning the top, and the tree, which reads the top, would then
       // mark a file the reviewer was not sent to.
-      let attempts = 0;
-      const step = () => {
-        anchorFramesRef.current = null;
+      runOnFrames(() => {
         viewer.scrollTo({
           type: 'range',
           id: itemId,
@@ -382,19 +420,55 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           align: 'start',
           behavior: 'instant',
         });
-        attempts += 1;
-        if (attempts < ANCHOR_RANGE_ATTEMPTS) {
-          anchorFramesRef.current = requestAnimationFrame(step);
-        }
-      };
-      anchorFramesRef.current = requestAnimationFrame(step);
+      });
     },
-    [openFile, selectActiveItem]
+    [openFile, runOnFrames, selectActiveItem, stopFrameLoop]
   );
+
+  // Puts a search match on screen. Centred, unlike an anchor: a match is a
+  // place to look at, not a place to start reading from, and the lines around
+  // it are what say whether it is the one the reviewer wanted. Instant, the
+  // way the browser's own find moves, so a run of Enter presses steps rather
+  // than glides. The line is asked for now and again on the next frames — the
+  // file may be folded, and the fold comes off on the render after this.
+  const handleSearchJump = useCallback(
+    (match: SearchMatch) => {
+      const viewer = viewerRef.current;
+      if (viewer == null) return;
+      landOn(match.itemId);
+      const place = {
+        type: 'line',
+        id: match.itemId,
+        lineNumber: match.lineNumber,
+        side: match.side,
+        align: 'center',
+        behavior: 'instant',
+      } as const;
+      viewer.scrollTo(place);
+      runOnFrames(() => viewer.scrollTo(place));
+    },
+    [landOn, runOnFrames]
+  );
+
+  // Over the filtered items and not the annotated ones: the marks and the folds
+  // are written onto a new array on every change, and a search that re-ran for
+  // each of them would re-pick its match every time a file was folded.
+  const diffReady = patch.state === 'ready' && workersReady;
+
+  const search = useDiffSearch({
+    items: filtered.items,
+    diffStyle: controls.diffStyle,
+    ready: diffReady,
+    activeItemId,
+    onJump: handleSearchJump,
+    // The list is over the diff on a phone, and the bar is in the diff's
+    // column, so a search opened under it would go to a field nobody can see.
+    onShow: () => setFilesOpen(false),
+  });
 
   const anchor = useDiffAnchor({
     entries: patch.data.entries,
-    ready: patch.state === 'ready' && workersReady,
+    ready: diffReady,
     onApply: handleApplyAnchor,
   });
 
@@ -402,13 +476,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     (itemId: string) => {
       const viewer = viewerRef.current;
       if (viewer == null) return;
-      // Picking a file is asking to read it, and on a phone the list is over
-      // the diff — so the list closes rather than leave the reviewer looking at
-      // the row they just pressed. On every wider screen it is already beside
-      // the diff and `filesOpen` is nothing to anyone.
-      setFilesOpen(false);
-      openFile(itemId);
-      selectActiveItem(itemId);
+      landOn(itemId);
       // The address is what the reviewer can send to somebody else, so opening
       // a file goes into it and into the history.
       anchor.openItem(itemId);
@@ -421,16 +489,14 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         behavior: 'smooth',
       });
     },
-    [anchor, openFile, selectActiveItem]
+    [anchor, landOn]
   );
 
   const handleSelectComment = useCallback(
     (comment: CommentListEntry) => {
       const viewer = viewerRef.current;
       if (viewer == null) return;
-      setFilesOpen(false);
-      openFile(comment.itemId);
-      selectActiveItem(comment.itemId);
+      landOn(comment.itemId);
       viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
       viewer.scrollTo({
         type: 'line',
@@ -441,7 +507,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         behavior: 'smooth-auto',
       });
     },
-    [openFile, selectActiveItem]
+    [landOn]
   );
 
   const handleCreateDraft = useCallback(
@@ -489,7 +555,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         session={session}
       />
 
-      {patch.state === 'ready' && workersReady ? (
+      {diffReady ? (
         // The first column is a custom property rather than a fixed width,
         // because the drag writes that property straight onto this element and
         // never re-renders the diff beside it. See hooks/useSidebarWidth.ts.
@@ -558,27 +624,35 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
               width={sidebarWidth}
             />
           )}
-          <ReviewViewer
-            commentStore={comments.store}
-            controls={controls}
-            items={items}
-            loadDiffFiles={files.loadDiffFiles}
-            onCancelDraft={comments.removeComment}
-            onCreateDraft={handleCreateDraft}
-            onDeleteComment={comments.removeComment}
-            onReplyToThread={comments.replyToThread}
-            onSaveDraft={comments.saveDraft}
-            onScroll={onDiffScroll}
-            onSelectedLinesChange={handleSelectedLinesChange}
-            onToggleCollapsed={setCollapsed}
-            onToggleViewed={handleToggleViewed}
-            scrollRef={scrollRef}
-            selectedLines={selectedLines}
-            collapsedItemIds={collapsedItemIds}
-            themeType={colorMode.hydrated ? colorMode.mode : 'system'}
-            viewedItemIds={viewedFiles.viewed}
-            viewerRef={viewerRef}
-          />
+          {/* The diff's column: the search bar, when it is open, and the diff
+              under it. The bar takes its row from the diff rather than float
+              over it, so nothing in the sticky header is covered while a
+              reviewer searches. See DiffSearchBar. */}
+          <div className="flex min-h-0 min-w-0 flex-col">
+            {search.open && <DiffSearchBar search={search} />}
+            <ReviewViewer
+              commentStore={comments.store}
+              controls={controls}
+              items={items}
+              loadDiffFiles={files.loadDiffFiles}
+              onCancelDraft={comments.removeComment}
+              onCreateDraft={handleCreateDraft}
+              onDeleteComment={comments.removeComment}
+              onReplyToThread={comments.replyToThread}
+              onSaveDraft={comments.saveDraft}
+              onScroll={onDiffScroll}
+              onSelectedLinesChange={handleSelectedLinesChange}
+              onToggleCollapsed={setCollapsed}
+              onToggleViewed={handleToggleViewed}
+              scrollRef={scrollRef}
+              searchMarks={search.marks}
+              selectedLines={selectedLines}
+              collapsedItemIds={collapsedItemIds}
+              themeType={colorMode.hydrated ? colorMode.mode : 'system'}
+              viewedItemIds={viewedFiles.viewed}
+              viewerRef={viewerRef}
+            />
+          </div>
         </div>
       ) : (
         <ReviewStatusPanel

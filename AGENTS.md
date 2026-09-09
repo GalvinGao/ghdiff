@@ -804,7 +804,7 @@ through the shadow boundary — is the whole toggle, the same trick `usePaneWidt
 plays. Marks are cached in a WeakMap per metadata object, which hydration
 mutates in place and a filter change reuses, so an entry cannot go stale.
 `CodeView` adds the current item context as `onPostRender`'s fourth argument, so
-`ReviewViewer` passes `item.fileDiff` to both annotation passes through that
+`ReviewViewer` passes `item.fileDiff` to every annotation pass through that
 public contract rather than reaching into the renderer's protected cache.
 
 One thing GitHub decides rather than this app: a line comment written on an
@@ -843,6 +843,81 @@ neither the source text selected for copying nor the virtualizer's line height.
 A narrow pane clips the hint; the row's native tooltip holds the complete
 expression, description and timezone caveat. Split and unified views use the
 same path, including deleted lines.
+
+**Cmd+F is answered by the app, because the browser's find reads the DOM and
+most of the diff is not in it.** The viewer renders the files under the viewport
+and nothing else, so a browser find lands on a word on screen and misses the
+same word two files down, with nothing to say it did. `useDiffSearch` takes the
+shortcut over on the review screen — Cmd+F on a Mac and Ctrl+F everywhere else,
+since Ctrl+F in a field on a Mac moves the caret — and `searchDiff` in
+`src/lib/diffSearch.ts` walks the patch instead of the page: every line of every
+hunk, in the order the viewer draws them, case-insensitive and literal like the
+browser's own. A match is a place on screen and the count is the count of
+places, which is why the walk is told the diff style: a context line is drawn
+once in a unified view and twice in a split one, under the old number on the
+left and the new on the right, so it is one match or two by the same rule — and
+Enter takes a split row left to right before it goes down, where unified prints
+a block's deletions before its additions. Counting it once while both copies lit
+was the first bug: two highlights, a count of one, and an Enter that went
+nowhere. What the walk does not read is the unmodified lines a reviewer has
+expanded around a hunk. Those live in the viewer's rendered instance, which
+nothing outside it can read, and github.com's find never renders them either.
+`MAX_SEARCH_MATCHES` is where the walk stops, and the bar prints the cap with a
+plus after it.
+
+It searches the filtered items, because a match in a hidden file cannot be
+scrolled to, and the unannotated ones, because the annotated array is rebuilt
+for every comment and every fold and a search that re-ran for each would re-pick
+its match on every press of a chevron. A change of query jumps to the nearest
+match — the first in the file on screen, or in the first file after it — the way
+the browser's find moves while you type. A change of diff under the same query,
+which is a filter moving or a new patch arriving, keeps the match the reviewer
+was on if it is still there and jumps nowhere.
+
+The marks go through the same door as the whitespace dim and are painted
+differently. `applySearchMarks` in `src/components/diffSearchMarks.ts` walks the
+rows each pass rendered, the way `applyLineMarks` does, and again from
+`ReviewViewer` over every rendered file when the query or the current match
+changes — read through a ref, because closing over the marks in `options` would
+hand the viewer a new options object and re-render every item. The marks
+themselves are CSS custom highlights, `StaticRange`s registered under
+`ghdiff-search` and `ghdiff-search-current`, and never a `<mark>`: a match can
+start in one of shiki's spans and end in the next, and splitting the library's
+nodes is splitting what its next pass rebuilds and its selection code reads.
+Static, because a live `Range` is moved by the engine on every insertion under
+it and a render pass is nothing but insertions, where a static one over a node
+the pass threw away simply paints nothing. A scroll pass keeps the rows still in
+the window and adds the ones that arrived, so each row remembers the marks it
+was painted for and a pass paints only the rows that lack them; the rows a pass
+trimmed give their ranges back on the next, or the registry grows by a window's
+worth per scroll. A change of query or of current match is a new marks object,
+which is what repaints every rendered file. `::highlight()` is styled inside the
+shadow root through `unsafeCSS`, on the four `--app-search-*` tokens — yellow
+and orange with their own ink, which is the one hue the chrome owns besides the
+diff's, because that is what a find highlight has meant in every browser.
+`forEachRenderedRow` in `diffLineMarks.ts` names the side a row is drawn on
+once, for both kinds of mark: its own column in a split view, and in a unified
+view the old side for a deleted line and the new for everything else. A search
+mark is then `lines[side].get(line)` and nothing more, since the walk indexed a
+context row under each column it is drawn in. A browser without custom
+highlights — none that still receives updates — marks nothing, and the count and
+the jump still work.
+
+The bar is a strip above the diff and not a panel over it, for the reason the
+sidebar's path search is a strip: a panel at the top right would sit on the
+sticky header's **Viewed** toggle for as long as it was open. A jump is centred
+where an anchor is aligned to the start — a match is a place to look at, not a
+place to start reading from — and instant, so a run of Enter steps rather than
+glides. It opens a folded file on the way and asks for the line again over the
+next frames through `runOnFrames`, the loop the range anchor already needed,
+because the fold comes off on the render after the press.
+
+Three keys are left to whoever owns them. The shortcut stands aside while a
+dialog is open: a modal makes the rest of the document inert, the bar's field
+with it, and the browser's own find is the one that reads a dialog. The field
+ignores the Enter and Escape an IME sends to commit or drop a composition, or a
+Chinese query would step the old search instead of landing. And opening the bar
+takes a phone's file list away, which sits over the very column the bar is in.
 
 **The wait says how much has arrived, and never how much is left.** A patch of
 tens of megabytes is a long stare at one sentence — oven-sh/bun#30412 is 43.3 MB
@@ -1875,13 +1950,14 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 74 KiB of headroom is
-left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
-it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
-which carries the lazy loader for all 300-odd grammars, so importing anything
-from that package pulls the whole registry into whichever bundle it lands in.
-The server never highlights, so none of those chunks is ever evaluated there.
+The Worker script is about 2.95 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 52 KiB of headroom is
+left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Find in diff
+cost about 6 KiB of it, for modules the server never calls. Almost all of it is
+shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier, which
+carries the lazy loader for all 300-odd grammars, so importing anything from
+that package pulls the whole registry into whichever bundle it lands in. The
+server never highlights, so none of those chunks is ever evaluated there.
 Headroom on the free plan is thin, and any new dependency in the server graph
 eats into it.
 

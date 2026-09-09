@@ -113,6 +113,17 @@
   --app-removed: #cf222e;
   --app-tree-selected: color-mix(in srgb, var(--app-accent) 10%, transparent);
 
+  /* Find in diff: every match, and the one the reviewer is on. Yellow and
+     orange, because that is what a find highlight has meant in every browser
+     for twenty years, and the one exception to the rule that only the diff
+     has a hue. The ink is stated with each, since a match lands on text of
+     any syntax colour and has to stay legible on the fill. Read inside the
+     viewer's shadow roots by `SEARCH_MARKS_CSS`. */
+  --app-search-match: #fde047;
+  --app-search-match-ink: #0a0a0a;
+  --app-search-current: #fb923c;
+  --app-search-current-ink: #0a0a0a;
+
   /* GitHub Primer state colors, light mode: fgColor-open, fgColor-muted,
      fgColor-done, fgColor-closed. A pull request state should read the same
      colour here as it does on github.com. */
@@ -145,6 +156,10 @@
   --app-added: #3fb950;
   --app-removed: #f85149;
   --app-tree-selected: color-mix(in srgb, var(--app-accent) 18%, transparent);
+  --app-search-match: #ca8a04;
+  --app-search-match-ink: #0a0a0a;
+  --app-search-current: #ea580c;
+  --app-search-current-ink: #0a0a0a;
 
   /* GitHub Primer state colors, dark mode. */
   --app-pr-open: #3fb950;
