@@ -814,6 +814,30 @@ strip along the foot of the screen, which is where every other comment failure
 already lands. A commit and a compare range keep their comments in the browser
 and take them anywhere.
 
+**A cron expression says when it runs beside the code.** `src/lib/cron.ts`
+recognizes whole quoted literals, bare `cron` / `schedule` fields, and entries
+in `crontab`, `*.cron`, and `cron.d/` files. It validates standard five-field
+cron before handing it to the English-only `cronstrue` entry: that library
+describes schedules but does not validate them. Six- and seven-field dialects
+are left alone rather than guessing whether a field is seconds or a year. Named
+months and weekdays, lists, ranges, steps and standard aliases are read;
+`@reboot` names startup rather than inventing a period.
+
+Two readings need more than the library's default words. A step resets at the
+field boundary, so `*/35` is minute 0 and 35 of each hour, not an interval of 35
+minutes. And restricted day-of-month and day-of-week fields are OR in standard
+cron, so their descriptions are explicitly joined with **or**. No timezone is
+inferred from the reviewer's browser.
+
+`diffCronSchedules.ts` uses the same `onPostRender` and `unsafeCSS` seam as the
+whitespace marks. It reads only rendered rows and caches by node, text and path,
+so highlighting, hydration and virtualized replacements get a fresh answer. The
+hint is absolutely positioned generated content after the code: it changes
+neither the source text selected for copying nor the virtualizer's line height.
+A narrow pane clips the hint; the row's native tooltip holds the complete
+expression, description and timezone caveat. Split and unified views use the
+same path, including deleted lines.
+
 **The wait says how much has arrived, and never how much is left.** A patch of
 tens of megabytes is a long stare at one sentence — oven-sh/bun#30412 is 43.3 MB
 in 1,654 chunks over four seconds — so `useReviewPatch` reads the body through

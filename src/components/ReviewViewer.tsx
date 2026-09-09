@@ -16,6 +16,10 @@ import { memo, type RefObject, useCallback, useMemo } from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
+import {
+  applyCronSchedules,
+  CRON_SCHEDULES_CSS,
+} from '@/components/diffCronSchedules';
 import { applyLineMarks, LINE_MARKS_CSS } from '@/components/diffLineMarks';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -153,7 +157,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       },
       // The stylesheet for the marks below, installed by the library inside
       // each file's shadow root, where no outside selector can reach.
-      unsafeCSS: LINE_MARKS_CSS,
+      unsafeCSS: LINE_MARKS_CSS + CRON_SCHEDULES_CSS,
       onPostRender(node, instance, phase) {
         if (phase === 'unmount') return;
         // `fileDiffCache` is protected in the type and a plain getter at
@@ -162,6 +166,7 @@ export const ReviewViewer = memo(function ReviewViewer({
           instance as unknown as { fileDiffCache?: FileDiffMetadata }
         ).fileDiffCache;
         applyLineMarks(node, fileDiff);
+        applyCronSchedules(node, fileDiff);
       },
     }),
     [
