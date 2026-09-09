@@ -1,9 +1,13 @@
+import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import { IconArrowUpRight, IconBrandGithub, IconRefresh } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { InstallationRow } from '@/components/InstallationRow';
+import { LanguageMenu } from '@/components/LanguageMenu';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { SectionLabel } from '@/components/ui/SectionLabel';
@@ -22,6 +26,12 @@ import {
 } from '@/lib/installations';
 import { gitHubTargetFromSegments } from '@/lib/reviewTarget';
 import { safeReturnTo } from '@/lib/session';
+
+const setupMarkup = {
+  strong: ({ children }: { children?: ReactNode }) => (
+    <strong>{children}</strong>
+  ),
+};
 
 // Why a private diff will not load, as three things to do in order.
 //
@@ -104,10 +114,10 @@ export function SetupScreen({
 
   return (
     <main className="bg-surface flex min-h-0 flex-1 overflow-y-auto overscroll-none">
-      <ColorModeToggle
-        className="fixed top-3 right-3 z-10"
-        colorMode={colorMode}
-      />
+      <div className="fixed top-3 right-3 z-10 flex items-center gap-1">
+        <LanguageMenu />
+        <ColorModeToggle colorMode={colorMode} />
+      </div>
 
       <div className="m-auto w-full max-w-2xl px-6 py-14">
         {/* The way home. This page is reachable with the left bar hidden, and no
@@ -117,16 +127,19 @@ export function SetupScreen({
         </Link>
         {migrated === true && <MigrationNotice />}
         <h1 className="text-ink mt-3 text-2xl font-semibold tracking-tight">
-          Set up private repository access
+          {m.setup_screen_set_up_private_repository_access()}
         </h1>
         <p className="text-ink-muted mt-2 text-sm">
-          GitHub only lets ghdiff read repositories you grant it access to.
-          Complete these three steps in order.
+          {m.setup_screen_github_only_lets_ghdiff_read_repositories_you_grant()}
         </p>
 
         <div className="mt-8">
           <StepRail>
-            <Step label="Sign in to GitHub" number={1} status={signIn}>
+            <Step
+              label={m.setup_screen_sign_in_to_github()}
+              number={1}
+              status={signIn}
+            >
               {session.viewer != null ? (
                 <div className={`${CARD} flex items-center gap-2.5`}>
                   <ViewerAvatar size={22} viewer={session.viewer} />
@@ -137,8 +150,7 @@ export function SetupScreen({
               ) : (
                 <>
                   <p className="text-ink-muted text-sm">
-                    This identifies your account to GitHub. Any comments you
-                    leave will post under this account.
+                    {m.setup_screen_this_identifies_your_account_to_github_any_comments()}
                   </p>
                   <Button
                     className="mt-2 self-start"
@@ -146,17 +158,23 @@ export function SetupScreen({
                     variant="solid"
                   >
                     <IconBrandGithub aria-hidden="true" size={14} />
-                    Sign in with GitHub
+                    {m.setup_screen_sign_in_with_github()}
                   </Button>
                 </>
               )}
             </Step>
 
-            <Step label="Grant repository access" number={2} status={install}>
+            <Step
+              label={m.setup_screen_grant_repository_access()}
+              number={2}
+              status={install}
+            >
               <p className="text-ink-muted text-sm">
                 {account == null
-                  ? 'Signing in only identifies you. Choose the accounts and repositories ghdiff can read.'
-                  : `Signing in only identifies you. Install ghdiff on ${account} and ensure this repository is included in its access list.`}
+                  ? m.setup_screen_signing_in_only_identifies_you_choose_the_accounts()
+                  : m.setup_screen_signing_in_only_identifies_you_install_ghdiff_on(
+                      { account: account }
+                    )}
               </p>
 
               {apps.error != null && (
@@ -165,7 +183,9 @@ export function SetupScreen({
 
               {apps.installations.length > 0 && (
                 <div className="mt-2 flex flex-col gap-1.5">
-                  <SectionLabel>Accounts with access</SectionLabel>
+                  <SectionLabel>
+                    {m.setup_screen_accounts_with_access()}
+                  </SectionLabel>
                   {apps.installations.map((installation) => (
                     <InstallationRow
                       key={installation.id}
@@ -196,8 +216,8 @@ export function SetupScreen({
                     target="_blank"
                   >
                     {apps.installations.length === 0
-                      ? 'Install ghdiff'
-                      : 'Install on another account'}
+                      ? m.setup_screen_install_ghdiff()
+                      : m.setup_screen_install_on_another_account()}
                     <IconArrowUpRight aria-hidden="true" size={13} />
                   </a>
                   {/* Nothing polls for the answer. A reviewer comes back from the
@@ -209,32 +229,43 @@ export function SetupScreen({
                     variant="outline"
                   >
                     <IconRefresh aria-hidden="true" size={13} />
-                    {apps.loading ? 'Checking…' : 'Check again'}
+                    {apps.loading
+                      ? m.setup_screen_checking()
+                      : m.setup_screen_check_again()}
                   </Button>
                 </div>
               )}
 
               {account != null && wanted == null && !apps.loading && (
                 <StepNote>
-                  ghdiff is not installed on <strong>{account}</strong> yet. If
-                  this is an organization, an owner may need to approve the
-                  installation.
+                  <ParaglideMessage
+                    message={m.setup_not_installed}
+                    inputs={{ account }}
+                    markup={setupMarkup}
+                  />
                 </StepNote>
               )}
               {wanted != null && !reachesAnyRepository(wanted) && (
                 <StepNote>
-                  ghdiff is installed on <strong>{account}</strong>, but covers
-                  no repositories yet. Open its settings to select the
-                  repositories you review.
+                  <ParaglideMessage
+                    message={m.setup_no_repositories}
+                    inputs={{ account: account ?? '' }}
+                    markup={setupMarkup}
+                  />
                 </StepNote>
               )}
             </Step>
 
-            <Step label="Open the diff" last number={3} status={open}>
+            <Step
+              label={m.setup_screen_open_the_diff()}
+              last
+              number={3}
+              status={open}
+            >
               <p className="text-ink-muted text-sm">
                 {returnTo == null || returnTo === '/'
-                  ? 'Go to the home page to paste a pull request, commit, or compare URL.'
-                  : 'Return to your diff. ghdiff will fetch it again using your updated permissions.'}
+                  ? m.setup_screen_go_to_the_home_page_to_paste_a()
+                  : m.setup_screen_return_to_your_diff_ghdiff_will_fetch_it()}
               </p>
               {/* A plain anchor and a whole page load, not a client navigation:
                   the point of coming back is a fresh request to GitHub under the
@@ -247,8 +278,8 @@ export function SetupScreen({
                 href={returnTo == null || returnTo === '/' ? '/' : returnTo}
               >
                 {returnTo == null || returnTo === '/'
-                  ? 'Go to ghdiff home'
-                  : 'Return to the diff'}
+                  ? m.setup_screen_go_to_ghdiff_home()
+                  : m.setup_screen_return_to_the_diff()}
               </a>
             </Step>
           </StepRail>
@@ -256,8 +287,7 @@ export function SetupScreen({
 
         {apps.installUrl == null && !session.checking && (
           <p className="text-ink-faint mt-8 text-xs">
-            This ghdiff deployment has no GitHub App set up. You can still view
-            any public diff.
+            {m.setup_screen_this_ghdiff_deployment_has_no_github_app_set()}
           </p>
         )}
       </div>
@@ -289,12 +319,10 @@ function MigrationNotice() {
       role="status"
     >
       <p className="text-ink text-sm font-medium">
-        ghdiff now uses a GitHub App
+        {m.setup_screen_ghdiff_now_uses_a_github_app()}
       </p>
       <p className="text-ink-muted mt-1 text-sm text-pretty">
-        ghdiff removed your old personal access token from this browser and no
-        longer asks for one. GitHub still accepts that token until you delete it
-        in your GitHub settings.
+        {m.setup_screen_ghdiff_removed_your_old_personal_access_token_from()}
       </p>
       <a
         className={buttonClass({
@@ -306,7 +334,7 @@ function MigrationNotice() {
         rel="noreferrer"
         target="_blank"
       >
-        Delete the token on GitHub
+        {m.setup_screen_delete_the_token_on_github()}
         <IconArrowUpRight aria-hidden="true" size={12} />
       </a>
     </div>

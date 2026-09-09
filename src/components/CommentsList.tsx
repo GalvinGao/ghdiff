@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { m } from '../paraglide/messages.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { cn } from '@/lib/cn';
 import { commentPreviewText } from '@/lib/commentHeight';
@@ -75,11 +76,11 @@ export function CommentsList({
   if (sections.length === 0) {
     return (
       <div className="text-ink-muted px-3 py-4 text-sm">
-        <p>No comments here.</p>
+        <p>{m.comments_list_no_comments_here()}</p>
         <p className="text-ink-faint mt-1 text-xs">
           {store === 'github'
-            ? 'Comments you leave here are posted to GitHub.'
-            : 'GitHub has no review thread for commits or compare ranges. Comments stay in this browser.'}
+            ? m.comments_list_comments_you_leave_here_are_posted_to_github()
+            : m.comments_list_github_has_no_review_thread_for_commits_or()}
         </p>
       </div>
     );
@@ -126,12 +127,12 @@ export function CommentsList({
                       </span>
                       {thread.pending === true && (
                         <span className="text-ink-faint shrink-0 text-[10px]">
-                          posting
+                          {m.comments_list_posting()}
                         </span>
                       )}
                       {thread.error != null && (
                         <span className="text-removed shrink-0 text-[10px]">
-                          failed
+                          {m.comments_list_failed()}
                         </span>
                       )}
                     </span>
@@ -236,7 +237,7 @@ function SectionHeading({
         ref={textRef}
         dir="rtl"
         type="button"
-        aria-label={`Go to ${path}`}
+        aria-label={m.comments_list_go_to({ path: path })}
         onClick={onSelect}
         className={cn(
           'text-ink-faint hover:text-ink block w-full cursor-pointer truncate text-left font-mono text-[11px]',

@@ -1,6 +1,7 @@
 import { HubotIcon } from '@primer/octicons-react/HubotIcon';
 import { PersonIcon } from '@primer/octicons-react/PersonIcon';
 
+import { m } from '../paraglide/messages.js';
 import {
   Segmented,
   SegmentedCount,
@@ -33,31 +34,31 @@ export function CommentAuthorFilterBar({
   const total = counts.people + counts.bots;
   return (
     <Segmented
-      aria-label="Comment authors"
+      aria-label={m.comment_author_filter_bar_comment_authors()}
       className="w-full"
       onValueChange={(next) => onChange(next as CommentAuthorFilter)}
       value={value}
     >
       <SegmentedItem className="h-6 px-1.5" value="all">
-        All
+        {m.comment_author_filter_bar_all()}
         <SegmentedCount>{total}</SegmentedCount>
       </SegmentedItem>
       <SegmentedItem
         className="h-6 px-1.5"
-        title="Comments a person opened"
+        title={m.comment_author_filter_bar_comments_a_person_opened()}
         value="people"
       >
         <PersonIcon size={12} />
-        People
+        {m.comment_author_filter_bar_people()}
         <SegmentedCount>{counts.people}</SegmentedCount>
       </SegmentedItem>
       <SegmentedItem
         className="h-6 px-1.5"
-        title="Comments a GitHub App opened"
+        title={m.comment_author_filter_bar_comments_a_github_app_opened()}
         value="bots"
       >
         <HubotIcon size={12} />
-        Bots
+        {m.comment_author_filter_bar_bots()}
         <SegmentedCount>{counts.bots}</SegmentedCount>
       </SegmentedItem>
     </Segmented>

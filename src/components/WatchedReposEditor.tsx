@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
@@ -20,8 +21,7 @@ export function WatchedReposEditor({
   return (
     <div>
       <p className="text-ink-faint mb-2 text-xs">
-        ghdiff lists open pull requests for these repositories. The list stays
-        in this browser.
+        {m.watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories()}
       </p>
 
       <form
@@ -32,24 +32,27 @@ export function WatchedReposEditor({
             setInput('');
             setError(undefined);
           } else {
-            setError('Enter a repository as owner/repo.');
+            setError(m.watched_repos_editor_enter_a_repository_as_owner_repo());
           }
         }}
       >
         <Input
           value={input}
-          placeholder="owner/repo"
-          aria-label="Repository to watch"
+          dir="ltr"
+          placeholder={m.watched_repos_editor_owner_repo()}
+          aria-label={m.watched_repos_editor_repository_to_watch()}
           onChange={(event) => setInput(event.target.value)}
         />
         <Button type="submit" variant="solid" size="md">
-          Add
+          {m.watched_repos_editor_add()}
         </Button>
       </form>
       {error != null && <p className="text-removed mt-2 text-xs">{error}</p>}
 
       {watched.repos.length === 0 ? (
-        <p className="text-ink-muted mt-3 text-sm">Nothing watched yet.</p>
+        <p className="text-ink-muted mt-3 text-sm">
+          {m.watched_repos_editor_nothing_watched_yet()}
+        </p>
       ) : (
         <ul className="mt-3 flex flex-col gap-0.5">
           {watched.repos.map((repo) => (
@@ -57,7 +60,7 @@ export function WatchedReposEditor({
               key={formatWatchedRepo(repo)}
               className="hover:bg-surface flex items-center gap-2 rounded-md px-2 py-1 text-sm"
             >
-              <span className="min-w-0 flex-1 truncate">
+              <span className="min-w-0 flex-1 truncate" dir="ltr">
                 {formatWatchedRepo(repo)}
               </span>
               <Button
@@ -65,7 +68,7 @@ export function WatchedReposEditor({
                 variant="danger"
                 onClick={() => watched.remove(repo)}
               >
-                Remove
+                {m.watched_repos_editor_remove()}
               </Button>
             </li>
           ))}

@@ -1,6 +1,7 @@
 import { oc, type } from '@orpc/contract';
 import * as z from 'zod';
 
+import { m } from '../../paraglide/messages.js';
 import type { CommentPayload } from '@/lib/comments';
 import type { AppInstallation } from '@/lib/installations';
 import type { PullDetails } from '@/lib/pullDetails';
@@ -23,9 +24,9 @@ import type { GitHubViewer } from '@/lib/viewer';
 /** GitHub's own rule for an owner or a repository name. */
 const NAME = /^[A-Za-z0-9._-]+$/;
 
-const name = z
-  .string()
-  .regex(NAME, 'Enter a valid GitHub username or repository name.');
+const name = z.string().regex(NAME, {
+  error: () => m.contract_enter_a_valid_github_username_or_repository_name(),
+});
 
 const repoRef = z.object({ owner: name, repo: name });
 
@@ -145,7 +146,10 @@ export const contract = {
     create: oc
       .input(
         pullRef.extend({
-          body: z.string().trim().min(1, 'Comment cannot be empty.'),
+          body: z
+            .string()
+            .trim()
+            .min(1, { error: () => m.contract_comment_cannot_be_empty() }),
           replyToId: z.int().positive().optional(),
           path: z.string().min(1).optional(),
           line: z.int().positive().optional(),

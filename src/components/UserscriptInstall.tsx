@@ -1,6 +1,22 @@
+import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import { IconDownload } from '@pierre/icons';
+import type { ReactNode } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { buttonClass } from '@/components/ui/buttonClass';
+
+const managerMarkup = {
+  manager: ({ children }: { children?: ReactNode }) => (
+    <a
+      className="text-accent underline underline-offset-2"
+      href={TAMPERMONKEY_URL}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {children}
+    </a>
+  ),
+};
 
 /**
  * The userscript, offered from the page that teaches the host swap.
@@ -30,28 +46,23 @@ const TAMPERMONKEY_URL = 'https://www.tampermonkey.net/';
 
 export function UserscriptInstall() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <div className="max-phone:flex-col max-phone:items-start flex items-center gap-3 px-4 py-3">
       <div className="min-w-0 flex-1">
-        <p className="text-ink text-sm">Add a ghdiff button to github.com</p>
+        <p className="text-ink text-sm">
+          {m.userscript_install_add_a_ghdiff_button_to_github_com()}
+        </p>
         <p className="text-ink-muted mt-0.5 text-xs">
-          This adds a button next to Files changed on a pull request, and next
-          to Browse files on a commit. It requires a userscript manager such as{' '}
-          <a
-            className="text-accent underline underline-offset-2"
-            href={TAMPERMONKEY_URL}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Tampermonkey
-          </a>
-          .
+          <ParaglideMessage
+            message={m.userscript_manager_description}
+            markup={managerMarkup}
+          />
         </p>
       </div>
       {/* A plain anchor and not a Link. The userscript manager reads the
             response to this request, and a client-side navigation never makes
             one. */}
       <a className={buttonClass({ size: 'md' })} href={USERSCRIPT_PATH}>
-        Install
+        {m.userscript_install_install()}
         <IconDownload size={14} />
       </a>
     </div>

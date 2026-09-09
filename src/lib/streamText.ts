@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // Reading a response body as text, a chunk at a time.
 //
 // `response.text()` is one line and answers with the whole body, which is the
@@ -26,13 +27,13 @@ export interface StreamTextOptions {
   onBytes?(read: number): void;
 }
 
-const DEFAULT_TOO_LARGE = 'That response is too large to read.';
+const DEFAULT_TOO_LARGE = m.stream_text_that_response_is_too_large_to_read;
 
 export async function readStreamedText(
   response: Response,
   options: StreamTextOptions = {}
 ): Promise<string> {
-  const { maxBytes, onBytes, tooLarge = DEFAULT_TOO_LARGE } = options;
+  const { maxBytes, onBytes, tooLarge = DEFAULT_TOO_LARGE() } = options;
   const body = response.body;
   // No stream to read means no way to count, and only a runtime with no
   // streaming fetch at all lands here.

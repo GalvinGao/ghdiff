@@ -1,0 +1,624 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "خودکار",
+  "color_mode_toggle_light": "روشن",
+  "color_mode_toggle_dark": "تیره",
+  "color_mode_toggle_color_mode_switch_to": "حالت رنگ: {value}. به {value2} تغییر دهید.",
+  "color_mode_toggle_color_mode": "حالت رنگ: {value}",
+  "comment_author_filter_bar_comment_authors": "نویسندگان نظر",
+  "comment_author_filter_bar_all": "همه",
+  "comment_author_filter_bar_comments_a_person_opened": "نظرهایی که یک شخص ایجاد کرده است",
+  "comment_author_filter_bar_people": "افراد",
+  "comment_author_filter_bar_comments_a_github_app_opened": "نظرهایی که یک GitHub App ایجاد کرده است",
+  "comment_author_filter_bar_bots": "ربات‌ها",
+  "comment_body_done": "انجام‌شده",
+  "comment_body_not_done": "انجام‌نشده",
+  "comment_composer_leave_a_comment": "نظر بگذارید",
+  "comment_composer_comment": "نظر",
+  "comment_composer_cancel": "لغو",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd یا Ctrl همراه با Enter",
+  "comment_expansion_comment": "نظر",
+  "comment_thread_card_open_thread_by": "رشتهٔ ایجادشده توسط ⁦{author}⁩ را باز کنید",
+  "comment_thread_card_posting": "در حال ارسال…",
+  "comment_thread_card_click_to_open": "برای باز کردن کلیک کنید",
+  "comment_thread_card_delete": "حذف",
+  "comment_thread_card_close": "بستن",
+  "comment_thread_card_on_github": "در GitHub",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "این نظر هنوز به GitHub نرسیده است؛ بنابراین نمی‌توان به آن پاسخ داد.",
+  "comment_thread_card_reply_on_github": "پاسخ در GitHub",
+  "comment_thread_card_reply_in_this_browser": "پاسخ در این مرورگر",
+  "comment_thread_card_sending": "در حال ارسال…",
+  "comment_thread_card_reply": "پاسخ",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd یا Ctrl با Enter",
+  "comments_list_no_comments_here": "اینجا نظری نیست.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "نظرهایی که اینجا می‌گذارید در GitHub ارسال می‌شوند.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub برای کامیت‌ها یا بازه‌های مقایسه رشتهٔ بازبینی ندارد. نظرها در همین مرورگر می‌مانند.",
+  "comments_list_posting": "در حال ارسال",
+  "comments_list_failed": "ناموفق",
+  "comments_list_go_to": "رفتن به ⁦{path}⁩",
+  "confirm_inline_cancel": "لغو",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "افزوده‌شده",
+  "filter_menu_modified": "تغییریافته",
+  "filter_menu_renamed": "تغییرنام‌یافته",
+  "filter_menu_deleted": "حذف‌شده",
+  "filter_menu_filter_files": "فیلتر فایل‌ها",
+  "filter_menu_file_rules": "قواعد فایل",
+  "filter_menu_git_status": "وضعیت git",
+  "filter_menu_clear_filters": "پاک کردن فیلترها",
+  "filter_menu_all_files": "همهٔ فایل‌ها",
+  "git_hub_account_control_set_up_access": "تنظیم دسترسی",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "نظرهایی که می‌گذارید با این حساب به GitHub ارسال می‌شوند.",
+  "git_hub_account_panel_install_on_another_account": "نصب در حسابی دیگر",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff روی هیچ حسابی نصب نشده است. برای خواندن کدتان آن را تنظیم کنید.",
+  "git_hub_account_panel_open_setup_guide": "باز کردن راهنمای تنظیم",
+  "git_hub_account_panel_sign_out": "خروج",
+  "git_hub_account_panel_accounts_with_access": "حساب‌های دارای دسترسی",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "برای افزودن یا حذف مخزن‌ها، تنظیمات را در github.com باز می‌کند.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "در حال بررسی حساب‌های GitHub که ghdiff می‌تواند بخواند…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "هر درخواست ادغام، کامیت یا بازهٔ مقایسهٔ GitHub را باز کنید.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "فهرست فایل‌ها را با قواعد ازپیش‌تنظیم‌شدهٔ مسیر محدود کنید.",
+  "home_screen_read_and_leave_comments": "نظرها را بخوانید و نظر بگذارید.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "نشانی درخواست ادغام، کامیت یا مقایسهٔ GitHub را بچسبانید، یا owner/repo#123 را وارد کنید.",
+  "home_screen_github_pull_request_commit_or_compare_url": "نشانی درخواست ادغام، کامیت یا مقایسهٔ GitHub",
+  "home_screen_open_this_diff": "باز کردن این تفاوت",
+  "home_screen_review": "بازبینی",
+  "home_screen_set_up_access_for_private_repositories": "تنظیم دسترسی برای مخزن‌های خصوصی",
+  "home_screen_userscript": "Userscript",
+  "home_screen_examples": "نمونه‌ها",
+  "home_screen_watched_repos": "مخزن‌های فهرست‌شده",
+  "home_screen_github_account": "حساب GitHub",
+  "home_screen_source_on_github": "منبع در GitHub",
+  "home_screen_review_the_commit_this_build_was_made_from": "کامیتی را که این ساخت از آن ساخته شده است، ⁦{sha}⁩، در ghdiff بازبینی کنید",
+  "installation_row_current_diff": "تفاوت فعلی",
+  "installation_row_configure": "پیکربندی",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff نمی‌تواند آن نشانی را بخواند",
+  "not_found_a_review_needs_a_github_pull_request_a": "برای بازبینی به یک درخواست ادغام، کامیت یا بازهٔ مقایسهٔ GitHub نیاز است.",
+  "not_found_open_a_different_review": "باز کردن بازبینی دیگر",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "برای تغییر اندازه بکشید. برای بازنشانی دوبار کلیک کنید.",
+  "pull_details_card_loading_pull_request": "در حال بارگیری درخواست ادغام…",
+  "pull_details_card_no_details_yet": "هنوز جزئیاتی نیست.",
+  "pull_details_card_files": "فایل‌ها",
+  "pull_details_card_added_lines": "خطوط افزوده‌شده",
+  "pull_details_card_deleted_lines": "خطوط حذف‌شده",
+  "pull_details_card_commits": "کامیت‌ها",
+  "pull_details_card_description": "توضیحات",
+  "pull_list_button_open_pull_requests": "درخواست‌های ادغام باز",
+  "pull_list_button_watched_repos": "مخزن‌های فهرست‌شده",
+  "pull_list_button_reload_the_pull_requests": "بارگیری دوبارهٔ درخواست‌های ادغام",
+  "pull_list_button_loading_the_pull_requests": "در حال بارگیری درخواست‌های ادغام",
+  "pull_rail_open_pull_requests": "درخواست‌های ادغام باز",
+  "pull_rail_pull_request_bar_width": "عرض نوار درخواست ادغام",
+  "pull_rail_show_the_pull_requests": "نمایش درخواست‌های ادغام",
+  "pull_rail_hide_the_pull_requests": "پنهان کردن درخواست‌های ادغام",
+  "pull_rail_watched_repos": "مخزن‌های فهرست‌شده",
+  "pull_rail_reload_the_pull_requests": "بارگیری دوبارهٔ درخواست‌های ادغام",
+  "pull_rail_loading_the_pull_requests": "در حال بارگیری درخواست‌های ادغام",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "برای دیدن درخواست‌های ادغام باز یک مخزن، آن را به فهرست اضافه کنید.",
+  "pull_request_list_open_on_github": "باز کردن ⁦{owner}/{repo}⁩ در GitHub",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=one": "{formatted} درخواست ادغام باز را در GitHub باز کنید",
+        "category=*": "{formatted} درخواست ادغام باز را در GitHub باز کنید"
+      }
+    }
+  ],
+  "pull_request_list_you": "شما",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "باز کردن درخواست‌های ادغام بازِ ⁦{author}⁩ در ⁦{owner}/{repo}⁩ در GitHub",
+  "pull_request_list_set_up_private_access": "تنظیم دسترسی خصوصی",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "خارج شده‌اید؛ هیچ ردیفی مربع وضعیت یا نشانی برای درخواست‌های ادغام خودتان نشان نمی‌دهد. با ورود، هر دو نمایش داده می‌شوند.",
+  "pull_request_list_stack": "پشته",
+  "pull_request_list_loading_open_pull_requests": "در حال بارگیری درخواست‌های ادغام باز…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "پیش‌نویس",
+  "pull_row_currently_viewing": "در حال مشاهده",
+  "pull_state_icon_open": "باز",
+  "pull_state_icon_draft": "پیش‌نویس",
+  "pull_state_icon_merged": "ادغام‌شده",
+  "pull_state_icon_closed": "بسته",
+  "review_header_bars": "نوارها",
+  "review_header_signs": "نشانه‌ها",
+  "review_header_none": "هیچ‌کدام",
+  "review_header_hide_the_file_list": "پنهان کردن فهرست فایل‌ها",
+  "review_header_show_the_file_list": "نمایش فهرست فایل‌ها",
+  "review_header_open_on_github": "باز کردن ⁦{targetLabel}⁩ در GitHub",
+  "review_header_switch_to_unified_view": "تغییر به نمای یکپارچه",
+  "review_header_switch_to_split_view": "تغییر به نمای دوتکه",
+  "review_header_split_view": "نمای دوتکه",
+  "review_header_unified_view": "نمای یکپارچه",
+  "review_header_display_settings": "تنظیمات نمایش",
+  "review_header_code_font": "قلم کد",
+  "review_header_change_markers": "نشانگرهای تغییر",
+  "review_header_wrap_long_lines": "شکستن خطوط بلند",
+  "review_header_line_numbers": "شمارهٔ خط‌ها",
+  "review_header_change_backgrounds": "پس‌زمینه‌های تغییر",
+  "review_header_dim_whitespace_changes": "کم‌رنگ کردن تغییرات فضای خالی",
+  "review_header_approve_request_changes_or_comment": "تأیید، درخواست تغییر یا نظر",
+  "review_header_review": "بازبینی",
+  "review_header_review_it_again": "{value} دوباره بازبینی کنید.",
+  "review_screen_sidebar_width": "عرض نوار کناری",
+  "review_screen_dismiss": "بستن",
+  "review_sidebar_sidebar_sections": "بخش‌های نوار کناری",
+  "review_sidebar_files": "فایل‌ها",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=one, comments=one": "{threadNumber} رشته، {commentNumber} نظر",
+        "threads=one, comments=*": "{threadNumber} رشته، {commentNumber} نظر",
+        "threads=*, comments=one": "{threadNumber} رشته، {commentNumber} نظر",
+        "threads=*, comments=*": "{threadNumber} رشته، {commentNumber} نظر"
+      }
+    }
+  ],
+  "review_sidebar_comments": "نظرها",
+  "review_sidebar_hide_the_path_search": "پنهان کردن جست‌وجوی مسیر",
+  "review_sidebar_search_by_path": "جست‌وجو بر اساس مسیر",
+  "review_sidebar_the_current_filter_hides_all_files": "فیلتر فعلی همهٔ فایل‌ها را پنهان می‌کند.",
+  "review_sidebar_clear_filters": "پاک کردن فیلترها",
+  "review_sidebar_added_lines": "خطوط افزوده‌شده",
+  "review_sidebar_deleted_lines": "خطوط حذف‌شده",
+  "review_sidebar_search_files_by_path": "جست‌وجوی فایل‌ها بر اساس مسیر",
+  "review_sidebar_path_contains": "مسیر شامل…",
+  "review_sidebar_clear_the_path_search": "پاک کردن جست‌وجوی مسیر",
+  "review_status_panel_fetching_the_diff": "در حال دریافت تفاوت‌ها",
+  "review_status_panel_reading_the_patch_for_this_review": "در حال خواندن وصلهٔ این بازبینی.",
+  "review_status_panel_preparing_the_diff": "در حال آماده‌سازی تفاوت‌ها",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "در حال تجزیهٔ وصله و ساخت فهرست فایل‌ها.",
+  "review_status_panel_starting_the_highlighters": "در حال راه‌اندازی برجسته‌سازها",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "پردازشگرهای پس‌زمینه در حال آماده‌شدن برای رنگ‌آمیزی کدتان هستند.",
+  "review_status_panel_set_up_repository_access": "تنظیم دسترسی مخزن",
+  "review_status_panel_try_again": "دوباره تلاش کنید",
+  "review_submit_dialog_add_a_note_github_needs_one": "یک یادداشت اضافه کنید. GitHub به آن نیاز دارد.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub تأیید درخواست ادغام خودتان را نمی‌پذیرد.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub درخواست تغییر برای درخواست ادغام خودتان را نمی‌پذیرد.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "می‌توانید روی درخواست ادغام خودتان نظر بدهید. GitHub هیچ گزینهٔ دیگری را نمی‌پذیرد.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "یک یادداشت اضافه کنید. GitHub برای درخواست تغییر یا نظر به آن نیاز دارد.",
+  "review_submit_dialog_submit_a_review": "ارسال بازبینی",
+  "review_submit_dialog_review_body": "متن بازبینی",
+  "review_submit_dialog_leave_a_note_with_your_review": "همراه بازبینی‌تان یک یادداشت بگذارید",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "نمایش تفاوت‌ها",
+  "review_viewer_hide_the_diff": "پنهان کردن تفاوت‌ها",
+  "review_viewer_show_the_whole_file": "نمایش کل فایل",
+  "review_viewer_viewed": "دیده‌شده",
+  "setup_screen_set_up_private_repository_access": "تنظیم دسترسی مخزن خصوصی",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub فقط به ghdiff اجازه می‌دهد مخزن‌هایی را بخواند که به آن دسترسی می‌دهید. این سه گام را به‌ترتیب انجام دهید.",
+  "setup_screen_sign_in_to_github": "ورود به GitHub",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "این کار حسابتان را به GitHub معرفی می‌کند. هر نظری که بگذارید با این حساب ارسال می‌شود.",
+  "setup_screen_sign_in_with_github": "ورود با GitHub",
+  "setup_screen_grant_repository_access": "دادن دسترسی به مخزن",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "ورود فقط هویتتان را مشخص می‌کند. حساب‌ها و مخزن‌هایی را انتخاب کنید که ghdiff بتواند بخواند.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "ورود فقط هویتتان را مشخص می‌کند. ghdiff را روی ⁦{account}⁩ نصب کنید و مطمئن شوید این مخزن در فهرست دسترسی آن قرار دارد.",
+  "setup_screen_accounts_with_access": "حساب‌های دارای دسترسی",
+  "setup_screen_install_ghdiff": "نصب ghdiff",
+  "setup_screen_install_on_another_account": "نصب در حسابی دیگر",
+  "setup_screen_checking": "در حال بررسی…",
+  "setup_screen_check_again": "دوباره بررسی کنید",
+  "setup_screen_open_the_diff": "باز کردن تفاوت‌ها",
+  "setup_screen_go_to_the_home_page_to_paste_a": "برای چسباندن نشانی درخواست ادغام، کامیت یا مقایسه به صفحهٔ اصلی بروید.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "به تفاوتتان برگردید. ghdiff با مجوزهای به‌روزشده دوباره آن را دریافت می‌کند.",
+  "setup_screen_go_to_ghdiff_home": "رفتن به صفحهٔ اصلی ghdiff",
+  "setup_screen_return_to_the_diff": "بازگشت به تفاوت",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "این استقرار ghdiff هیچ GitHub App تنظیم‌شده‌ای ندارد. همچنان می‌توانید هر تفاوت عمومی را ببینید.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff اکنون از GitHub App استفاده می‌کند",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff توکن دسترسی شخصی قدیمی‌تان را از این مرورگر حذف کرده و دیگر آن را درخواست نمی‌کند. GitHub تا زمانی که آن را در تنظیمات GitHub خود حذف نکنید، همچنان آن توکن را می‌پذیرد.",
+  "setup_screen_delete_the_token_on_github": "حذف توکن در GitHub",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "افزودن دکمهٔ ghdiff به github.com",
+  "userscript_install_install": "نصب",
+  "watch_offer_dialog_watch_this_repository": "این مخزن را به فهرست اضافه می‌کنید؟",
+  "watch_offer_dialog_watch": "⁦{subject}⁩ را به فهرست اضافه می‌کنید؟",
+  "watch_offer_dialog_keep_reviewing": "ادامهٔ بازبینی",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "فهرست پیگیری شما در همین مرورگر می‌ماند.",
+  "watch_offer_dialog_not_now": "فعلاً نه",
+  "watched_repos_dialog_watched_repositories": "مخزن‌های فهرست‌شده",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff درخواست‌های ادغام باز این مخزن‌ها را فهرست می‌کند. این فهرست در همین مرورگر می‌ماند.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "یک مخزن را به‌شکل owner/repo وارد کنید.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "مخزن برای افزودن به فهرست",
+  "watched_repos_editor_add": "افزودن",
+  "watched_repos_editor_nothing_watched_yet": "هنوز مخزنی به فهرست اضافه نشده است.",
+  "watched_repos_editor_remove": "حذف",
+  "dialog_close": "بستن",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "نتوانست آن فایل را از GitHub بخواند.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "آن فایل از زمان ساخته‌شدن این تفاوت در GitHub تغییر کرده است. برای دیدن خطوط تغییرنیافته‌اش دوباره بارگیری کنید.",
+  "use_diff_file_loader_request_failed": "درخواست ناموفق بود ({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "نتوانست بررسی کند با چه حسابی وارد شده‌اید.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "نتوانست بررسی کند ghdiff کجا نصب شده است.",
+  "use_open_pulls_could_not_load_pull_requests": "نتوانست درخواست‌های ادغام را بارگیری کند.",
+  "use_pull_details_could_not_load_this_pull_request": "نتوانست این درخواست ادغام را بارگیری کند.",
+  "use_review_comments_could_not_load_comments": "نتوانست نظرها را بارگیری کند.",
+  "use_review_comments_could_not_post_that_comment_to_github": "نتوانست آن نظر را در GitHub ارسال کند.",
+  "use_review_comments_could_not_post_this_reply_to_github": "نتوانست این پاسخ را در GitHub ارسال کند.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "نتوانست آن رشته را در GitHub حذف کند. برای بررسی دوباره بارگیری کنید.",
+  "use_review_patch_request_failed": "درخواست ناموفق بود ({status}).",
+  "use_review_patch_could_not_load_that_diff": "نتوانست آن تفاوت را بارگیری کند.",
+  "use_submit_review_could_not_submit_this_review": "نتوانست این بازبینی را ارسال کند.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "نتوانست آن نشان را به GitHub بفرستد.",
+  "code_fonts_system": "سیستم",
+  "diff_hydration_that_file_is_too_large_to_show_its": "آن فایل برای نمایش خطوط تغییرنیافته‌اش بیش از حد بزرگ است.",
+  "example_targets_rewrite_bun_in_rust": "بازنویسی Bun با Rust",
+  "example_targets_2_188_files_1_0m_lines": "۲٬۱۸۸ فایل · ۱٫۰ میلیون خط",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "بزرگ‌ترین آن‌ها. ۴۳ مگابایت تفاوت یکپارچه در ۶٬۷۵۵ کامیت.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "رفع تداخل‌های درخواست ادغام واردکردن Maimai NET",
+  "example_targets_25_files_494k_lines": "۲۵ فایل · ۴۹۴ هزار خط",
+  "example_targets_one_generated_json_file_holds_465_486_of": "یک فایل JSON تولیدشده ۴۶۵٬۴۸۶ خط از آن‌ها را دارد.",
+  "example_targets_deps_update_v8_to_14_1": "deps: به‌روزرسانی V8 به 14.1",
+  "example_targets_3_420_files_268k_lines": "۳٬۴۲۰ فایل · ۲۶۸ هزار خط",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "گسترده‌ترین درخت فایل. از محدودیت اندازهٔ تفاوت‌ها در API بزرگ‌تر است، بنابراین ghdiff آن را از وب‌سایت GitHub بارگیری می‌کند.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: حذف همهٔ وابستگی‌های libc++ و ABIِ libc++",
+  "example_targets_25_files_88k_lines": "۲۵ فایل · ۸۸ هزار خط",
+  "example_targets_large_and_still_a_diff_a_person_can": "بزرگ است، اما هنوز تفاوتی است که یک نفر می‌تواند تا پایان بخواند.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 تا 1.3.1",
+  "example_targets_53_files_2_6k_lines": "۵۳ فایل · ۲٫۶ هزار خط",
+  "example_targets_a_compare_range_of_one_release_100_commits": "بازهٔ مقایسهٔ یک انتشار. ۱۰۰ کامیت دارد و نظرها محلی می‌مانند.",
+  "filter_rules_all_files": "همهٔ فایل‌ها",
+  "filter_rules_show_every_file_in_the_diff": "نمایش همهٔ فایل‌های تفاوت.",
+  "filter_rules_hide_tests": "پنهان کردن آزمون‌ها",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "پنهان کردن فایل‌های آزمون، fixtureها و snapshotها.",
+  "filter_rules_tests_only": "فقط آزمون‌ها",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "نمایش فقط فایل‌های آزمون، fixtureها و snapshotها.",
+  "filter_rules_source_only": "فقط منبع",
+  "filter_rules_show_only_code_files_that_are_not_tests": "نمایش فقط فایل‌های کدی که آزمون یا تولیدشده نیستند.",
+  "filter_rules_docs_only": "فقط مستندات",
+  "filter_rules_show_only_markdown_and_other_prose_files": "نمایش فقط Markdown و دیگر فایل‌های متنی.",
+  "filter_rules_config_only": "فقط پیکربندی",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "نمایش فقط manifestها، پیکربندی‌های lint و فایل‌های CI.",
+  "filter_rules_hide_generated": "پنهان کردن تولیدشده‌ها",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "پنهان کردن فایل‌های lock، snapshotها و خروجی ساخت.",
+  "filter_rules_generated_only": "فقط تولیدشده‌ها",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "نمایش فقط فایل‌های lock، snapshotها و خروجی ساخت.",
+  "github_app_sign_in_was_not_completed_on_github_try": "ورود در GitHub کامل نشد. وقتی آماده بودید دوباره تلاش کنید.",
+  "github_app_the_sign_in_session_timed_out_on_github": "نشست ورود در GitHub منقضی شد. فرایند ورود را دوباره آغاز کنید.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "تأیید امنیتی هنگام ورود به GitHub ناموفق بود. فرایند را دوباره از ghdiff آغاز کنید.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub نتوانست ورود را کامل کند. کمی بعد دوباره تلاش کنید.",
+  "installations_all_repositories": "همهٔ مخزن‌ها",
+  "installations_no_repositories_selected": "هیچ مخزنی انتخاب نشده است",
+  "pull_details_just_now": "همین حالا",
+  "pull_status_approved": "تأییدشده",
+  "pull_status_changes_requested": "تغییرات درخواست شده",
+  "pull_status_no_review_yet": "هنوز بازبینی نشده",
+  "pull_status_checks_passing": "بررسی‌های خودکار موفق",
+  "pull_status_checks_running": "بررسی‌های خودکار در حال اجرا",
+  "pull_status_a_check_failed": "یک بررسی خودکار ناموفق شد",
+  "pull_status_no_checks": "بدون بررسی خودکار",
+  "pull_status_changes_requested_new_commits_since": "تغییرات درخواست شده؛ کامیت‌های جدید از آن زمان",
+  "review_data_commit": "کامیت {value}",
+  "review_decision_approve": "تأیید",
+  "review_decision_approving": "در حال تأیید…",
+  "review_decision_request_changes": "درخواست تغییرات",
+  "review_decision_requesting": "در حال درخواست تغییرات…",
+  "review_decision_comment": "نظر",
+  "review_decision_commenting": "در حال ثبت نظر…",
+  "review_decision_approved": "تأیید شد",
+  "review_decision_changes_requested": "تغییرات درخواست شد",
+  "review_decision_commented": "نظر ثبت شد",
+  "review_decision_you_approved_this_pull_request": "این درخواست ادغام را تأیید کردید.",
+  "review_decision_you_requested_changes_on_this_pull_request": "برای این درخواست ادغام تغییرات درخواست کردید.",
+  "review_decision_you_commented_on_this_pull_request": "روی این درخواست ادغام نظر دادید.",
+  "review_decision_github_recorded_your_review": "GitHub بازبینی‌تان را ثبت کرد.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "سرور پاسخ نداد. ممکن است اتصال اینترنت شما قطع باشد یا مهلت درخواست تمام شده باشد.",
+  "review_failure_you_used_all_5_000_github_requests_for": "همهٔ ۵٬۰۰۰ درخواست GitHub این ساعت را مصرف کرده‌اید. چند دقیقه صبر کنید تا سقف بازنشانی شود، سپس دوباره تلاش کنید.",
+  "review_failure_hourly_github_rate_limit_reached": "به سقف ساعتی درخواست GitHub رسیده‌اید",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub درخواست‌های بدون ورود را به ۶۰ درخواست در ساعت محدود می‌کند. برای دریافت فوری ۵٬۰۰۰ درخواست در ساعت، دسترسی را تنظیم کنید.",
+  "review_failure_github_rate_limit_reached": "به سقف درخواست GitHub رسیده‌اید",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "ورود GitHub شما دیگر معتبر نیست و ghdiff نتوانست آن را تازه کند. برای دیدن این تفاوت دوباره دسترسی را تنظیم کنید.",
+  "review_failure_github_sign_in_expired": "ورود GitHub منقضی شده است",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "GitHub «یافت نشد» را برگرداند، چون ghdiff روی این مخزن نصب نیست یا دسترسی وجود ندارد. برای دادن مجوز، دسترسی را تنظیم کنید.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff به این مخزن دسترسی نیاز دارد",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "وقتی خارج شده‌اید، GitHub برای مخزن‌های خصوصی «یافت نشد» برمی‌گرداند. برای دیدن این تفاوت دسترسی را تنظیم کنید.",
+  "review_failure_repository_not_found_or_private": "مخزن یافت نشد یا خصوصی است",
+  "review_failure_could_not_load_the_diff": "نتوانست تفاوت را بارگیری کند",
+  "contract_enter_a_valid_github_username_or_repository_name": "یک نام کاربری GitHub یا نام مخزن معتبر وارد کنید.",
+  "contract_comment_cannot_be_empty": "نظر نمی‌تواند خالی باشد.",
+  "router_could_not_check_who_you_are_signed_in": "نتوانست بررسی کند با چه حسابی وارد شده‌اید.",
+  "router_could_not_read_where_ghdiff_is_installed": "نتوانست محل نصب ghdiff را بخواند.",
+  "router_could_not_load_this_repository": "نتوانست این مخزن را بارگیری کند.",
+  "router_could_not_load_this_pull_request": "نتوانست این درخواست ادغام را بارگیری کند.",
+  "router_could_not_load_your_review_of_this_pull": "نتوانست بازبینی شما از این درخواست ادغام را بارگیری کند.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub بازبینی را پذیرفت، اما چیزی برنگرداند.",
+  "router_could_not_submit_this_review": "نتوانست این بازبینی را ارسال کند.",
+  "router_could_not_load_comments": "نتوانست نظرها را بارگیری کند.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub پاسخ را پذیرفت، اما چیزی برنگرداند.",
+  "router_this_comment_is_missing_a_file_or_line": "این نظر فاقد فایل یا شمارهٔ خط است.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub نظر را پذیرفت، اما چیزی برنگرداند.",
+  "router_could_not_post_this_comment": "نتوانست این نظر را ارسال کند.",
+  "router_could_not_delete_this_comment": "نتوانست این نظر را حذف کند.",
+  "router_could_not_load_which_files_you_have_read": "نتوانست فایل‌هایی را که خوانده‌اید بارگیری کند.",
+  "router_not_found": "یافت نشد",
+  "router_could_not_send_that_mark_to_github": "نتوانست آن نشان را به GitHub بفرستد.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "این ghdiff هیچ GitHub App تنظیم‌شده‌ای ندارد، بنابراین نمی‌تواند شما را وارد کند.",
+  "github_your_github_sign_in_is_no_longer_valid": "ورود GitHub شما دیگر معتبر نیست. برای ادامه دوباره دسترسی را تنظیم کنید.",
+  "github_github_rejected_that_query": "GitHub آن پرس‌وجو را رد کرد.",
+  "github_github_returned_no_data_for_that_query": "GitHub برای آن پرس‌وجو داده‌ای برنگرداند.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub چنین فایلی در آن کامیت ندارد. یک مخزن خصوصی به توکن نیاز دارد.",
+  "github_app_github_would_not_revoke_that_token": "GitHub حاضر نشد آن توکن را لغو کند.",
+  "github_app_github_answered_for_that_token_request": "GitHub برای آن درخواست توکن {status} پاسخ داد.",
+  "github_app_github_refused_that": "GitHub آن را رد کرد: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub بدون توکن دسترسی پاسخ داد.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub برای این تفاوت حداکثر {fileCount} فایل فهرست می‌کند؛ بنابراین فایل‌های بعدی وجود ندارند.",
+  "installations_an_account": "یک حساب",
+  "stream_text_that_response_is_too_large_to_read": "آن پاسخ برای خواندن بیش از حد بزرگ است.",
+  "diff_that_review_target_is_not_valid": "آن هدف بازبینی معتبر نیست.",
+  "diff_could_not_load_that_diff": "نتوانست آن تفاوت را بارگیری کند.",
+  "diff_that_request_to_github_failed": "آن درخواست به GitHub ناموفق بود.",
+  "file_that_review_target_is_not_valid": "آن هدف بازبینی معتبر نیست.",
+  "file_that_file_path_is_not_valid": "آن مسیر فایل معتبر نیست.",
+  "file_could_not_load_that_file": "نتوانست آن فایل را بارگیری کند.",
+  "route_no_such_procedure": "چنین رویه‌ای وجود ندارد.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} فایل",
+        "countPlural=*": "{formatted} فایل"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} کامیت",
+        "countPlural=*": "{formatted} کامیت"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} نظر",
+        "countPlural=*": "{formatted} نظر"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} پاسخ",
+        "countPlural=*": "{formatted} پاسخ"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} مخزن",
+        "countPlural=*": "{formatted} مخزن"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} تفاوت ارائه شد",
+        "countPlural=*": "{formatted} تفاوت ارائه شد"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} پنهان",
+        "countPlural=*": "{formatted} پنهان"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "⁦{base}⁩ · {formatted} وضعیت",
+        "countPlural=*": "⁦{base}⁩ · {formatted} وضعیت"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "پشته‌ای از {formatted} درخواست ادغام",
+        "countPlural=*": "پشته‌ای از {formatted} درخواست ادغام"
+      }
+    }
+  ],
+  "comment_line": "نظر روی خط ⁦{line}⁩",
+  "comment_line_range": "نظر دادن دربارهٔ خطوط ⁦{start}⁩ تا ⁦{end}⁩",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} فایل{#total} از {total}{/total}",
+        "countPlural=*": "{formatted} فایل{#total} از {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "تفاوت‌ها با {#diffs}CodeView{/diffs} و فهرست فایل‌ها با {#trees}FileTree{/trees} نمایش داده می‌شوند.",
+  "watch_offer_added_phone": "درخواست‌های ادغام باز آن اکنون در فهرست درخواست‌های ادغام در بالای سمت چپ هستند.",
+  "watch_offer_added_wide": "درخواست‌های ادغام باز آن اکنون در نوار سمت چپ هستند.",
+  "watch_offer_more_phone": "برای افزودن مخزن‌های بیشتر به فهرست، آن فهرست را باز کنید و از {#strong}{label}{/strong} استفاده کنید، یا به صفحهٔ اصلی ghdiff بروید.",
+  "watch_offer_more_wide": "برای افزودن مخزن‌های بیشتر به فهرست، از {#strong}{label}{/strong} در پایین نوار استفاده کنید یا به صفحهٔ اصلی ghdiff بروید.",
+  "watch_offer_preview_phone": "درخواست‌های ادغام باز آن را در فهرست درخواست‌های ادغام در بالای سمت چپ ببینید؛ هرکدام وضعیت بازبینی و بررسی‌های خودکار خود را دارند. بدون بازگشت به GitHub بین آن‌ها جابه‌جا شوید.",
+  "watch_offer_preview_wide": "درخواست‌های ادغام باز آن را در نوار سمت چپ ببینید؛ هرکدام وضعیت بازبینی و بررسی‌های خودکار خود را دارند. بدون بازگشت به GitHub بین آن‌ها جابه‌جا شوید.",
+  "watch_offer_action": "افزودن ⁦{subject}⁩ به فهرست",
+  "watch_offer_added_title": "⁦{subject}⁩ اکنون به فهرست افزوده شده است",
+  "pull_opened_age": "بازشده: {age}",
+  "pull_updated_age": "به‌روزشده: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} فایل، {added} {deleted}",
+        "countPlural=*": "{formatted} فایل، {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "هیچ درخواست ادغام بازی در {repositories} نیست.",
+  "review_submit_scope": "این بازبینیِ کل درخواست ادغام برای {#strong}⁦{target}⁩{/strong} است. نظرهای خطی همان‌جا که می‌نویسید ارسال می‌شوند.",
+  "review_previous_verdict": "{verdict} بازبینی جدیدی جای آن را می‌گیرد.",
+  "setup_not_installed": "ghdiff هنوز روی {#strong}⁦{account}⁩{/strong} نصب نشده است. اگر این یک سازمان است، شاید مالک باید نصب را تأیید کند.",
+  "setup_no_repositories": "ghdiff روی {#strong}⁦{account}⁩{/strong} نصب شده است، اما هنوز هیچ مخزنی را پوشش نمی‌دهد. تنظیماتش را باز کنید تا مخزن‌هایی را که بازبینی می‌کنید انتخاب کنید.",
+  "userscript_manager_description": "این کار دکمه‌ای را کنار Files changed در یک درخواست ادغام و کنار Browse files در یک کامیت اضافه می‌کند. به مدیر اسکریپت کاربر، مانند {#manager}Tampermonkey{/manager}، نیاز دارد.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n⁦{head}⁩ به ⁦{base}⁩",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "پیش از ارسال بازبینی، دسترسی GitHub را تنظیم کنید.",
+  "auth_required_delete": "پیش از حذف نظر، دسترسی GitHub را تنظیم کنید.",
+  "auth_required_viewed": "پیش از علامت‌زدن یک فایل به‌عنوان دیده‌شده، دسترسی GitHub را تنظیم کنید.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} بایت",
+        "countPlural=*": "{formatted} بایت"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "هر درخواست ادغام، کامیت یا بازهٔ مقایسهٔ GitHub را با جایگزین‌کردن github.com با ghdiff.com باز کنید. فهرست فایل‌ها را با قواعد ازپیش‌تنظیم‌شدهٔ مسیر محدود کنید و نظرهای خطی را به GitHub ارسال کنید.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "این نظر را در GitHub حذف می‌کنید؟ این کار قابل بازگردانی نیست.",
+        "count=*, countPlural=one": "همهٔ {formatted} نظرِ این رشته را در GitHub حذف می‌کنید؟ این کار قابل بازگردانی نیست.",
+        "count=*, countPlural=other": "همهٔ {formatted} نظرِ این رشته را در GitHub حذف می‌کنید؟ این کار قابل بازگردانی نیست.",
+        "count=*, countPlural=*": "همهٔ {formatted} نظرِ این رشته را در GitHub حذف می‌کنید؟ این کار قابل بازگردانی نیست."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub تشخیص داد {formatted} فایل برای نمایش تفاوت‌ها بیش از حد بزرگ است، بنابراین هیچ خطی نشان نمی‌دهد: ⁦{path}⁩.",
+        "count=*, countPlural=one": "GitHub تشخیص داد {formatted} فایل برای نمایش تفاوت‌ها بیش از حد بزرگ است، بنابراین هیچ خطی نشان نمی‌دهد.",
+        "count=*, countPlural=*": "GitHub تشخیص داد {formatted} فایل برای نمایش تفاوت‌ها بیش از حد بزرگ هستند، بنابراین هیچ خطی نشان نمی‌دهند."
+      }
+    }
+  ],
+  "userscript_open_pull": "باز کردن این درخواست ادغام در ghdiff",
+  "userscript_open_commit": "باز کردن این کامیت در ghdiff",
+  "userscript_description": "یک دکمهٔ ghdiff به ردیف زبانهٔ هر درخواست ادغام GitHub و کنار Browse files در هر کامیت اضافه می‌کند.",
+  "diff_expand_all": "باز کردن همه",
+  "diff_no_newline": "در انتهای فایل خط جدیدی نیست",
+  "tree_git_contains_changes": "شامل موارد وضعیت git است",
+  "review_bytes_read": "{amount} خوانده شد",
+  "tree_git_added": "وضعیت git: افزوده‌شده",
+  "tree_git_deleted": "وضعیت git: حذف‌شده",
+  "tree_git_ignored": "وضعیت git: نادیده‌گرفته‌شده",
+  "tree_git_modified": "وضعیت git: تغییریافته",
+  "tree_git_renamed": "وضعیت git: تغییرنام‌داده‌شده",
+  "tree_git_untracked": "وضعیت git: ردیابی‌نشده",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} خط تغییرنیافته",
+        "countPlural=*": "{formatted} خط تغییرنیافته"
+      }
+    }
+  ],
+  "locale_language": "زبان",
+  "app_render_error": "ghdiff نتوانست این صفحه را نمایش دهد. برای تلاش دوباره، صفحه را دوباره بارگیری کنید."
+}

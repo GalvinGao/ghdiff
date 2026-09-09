@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import {
   formatWatchedRepo,
   type OpenPullsData,
@@ -68,7 +69,9 @@ export function useOpenPulls(options: {
       );
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(rpcErrorMessage(cause, 'Could not load pull requests.'));
+      setError(
+        rpcErrorMessage(cause, m.use_open_pulls_could_not_load_pull_requests())
+      );
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }

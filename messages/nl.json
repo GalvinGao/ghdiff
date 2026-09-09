@@ -1,0 +1,623 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "Automatisch",
+  "color_mode_toggle_light": "Licht",
+  "color_mode_toggle_dark": "Donker",
+  "color_mode_toggle_color_mode_switch_to": "Kleurmodus: {value}. Overschakelen naar {value2}.",
+  "color_mode_toggle_color_mode": "Kleurmodus: {value}",
+  "comment_author_filter_bar_comment_authors": "Auteurs van opmerkingen",
+  "comment_author_filter_bar_all": "Alle",
+  "comment_author_filter_bar_comments_a_person_opened": "Opmerkingen geopend door een persoon",
+  "comment_author_filter_bar_people": "Mensen",
+  "comment_author_filter_bar_comments_a_github_app_opened": "Opmerkingen geopend door een GitHub-app",
+  "comment_author_filter_bar_bots": "Bots",
+  "comment_body_done": "Klaar",
+  "comment_body_not_done": "Niet klaar",
+  "comment_composer_leave_a_comment": "Opmerking plaatsen",
+  "comment_composer_comment": "Opmerking",
+  "comment_composer_cancel": "Annuleren",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd of Ctrl met Enter",
+  "comment_expansion_comment": "Opmerking",
+  "comment_thread_card_open_thread_by": "Thread van {author} openen",
+  "comment_thread_card_posting": "Plaatsen…",
+  "comment_thread_card_click_to_open": "Klik om te openen",
+  "comment_thread_card_delete": "Verwijderen",
+  "comment_thread_card_close": "Sluiten",
+  "comment_thread_card_on_github": "Op GitHub",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Deze opmerking heeft GitHub nog niet bereikt en kan daarom geen antwoord krijgen.",
+  "comment_thread_card_reply_on_github": "Antwoorden op GitHub",
+  "comment_thread_card_reply_in_this_browser": "Antwoorden in deze browser",
+  "comment_thread_card_sending": "Wordt verzonden…",
+  "comment_thread_card_reply": "Antwoorden",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd of Ctrl met Enter",
+  "comments_list_no_comments_here": "Geen opmerkingen hier.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "Opmerkingen die je hier achterlaat, worden op GitHub geplaatst.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub heeft geen reviewthread voor commits of vergelijkingsbereiken. Opmerkingen blijven in deze browser.",
+  "comments_list_posting": "plaatsen",
+  "comments_list_failed": "mislukt",
+  "comments_list_go_to": "Ga naar {path}",
+  "confirm_inline_cancel": "Annuleren",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "Toegevoegd",
+  "filter_menu_modified": "Gewijzigd",
+  "filter_menu_renamed": "Hernoemd",
+  "filter_menu_deleted": "Verwijderd",
+  "filter_menu_filter_files": "Bestanden filteren",
+  "filter_menu_file_rules": "Bestandsregels",
+  "filter_menu_git_status": "Git-status",
+  "filter_menu_clear_filters": "Filters wissen",
+  "filter_menu_all_files": "Alle bestanden",
+  "git_hub_account_control_set_up_access": "Toegang instellen",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Opmerkingen die je plaatst, worden onder dit account op GitHub geplaatst.",
+  "git_hub_account_panel_install_on_another_account": "Installeren op een ander account",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff is voor geen enkel account geïnstalleerd. Stel het in om je code te lezen.",
+  "git_hub_account_panel_open_setup_guide": "Installatiehandleiding openen",
+  "git_hub_account_panel_sign_out": "Afmelden",
+  "git_hub_account_panel_accounts_with_access": "Accounts met toegang",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "Opent instellingen op github.com om repositories toe te voegen of te verwijderen.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "Er wordt gecontroleerd welke GitHub-accounts ghdiff kan lezen…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "Open een GitHub-pull request, commit of vergelijkingsbereik.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "Beperk de bestandslijst met vooraf ingestelde padregels.",
+  "home_screen_read_and_leave_comments": "Lees en plaats opmerkingen.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "Plak een URL van een GitHub-pull request, commit of vergelijkingsbereik, of typ owner/repo#123.",
+  "home_screen_github_pull_request_commit_or_compare_url": "URL van GitHub-pull request, commit of vergelijkingsbereik",
+  "home_screen_open_this_diff": "Deze diff openen",
+  "home_screen_review": "Reviewen",
+  "home_screen_set_up_access_for_private_repositories": "Toegang voor privérepositories instellen",
+  "home_screen_userscript": "Userscript",
+  "home_screen_examples": "Voorbeelden",
+  "home_screen_watched_repos": "Repositories in je lijst",
+  "home_screen_github_account": "GitHub-account",
+  "home_screen_source_on_github": "Broncode op GitHub",
+  "home_screen_review_the_commit_this_build_was_made_from": "De commit waarop deze build is gebaseerd, {sha}, in ghdiff bekijken",
+  "installation_row_current_diff": "huidige diff",
+  "installation_row_configure": "Configureren",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff kan die URL niet lezen",
+  "not_found_a_review_needs_a_github_pull_request_a": "Een review vereist een GitHub-pull request, een commit of een vergelijkingsbereik.",
+  "not_found_open_a_different_review": "Een andere review openen",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "Sleep om de grootte te wijzigen. Dubbelklik om te herstellen.",
+  "pull_details_card_loading_pull_request": "Pull request laden…",
+  "pull_details_card_no_details_yet": "Nog geen details.",
+  "pull_details_card_files": "Bestanden",
+  "pull_details_card_added_lines": "Toegevoegde regels",
+  "pull_details_card_deleted_lines": "Verwijderde regels",
+  "pull_details_card_commits": "Commits",
+  "pull_details_card_description": "Beschrijving",
+  "pull_list_button_open_pull_requests": "Openstaande pull requests",
+  "pull_list_button_watched_repos": "Repositories in je lijst",
+  "pull_list_button_reload_the_pull_requests": "Pull requests opnieuw laden",
+  "pull_list_button_loading_the_pull_requests": "Pull requests laden",
+  "pull_rail_open_pull_requests": "Openstaande pull requests",
+  "pull_rail_pull_request_bar_width": "Breedte van de pullrequestbalk",
+  "pull_rail_show_the_pull_requests": "Pull requests tonen",
+  "pull_rail_hide_the_pull_requests": "Pull requests verbergen",
+  "pull_rail_watched_repos": "Repositories in je lijst",
+  "pull_rail_reload_the_pull_requests": "Pull requests opnieuw laden",
+  "pull_rail_loading_the_pull_requests": "Pull requests laden",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "Voeg een repository toe aan je lijst om de open pull requests te zien.",
+  "pull_request_list_open_on_github": "{owner}/{repo} openen op GitHub",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=one": "De {formatted} open pull request op GitHub openen",
+        "category=*": "De {formatted} open pull requests op GitHub openen"
+      }
+    }
+  ],
+  "pull_request_list_you": "jij",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "Open pull requests van {author} in {owner}/{repo} openen op GitHub",
+  "pull_request_list_set_up_private_access": "Privétoegang instellen",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "Afgemeld: geen enkele rij toont een statusvierkant of een markering op je eigen pull requests. Na aanmelden worden beide getoond.",
+  "pull_request_list_stack": "Stapel",
+  "pull_request_list_loading_open_pull_requests": "Open pull requests laden…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "Concept",
+  "pull_row_currently_viewing": "Momenteel bekeken",
+  "pull_state_icon_open": "Open",
+  "pull_state_icon_draft": "Concept",
+  "pull_state_icon_merged": "Samengevoegd",
+  "pull_state_icon_closed": "Gesloten",
+  "review_header_bars": "Balken",
+  "review_header_signs": "Tekens",
+  "review_header_none": "Geen",
+  "review_header_hide_the_file_list": "Bestandslijst verbergen",
+  "review_header_show_the_file_list": "Bestandslijst tonen",
+  "review_header_open_on_github": "{targetLabel} openen op GitHub",
+  "review_header_switch_to_unified_view": "Overschakelen naar uniforme weergave",
+  "review_header_switch_to_split_view": "Overschakelen naar gesplitste weergave",
+  "review_header_split_view": "Gesplitste weergave",
+  "review_header_unified_view": "Uniforme weergave",
+  "review_header_display_settings": "Weergave-instellingen",
+  "review_header_code_font": "Codelettertype",
+  "review_header_change_markers": "Wijzigingsmarkeringen",
+  "review_header_wrap_long_lines": "Lange regels laten afbreken",
+  "review_header_line_numbers": "Regelnummers",
+  "review_header_change_backgrounds": "Achtergronden voor wijzigingen",
+  "review_header_dim_whitespace_changes": "Witruimtewijzigingen dimmen",
+  "review_header_approve_request_changes_or_comment": "Goedkeuren, wijzigingen aanvragen of opmerking plaatsen",
+  "review_header_review": "Review",
+  "review_header_review_it_again": "{value} Opnieuw reviewen.",
+  "review_screen_sidebar_width": "Breedte van de zijbalk",
+  "review_screen_dismiss": "Sluiten",
+  "review_sidebar_sidebar_sections": "Secties van de zijbalk",
+  "review_sidebar_files": "Bestanden",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=one, comments=one": "{threadNumber} thread, {commentNumber} opmerking",
+        "threads=one, comments=*": "{threadNumber} thread, {commentNumber} opmerkingen",
+        "threads=*, comments=one": "{threadNumber} threads, {commentNumber} opmerking",
+        "threads=*, comments=*": "{threadNumber} threads, {commentNumber} opmerkingen"
+      }
+    }
+  ],
+  "review_sidebar_comments": "Opmerkingen",
+  "review_sidebar_hide_the_path_search": "Padzoekopdracht verbergen",
+  "review_sidebar_search_by_path": "Zoeken op pad",
+  "review_sidebar_the_current_filter_hides_all_files": "Het huidige filter verbergt alle bestanden.",
+  "review_sidebar_clear_filters": "Filters wissen",
+  "review_sidebar_added_lines": "Toegevoegde regels",
+  "review_sidebar_deleted_lines": "Verwijderde regels",
+  "review_sidebar_search_files_by_path": "Bestanden zoeken op pad",
+  "review_sidebar_path_contains": "Pad bevat…",
+  "review_sidebar_clear_the_path_search": "Padzoekopdracht wissen",
+  "review_status_panel_fetching_the_diff": "Verschillen ophalen",
+  "review_status_panel_reading_the_patch_for_this_review": "Patch voor deze review lezen.",
+  "review_status_panel_preparing_the_diff": "Verschillen voorbereiden",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "Patch parseren en bestandslijst opbouwen.",
+  "review_status_panel_starting_the_highlighters": "Markeringen starten",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "Achtergrondwerkers maken zich klaar om je code te kleuren.",
+  "review_status_panel_set_up_repository_access": "Repositorytoegang instellen",
+  "review_status_panel_try_again": "Opnieuw proberen",
+  "review_submit_dialog_add_a_note_github_needs_one": "Voeg een notitie toe. GitHub heeft er een nodig.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub staat goedkeuring van je eigen pull request niet toe.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub staat het aanvragen van wijzigingen voor je eigen pull request niet toe.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Je kunt reageren op je eigen pull request. GitHub staat niets anders toe.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "Voeg een notitie toe. GitHub vereist er een om wijzigingen aan te vragen of een opmerking te plaatsen.",
+  "review_submit_dialog_submit_a_review": "Review indienen",
+  "review_submit_dialog_review_body": "Reviewtekst",
+  "review_submit_dialog_leave_a_note_with_your_review": "Laat een notitie bij je review achter",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "Verschillen tonen",
+  "review_viewer_hide_the_diff": "Verschillen verbergen",
+  "review_viewer_show_the_whole_file": "Het hele bestand tonen",
+  "review_viewer_viewed": "Bekeken",
+  "setup_screen_set_up_private_repository_access": "Toegang tot privérepository's instellen",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub laat ghdiff alleen repositories lezen waartoe je toegang geeft. Doorloop deze drie stappen in volgorde.",
+  "setup_screen_sign_in_to_github": "Aanmelden bij GitHub",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "Hiermee identificeer je je account bij GitHub. Opmerkingen die je plaatst, worden onder dit account geplaatst.",
+  "setup_screen_sign_in_with_github": "Aanmelden met GitHub",
+  "setup_screen_grant_repository_access": "Repositorytoegang verlenen",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Aanmelden identificeert je alleen. Kies de accounts en repositories die ghdiff kan lezen.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "Aanmelden identificeert je alleen. Installeer ghdiff op {account} en controleer of deze repository in de toegangslijst staat.",
+  "setup_screen_accounts_with_access": "Accounts met toegang",
+  "setup_screen_install_ghdiff": "ghdiff installeren",
+  "setup_screen_install_on_another_account": "Installeren op een ander account",
+  "setup_screen_checking": "Controleren…",
+  "setup_screen_check_again": "Opnieuw controleren",
+  "setup_screen_open_the_diff": "Verschillen openen",
+  "setup_screen_go_to_the_home_page_to_paste_a": "Ga naar de ghdiff-startpagina om een URL van een pull request, commit of vergelijking te plakken.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Ga terug naar je diff. ghdiff haalt die opnieuw op met je bijgewerkte machtigingen.",
+  "setup_screen_go_to_ghdiff_home": "Naar de ghdiff-startpagina",
+  "setup_screen_return_to_the_diff": "Terug naar de diff",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Voor deze ghdiff-deployment is geen GitHub App ingesteld. Je kunt nog steeds elke openbare diff bekijken.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff gebruikt nu een GitHub App",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff heeft je oude persoonlijke toegangstoken uit deze browser verwijderd en vraagt er niet meer om. GitHub accepteert dat token nog totdat je het verwijdert in je GitHub-instellingen.",
+  "setup_screen_delete_the_token_on_github": "Token verwijderen op GitHub",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "Een ghdiff-knop toevoegen aan github.com",
+  "userscript_install_install": "Installeren",
+  "watch_offer_dialog_watch_this_repository": "Deze repository volgen?",
+  "watch_offer_dialog_watch": "{subject} volgen?",
+  "watch_offer_dialog_keep_reviewing": "Doorgaan met reviewen",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Je volglijst blijft in deze browser.",
+  "watch_offer_dialog_not_now": "Niet nu",
+  "watched_repos_dialog_watched_repositories": "Gevolgde repositories",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff toont open pull requests voor deze repositories. De lijst blijft in deze browser.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "Voer een repository in als owner/repo.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "Te volgen repository",
+  "watched_repos_editor_add": "Toevoegen",
+  "watched_repos_editor_nothing_watched_yet": "Nog geen gevolgde repositories.",
+  "watched_repos_editor_remove": "Verwijderen",
+  "dialog_close": "Sluiten",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "Dat bestand kon niet van GitHub worden gelezen.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "Dat bestand is op GitHub gewijzigd sinds deze diff is gemaakt. Laad opnieuw om de ongewijzigde regels te zien.",
+  "use_diff_file_loader_request_failed": "Aanvraag mislukt ({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "Kon niet controleren als wie je bent aangemeld.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "Kon niet lezen waar ghdiff is geïnstalleerd.",
+  "use_open_pulls_could_not_load_pull_requests": "Kon pull requests niet laden.",
+  "use_pull_details_could_not_load_this_pull_request": "Kon dit pull request niet laden.",
+  "use_review_comments_could_not_load_comments": "Kon opmerkingen niet laden.",
+  "use_review_comments_could_not_post_that_comment_to_github": "Kon die opmerking niet op GitHub plaatsen.",
+  "use_review_comments_could_not_post_this_reply_to_github": "Kon dit antwoord niet op GitHub plaatsen.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "Kon die thread niet op GitHub verwijderen. Laad opnieuw om te controleren.",
+  "use_review_patch_request_failed": "Aanvraag mislukt ({status}).",
+  "use_review_patch_could_not_load_that_diff": "Kon die diff niet laden.",
+  "use_submit_review_could_not_submit_this_review": "Kon deze review niet indienen.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "Kon die markering niet naar GitHub sturen.",
+  "code_fonts_system": "Systeem",
+  "diff_hydration_that_file_is_too_large_to_show_its": "Dat bestand is te groot om de ongewijzigde regels te tonen.",
+  "example_targets_rewrite_bun_in_rust": "Bun herschrijven in Rust",
+  "example_targets_2_188_files_1_0m_lines": "2.188 bestanden · 1,0 mln. regels",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "De grootste ervan. 43 MB aan uniforme diff verdeeld over 6.755 commits.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Conflicten in Maimai NET-import-PR oplossen",
+  "example_targets_25_files_494k_lines": "25 bestanden · 494k regels",
+  "example_targets_one_generated_json_file_holds_465_486_of": "Eén gegenereerd JSON-bestand bevat 465.486 van die regels.",
+  "example_targets_deps_update_v8_to_14_1": "deps: V8 bijwerken naar 14.1",
+  "example_targets_3_420_files_268k_lines": "3.420 bestanden · 268k regels",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "De breedste bestandsboom. Deze overschrijdt de groottelimiet voor verschillen van de API, dus ghdiff laadt hem vanaf de GitHub-website.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: alle libc++- en libc++ ABI-afhankelijkheden verwijderen",
+  "example_targets_25_files_88k_lines": "25 bestanden · 88k regels",
+  "example_targets_large_and_still_a_diff_a_person_can": "Groot, maar nog steeds een diff die iemand tot het einde kan lezen.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 naar 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53 bestanden · 2,6k regels",
+  "example_targets_a_compare_range_of_one_release_100_commits": "Een vergelijkingsbereik van één release. 100 commits en opmerkingen blijven lokaal.",
+  "filter_rules_all_files": "Alle bestanden",
+  "filter_rules_show_every_file_in_the_diff": "Elk bestand in de diff tonen.",
+  "filter_rules_hide_tests": "Tests verbergen",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "Testbestanden, fixtures en snapshots verbergen.",
+  "filter_rules_tests_only": "Alleen tests",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "Alleen testbestanden, fixtures en snapshots tonen.",
+  "filter_rules_source_only": "Alleen broncode",
+  "filter_rules_show_only_code_files_that_are_not_tests": "Alleen codebestanden tonen die geen tests zijn en niet zijn gegenereerd.",
+  "filter_rules_docs_only": "Alleen documentatie",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Alleen Markdown- en andere tekstbestanden tonen.",
+  "filter_rules_config_only": "Alleen configuratie",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "Alleen manifesten, lintconfiguraties en CI-bestanden tonen.",
+  "filter_rules_hide_generated": "Gegenereerde bestanden verbergen",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "Lockbestanden, snapshots en builduitvoer verbergen.",
+  "filter_rules_generated_only": "Alleen gegenereerde bestanden",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "Alleen lockbestanden, snapshots en builduitvoer tonen.",
+  "github_app_sign_in_was_not_completed_on_github_try": "Aanmelden is niet voltooid op GitHub. Probeer het opnieuw wanneer je klaar bent.",
+  "github_app_the_sign_in_session_timed_out_on_github": "De aanmeldsessie op GitHub is verlopen. Start het aanmeldproces opnieuw.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "Beveiligingscontrole is mislukt tijdens het aanmelden bij GitHub. Start het proces opnieuw vanuit ghdiff.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub kon de aanmelding niet voltooien. Probeer het zo opnieuw.",
+  "installations_all_repositories": "Alle repositories",
+  "installations_no_repositories_selected": "Geen repositories geselecteerd",
+  "pull_details_just_now": "zojuist",
+  "pull_status_approved": "Goedgekeurd",
+  "pull_status_changes_requested": "Wijzigingen aangevraagd",
+  "pull_status_no_review_yet": "Nog geen review",
+  "pull_status_checks_passing": "controles geslaagd",
+  "pull_status_checks_running": "controles worden uitgevoerd",
+  "pull_status_a_check_failed": "een controle is mislukt",
+  "pull_status_no_checks": "geen controles",
+  "pull_status_changes_requested_new_commits_since": "Wijzigingen aangevraagd, sindsdien nieuwe commits",
+  "review_data_commit": "Commit {value}",
+  "review_decision_approve": "Goedkeuren",
+  "review_decision_approving": "Goedkeuren…",
+  "review_decision_request_changes": "Wijzigingen aanvragen",
+  "review_decision_requesting": "Wijzigingen aanvragen…",
+  "review_decision_comment": "Opmerking plaatsen",
+  "review_decision_commenting": "Opmerking plaatsen…",
+  "review_decision_approved": "Goedgekeurd",
+  "review_decision_changes_requested": "Wijzigingen aangevraagd",
+  "review_decision_commented": "Opmerking geplaatst",
+  "review_decision_you_approved_this_pull_request": "Je hebt dit pull request goedgekeurd.",
+  "review_decision_you_requested_changes_on_this_pull_request": "Je hebt wijzigingen aangevraagd voor dit pull request.",
+  "review_decision_you_commented_on_this_pull_request": "Je hebt een opmerking geplaatst bij dit pull request.",
+  "review_decision_github_recorded_your_review": "GitHub heeft je review geregistreerd.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "De server reageerde niet. Je verbinding is mogelijk offline of de aanvraag heeft een time-out.",
+  "review_failure_you_used_all_5_000_github_requests_for": "Je hebt alle 5.000 GitHub-aanvragen voor dit uur gebruikt. Wacht enkele minuten tot je limiet opnieuw is ingesteld en probeer het dan opnieuw.",
+  "review_failure_hourly_github_rate_limit_reached": "Uurlimiet voor GitHub-aanvragen bereikt",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub beperkt niet-geauthenticeerde aanvragen tot 60 per uur. Stel toegang in om direct 5.000 aanvragen per uur te krijgen.",
+  "review_failure_github_rate_limit_reached": "Limiet voor GitHub-aanvragen bereikt",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "Je GitHub-aanmelding is niet meer geldig en ghdiff kon deze niet vernieuwen. Stel opnieuw toegang in om deze verschillen te bekijken.",
+  "review_failure_github_sign_in_expired": "GitHub-aanmelding verlopen",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "GitHub gaf Niet gevonden terug omdat ghdiff niet op deze repository is geïnstalleerd of toegang ontbreekt. Stel toegang in om toestemming te geven.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff heeft toegang tot deze repository nodig",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "GitHub geeft Niet gevonden terug voor privérepository's wanneer je bent afgemeld. Stel toegang in om deze verschillen te bekijken.",
+  "review_failure_repository_not_found_or_private": "Repository niet gevonden of privé",
+  "review_failure_could_not_load_the_diff": "Kon de verschillen niet laden",
+  "contract_enter_a_valid_github_username_or_repository_name": "Voer een geldige GitHub-gebruikersnaam of repositorynaam in.",
+  "contract_comment_cannot_be_empty": "Opmerking mag niet leeg zijn.",
+  "router_could_not_check_who_you_are_signed_in": "Kon niet controleren met welk account je bent aangemeld.",
+  "router_could_not_read_where_ghdiff_is_installed": "Kon niet lezen waar ghdiff is geïnstalleerd.",
+  "router_could_not_load_this_repository": "Kon deze repository niet laden.",
+  "router_could_not_load_this_pull_request": "Kon dit pull request niet laden.",
+  "router_could_not_load_your_review_of_this_pull": "Kon je review van dit pull request niet laden.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub accepteerde de review maar gaf niets terug.",
+  "router_could_not_submit_this_review": "Kon deze review niet indienen.",
+  "router_could_not_load_comments": "Kon opmerkingen niet laden.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub accepteerde het antwoord maar gaf niets terug.",
+  "router_this_comment_is_missing_a_file_or_line": "Bij deze opmerking ontbreekt een bestand of regelnummer.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub accepteerde de opmerking maar gaf niets terug.",
+  "router_could_not_post_this_comment": "Kon deze opmerking niet plaatsen.",
+  "router_could_not_delete_this_comment": "Kon deze opmerking niet verwijderen.",
+  "router_could_not_load_which_files_you_have_read": "Kon niet laden welke bestanden je hebt gelezen.",
+  "router_not_found": "Niet gevonden",
+  "router_could_not_send_that_mark_to_github": "Kon die markering niet naar GitHub sturen.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "Voor deze ghdiff is geen GitHub App ingesteld, dus je kunt je niet aanmelden.",
+  "github_your_github_sign_in_is_no_longer_valid": "Je GitHub-aanmelding is niet meer geldig. Stel opnieuw toegang in om door te gaan.",
+  "github_github_rejected_that_query": "GitHub heeft die query geweigerd.",
+  "github_github_returned_no_data_for_that_query": "GitHub gaf geen gegevens terug voor die query.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub heeft geen dergelijk bestand in die commit. Een privérepository vereist een token.",
+  "github_app_github_would_not_revoke_that_token": "GitHub wilde dat token niet intrekken.",
+  "github_app_github_answered_for_that_token_request": "GitHub antwoordde {status} op die tokenaanvraag.",
+  "github_app_github_refused_that": "GitHub weigerde dat: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub antwoordde zonder toegangstoken.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub toont maximaal {fileCount} bestanden voor deze verschillen, dus latere bestanden ontbreken.",
+  "installations_an_account": "een account",
+  "stream_text_that_response_is_too_large_to_read": "Dat antwoord is te groot om te lezen.",
+  "diff_that_review_target_is_not_valid": "Dat reviewdoel is niet geldig.",
+  "diff_could_not_load_that_diff": "Kon die verschillen niet laden.",
+  "diff_that_request_to_github_failed": "Die aanvraag aan GitHub is mislukt.",
+  "file_that_review_target_is_not_valid": "Dat reviewdoel is niet geldig.",
+  "file_that_file_path_is_not_valid": "Dat bestandspad is niet geldig.",
+  "file_could_not_load_that_file": "Kon dat bestand niet laden.",
+  "route_no_such_procedure": "Deze procedure bestaat niet.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} bestand",
+        "countPlural=*": "{formatted} bestanden"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} commit",
+        "countPlural=*": "{formatted} commits"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} opmerking",
+        "countPlural=*": "{formatted} opmerkingen"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} antwoord",
+        "countPlural=*": "{formatted} antwoorden"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} repository",
+        "countPlural=*": "{formatted} repositories"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} verschil aangeboden",
+        "countPlural=*": "{formatted} verschillen aangeboden"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} verborgen",
+        "countPlural=*": "{formatted} verborgen"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{base} · {formatted} status",
+        "countPlural=*": "{base} · {formatted} statussen"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Een stapel van {formatted} pull request",
+        "countPlural=*": "Een stapel van {formatted} pull requests"
+      }
+    }
+  ],
+  "comment_line": "Opmerking bij regel {line}",
+  "comment_line_range": "Opmerking bij regels {start} tot en met {end}",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} bestand{#total} van {total}{/total}",
+        "countPlural=*": "{formatted} bestanden{#total} van {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "Verschillen via {#diffs}CodeView{/diffs} en bestandslijst via {#trees}FileTree{/trees}.",
+  "watch_offer_added_phone": "De open pull requests staan nu in de pull-requestlijst linksboven.",
+  "watch_offer_added_wide": "De open pull requests staan nu in de balk links.",
+  "watch_offer_more_phone": "Open die lijst en gebruik {#strong}{label}{/strong} om meer repositories te volgen, of ga naar de ghdiff-startpagina.",
+  "watch_offer_more_wide": "Gebruik {#strong}{label}{/strong} onderaan de balk om meer repositories te volgen, of ga naar de ghdiff-startpagina.",
+  "watch_offer_preview_phone": "Bekijk de open pull requests in de pull-requestlijst linksboven, elk met de review en de controles. Wissel ertussen zonder terug te gaan naar GitHub.",
+  "watch_offer_preview_wide": "Bekijk de open pull requests in de balk links, elk met de review en de controles. Wissel ertussen zonder terug te gaan naar GitHub.",
+  "watch_offer_action": "{subject} volgen",
+  "watch_offer_added_title": "{subject} wordt nu gevolgd",
+  "pull_opened_age": "Geopend: {age}",
+  "pull_updated_age": "Bijgewerkt: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} bestand, {added} {deleted}",
+        "countPlural=*": "{formatted} bestanden, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "Geen open pull requests in {repositories}.",
+  "review_submit_scope": "Dit is een review van het hele pull request voor {#strong}{target}{/strong}. Regelopmerkingen worden geplaatst waar je ze schrijft.",
+  "review_previous_verdict": "{verdict} Een nieuwe komt daarvoor in de plaats.",
+  "setup_not_installed": "ghdiff is nog niet geïnstalleerd op {#strong}{account}{/strong}. Als dit een organisatie is, moet een eigenaar de installatie mogelijk goedkeuren.",
+  "setup_no_repositories": "ghdiff is geïnstalleerd op {#strong}{account}{/strong}, maar omvat nog geen repositories. Open de instellingen om de repositories te kiezen die je reviewt.",
+  "userscript_manager_description": "Dit voegt een knop toe naast Files changed bij een pull request en naast Browse files bij een commit. Hiervoor is een userscriptmanager nodig, zoals {#manager}Tampermonkey{/manager}.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} naar {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "Stel GitHub-toegang in voordat je een review indient.",
+  "auth_required_delete": "Stel GitHub-toegang in voordat je een opmerking verwijdert.",
+  "auth_required_viewed": "Stel GitHub-toegang in voordat je een bestand als bekeken markeert.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} byte",
+        "countPlural=*": "{formatted} bytes"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "Open elk GitHub-pull request, elke commit of elk vergelijkingsbereik door github.com te vervangen door ghdiff.com. Beperk de bestandslijst met vooraf ingestelde padregels en plaats regelopmerkingen terug op GitHub.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "Deze opmerking op GitHub verwijderen? Dit kan niet ongedaan worden gemaakt.",
+        "count=*, countPlural=one": "Alle {formatted} opmerkingen in deze thread op GitHub verwijderen? Dit kan niet ongedaan worden gemaakt.",
+        "count=*, countPlural=*": "Alle {formatted} opmerkingen in deze thread op GitHub verwijderen? Dit kan niet ongedaan worden gemaakt."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub beoordeelde {formatted} bestand als te groot voor een diff, dus er worden geen regels getoond: {path}.",
+        "count=*, countPlural=one": "GitHub beoordeelde {formatted} bestand als te groot voor een diff, dus er worden geen regels getoond.",
+        "count=*, countPlural=*": "GitHub beoordeelde {formatted} bestanden als te groot voor een diff, dus er worden geen regels getoond."
+      }
+    }
+  ],
+  "userscript_open_pull": "Dit pull request openen in ghdiff",
+  "userscript_open_commit": "Deze commit openen in ghdiff",
+  "userscript_description": "Voegt een ghdiff-knop toe aan de tabrij van elk GitHub-pull request en naast Browse files bij elke commit.",
+  "diff_expand_all": "Alles uitklappen",
+  "diff_no_newline": "Geen nieuwe regel aan het einde van het bestand",
+  "tree_git_contains_changes": "Bevat Git-statusitems",
+  "review_bytes_read": "{amount} gelezen",
+  "tree_git_added": "Git-status: toegevoegd",
+  "tree_git_deleted": "Git-status: verwijderd",
+  "tree_git_ignored": "Git-status: genegeerd",
+  "tree_git_modified": "Git-status: gewijzigd",
+  "tree_git_renamed": "Git-status: hernoemd",
+  "tree_git_untracked": "Git-status: niet gevolgd",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} ongewijzigde regel",
+        "countPlural=*": "{formatted} ongewijzigde regels"
+      }
+    }
+  ],
+  "locale_language": "Taal",
+  "app_render_error": "ghdiff kon deze pagina niet weergeven. Laad de pagina opnieuw om het opnieuw te proberen."
+}

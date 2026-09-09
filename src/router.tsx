@@ -1,6 +1,7 @@
 import { createRouter } from '@tanstack/react-router';
 
 import { NotFound } from '@/components/NotFound';
+import { PageError } from '@/components/PageError';
 import { routeTree } from '@/routeTree.gen';
 
 // The entry TanStack Start calls on the server for every document request, and
@@ -14,6 +15,7 @@ export function getRouter() {
     // `useReviewPatch` fetches once the screen mounts.
     defaultPreload: 'intent',
     defaultNotFoundComponent: NotFound,
+    defaultErrorComponent: PageError,
     scrollRestoration: true,
   });
 }

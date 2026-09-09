@@ -1,6 +1,7 @@
 import { IconReload, IconSidebarLeftOpen } from '@pierre/icons';
 import { useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullRequestList } from '@/components/PullRequestList';
 import { Button } from '@/components/ui/Button';
@@ -40,10 +41,10 @@ export function PullListButton({ className }: { className?: string }) {
     <>
       <Button
         aria-expanded={open}
-        aria-label="Open pull requests"
+        aria-label={m.pull_list_button_open_pull_requests()}
         className={className}
         size="icon"
-        title="Open pull requests"
+        title={m.pull_list_button_open_pull_requests()}
         variant="chrome"
         onClick={() => setOpen(true)}
       >
@@ -54,7 +55,7 @@ export function PullListButton({ className }: { className?: string }) {
         className="p-1"
         onClose={() => setOpen(false)}
         open={open}
-        title="Open pull requests"
+        title={m.pull_list_button_open_pull_requests()}
       >
         <PullRequestList
           current={current}
@@ -76,19 +77,24 @@ export function PullListButton({ className }: { className?: string }) {
             variant="chrome"
             onClick={() => setEditing(true)}
           >
-            <span className="truncate">Watched repos</span>
+            <span className="truncate">
+              {m.pull_list_button_watched_repos()}
+            </span>
           </Button>
           <Button
-            aria-label="Reload the pull requests"
+            aria-label={m.pull_list_button_reload_the_pull_requests()}
             className="ml-auto"
             disabled={pulls.loading}
             size="icon-sm"
-            title="Reload the pull requests"
+            title={m.pull_list_button_reload_the_pull_requests()}
             variant="chrome"
             onClick={pulls.reload}
           >
             {pulls.loading ? (
-              <Spinner label="Loading the pull requests" size={14} />
+              <Spinner
+                label={m.pull_list_button_loading_the_pull_requests()}
+                size={14}
+              />
             ) : (
               <IconReload size={14} />
             )}

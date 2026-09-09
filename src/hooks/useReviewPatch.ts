@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
 import {
@@ -100,7 +101,7 @@ export function useReviewPatch(options: {
         throw new Error(
           body.trim().length > 0
             ? body.trim()
-            : `Request failed (${response.status}).`
+            : m.use_review_patch_request_failed({ status: response.status })
         );
       }
       if (controller.signal.aborted) return;
@@ -116,7 +117,9 @@ export function useReviewPatch(options: {
     } catch (cause) {
       if (controller.signal.aborted) return;
       setError(
-        cause instanceof Error ? cause.message : 'Could not load that diff.'
+        cause instanceof Error
+          ? cause.message
+          : m.use_review_patch_could_not_load_that_diff()
       );
       setState('error');
     }

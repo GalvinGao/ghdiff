@@ -1,5 +1,6 @@
 import { IconLayers } from '@pierre/icons';
 
+import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
 
 /**
@@ -19,7 +20,7 @@ export function PullStackBadge({
   className?: string;
   size: number;
 }) {
-  const label = `A stack of ${String(size)} pull requests`;
+  const label = m.stack_pull_count({ count: size });
   return (
     <span
       aria-label={label}

@@ -3,8 +3,15 @@ import * as Primitive from '@radix-ui/react-dropdown-menu';
 import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { textDirection } from '@/lib/locale';
+import { getLocale } from '@/paraglide/runtime';
 
-export const DropdownMenu = Primitive.Root;
+export function DropdownMenu({
+  dir = textDirection(getLocale()),
+  ...props
+}: ComponentProps<typeof Primitive.Root>) {
+  return <Primitive.Root dir={dir} {...props} />;
+}
 export const DropdownMenuTrigger = Primitive.Trigger;
 export const DropdownMenuGroup = Primitive.Group;
 export const DropdownMenuPortal = Primitive.Portal;
@@ -185,5 +192,45 @@ export function DropdownMenuSeparator({
       className={cn('bg-line -mx-1 my-1 h-px', className)}
       {...props}
     />
+  );
+}
+
+export const DropdownMenuSub = Primitive.Sub;
+
+export function DropdownMenuSubTrigger({
+  children,
+  className,
+  ...props
+}: ComponentProps<typeof Primitive.SubTrigger>) {
+  return (
+    <Primitive.SubTrigger
+      className={cn(
+        'flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none select-none data-[highlighted]:bg-surface data-[state=open]:bg-surface',
+        className
+      )}
+      {...props}
+    >
+      <span className="min-w-0 flex-1">{children}</span>
+      <span aria-hidden="true" className="rtl:rotate-180">
+        ›
+      </span>
+    </Primitive.SubTrigger>
+  );
+}
+
+export function DropdownMenuSubContent({
+  className,
+  ...props
+}: ComponentProps<typeof Primitive.SubContent>) {
+  return (
+    <Primitive.Portal>
+      <Primitive.SubContent
+        className={cn(
+          'border-line bg-raised text-ink z-50 max-h-[min(28rem,var(--radix-dropdown-menu-content-available-height))] min-w-48 overflow-y-auto overscroll-contain rounded-lg border p-1 shadow-lg',
+          className
+        )}
+        {...props}
+      />
+    </Primitive.Portal>
   );
 }

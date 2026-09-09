@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // Submitting a review: the three verdicts GitHub takes, and the one rule that
 // separates them.
 //
@@ -6,7 +7,6 @@
 // them. A review submitted from ghdiff is a standalone review: the line
 // comments this app writes are posted as they are written, so there is never a
 // pending batch for a verdict to carry.
-
 import type { StatusTone } from './pullStatus.ts';
 
 /** GitHub's `event`, verbatim. */
@@ -38,24 +38,36 @@ export interface ReviewEventSpec {
 export const REVIEW_EVENTS: readonly ReviewEventSpec[] = [
   {
     event: 'APPROVE',
-    label: 'Approve',
-    pendingLabel: 'Approving…',
+    get label() {
+      return m.review_decision_approve();
+    },
+    get pendingLabel() {
+      return m.review_decision_approving();
+    },
     requiresBody: false,
     allowedOnOwn: false,
     submittedState: 'APPROVED',
   },
   {
     event: 'REQUEST_CHANGES',
-    label: 'Request changes',
-    pendingLabel: 'Requesting…',
+    get label() {
+      return m.review_decision_request_changes();
+    },
+    get pendingLabel() {
+      return m.review_decision_requesting();
+    },
     requiresBody: true,
     allowedOnOwn: false,
     submittedState: 'CHANGES_REQUESTED',
   },
   {
     event: 'COMMENT',
-    label: 'Comment',
-    pendingLabel: 'Commenting…',
+    get label() {
+      return m.review_decision_comment();
+    },
+    get pendingLabel() {
+      return m.review_decision_commenting();
+    },
     requiresBody: true,
     allowedOnOwn: true,
     submittedState: 'COMMENTED',
@@ -152,13 +164,27 @@ export interface ReviewVerdictSpec {
 }
 
 const VERDICTS: Record<string, ReviewVerdictSpec> = {
-  APPROVED: { verdict: 'approved', label: 'Approved', tone: 'success' },
+  APPROVED: {
+    verdict: 'approved',
+    get label() {
+      return m.review_decision_approved();
+    },
+    tone: 'success',
+  },
   CHANGES_REQUESTED: {
     verdict: 'changes',
-    label: 'Changes requested',
+    get label() {
+      return m.review_decision_changes_requested();
+    },
     tone: 'failure',
   },
-  COMMENTED: { verdict: 'commented', label: 'Commented', tone: 'neutral' },
+  COMMENTED: {
+    verdict: 'commented',
+    get label() {
+      return m.review_decision_commented();
+    },
+    tone: 'neutral',
+  },
 };
 
 /**
@@ -189,14 +215,14 @@ export interface SubmittedReview {
 export function describeSubmittedReview(review: SubmittedReview): string {
   switch (review.state) {
     case 'APPROVED':
-      return 'You approved this pull request.';
+      return m.review_decision_you_approved_this_pull_request();
     case 'CHANGES_REQUESTED':
-      return 'You requested changes on this pull request.';
+      return m.review_decision_you_requested_changes_on_this_pull_request();
     case 'COMMENTED':
-      return 'You commented on this pull request.';
+      return m.review_decision_you_commented_on_this_pull_request();
     default:
       // GitHub has states this app does not offer, `DISMISSED` among them, and
       // a review read back in one of them is still a review that landed.
-      return 'GitHub recorded your review.';
+      return m.review_decision_github_recorded_your_review();
   }
 }

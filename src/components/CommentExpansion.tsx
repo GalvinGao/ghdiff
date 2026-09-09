@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
+import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
 
 // The expanded reading view for one comment.
@@ -167,7 +168,7 @@ export function CommentExpansion({
       ref={panelRef}
       role="dialog"
       aria-modal="false"
-      aria-label="Comment"
+      aria-label={m.comment_expansion_comment()}
       className={cn(
         'border-line bg-raised fixed z-50 overflow-hidden rounded-lg border shadow-2xl',
         'motion-safe:transition-[top,left,width,height,opacity]',

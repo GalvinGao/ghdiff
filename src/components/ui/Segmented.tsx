@@ -6,6 +6,7 @@ import {
 } from 'react';
 
 import { cn } from '@/lib/cn';
+import { formatNumber } from '@/lib/locale';
 
 // One choice out of a short list, where the choices are worth showing at once.
 // The unselected items carry no surface of their own, so the group reads as one
@@ -96,7 +97,7 @@ export function SegmentedItem({
 export function SegmentedCount({ children }: { children: ReactNode }) {
   return (
     <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[color-mix(in_srgb,currentcolor_16%,transparent)] px-1 text-[10px] leading-none tabular-nums">
-      {children}
+      {typeof children === 'number' ? formatNumber(children) : children}
     </span>
   );
 }

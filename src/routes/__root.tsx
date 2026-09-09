@@ -1,10 +1,19 @@
-import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
+import {
+  CatchBoundary,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+} from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
+import { textDirection } from '../lib/locale.ts';
+import { m } from '../paraglide/messages.js';
+import { getLocale } from '../paraglide/runtime.js';
 import { AppShell } from '@/components/AppShell';
 import { CodeFontScript } from '@/components/CodeFontScript';
 import { ColorModeScript } from '@/components/ColorModeScript';
 import { NotFound } from '@/components/NotFound';
+import { PageError } from '@/components/PageError';
 import { WatchedReposScript } from '@/components/WatchedReposScript';
 import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import appCss from '@/globals.css?url';
@@ -17,8 +26,7 @@ export const Route = createRootRoute({
       { title: 'ghdiff' },
       {
         name: 'description',
-        content:
-          'Open any GitHub pull request, commit, or compare range by swapping github.com for ghdiff.com. Narrow the file list with preset path rules, and post line comments back to GitHub.',
+        content: m.app_description(),
       },
     ],
     links: [
@@ -35,7 +43,11 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang={getLocale()}
+      dir={textDirection(getLocale())}
+      suppressHydrationWarning
+    >
       <head>
         <HeadContent />
         <ColorModeScript />
@@ -43,9 +55,11 @@ function RootDocument({ children }: { children: ReactNode }) {
         <WatchedReposScript />
       </head>
       <body className="flex h-dvh flex-col">
-        <WorkerPoolProvider>
-          <AppShell>{children}</AppShell>
-        </WorkerPoolProvider>
+        <CatchBoundary getResetKey={getLocale} errorComponent={PageError}>
+          <WorkerPoolProvider>
+            <AppShell>{children}</AppShell>
+          </WorkerPoolProvider>
+        </CatchBoundary>
         <Scripts />
       </body>
     </html>

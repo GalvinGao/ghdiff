@@ -1,8 +1,10 @@
 import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
 
+import { getLocale } from '../paraglide/runtime.js';
 import { AppDataProvider } from '@/components/AppDataProvider';
 import { PullRail } from '@/components/PullRail';
+import { textDirection } from '@/lib/locale';
 
 /**
  * The frame every page sits in: the pull request bar on the left, the page to
@@ -27,9 +29,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Provider>
       <AppDataProvider>
-        <div className="flex min-h-0 flex-1">
+        <div dir="ltr" className="flex min-h-0 flex-1">
           <PullRail />
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+          <div
+            dir={textDirection(getLocale())}
+            className="flex min-h-0 min-w-0 flex-1 flex-col"
+          >
+            {children}
+          </div>
         </div>
       </AppDataProvider>
     </Provider>

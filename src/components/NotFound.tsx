@@ -1,6 +1,7 @@
 import { IconCiWarningFill } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
+import { m } from '../paraglide/messages.js';
 import { buttonClass } from '@/components/ui/buttonClass';
 
 export function NotFound() {
@@ -13,13 +14,13 @@ export function NotFound() {
           size={20}
         />
         <h1 className="text-ink text-sm font-medium">
-          ghdiff cannot read that URL
+          {m.not_found_ghdiff_cannot_read_that_url()}
         </h1>
         <p className="text-ink-muted mt-1 text-sm text-pretty">
-          A review needs a GitHub pull request, a commit, or a compare range.
+          {m.not_found_a_review_needs_a_github_pull_request_a()}
         </p>
         <Link className={buttonClass({ className: 'mt-4' })} to="/">
-          Open a different review
+          {m.not_found_open_a_different_review()}
         </Link>
       </div>
     </main>
