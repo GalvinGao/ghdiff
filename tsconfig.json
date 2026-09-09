@@ -31,5 +31,11 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", ".tanstack", ".wrangler"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "storybook-static",
+    ".tanstack",
+    ".wrangler"
+  ]
 }
