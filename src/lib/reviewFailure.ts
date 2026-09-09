@@ -43,6 +43,7 @@ export interface ReviewFailure {
 const FALLBACK_MESSAGE =
   "The server didn't respond. Your connection might be offline, or the request timed out.";
 
+const UNAUTHORIZED = 401;
 const NOT_FOUND = 404;
 
 export function describeReviewFailure(input: {
@@ -72,6 +73,20 @@ export function describeReviewFailure(input: {
             'GitHub limits unauthenticated requests to 60 per hour. Set up access to get 5,000 requests per hour immediately.',
           title: 'GitHub rate limit reached',
         };
+  }
+
+  if (status === UNAUTHORIZED) {
+    // The Worker answers 401 for a cookie whose token is spent, and the browser
+    // refreshes it and asks again before this panel sees the status. So a 401
+    // that reaches here is a refresh that failed, and the session behind it is
+    // gone — whatever `signedIn` still says, since that was read before it went.
+    // The next step is the sign-in, and `/setup` is where that happens.
+    return {
+      action: 'setup',
+      message:
+        'Your GitHub sign-in is no longer valid, and ghdiff could not refresh it. Set up access again to view this diff.',
+      title: 'GitHub sign-in expired',
+    };
   }
 
   if (status === NOT_FOUND) {

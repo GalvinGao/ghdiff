@@ -119,9 +119,9 @@ reads through a leading `gh` segment for the one navigation the redirect takes.
 
 **The userscript makes that host swap a button, and the tab bar is where it
 goes.** `public/ghdiff.user.js` adds one link to github.com, beside **Files
-changed** in the pull request's own tab row. That row is the one part of the
-page that both of GitHub's headers still draw and that the conversation and the
-diff share, so a single insertion point covers all four combinations:
+changed** at the end of the pull request's own tab row. That row is the one part
+of the page that both of GitHub's headers still draw and that the conversation
+and the diff share, so a single insertion point covers all four combinations:
 `nav[aria-label="Pull request navigation"]` is the React header and
 `.tabnav-tabs` is the one it has not replaced yet. Neither selector is a
 contract, so `findRowByLinkTo` says what the row _is_ — the row that holds the
@@ -139,13 +139,31 @@ which is always hidden — so the search takes whichever is on screen and they
 share the one row either way. No selector is named for a commit at all, because
 every class on that header is hashed per build.
 
+The button wears two skins, and both were read off the live page rather than
+guessed. In the tab row it is another one of github.com's own tabs — the same
+`TabNavLink` the row draws for **Files changed**: transparent and borderless in
+its unselected shape, `8px 12px` of padding at `--text-body-size-medium` and
+weight 400, stretched to the row's height, with a leading `link-external`
+octicon in `--fgColor-muted` the way every tab in the row carries one, gone
+under github.com's `sm` breakpoint the way theirs are. Beside **Browse files**
+on a commit it is Primer React's own default `Button`, the component github.com
+draws next to it there — `prc-Button-ButtonBase`, a medium control at
+`--control-medium-size` and weight 500, the 80 ms colour transition, the hover
+and active backgrounds, and the focus ring. The custom properties are Primer's
+design tokens, set by github.com itself on the document element for both colour
+schemes, so the button follows the reviewer's scheme without a stylesheet of its
+own to keep in step; the fallbacks are the ones Primer ships, for the day a
+token is renamed.
+
 The two rows are not the same row, and `data-ghdiff-place` on the button is what
-lets one stylesheet dress it for both. The tab bar has no gap of its own and
-holds 28px controls at 12px; the commit header's action row is a flex row with
-an 8px gap holding a 32px **Browse files** at 14px. A button that carried the
-tab bar's figures into the commit header would sit short beside it, and one that
-kept the tab bar's own `margin-left` there would sit 16px off. Everything the
-two places share is stated once, above them both.
+lets one stylesheet dress it for both. The tab row has no gap of its own, so the
+tab skin sits flush against **Files changed** and reads as the next tab; the
+commit header's action row is a flex row with an 8px gap of its own, so the
+button skin carries no margin there. The old server-rendered `.tabnav-tabs`
+draws its tabs wider and quieter than the React one — muted at rest, spacious
+padding, a colour-only hover — and a descendant override under the same selector
+github.com scopes its own rules with follows it. Everything else the two places
+share is stated once, above them both.
 
 A move from a pull request to a commit is a navigation GitHub makes without
 reloading, and it reuses this one button. So `sync` writes the href, the place
@@ -214,6 +232,95 @@ the open rather than behind a button: the bar is not drawn at all for a reviewer
 who watches nothing, so on their first visit this section is the only way in.
 `PullRail` keeps `WatchedReposDialog` for the same editor, because a reviewer
 reading a diff cannot lose it to a navigation home.
+
+**A reviewer who watches nothing is asked once per repository.** `PullRail`
+draws nothing while the watch list is empty, so the one feature that makes
+ghdiff somewhere to stay is invisible to exactly the reviewer who has not found
+it yet — and a reviewer who arrived from the userscript button has never seen
+the home page, where the editor sits in the open. `WatchOfferDialog` goes to
+them instead, on the repository they are already reading, and offers to watch it
+in one press.
+
+Three things keep that from being a nag, and each of them is why it is a
+component rather than a condition inside `PullRail`.
+
+It is asked once per repository. `watchOfferPreference` holds the repositories
+the offer has been made for, so **Not now** is final for the repository on
+screen and says nothing about the next one — declining is an answer about this
+diff, not about the feature, and a reviewer who has not found the bar yet is
+still worth asking when they open somebody else's code. It records the asking
+and not the answer, so Add lands there beside Not now: that costs nothing, since
+the offer only reaches a reviewer whose watch list is empty and Add is what
+fills it, and it buys the case no `onClose` can cover — a reviewer who closes
+the tab with the window open has been asked, and the write on open is what
+remembers it. Nothing trims the list: forty bytes a row against a five megabyte
+store is no reason for a cap whose only effect would be to ask somebody twice.
+
+That key held a bare `true` or `false` for one deploy, and the codec refuses
+anything that is not an array, so a browser from that afternoon reads as the
+empty list and is offered the repository in front of it once more. One dialog,
+once. It is the one place the encoding rule below has been broken on purpose,
+and the alternative was a second key to remember a shape that outlived nothing.
+
+It waits for the diff, which is why `ReviewScreen` mounts it and `AppShell` does
+not — `ready` is `patch.state === 'ready'`. A diff that would not load draws
+`ReviewStatusPanel`, a failure with a fix in it and usually the 404 that sends
+the reviewer to `/setup`, and a modal over that is a question stacked on a
+problem. It also keeps the one offer for a repository the reviewer can read: a
+404 leaves the setting alone, and the next diff that loads is offered.
+
+And the press names the repository, so the label truncates rather than widen the
+row. A name is as long as its owner made it, and this dialog scrolls vertically
+— a box with `overflow-y: auto` takes an `overflow-x` of `auto` whether it asked
+for one or not, so the overflow would arrive as a scrollbar across the window.
+Nothing is lost to the clip, because the header above the diff names the
+repository too.
+
+The home page is offered nothing. It has the editor in the open already, and it
+names no repository to offer.
+
+**And the offer shows the bar rather than describe it.** A reviewer is being
+asked to take a step on the strength of one sentence, and the sentence has to
+name a thing they have never seen. So `WatchOfferPreview` draws it: the status
+square is the whole point of the bar, and three of them say the three answers a
+reviewer scans that column for — approved and green, changes requested with a
+check failed, nobody looked yet and the checks still running.
+
+The green square is the middle row of the five, and the middle of the three the
+fade leaves legible. It is the answer a reviewer scans that column for, so it
+sits where the eye lands first.
+
+Five rows, because a list of exactly three reads as all there is. The first and
+the last fade under one `mask-image` gradient whose stops sit at a fifth and
+four fifths of the column, which is the whole of "fade one, three solid, fade
+one" — and a mask reads alpha and never colour, so `transparent` to `#000`
+serves both schemes with one figure. That is also why it is a mask rather than a
+gradient painted over the rows: a paint would have to name the dialog's own
+background and would drift the day that token moves.
+
+The square is drawn at 30px where the real bar gives it 13, and the words beside
+it stay at 12. In the bar the square is a mark on a row of text; here it is the
+subject, and a mark at label size would read as a bullet in front of a list of
+sentences. Nothing about the bar's figures follows from these two. No panel
+behind it and the block centred, because a bordered box reads as a control to
+press and this is a picture — `w-fit` on the column is what centres the block
+while leaving every square on one pixel.
+
+Every word in it comes from `describePullStatus`, the same function that names
+the square for a screen reader on every row of the real bar, so the
+advertisement cannot come to promise a state `PullStatusMark` does not paint.
+The whole illustration is `aria-hidden`: it illustrates the paragraph above it,
+and five marks each reading out their own `title` is noise in front of the two
+buttons.
+
+**The offer names a place, and a phone has a different one.** `PullRail` is
+`max-phone:hidden` and `PullListButton` stands in for it, so "the bar on the
+left" is false on the one screen that has no bar — a phone opens the same list
+from the leftmost control in the review header, and the **Watched repos** button
+sits at the foot of that window instead of at the foot of a bar. The offer names
+the place twice, so `WHERE_PULLS_ARE` states both readings once and `useIsPhone`
+picks between them. A second caller of that hook costs nothing: it is a media
+query and not a request.
 
 **A field's border is its promise of a click target.** The card around the home
 page's URL box is that border, and the `<input>` is only the middle of it: the
@@ -390,27 +497,31 @@ leave all four stranded on the document element.
 
 **A remembered setting is a jotai atom, and that is the whole of why it
 travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
-colour mode, the code font, the token, the watch list, the viewer's five
-controls, the bar's collapse, the two pane widths, and the comment author filter
-— as a key, a fallback, and the two directions between the value and the one
-string a browser can hold. `src/hooks/preferences.ts` turns each of those into
-one `atomWithStorage`, and `usePreference` is how a hook reads it.
+colour mode, the code font, the token, the watch list, the repositories that
+list has been offered for, the viewer's five controls, the bar's collapse, the
+two pane widths, and the comment author filter — as a key, a fallback, and the
+two directions between the value and the one string a browser can hold.
+`src/hooks/preferences.ts` turns each of those into one `atomWithStorage`, and
+`usePreference` is how a hook reads it.
 
 Three things follow, and each of them was a rule or a bug before it. The store
 is the owner, so two callers of a setting cannot come to disagree. A `storage`
 event is what one tab hears when another writes, so a reviewer with four tabs
-open changes the code font once — verified live for all nine, sign-out included.
-And a setting is `undefined` until the browser's copy has been read, which is
-where `hydrated` comes from: storage is read on mount and never during a render,
-so the server's markup and the first client render agree, and an unread watch
-list is not an empty one.
+open changes the code font once — verified live for the nine that were there
+then, sign-out included. And a setting is `undefined` until the browser's copy
+has been read, which is where `hydrated` comes from: storage is read on mount
+and never during a render, so the server's markup and the first client render
+agree, and an unread watch list is not an empty one.
 
 Add a setting by adding its codec to `src/lib/preferences.ts` and its atom
 beside the others, then reading it with `usePreference`. The encodings there are
 the ones already deployed and are not free to change: a reviewer's stored value
 has to go on reading across a deploy, and three of those keys are read before
 the first paint by a script in the document head. `src/lib/preferences.test.ts`
-is where a new codec proves it can refuse what an older build wrote.
+is where a new codec proves it can refuse what an older build wrote. The
+watch-list offer's key is the one exception on record, written up with the offer
+itself above: it held a boolean for a single deploy, and refusing that boolean
+is what carries the browsers still holding one.
 
 Two settings are not settings and stay where they are. The comments and the
 viewed-file marks a browser keeps are per target, they are content rather than a
@@ -692,9 +803,9 @@ display-menu switch costs no render at all: the stamps stay, and
 through the shadow boundary — is the whole toggle, the same trick `usePaneWidth`
 plays. Marks are cached in a WeakMap per metadata object, which hydration
 mutates in place and a filter change reuses, so an entry cannot go stale.
-`fileDiffCache` is protected in the library's types and a plain getter at
-runtime; the cast in `ReviewViewer` is the one place that leans on it, and a
-library upgrade must re-check it.
+`CodeView` adds the current item context as `onPostRender`'s fourth argument, so
+`ReviewViewer` passes `item.fileDiff` to both annotation passes through that
+public contract rather than reaching into the renderer's protected cache.
 
 One thing GitHub decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review
@@ -702,6 +813,36 @@ comment API refuses one. The failure arrives as GitHub's own sentence in the
 strip along the foot of the screen, which is where every other comment failure
 already lands. A commit and a compare range keep their comments in the browser
 and take them anywhere.
+
+**A cron expression says when it runs beside the code.** `src/lib/cron.ts`
+recognizes whole quoted literals, bare `cron` / `schedule` fields, and entries
+in `crontab`, `*.cron`, and `cron.d/` files. A syntax gate keeps the input to
+standard five-field cron, then `cron-schedule` validates and expands it into
+sorted, distinct field values. The gate is necessary even with a parser:
+`cron-schedule` accepts numeric prefixes such as `1W` as 1. `normalizeField`
+turns the parsed values into concise input for the English-only `cronstrue`
+descriptor, which does not validate schedules itself. Six- and seven-field
+dialects are left alone rather than guessing whether a field is seconds or a
+year. Named months and weekdays, lists, ranges, steps and standard aliases are
+read; `@reboot` names startup rather than inventing a period.
+
+Two readings need more than the library's default words. A step resets at the
+field boundary, so `*/35` is minute 0 and 35 of each hour, not an interval of 35
+minutes. Overlapping lists and Sunday aliases are deduplicated before a
+description is written. Restricted day-of-month and day-of-week fields are OR in
+standard cron, so their descriptions are explicitly joined with **or**. That
+decision uses the original fields: Vixie cron records a leading star, not a star
+anywhere in a list, and normalization must not erase that distinction. No
+timezone is inferred from the reviewer's browser.
+
+`diffCronSchedules.ts` uses the same `onPostRender` and `unsafeCSS` seam as the
+whitespace marks. It reads only rendered rows and caches by node, text and path,
+so highlighting, hydration and virtualized replacements get a fresh answer. The
+hint is absolutely positioned generated content after the code: it changes
+neither the source text selected for copying nor the virtualizer's line height.
+A narrow pane clips the hint; the row's native tooltip holds the complete
+expression, description and timezone caveat. Split and unified views use the
+same path, including deleted lines.
 
 **The wait says how much has arrived, and never how much is left.** A patch of
 tens of megabytes is a long stare at one sentence — oven-sh/bun#30412 is 43.3 MB
@@ -1057,9 +1198,33 @@ and the overwhelmingly likely somebody is another tab whose new cookie the
 browser is holding right now — a cookie this request cannot see, because the
 browser sent the old one before the new one existed. So the route breaks nothing
 and lets the caller retry, and the retry carries the newer cookie. In the other
-case — a refresh token spent by somebody who should not have it — that retry
-gets 401 and the client stops there. The wrong guess costs one request; the
-opposite wrong guess would sign a reviewer out for having two tabs open.
+case — a refresh token spent where this browser will never see the result,
+revoked at github.com or taken — the retry carries the same dead cookie and gets
+the same 401, and `withRefresh` ends the session on that second 401 through
+`/api/auth/signout`, the route that already knows how to end one. It is the one
+place that sees both answers: a 401 after a 204 is the proof the race had no
+winner here, and without that press a cookie no refresh can mend would cost a
+refresh and an error on every load for the rest of its thirty days. The wrong
+guess costs one request; the opposite wrong guess would sign a reviewer out for
+having two tabs open.
+
+**A spent token is answered 401, because nothing else asks for a refresh.**
+`withRefresh` calls the refresh route after a 401 and at no other time, and for
+one deploy no read produced one: `resolveGitHubToken` found the dead token,
+answered with no token, and every read went on anonymously — `viewer.get` said
+nobody was signed in and a private diff came back Not Found, eight hours into a
+sign-in good for thirty days. Only a write reached `requireToken`'s 401, so
+pressing Approve mended a session a page load could not. `refreshDue` in
+`src/lib/session.ts` names the one state — inside the ceiling, access token
+spent, refresh token live — and the three routes that read the cookie answer it
+with 401 before GitHub is asked: the RPC handler through one middleware over
+every procedure, so the client decodes a sentence rather than a body it cannot
+parse, and `/api/diff` and `/api/file` as `text/plain`. It outranks
+`GITHUB_TOKEN`, or that reviewer's ninth hour would be spent as the deployment's
+own account. A session past the ceiling or with no refresh token gets no 401 and
+is anonymous, as it always was: there is nothing to send the browser to fetch.
+`describeReviewFailure` gives the status the setup button, since by the time a
+401 reaches the panel the refresh has failed and the session is gone.
 
 Inside one tab the same job is a promise. `withRefresh` in
 `src/lib/authFetch.ts` wraps every call this app makes to its own Worker: a 401
@@ -1490,6 +1655,42 @@ not clipped and needs no z-index. Tailwind's preflight zeroes the margin on
 every element and on `::backdrop`, so the centering (`m-auto`) and the backdrop
 colour are set explicitly.
 
+**What `showModal()` does not bring is a landing place.** It focuses the first
+focusable thing it finds, and in every dialog here that is the close button in
+the title bar — so the browser arrived with Enter bound to shutting the window
+the reviewer had just opened. Two things outrank it, in order: the first field,
+because a dialog with one is a dialog you came to type in, and then the control
+the dialog names with `dialogPrimaryAction`.
+
+That naming is the caller's and cannot be inferred, which is the whole reason
+for the attribute. Reading it off the accent — this app draws one filled control
+per screen — is right for the watch-list offer and wrong twice over:
+`ReviewSubmitDialog` offers three verdicts and GitHub gives none of them a
+default, and the account dialog's one button is **Sign out**. A rule that
+guessed would bind Enter to signing the reviewer out. So a dialog with no
+obvious default names nothing and keeps the close button, which is the right
+answer for a window that is only there to be read.
+
+**And every dialog travels between its content heights.** A dialog is centred by
+`m-auto`, so a jump moves all four edges at once and reads as a second window
+arriving in place of the first — the offer going from its question to its
+answer, a row leaving the watch list, a list of pull requests landing where a
+skeleton was. `Dialog` wraps its body in `AnimatedHeight` for all of them, and
+the sticky title bar stays outside that box: the height being measured is the
+body's.
+
+One `AnimatedHeight` inside another is the ordinary case now, because
+`GitHubAccountPanel` keeps its own around the installations alone — the identity
+line above it and **Sign out** below it should not move for an answer that
+arrives between them. The inner box owns the travel. The outer would otherwise
+chase it, since a ResizeObserver reports the inner height on every frame of its
+transition and the outer would restart its own each time, easing an ease. So a
+box with an animating descendant drops its transition and follows frame by
+frame, which is `has-[[data-animating]]` — `:has()` looks at descendants and
+never at self, so the attribute a box sets on itself does not turn its own
+travel off. It is the division `PullRail` already makes for a drag: the gesture
+writes the figure and the transition stands aside.
+
 **A skeleton is a guess at the answer's own shape, and the account panel guesses
 three.** The identity at the top of `GitHubAccountPanel` is on screen the moment
 the panel is, because the session already holds it; everything under the rule is
@@ -1674,8 +1875,8 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.90 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 100 KiB of headroom is
+The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
+Workers free plan and 10 MiB on the paid one. Roughly 74 KiB of headroom is
 left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
 it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
 which carries the lazy loader for all 300-odd grammars, so importing anything

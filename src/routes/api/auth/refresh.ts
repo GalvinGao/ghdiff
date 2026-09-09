@@ -34,8 +34,10 @@ import {
 // browser is holding right now — a cookie this request cannot see, because the
 // browser sent the old one before the new one existed. So this route breaks
 // nothing and lets the caller retry, and the retry carries the newer cookie. In
-// the other case — a refresh token spent by somebody who should not have it —
-// that retry gets 401 from GitHub and the client signs out on that instead. The
+// the other case — a refresh token spent where this browser will never see the
+// result, revoked at github.com or taken — the retry carries the same dead
+// cookie and this Worker answers it 401 again, and `withRefresh` ends the
+// session on that second 401: it is the one place that sees both answers. The
 // wrong guess costs one request; the opposite wrong guess would sign a reviewer
 // out for having two tabs open.
 //

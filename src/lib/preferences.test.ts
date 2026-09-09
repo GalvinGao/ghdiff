@@ -10,12 +10,13 @@ import {
   SIDEBAR_WIDTH_PREFERENCE,
   type PreferenceCodec,
   VIEWER_CONTROLS_PREFERENCE,
+  WATCH_OFFER_PREFERENCE,
   WATCHED_REPOS_PREFERENCE,
 } from './preferences.ts';
 import { DEFAULT_VIEWER_CONTROLS } from './viewerControls.ts';
 
-// Read as one kind, so a rule below is asked of every codec rather than of the
-// nine separately. The two directions are methods, which TypeScript treats as
+// Read as one kind, so a rule below is asked of every codec rather than of each
+// one separately. The two directions are methods, which TypeScript treats as
 // bivariant, so one `unknown` codec stands for all of them.
 const ALL: PreferenceCodec<unknown>[] = [
   CODE_FONT_PREFERENCE,
@@ -25,6 +26,7 @@ const ALL: PreferenceCodec<unknown>[] = [
   RAIL_WIDTH_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
+  WATCH_OFFER_PREFERENCE,
   WATCHED_REPOS_PREFERENCE,
 ];
 
@@ -169,5 +171,46 @@ describe('the left bar and the comment filter', () => {
     assert.equal(COMMENT_AUTHOR_FILTER_PREFERENCE.decode('"people"'), 'people');
     assert.equal(COMMENT_AUTHOR_FILTER_PREFERENCE.decode('"bots"'), 'bots');
     assert.equal(COMMENT_AUTHOR_FILTER_PREFERENCE.decode('all'), undefined);
+  });
+});
+
+describe('the watch offer', () => {
+  it('has been made for nobody until the browser names a repository', () => {
+    // The fallback is what a browser that has never been asked reads, and it
+    // has to be the reading that lets the offer happen.
+    assert.deepEqual(WATCH_OFFER_PREFERENCE.fallback, []);
+  });
+
+  it('reads back the repositories it recorded', () => {
+    const written = WATCH_OFFER_PREFERENCE.encode([
+      { owner: 'facebook', repo: 'react' },
+      { owner: 'ghostty-org', repo: 'ghostty' },
+    ]);
+    assert.notEqual(written, null);
+    assert.deepEqual(WATCH_OFFER_PREFERENCE.decode(written as string), [
+      { owner: 'facebook', repo: 'react' },
+      { owner: 'ghostty-org', repo: 'ghostty' },
+    ]);
+  });
+
+  it('refuses the boolean an older build wrote, and asks once more', () => {
+    // This key held `true` or `false` for one deploy. Neither is an array, so
+    // both read as the empty list — the offer is made again for the repository
+    // on screen, once, and recorded in the shape this build writes. A second
+    // key to remember the old shape would outlive the browsers that hold it.
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('true'), undefined);
+    assert.equal(WATCH_OFFER_PREFERENCE.decode('false'), undefined);
+  });
+
+  it('keeps the rest of the list when one row is not a repository', () => {
+    assert.deepEqual(
+      WATCH_OFFER_PREFERENCE.decode(
+        '[{"owner":"a","repo":"b"},7,{"owner":"c"},{"owner":"d","repo":"e"}]'
+      ),
+      [
+        { owner: 'a', repo: 'b' },
+        { owner: 'd', repo: 'e' },
+      ]
+    );
   });
 });

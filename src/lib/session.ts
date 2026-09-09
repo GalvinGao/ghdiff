@@ -181,6 +181,28 @@ export function sessionLive(payload: SessionPayload, now: number): boolean {
   return accessTokenUsable(payload, now) || refreshable(payload, now);
 }
 
+/**
+ * Whether a request carrying this session has to answer 401 rather than go on
+ * without a token.
+ *
+ * It is the one state where the two are different answers. A spent access token
+ * with a live refresh token behind it is a session `/api/auth/refresh` can mend,
+ * and a 401 is the only thing that sends the browser there: `withRefresh` asks
+ * for the refresh and sends the request again, and nothing else does. A request
+ * that went on anonymously instead would answer with something true and wrong —
+ * no viewer, Not Found for a private diff — and the reviewer would be told to
+ * sign in eight hours after they did, on a cookie good for thirty days.
+ *
+ * Every other reading gets no 401. A live token is used. A session past the
+ * ceiling, or with no refresh token left, is nobody signed in: there is nothing
+ * a refresh could fetch, so the browser is not sent to fetch it.
+ */
+export function refreshDue(payload: SessionPayload, now: number): boolean {
+  if (!withinMaxAge(payload, now)) return false;
+  if (accessTokenUsable(payload, now)) return false;
+  return refreshable(payload, now);
+}
+
 /** What is left of the ceiling, in seconds, for the cookie's own `Max-Age`. */
 export function sessionCookieMaxAge(
   payload: SessionPayload,

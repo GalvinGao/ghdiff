@@ -16,6 +16,7 @@ import {
   RAIL_WIDTH_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
+  WATCH_OFFER_PREFERENCE,
   WATCHED_REPOS_PREFERENCE,
 } from '@/lib/preferences';
 
@@ -150,6 +151,7 @@ export const colorModePreference = preference(COLOR_MODE_PREFERENCE);
 export const codeFontPreference = preference(CODE_FONT_PREFERENCE);
 export const watchedReposPreference = preference(WATCHED_REPOS_PREFERENCE);
 export const viewerControlsPreference = preference(VIEWER_CONTROLS_PREFERENCE);
+export const watchOfferPreference = preference(WATCH_OFFER_PREFERENCE);
 export const railCollapsedPreference = preference(RAIL_COLLAPSED_PREFERENCE);
 export const commentAuthorFilterPreference = preference(
   COMMENT_AUTHOR_FILTER_PREFERENCE

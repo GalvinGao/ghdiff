@@ -37,7 +37,7 @@ export function toPullCommit(commit: GitHubCommitSource): PullCommit {
 /** An actual parent is an ancestor, so compare's merge base is that parent. */
 export function pullCommitDiffTarget(
   pull: GitHubPullTarget,
-  commit: PullCommit
+  commit: Pick<PullCommit, 'sha' | 'parents'>
 ): ReviewTarget {
   const ref = { owner: pull.owner, repo: pull.repo };
   const parent = commit.parents[0];

@@ -1,0 +1,45 @@
+version = 1
+name = "ghdiff"
+
+[setup]
+script = '''
+set -eu
+cd "${CODEX_WORKTREE_PATH:-.}"
+
+if command -v fnm >/dev/null 2>&1; then
+  eval "$(fnm env --shell bash)"
+  fnm use --install-if-missing
+fi
+
+# Keep each worktree's local credentials independent and preserve existing files.
+if [ ! -e .dev.vars ] && [ ! -L .dev.vars ]; then
+  if [ -n "${CODEX_SOURCE_TREE_PATH:-}" ] && [ -f "$CODEX_SOURCE_TREE_PATH/.dev.vars" ]; then
+    (umask 077; cp "$CODEX_SOURCE_TREE_PATH/.dev.vars" .dev.vars)
+  else
+    cp .dev.vars.example .dev.vars
+  fi
+fi
+
+pnpm install --frozen-lockfile
+pnpm cf-typegen
+'''
+
+[[actions]]
+name = "Dev server"
+icon = "run"
+command = "pnpm dev"
+
+[[actions]]
+name = "Test"
+icon = "test"
+command = "pnpm test"
+
+[[actions]]
+name = "Check"
+icon = "tool"
+command = "pnpm lint && pnpm fmt:check && pnpm typecheck && pnpm test"
+
+[[actions]]
+name = "Build"
+icon = "tool"
+command = "pnpm build"

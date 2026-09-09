@@ -77,13 +77,30 @@ export function parseWatchedRepo(input: string): WatchedRepo | undefined {
   return { owner: match[1], repo: match[2] };
 }
 
+/**
+ * One repository's identity, for comparing two of them.
+ *
+ * GitHub treats an owner and a repository name without regard to case, so
+ * `Facebook/React` and `facebook/react` are one repository and every reader of
+ * a list of them has to agree about that. Stated once, and read by everything
+ * that removes, dedupes or looks one up.
+ */
+export function watchedRepoKey(repo: WatchedRepo): string {
+  return formatWatchedRepo(repo).toLowerCase();
+}
+
+/** True when the two name the same repository on GitHub. */
+export function isSameWatchedRepo(a: WatchedRepo, b: WatchedRepo): boolean {
+  return watchedRepoKey(a) === watchedRepoKey(b);
+}
+
 export function dedupeWatchedRepos(
   repos: readonly WatchedRepo[]
 ): WatchedRepo[] {
   const seen = new Set<string>();
   const result: WatchedRepo[] = [];
   for (const repo of repos) {
-    const key = formatWatchedRepo(repo).toLowerCase();
+    const key = watchedRepoKey(repo);
     if (seen.has(key)) continue;
     seen.add(key);
     result.push(repo);

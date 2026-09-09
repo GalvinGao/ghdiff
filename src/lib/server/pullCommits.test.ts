@@ -3,7 +3,11 @@ import { describe, it } from 'node:test';
 
 import type { GitHubCommitSource } from '../pullCommits.ts';
 import { CommentInputError, submitPullComment } from './pullComments.ts';
-import { readPullCommits, requirePullCommit } from './pullCommits.ts';
+import {
+  readCommitParents,
+  readPullCommits,
+  requirePullCommit,
+} from './pullCommits.ts';
 
 const pull = { owner: 'owner', repo: 'repo', number: 7 };
 const sha = (i: number) => i.toString(16).padStart(40, '0');
@@ -60,6 +64,28 @@ describe('PR commit pagination', () => {
         ),
       /250/
     );
+  });
+});
+
+describe('single commit lookup', () => {
+  it('resolves first-parent boundaries without listing the pull request', async () => {
+    const calls: string[] = [];
+    const commit = await readCommitParents(
+      async <T>(path: string) => {
+        calls.push(path);
+        return {
+          sha: sha(7),
+          parents: [{ sha: sha(6) }, { sha: sha(5) }],
+        } as T;
+      },
+      pull,
+      sha(7)
+    );
+    assert.deepEqual(commit, {
+      sha: sha(7),
+      parents: [sha(6), sha(5)],
+    });
+    assert.deepEqual(calls, ['/repos/owner/repo/commits/' + sha(7)]);
   });
 });
 

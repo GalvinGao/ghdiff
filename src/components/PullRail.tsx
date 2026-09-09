@@ -8,6 +8,10 @@ import { type Ref, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
+import {
+  PullHoverCardProvider,
+  usePullHoverCard,
+} from '@/components/PullHoverCard';
 import { PullRequestList } from '@/components/PullRequestList';
 import { isCurrentPull } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
@@ -321,7 +325,11 @@ function RailContent({
               : { transform: `translateY(${String(-ghost.scrollTop)}px)` }
           }
         >
-          {collapsed ? (
+          {collapsed && ghost == null ? (
+            <PullHoverCardProvider>
+              <CollapsedMarks current={current} state={pulls} />
+            </PullHoverCardProvider>
+          ) : collapsed ? (
             <CollapsedMarks current={current} state={pulls} />
           ) : (
             <div className="px-1 pb-2">
@@ -474,6 +482,7 @@ function CollapsedMark({
   current?: GitHubPullTarget;
   pull: PullSummary;
 }) {
+  const hoverCard = usePullHoverCard();
   const isCurrent = isCurrentPull(pull, current);
   const label = `${pull.owner}/${pull.repo} #${String(pull.number)} — ${pull.title}`;
   return (
@@ -494,7 +503,18 @@ function CollapsedMark({
         'hover:bg-raised focus-visible:bg-raised',
         isCurrent && 'ring-accent bg-raised ring-2'
       )}
-      title={label}
+      onPointerEnter={(event) => {
+        if (event.pointerType !== 'touch')
+          hoverCard?.show(pull, event.currentTarget);
+      }}
+      onPointerLeave={() => hoverCard?.leave()}
+      onFocus={(event) => {
+        if (event.currentTarget.matches(':focus-visible')) {
+          hoverCard?.show(pull, event.currentTarget, true);
+        }
+      }}
+      onBlur={() => hoverCard?.leave()}
+      onClick={() => hoverCard?.dismiss()}
     >
       {/* The flip mark goes on this wrapper and not the link: the link also
           carries the hover tone and the current ring, which belong to their
@@ -502,7 +522,7 @@ function CollapsedMark({
           wide bar's row. A row with no status has nothing over there to pair
           with — the wide lane is empty — so its dot crossfades unmarked. */}
       <span
-        className="flex items-center justify-center"
+        className="pointer-events-none flex items-center justify-center"
         data-rail-flip={pull.status == null ? undefined : railPullFlipKey(pull)}
       >
         {pull.status == null ? (

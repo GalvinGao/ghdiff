@@ -1,9 +1,29 @@
 import {
   type GitHubCommitSource,
+  type PullCommit,
   type PullCommitsData,
   toPullCommit,
 } from '../pullCommits.ts';
 import type { GitHubPullTarget } from '../reviewTarget.ts';
+
+interface GitHubCommitParentsSource {
+  sha: string;
+  parents: { sha: string }[];
+}
+
+export async function readCommitParents(
+  fetchJson: <T>(path: string) => Promise<T>,
+  pull: Pick<GitHubPullTarget, 'owner' | 'repo'>,
+  sha: string
+): Promise<Pick<PullCommit, 'sha' | 'parents'>> {
+  const commit = await fetchJson<GitHubCommitParentsSource>(
+    `/repos/${pull.owner}/${pull.repo}/commits/${sha}`
+  );
+  return {
+    sha: commit.sha,
+    parents: commit.parents.map((parent) => parent.sha),
+  };
+}
 
 /** Injected fetch keeps pagination and membership independently testable. */
 export async function readPullCommits(
