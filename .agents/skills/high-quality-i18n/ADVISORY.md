@@ -113,5 +113,4 @@ when integrating.
 The completed 2026-09-09 batch covers all 387 current messages in each of the 19
 target-language catalogs. Separate follow-ups cover the language selector,
 exact-one deletion, unexpected-page errors, clarified GitHub download wording,
-pull-count plurals, and ambiguous call-site meanings. Per-key findings and
-selection notes are retained in `docs/i18n/audit/`.
+pull-count plurals, and ambiguous call-site meanings.
