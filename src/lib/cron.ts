@@ -20,6 +20,13 @@ const ALIASES: Record<string, string> = {
 // as "1W" as 1. Range validation and expansion belong to the parser, not here.
 const FIELD_PART =
   /^(?:\*(?:\/\d{1,2})?|(?:\d{1,2}|[a-z]{3})(?:-(?:\d{1,2}|[a-z]{3})(?:\/\d{1,2})?)?)$/i;
+const FIELD_SEPARATOR = /\s+/;
+const QUOTED_LITERAL = /(["'`])((?:\\.|(?!\1)[^\\\r\n])*)\1/g;
+const SCHEDULE_FIELD =
+  /(?:^|\s)(?:cron|schedule)\s*[:=]\s*([^#\r\n]*)(?:#.*)?$/i;
+const CRONTAB_PATH = /(?:^|\/)(?:crontab|[^/]+\.cron)$|(?:^|\/)cron\.d\//i;
+const CRONTAB_COMMENT = /^\s*#/;
+const CRONTAB_ENTRY = /^\s*(@[a-z]+|\S+(?:[\t ]+\S+){4})(?=[\t ]|$)/;
 
 // Turn sorted, distinct values back into concise input for the descriptor.
 // Only minutes and hours have fixed cycles: */35 is :00 and :35, whereas
@@ -60,7 +67,7 @@ export function describeCron(expression: string): string | undefined {
   if (source === '@reboot') return 'At system startup';
   const fields = (Object.hasOwn(ALIASES, source) ? ALIASES[source]! : source)
     .toUpperCase()
-    .split(/\s+/);
+    .split(FIELD_SEPARATOR);
   if (
     fields.length !== 5 ||
     fields.some((field) =>
@@ -116,18 +123,13 @@ export function findCronSchedules(line: string, path: string): CronSchedule[] {
   };
   // Scan literal boundaries rather than Shiki tokens: one cron string can
   // span several tokens, and token boundaries change with the highlighter.
-  for (const match of line.matchAll(/(["'`])((?:\\.|(?!\1)[^\\\r\n])*)\1/g)) {
+  for (const match of line.matchAll(QUOTED_LITERAL)) {
     add(match[2]!);
   }
-  const field = /(?:^|\s)(?:cron|schedule)\s*[:=]\s*([^#\r\n]*)(?:#.*)?$/i.exec(
-    line
-  );
+  const field = SCHEDULE_FIELD.exec(line);
   if (field != null) add(field[1]!);
-  if (
-    /(?:^|\/)(?:crontab|[^/]+\.cron)$|(?:^|\/)cron\.d\//i.test(path) &&
-    !/^\s*#/.test(line)
-  ) {
-    const entry = /^\s*(@[a-z]+|\S+(?:[\t ]+\S+){4})(?=[\t ]|$)/.exec(line);
+  if (CRONTAB_PATH.test(path) && !CRONTAB_COMMENT.test(line)) {
+    const entry = CRONTAB_ENTRY.exec(line);
     if (entry != null) add(entry[1]!);
   }
   return schedules;
