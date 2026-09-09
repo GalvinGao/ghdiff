@@ -158,15 +158,10 @@ export const ReviewViewer = memo(function ReviewViewer({
       // The stylesheet for the marks below, installed by the library inside
       // each file's shadow root, where no outside selector can reach.
       unsafeCSS: LINE_MARKS_CSS + CRON_SCHEDULES_CSS,
-      onPostRender(node, instance, phase) {
-        if (phase === 'unmount') return;
-        // `fileDiffCache` is protected in the type and a plain getter at
-        // runtime; there is no public path from an instance to its metadata.
-        const fileDiff = (
-          instance as unknown as { fileDiffCache?: FileDiffMetadata }
-        ).fileDiffCache;
-        applyLineMarks(node, fileDiff);
-        applyCronSchedules(node, fileDiff);
+      onPostRender(node, _instance, phase, { item }) {
+        if (phase === 'unmount' || item.type !== 'diff') return;
+        applyLineMarks(node, item.fileDiff);
+        applyCronSchedules(node, item.fileDiff);
       },
     }),
     [

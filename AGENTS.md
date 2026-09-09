@@ -803,9 +803,9 @@ display-menu switch costs no render at all: the stamps stay, and
 through the shadow boundary — is the whole toggle, the same trick `usePaneWidth`
 plays. Marks are cached in a WeakMap per metadata object, which hydration
 mutates in place and a filter change reuses, so an entry cannot go stale.
-`fileDiffCache` is protected in the library's types and a plain getter at
-runtime; the cast in `ReviewViewer` is the one place that leans on it, and a
-library upgrade must re-check it.
+`CodeView` adds the current item context as `onPostRender`'s fourth argument, so
+`ReviewViewer` passes `item.fileDiff` to both annotation passes through that
+public contract rather than reaching into the renderer's protected cache.
 
 One thing GitHub decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review
@@ -816,18 +816,24 @@ and take them anywhere.
 
 **A cron expression says when it runs beside the code.** `src/lib/cron.ts`
 recognizes whole quoted literals, bare `cron` / `schedule` fields, and entries
-in `crontab`, `*.cron`, and `cron.d/` files. It validates standard five-field
-cron before handing it to the English-only `cronstrue` entry: that library
-describes schedules but does not validate them. Six- and seven-field dialects
-are left alone rather than guessing whether a field is seconds or a year. Named
-months and weekdays, lists, ranges, steps and standard aliases are read;
-`@reboot` names startup rather than inventing a period.
+in `crontab`, `*.cron`, and `cron.d/` files. A syntax gate keeps the input to
+standard five-field cron, then `cron-schedule` validates and expands it into
+sorted, distinct field values. The gate is necessary even with a parser:
+`cron-schedule` accepts numeric prefixes such as `1W` as 1. `normalizeField`
+turns the parsed values into concise input for the English-only `cronstrue`
+descriptor, which does not validate schedules itself. Six- and seven-field
+dialects are left alone rather than guessing whether a field is seconds or a
+year. Named months and weekdays, lists, ranges, steps and standard aliases are
+read; `@reboot` names startup rather than inventing a period.
 
 Two readings need more than the library's default words. A step resets at the
 field boundary, so `*/35` is minute 0 and 35 of each hour, not an interval of 35
-minutes. And restricted day-of-month and day-of-week fields are OR in standard
-cron, so their descriptions are explicitly joined with **or**. No timezone is
-inferred from the reviewer's browser.
+minutes. Overlapping lists and Sunday aliases are deduplicated before a
+description is written. Restricted day-of-month and day-of-week fields are OR in
+standard cron, so their descriptions are explicitly joined with **or**. That
+decision uses the original fields: Vixie cron records a leading star, not a star
+anywhere in a list, and normalization must not erase that distinction. No
+timezone is inferred from the reviewer's browser.
 
 `diffCronSchedules.ts` uses the same `onPostRender` and `unsafeCSS` seam as the
 whitespace marks. It reads only rendered rows and caches by node, text and path,
