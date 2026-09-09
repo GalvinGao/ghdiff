@@ -1877,8 +1877,8 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The 20-locale Worker script is about 2.73 MiB gzipped, against a 3 MiB limit on
-the Workers free plan and 10 MiB on the paid one. Roughly 276 KiB of headroom is
+The 20-locale Worker script is about 2.74 MiB gzipped, against a 3 MiB limit on
+the Workers free plan and 10 MiB on the paid one. Roughly 267 KiB of headroom is
 left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
 it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
 which carries the lazy loader for all 300-odd grammars, so importing anything
