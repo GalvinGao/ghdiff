@@ -110,8 +110,5 @@ installation states. This is local setup inspection, not an independent audit.
 The user authorized the catalog/context export. Antigravity returned an
 interrupted stream with no output at its timeout; Codex `gpt-5.6-terra`
 completed translation and independent per-key review for every target locale.
-See [the audit records](../../../docs/i18n/audit/) and
-[I18N.md](../../../I18N.md) for coverage, reconciliation, checks, and rendered
-QA. The initial uncertainties are retained alongside follow-up findings; they
-are not all outstanding issues. AI review does not claim human native-speaker
-validation.
+See [I18N.md](../../../I18N.md) for coverage, checks, and rendered QA. AI review
+does not claim human native-speaker validation.
