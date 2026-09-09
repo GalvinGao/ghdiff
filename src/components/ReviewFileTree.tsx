@@ -135,6 +135,9 @@ const BASE_OPTIONS = {
 const STYLE_OVERRIDES: CSSProperties = {
   '--trees-density-override': TREE_DENSITY,
   '--trees-padding-inline-override': 8,
+  // Virtualized rows remount during scroll. A fading ellipsis briefly exposes
+  // the characters it covers every time a clipped filename returns.
+  '--truncate-marker-fade-in-duration': '0s',
   // Both are the library's own defaults. They are set here because
   // treeStatLaneInset counts them, and a default that moved would take the
   // footer's totals out of the tree's columns without touching this file.
