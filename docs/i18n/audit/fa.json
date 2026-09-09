@@ -1,0 +1,1972 @@
+{
+  "locale": "fa",
+  "auditor": "codex/gpt-5.6-terra",
+  "fallbackReason": "Antigravity interrupted stream and timeout with no output",
+  "initialSourceSha256": "8c239bbcc87799c690b5b0e64dc662da257e49487c1d5d2f009cb211c084b292",
+  "catalogSha256": "b3f694815f7bc73492272693f572c0544a558efd093ff4e7342a9d243bcf400c",
+  "hashFormat": "UTF-8 sorted JSON without separator whitespace for catalogSha256",
+  "reviewedMessageCount": 387,
+  "selectionNotes": {
+    "selection": "ترجمه‌ها با لحن کوتاه و محترمانهٔ فارسی ایران انتخاب شده‌اند؛ نام‌ها، شناسه‌ها، جای‌نگهدارها و تگ‌های نام‌دار حفظ شده‌اند."
+  },
+  "findings": {
+    "color_mode_toggle_auto": {
+      "verdict": "keep",
+      "reason": "کوتاه و طبیعی برای کنترل حالت رنگ است.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_light": {
+      "verdict": "keep",
+      "reason": "برچسب رایج و مناسب حالت روشن است.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_dark": {
+      "verdict": "keep",
+      "reason": "برچسب رایج و مناسب حالت تیره است.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode_switch_to": {
+      "verdict": "change",
+      "reason": "نامزد، اقدام را ناتمام بیان می‌کرد؛ صورت امری با هر دو جای‌نگهدار حفظ شد.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی و مختصر است.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comment_authors": {
+      "verdict": "keep",
+      "reason": "اصطلاحی کوتاه و روشن برای فیلتر نویسندگان نظر است.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_all": {
+      "verdict": "keep",
+      "reason": "برچسب استاندارد فیلتر است.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_person_opened": {
+      "verdict": "change",
+      "reason": "«باز کرده» در فارسی برای ایجاد نظر طبیعی نیست؛ «ایجاد کرده» معنای نویسندگی را روشن می‌کند.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_people": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی دستهٔ افراد است.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_github_app_opened": {
+      "verdict": "change",
+      "reason": "برای حفظ معنای ایجادکنندهٔ نظر، فعل به «ایجاد کرده» تغییر یافت و GitHub App دست‌نخورده ماند.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_bots": {
+      "verdict": "keep",
+      "reason": "معادل رایج و مناسب رابط کاربری است.",
+      "uncertainty": "none"
+    },
+    "comment_body_done": {
+      "verdict": "change",
+      "reason": "نیم‌فاصله برای ترکیب صفتی فارسی لازم است.",
+      "uncertainty": "none"
+    },
+    "comment_body_not_done": {
+      "verdict": "change",
+      "reason": "نیم‌فاصله و صورت صفتی برای وضعیت کامل‌تر است.",
+      "uncertainty": "none"
+    },
+    "comment_composer_leave_a_comment": {
+      "verdict": "keep",
+      "reason": "دعوت مستقیم و طبیعی برای ثبت نظر است.",
+      "uncertainty": "none"
+    },
+    "comment_composer_comment": {
+      "verdict": "keep",
+      "reason": "برچسب کوتاه و رایج است.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cancel": {
+      "verdict": "keep",
+      "reason": "کنترل استاندارد لغو است.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cmd_or_ctrl_with_enter": {
+      "verdict": "change",
+      "reason": "«همراه با» دستور میانبر را طبیعی‌تر بیان می‌کند و نام کلیدها حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "comment_expansion_comment": {
+      "verdict": "keep",
+      "reason": "برچسب مختصر و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_open_thread_by": {
+      "verdict": "change",
+      "reason": "نامزد، رابطهٔ نویسنده با رشته را مبهم و ساختار جمله را ناتمام می‌کرد؛ نسخهٔ جدید کامل و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_posting": {
+      "verdict": "keep",
+      "reason": "وضعیت در حال انجام را دقیق و کوتاه منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_click_to_open": {
+      "verdict": "keep",
+      "reason": "طبیعی و مناسب کنترل است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_delete": {
+      "verdict": "keep",
+      "reason": "برچسب کنترل کوتاه و درست است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_close": {
+      "verdict": "keep",
+      "reason": "برچسب کنترل کوتاه و درست است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_on_github": {
+      "verdict": "keep",
+      "reason": "نام GitHub حفظ شده و عبارت طبیعی است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": {
+      "verdict": "keep",
+      "reason": "نرسیدن نظر و پیامدِ ناتوانی از پاسخ‌دادن حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_on_github": {
+      "verdict": "keep",
+      "reason": "کوتاه و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_in_this_browser": {
+      "verdict": "keep",
+      "reason": "مرز مرورگر محلی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_sending": {
+      "verdict": "keep",
+      "reason": "حالت در حال انجام را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply": {
+      "verdict": "keep",
+      "reason": "برچسب کنترل درست است.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "نام کلیدها دست‌نخورده مانده است.",
+      "uncertainty": "none"
+    },
+    "comments_list_no_comments_here": {
+      "verdict": "keep",
+      "reason": "مختصر و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "comments_list_comments_you_leave_here_are_posted_to_github": {
+      "verdict": "keep",
+      "reason": "مقصد ارسال نظرها را روشن بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "comments_list_github_has_no_review_thread_for_commits_or": {
+      "verdict": "keep",
+      "reason": "نبود رشتهٔ بازبینی و ماندن نظرها در همین مرورگر حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "comments_list_posting": {
+      "verdict": "keep",
+      "reason": "حالت ارسال را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "comments_list_failed": {
+      "verdict": "keep",
+      "reason": "وضعیت خطا را مختصر بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "comments_list_go_to": {
+      "verdict": "keep",
+      "reason": "جای‌نگهدار {path} حفظ شده و ساختار طبیعی است.",
+      "uncertainty": "none"
+    },
+    "confirm_inline_cancel": {
+      "verdict": "keep",
+      "reason": "برچسب رایج و مناسب است.",
+      "uncertainty": "none"
+    },
+    "example_targets_label": {
+      "verdict": "keep",
+      "reason": "هر دو جای‌نگهدار و ساختار برچسب حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "filter_menu_added": {
+      "verdict": "keep",
+      "reason": "وضعیت فایل را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "filter_menu_modified": {
+      "verdict": "change",
+      "reason": "نیم‌فاصله و ساخت واژه در نامزد نادرست بود.",
+      "uncertainty": "none"
+    },
+    "filter_menu_renamed": {
+      "verdict": "change",
+      "reason": "نامزد از نظر نیم‌فاصله و ساخت صفت نادرست بود.",
+      "uncertainty": "none"
+    },
+    "filter_menu_deleted": {
+      "verdict": "keep",
+      "reason": "وضعیت فایل را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "filter_menu_filter_files": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی و مختصر است.",
+      "uncertainty": "none"
+    },
+    "filter_menu_file_rules": {
+      "verdict": "keep",
+      "reason": "معنی قواعد مربوط به فایل‌ها را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "filter_menu_git_status": {
+      "verdict": "keep",
+      "reason": "نام ابزار حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "filter_menu_clear_filters": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی و روشن است.",
+      "uncertainty": "none"
+    },
+    "filter_menu_all_files": {
+      "verdict": "keep",
+      "reason": "معنی کامل حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_control_set_up_access": {
+      "verdict": "keep",
+      "reason": "کنترل مناسب و مختصر است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": {
+      "verdict": "keep",
+      "reason": "وابستگی ارسال نظرها به این حساب حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "معنی نصب در حساب دیگر حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": {
+      "verdict": "keep",
+      "reason": "نفی نصب روی هر حساب و گام بعدی حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_open_setup_guide": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_sign_out": {
+      "verdict": "keep",
+      "reason": "برچسب رایج است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "دسترسی حساب‌ها را درست بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": {
+      "verdict": "keep",
+      "reason": "مقصد github.com و افزودن یا حذف مخزن‌ها حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": {
+      "verdict": "keep",
+      "reason": "بررسی توان دسترسی خواندن ghdiff را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_any_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "هر سه نوع هدف حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "home_screen_narrow_the_file_list_with_preset_path_rules": {
+      "verdict": "keep",
+      "reason": "قواعد مسیر ازپیش‌تنظیم‌شده حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "home_screen_read_and_leave_comments": {
+      "verdict": "keep",
+      "reason": "خواندن و گذاشتن نظر هر دو حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "home_screen_paste_a_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "شناسهٔ owner/repo#123 دست‌نخورده مانده است.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_pull_request_commit_or_compare_url": {
+      "verdict": "keep",
+      "reason": "برچسب ورودی کامل و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_this_diff": {
+      "verdict": "keep",
+      "reason": "کنترل کوتاه و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "home_screen_review": {
+      "verdict": "keep",
+      "reason": "برچسب مناسب است.",
+      "uncertainty": "none"
+    },
+    "home_screen_set_up_access_for_private_repositories": {
+      "verdict": "keep",
+      "reason": "مرز دسترسی مخزن‌های خصوصی حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "home_screen_userscript": {
+      "verdict": "keep",
+      "reason": "نام فنی بدون ترجمه حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "home_screen_examples": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "home_screen_watched_repos": {
+      "verdict": "keep",
+      "reason": "به فهرست محلی اشاره می‌کند و مفهوم اشتراک GitHub نمی‌دهد.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_account": {
+      "verdict": "keep",
+      "reason": "نام GitHub حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "home_screen_source_on_github": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "home_screen_review_the_commit_this_build_was_made_from": {
+      "verdict": "keep",
+      "reason": "کامیت، {sha} و مقصد ghdiff حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "installation_row_current_diff": {
+      "verdict": "keep",
+      "reason": "برچسب مختصر و درست است.",
+      "uncertainty": "none"
+    },
+    "installation_row_configure": {
+      "verdict": "keep",
+      "reason": "کنترل مناسب است.",
+      "uncertainty": "none"
+    },
+    "not_found_ghdiff_cannot_read_that_url": {
+      "verdict": "keep",
+      "reason": "ناتوانی ghdiff در خواندن URL حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "not_found_a_review_needs_a_github_pull_request_a": {
+      "verdict": "keep",
+      "reason": "نیاز به یکی از سه هدف GitHub حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "not_found_open_a_different_review": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": {
+      "verdict": "keep",
+      "reason": "هر دو عمل و ترتیب آن‌ها روشن است.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_loading_pull_request": {
+      "verdict": "keep",
+      "reason": "حالت بارگیری را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_no_details_yet": {
+      "verdict": "keep",
+      "reason": "قید «هنوز» حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_files": {
+      "verdict": "keep",
+      "reason": "برچسب درست است.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_added_lines": {
+      "verdict": "keep",
+      "reason": "مفهوم خطوط افزوده‌شده حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_deleted_lines": {
+      "verdict": "keep",
+      "reason": "مفهوم خطوط حذف‌شده حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_commits": {
+      "verdict": "keep",
+      "reason": "اصطلاح فنی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_description": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "وضعیت باز بودن حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_watched_repos": {
+      "verdict": "keep",
+      "reason": "به فهرست محلی اشاره می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "عمل بارگیری دوباره روشن است.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "حالت بارگیری را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_rail_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "وضعیت باز بودن حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "pull_rail_pull_request_bar_width": {
+      "verdict": "keep",
+      "reason": "برچسب دسترس‌پذیری روشن است.",
+      "uncertainty": "none"
+    },
+    "pull_rail_show_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "pull_rail_hide_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "pull_rail_watched_repos": {
+      "verdict": "keep",
+      "reason": "به فهرست محلی اشاره می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_rail_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "عمل بارگیری دوباره روشن است.",
+      "uncertainty": "none"
+    },
+    "pull_rail_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "حالت بارگیری را درست منتقل می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": {
+      "verdict": "keep",
+      "reason": "افزودن به فهرست محلی را بیان می‌کند و آن را با اشتراک GitHub اشتباه نمی‌گیرد.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_on_github": {
+      "verdict": "keep",
+      "reason": "جای‌نگهدارها و نام GitHub حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_the_open_pull_requests_on_github": {
+      "verdict": "keep",
+      "reason": "جای‌نگهدار {value} و وضعیت باز بودن حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_you": {
+      "verdict": "keep",
+      "reason": "ضمیر مناسب و محترمانه است.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_s_open_pull_requests_in_on_github": {
+      "verdict": "keep",
+      "reason": "جای‌نگهدارها حفظ شده و اضافه‌سازی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_set_up_private_access": {
+      "verdict": "keep",
+      "reason": "مرز دسترسی خصوصی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_signed_out_no_row_shows_a_status_square": {
+      "verdict": "change",
+      "reason": "Supplies both should say they are shown, not merely provided.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_stack": {
+      "verdict": "keep",
+      "reason": "Natural compact label.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_loading_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Natural loading status.",
+      "uncertainty": "none"
+    },
+    "pull_row_label": {
+      "verdict": "keep",
+      "reason": "Placeholder and separator preserved.",
+      "uncertainty": "none"
+    },
+    "pull_row_draft": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_row_currently_viewing": {
+      "verdict": "keep",
+      "reason": "Natural current-state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_open": {
+      "verdict": "keep",
+      "reason": "Correct concise state.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_draft": {
+      "verdict": "keep",
+      "reason": "Correct concise state.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_merged": {
+      "verdict": "keep",
+      "reason": "Correct concise state.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_closed": {
+      "verdict": "keep",
+      "reason": "Correct concise state.",
+      "uncertainty": "none"
+    },
+    "review_header_bars": {
+      "verdict": "keep",
+      "reason": "Natural label.",
+      "uncertainty": "none"
+    },
+    "review_header_signs": {
+      "verdict": "keep",
+      "reason": "Natural label.",
+      "uncertainty": "none"
+    },
+    "review_header_none": {
+      "verdict": "keep",
+      "reason": "Correct neutral option.",
+      "uncertainty": "none"
+    },
+    "review_header_hide_the_file_list": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_header_show_the_file_list": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_header_open_on_github": {
+      "verdict": "keep",
+      "reason": "Placeholder and GitHub preserved.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_unified_view": {
+      "verdict": "keep",
+      "reason": "Natural view-switch action.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_split_view": {
+      "verdict": "keep",
+      "reason": "Natural view-switch action.",
+      "uncertainty": "none"
+    },
+    "review_header_split_view": {
+      "verdict": "keep",
+      "reason": "Correct compact label.",
+      "uncertainty": "none"
+    },
+    "review_header_unified_view": {
+      "verdict": "keep",
+      "reason": "Correct compact label.",
+      "uncertainty": "none"
+    },
+    "review_header_display_settings": {
+      "verdict": "keep",
+      "reason": "Correct settings label.",
+      "uncertainty": "none"
+    },
+    "review_header_code_font": {
+      "verdict": "keep",
+      "reason": "Correct technical label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_markers": {
+      "verdict": "keep",
+      "reason": "Correct display option.",
+      "uncertainty": "none"
+    },
+    "review_header_wrap_long_lines": {
+      "verdict": "keep",
+      "reason": "Natural technical action.",
+      "uncertainty": "none"
+    },
+    "review_header_line_numbers": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_backgrounds": {
+      "verdict": "keep",
+      "reason": "Correct display option.",
+      "uncertainty": "none"
+    },
+    "review_header_dim_whitespace_changes": {
+      "verdict": "change",
+      "reason": "فضای خالی is more natural than فاصلهٔ خالی here.",
+      "uncertainty": "none"
+    },
+    "review_header_approve_request_changes_or_comment": {
+      "verdict": "keep",
+      "reason": "Preserves the three distinct review actions.",
+      "uncertainty": "none"
+    },
+    "review_header_review": {
+      "verdict": "keep",
+      "reason": "Correct concise label.",
+      "uncertainty": "none"
+    },
+    "review_header_review_it_again": {
+      "verdict": "keep",
+      "reason": "Placeholder and imperative meaning preserved.",
+      "uncertainty": "none"
+    },
+    "review_screen_sidebar_width": {
+      "verdict": "keep",
+      "reason": "Correct setting label.",
+      "uncertainty": "none"
+    },
+    "review_screen_dismiss": {
+      "verdict": "keep",
+      "reason": "Correct concise dismissal action.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_sidebar_sections": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_files": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_threads_comments": {
+      "verdict": "keep",
+      "reason": "Persian nouns do not require singular-plural inflection; declarations and wildcard branches are preserved.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_comments": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_hide_the_path_search": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_by_path": {
+      "verdict": "keep",
+      "reason": "Correct search label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_the_current_filter_hides_all_files": {
+      "verdict": "keep",
+      "reason": "Preserves the filter consequence.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_filters": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_added_lines": {
+      "verdict": "keep",
+      "reason": "Correct diff terminology.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Correct diff terminology.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_files_by_path": {
+      "verdict": "keep",
+      "reason": "Correct search prompt.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_path_contains": {
+      "verdict": "keep",
+      "reason": "Correct concise placeholder.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_the_path_search": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_fetching_the_diff": {
+      "verdict": "change",
+      "reason": "Plural تفاوت‌ها is more natural for a diff display.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_reading_the_patch_for_this_review": {
+      "verdict": "keep",
+      "reason": "Correct progress sentence.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_preparing_the_diff": {
+      "verdict": "change",
+      "reason": "Plural تفاوت‌ها is more natural for a diff display.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": {
+      "verdict": "keep",
+      "reason": "Correct progress sentence.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_starting_the_highlighters": {
+      "verdict": "keep",
+      "reason": "Correct progress label.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": {
+      "verdict": "keep",
+      "reason": "Natural explanation of background processing.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_set_up_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct access-setup action.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_try_again": {
+      "verdict": "keep",
+      "reason": "Correct recovery action.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub requirement.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": {
+      "verdict": "keep",
+      "reason": "Preserves the self-review approval restriction.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": {
+      "verdict": "keep",
+      "reason": "Preserves the self-review requested-changes restriction.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": {
+      "verdict": "change",
+      "reason": "Added هیچ preserves the exclusive limitation more explicitly.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": {
+      "verdict": "keep",
+      "reason": "Preserves requirement for both actions.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_submit_a_review": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_review_body": {
+      "verdict": "keep",
+      "reason": "Correct field label.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_leave_a_note_with_your_review": {
+      "verdict": "keep",
+      "reason": "Natural instruction.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_label": {
+      "verdict": "keep",
+      "reason": "Both placeholders and separator preserved.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_diff": {
+      "verdict": "change",
+      "reason": "Plural تفاوت‌ها is more natural for the displayed diff.",
+      "uncertainty": "none"
+    },
+    "review_viewer_hide_the_diff": {
+      "verdict": "change",
+      "reason": "Plural تفاوت‌ها is more natural for the displayed diff.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_whole_file": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_viewer_viewed": {
+      "verdict": "keep",
+      "reason": "Correct completed-state label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_set_up_private_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct setup heading.",
+      "uncertainty": "none"
+    },
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub access boundary and ordered steps.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_to_github": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_identifies_your_account_to_github_any_comments": {
+      "verdict": "keep",
+      "reason": "Preserves account attribution consequence.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_with_github": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_grant_repository_access": {
+      "verdict": "change",
+      "reason": "Adding به clarifies the object of granted access.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": {
+      "verdict": "keep",
+      "reason": "Preserves that sign-in does not grant access.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": {
+      "verdict": "change",
+      "reason": "Added قرار دارد improves grammatical naturalness while preserving {account}.",
+      "uncertainty": "none"
+    },
+    "setup_screen_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_ghdiff": {
+      "verdict": "keep",
+      "reason": "Product name preserved.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_checking": {
+      "verdict": "keep",
+      "reason": "Correct progress label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_check_again": {
+      "verdict": "keep",
+      "reason": "Correct retry action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_open_the_diff": {
+      "verdict": "change",
+      "reason": "Plural تفاوت‌ها is more natural for the diff display.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_the_home_page_to_paste_a": {
+      "verdict": "keep",
+      "reason": "معنا و لحن درست است.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": {
+      "verdict": "keep",
+      "reason": "بازگشت و دریافت دوباره با مجوزهای جدید را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_ghdiff_home": {
+      "verdict": "keep",
+      "reason": "برچسب کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_the_diff": {
+      "verdict": "keep",
+      "reason": "برچسب کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": {
+      "verdict": "keep",
+      "reason": "نبود پیکربندی و دسترسی به تفاوت‌های عمومی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_now_uses_a_github_app": {
+      "verdict": "keep",
+      "reason": "معنا و نام محصول حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": {
+      "verdict": "keep",
+      "reason": "حذف محلی توکن و اعتبار باقی‌مانده در GitHub را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "setup_screen_delete_the_token_on_github": {
+      "verdict": "keep",
+      "reason": "اقدام روشن و مختصر است.",
+      "uncertainty": "none"
+    },
+    "userscript_install_add_a_ghdiff_button_to_github_com": {
+      "verdict": "keep",
+      "reason": "نام‌ها و مقصد حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "userscript_install_install": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch_this_repository": {
+      "verdict": "keep",
+      "reason": "به‌صراحت افزودن به فهرست محلی را می‌رساند.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch": {
+      "verdict": "keep",
+      "reason": "placeholder و معنای فهرست محلی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_keep_reviewing": {
+      "verdict": "keep",
+      "reason": "کنترل مختصر و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": {
+      "verdict": "keep",
+      "reason": "محلی‌بودن فهرست در مرورگر را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_not_now": {
+      "verdict": "keep",
+      "reason": "امتناع خنثی و مناسب کنترل است.",
+      "uncertainty": "none"
+    },
+    "watched_repos_dialog_watched_repositories": {
+      "verdict": "keep",
+      "reason": "عنوان با مفهوم فهرست محلی سازگار است.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": {
+      "verdict": "keep",
+      "reason": "درخواست‌های ادغام باز و ماندگاری محلی فهرست را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_enter_a_repository_as_owner_repo": {
+      "verdict": "keep",
+      "reason": "شناسهٔ owner/repo بدون تغییر مانده است.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_owner_repo": {
+      "verdict": "keep",
+      "reason": "شناسهٔ ورودی دقیقاً حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_repository_to_watch": {
+      "verdict": "keep",
+      "reason": "از معنای اشتراک GitHub پرهیز می‌کند.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_add": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_nothing_watched_yet": {
+      "verdict": "keep",
+      "reason": "فهرست خالی را روشن بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_remove": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "dialog_close": {
+      "verdict": "keep",
+      "reason": "کنترل طبیعی است.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_could_not_read_that_file_from_github": {
+      "verdict": "keep",
+      "reason": "خطای خواندن را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": {
+      "verdict": "keep",
+      "reason": "تغییر فایل و گام بازیابی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_request_failed": {
+      "verdict": "keep",
+      "reason": "placeholder حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "حساب واردشده را بدون فرض جنسیت بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_installations_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "change",
+      "reason": "«بررسی کند کجا نصب شده» در فارسی طبیعی‌تر از «محل نصب را بخواند» است.",
+      "uncertainty": "none"
+    },
+    "use_open_pulls_could_not_load_pull_requests": {
+      "verdict": "keep",
+      "reason": "خطای بارگیری را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_pull_details_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "خطای بارگیری را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "خطای بارگیری را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_that_comment_to_github": {
+      "verdict": "keep",
+      "reason": "ارسال نشدن نظر به GitHub را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_this_reply_to_github": {
+      "verdict": "keep",
+      "reason": "ارسال نشدن پاسخ به GitHub را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": {
+      "verdict": "keep",
+      "reason": "ناموفق‌بودن حذف و گام بررسی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_request_failed": {
+      "verdict": "keep",
+      "reason": "placeholder حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "خطای بارگیری را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_submit_review_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "ارسال‌نشدن بازبینی را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "use_viewed_files_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "خطای ارسال نشان را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "code_fonts_system": {
+      "verdict": "keep",
+      "reason": "برچسب رایج و کوتاه است.",
+      "uncertainty": "none"
+    },
+    "diff_hydration_that_file_is_too_large_to_show_its": {
+      "verdict": "keep",
+      "reason": "محدودیت اندازه و خطوط تغییرنیافته را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "example_targets_rewrite_bun_in_rust": {
+      "verdict": "keep",
+      "reason": "نام‌های فنی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "example_targets_2_188_files_1_0m_lines": {
+      "verdict": "keep",
+      "reason": "قالب عددی فارسی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_largest_of_them_43_mb_of_unified": {
+      "verdict": "keep",
+      "reason": "اندازه و شمار کامیت‌ها حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "example_targets_resolve_maimai_net_import_pr_conflicts": {
+      "verdict": "keep",
+      "reason": "PR و تداخل‌ها از هم متمایز مانده‌اند.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_494k_lines": {
+      "verdict": "keep",
+      "reason": "قالب عددی فارسی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "example_targets_one_generated_json_file_holds_465_486_of": {
+      "verdict": "keep",
+      "reason": "فایل تولیدشده و شمار خطوط حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "example_targets_deps_update_v8_to_14_1": {
+      "verdict": "change",
+      "reason": "شمارهٔ نسخه یک شناسهٔ فنی است و باید با رقم‌های اصلی حفظ شود.",
+      "uncertainty": "none"
+    },
+    "example_targets_3_420_files_268k_lines": {
+      "verdict": "keep",
+      "reason": "قالب عددی فارسی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_widest_file_tree_past_the_api_diff": {
+      "verdict": "change",
+      "reason": "«ارائه نمی‌شود» نتیجهٔ خارج‌شدن از میزبان وب را دقیق‌تر از «دریافت نمی‌شود» بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": {
+      "verdict": "keep",
+      "reason": "شناسه‌های فنی دست‌نخورده مانده‌اند.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_88k_lines": {
+      "verdict": "keep",
+      "reason": "قالب عددی فارسی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "example_targets_large_and_still_a_diff_a_person_can": {
+      "verdict": "keep",
+      "reason": "تقابل اندازه و خواندنی‌بودن حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "example_targets_ghostty_1_3_0_to_1_3_1": {
+      "verdict": "keep",
+      "reason": "نسخه‌ها به‌عنوان شناسهٔ فنی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "example_targets_53_files_2_6k_lines": {
+      "verdict": "keep",
+      "reason": "قالب عددی فارسی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "example_targets_a_compare_range_of_one_release_100_commits": {
+      "verdict": "keep",
+      "reason": "بازهٔ مقایسه و محلی‌بودن نظرها را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "filter_rules_all_files": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_every_file_in_the_diff": {
+      "verdict": "keep",
+      "reason": "معنا کامل است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_tests": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "اصطلاحات فنی و معنا حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "filter_rules_tests_only": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "معنا کامل است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_source_only": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_code_files_that_are_not_tests": {
+      "verdict": "keep",
+      "reason": "هر دو قید نفی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "filter_rules_docs_only": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_markdown_and_other_prose_files": {
+      "verdict": "keep",
+      "reason": "Markdown و فایل‌های متنی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "filter_rules_config_only": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": {
+      "verdict": "keep",
+      "reason": "اصطلاحات فنی و معنا حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_generated": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "اقلام فنی دقیقاً حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "filter_rules_generated_only": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "اقلام فنی دقیقاً حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_app_sign_in_was_not_completed_on_github_try": {
+      "verdict": "keep",
+      "reason": "ناموفق‌بودن ورود و گام بعدی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "github_app_the_sign_in_session_timed_out_on_github": {
+      "verdict": "keep",
+      "reason": "انقضای نشست و اقدام بازیابی روشن است.",
+      "uncertainty": "none"
+    },
+    "github_app_security_verification_failed_during_github_sign_in_start": {
+      "verdict": "keep",
+      "reason": "شکست تأیید امنیتی و مبدأ شروع دوباره حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_app_github_could_not_complete_the_sign_in_try": {
+      "verdict": "keep",
+      "reason": "ناموفق‌بودن GitHub و توصیهٔ زمانی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "installations_all_repositories": {
+      "verdict": "keep",
+      "reason": "برچسب طبیعی است.",
+      "uncertainty": "none"
+    },
+    "installations_no_repositories_selected": {
+      "verdict": "change",
+      "reason": "وضعیت کوتاه انگلیسی نقطه ندارد؛ حذف نقطه با سطح UI سازگارتر است.",
+      "uncertainty": "none"
+    },
+    "pull_details_just_now": {
+      "verdict": "keep",
+      "reason": "عبارت زمانی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "pull_status_approved": {
+      "verdict": "keep",
+      "reason": "وضعیت تأیید بازبینی را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested": {
+      "verdict": "keep",
+      "reason": "مختصر و مناسب وضعیت بازبینی است.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_review_yet": {
+      "verdict": "keep",
+      "reason": "نفی و زمان‌بندی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_passing": {
+      "verdict": "keep",
+      "reason": "بررسی‌های خودکار را از بازبینی انسانی جدا می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_running": {
+      "verdict": "keep",
+      "reason": "وضعیت در حال اجرا روشن است.",
+      "uncertainty": "none"
+    },
+    "pull_status_a_check_failed": {
+      "verdict": "change",
+      "reason": "«ناموفق شد» شکست بررسی را طبیعی‌تر بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_checks": {
+      "verdict": "keep",
+      "reason": "نبود بررسی خودکار را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested_new_commits_since": {
+      "verdict": "change",
+      "reason": "نقطه‌ویرگول دو وضعیت را برای برچسب UI روشن‌تر جدا می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_data_commit": {
+      "verdict": "keep",
+      "reason": "اصطلاح فنی و جای‌نگهدار حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "review_decision_approve": {
+      "verdict": "keep",
+      "reason": "برچسب کنترلی کوتاه و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "review_decision_approving": {
+      "verdict": "keep",
+      "reason": "حالت در حال انجام را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_decision_request_changes": {
+      "verdict": "change",
+      "reason": "معنای رأی بازبینی را کامل‌تر می‌رساند.",
+      "uncertainty": "none"
+    },
+    "review_decision_requesting": {
+      "verdict": "change",
+      "reason": "باید مشخص کند درخواست مربوط به تغییرات است.",
+      "uncertainty": "none"
+    },
+    "review_decision_comment": {
+      "verdict": "keep",
+      "reason": "برچسب کوتاه و رایج است.",
+      "uncertainty": "none"
+    },
+    "review_decision_commenting": {
+      "verdict": "keep",
+      "reason": "ثبت نظر را به‌درستی بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_decision_approved": {
+      "verdict": "keep",
+      "reason": "نتیجهٔ تأیید را درست بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_decision_changes_requested": {
+      "verdict": "keep",
+      "reason": "نتیجهٔ ثبت درخواست تغییرات را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_decision_commented": {
+      "verdict": "keep",
+      "reason": "نتیجهٔ ثبت نظر روشن است.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_approved_this_pull_request": {
+      "verdict": "keep",
+      "reason": "کنش کاربر و درخواست ادغام حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_requested_changes_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "رأی درخواست تغییرات را دقیق حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_commented_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "کنش کاربر را طبیعی بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_decision_github_recorded_your_review": {
+      "verdict": "keep",
+      "reason": "عامل و نتیجه حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "review_failure_the_server_didn_t_respond_your_connection_might": {
+      "verdict": "change",
+      "reason": "قطع اینترنت و پایان مهلت درخواست طبیعی‌تر و دقیق‌تر بیان شده‌اند.",
+      "uncertainty": "none"
+    },
+    "review_failure_you_used_all_5_000_github_requests_for": {
+      "verdict": "keep",
+      "reason": "سقف، بازنشانی و گام بعدی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "review_failure_hourly_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "عنوان خطا کوتاه و روشن است.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": {
+      "verdict": "keep",
+      "reason": "مرز دسترسی بدون ورود و راه بازیابی حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "عنوان خطا دقیق است.",
+      "uncertainty": "none"
+    },
+    "review_failure_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "نامعتبر بودن ورود، ناتوانی ghdiff و راه بازیابی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_sign_in_expired": {
+      "verdict": "keep",
+      "reason": "عنوان خطا طبیعی است.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": {
+      "verdict": "keep",
+      "reason": "علت‌های احتمالی و مرز مجوز را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_failure_ghdiff_needs_access_to_this_repository": {
+      "verdict": "change",
+      "reason": "افزودن «این» ارجاع به مخزن جاری را روشن می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returns_not_found_for_private_repositories_when": {
+      "verdict": "keep",
+      "reason": "شرط خروج از حساب و گام بعدی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "review_failure_repository_not_found_or_private": {
+      "verdict": "keep",
+      "reason": "ابهام میان نبودن و خصوصی‌بودن را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_failure_could_not_load_the_diff": {
+      "verdict": "keep",
+      "reason": "کنش ناموفق را کوتاه و روشن بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "contract_enter_a_valid_github_username_or_repository_name": {
+      "verdict": "keep",
+      "reason": "ورودی‌های معتبر را دقیق مشخص می‌کند.",
+      "uncertainty": "none"
+    },
+    "contract_comment_cannot_be_empty": {
+      "verdict": "keep",
+      "reason": "محدودیت ورودی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "router_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "معنای حساب واردشده حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "router_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "محل نصب ghdiff را درست بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_repository": {
+      "verdict": "keep",
+      "reason": "خطا و هدف بارگیری روشن‌اند.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "درخواست ادغام از عمل ادغام متمایز است.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_your_review_of_this_pull": {
+      "verdict": "keep",
+      "reason": "بازبینی کاربر را دقیق حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_review_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "پذیرش همراه با نبود داده را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "router_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "کنش ناموفق روشن است.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "جمع نظرها طبیعی است.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_reply_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "تضاد پذیرش و نبود پاسخ حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "router_this_comment_is_missing_a_file_or_line": {
+      "verdict": "keep",
+      "reason": "هر دو جزء الزامی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_comment_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "معنای منبع حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "router_could_not_post_this_comment": {
+      "verdict": "keep",
+      "reason": "ارسال نظر را درست بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "router_could_not_delete_this_comment": {
+      "verdict": "keep",
+      "reason": "حذف نظر را درست بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_which_files_you_have_read": {
+      "verdict": "keep",
+      "reason": "وضعیت فایل‌های خوانده‌شده را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "router_not_found": {
+      "verdict": "keep",
+      "reason": "عنوان استاندارد و کوتاه است.",
+      "uncertainty": "none"
+    },
+    "router_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "ارسال نشان به GitHub را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "auth_route_this_ghdiff_has_no_github_app_set_up": {
+      "verdict": "keep",
+      "reason": "نبود پیکربندی و پیامد ورود حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "وضعیت و گام ادامه‌دادن حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_github_rejected_that_query": {
+      "verdict": "keep",
+      "reason": "رد شدن پرس‌وجو روشن است.",
+      "uncertainty": "none"
+    },
+    "github_github_returned_no_data_for_that_query": {
+      "verdict": "keep",
+      "reason": "نبود داده را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "github_github_has_no_such_file_on_that_commit": {
+      "verdict": "keep",
+      "reason": "نبود فایل و نیاز مخزن خصوصی به توکن حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_app_github_would_not_revoke_that_token": {
+      "verdict": "change",
+      "reason": "«حاضر نشد» امتناع را حفظ می‌کند؛ گذشتهٔ قطعی آن را تغییر می‌داد.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_for_that_token_request": {
+      "verdict": "keep",
+      "reason": "جای‌نگهدار و معنای پاسخ حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_app_github_refused_that": {
+      "verdict": "keep",
+      "reason": "جای‌نگهدار و علت خطا حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_with_no_access_token": {
+      "verdict": "keep",
+      "reason": "نبود توکن دسترسی روشن است.",
+      "uncertainty": "none"
+    },
+    "github_patch_github_lists_at_most_files_for_this_diff": {
+      "verdict": "keep",
+      "reason": "حد فهرست و پیامد نبودن فایل‌های بعدی حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "installations_an_account": {
+      "verdict": "keep",
+      "reason": "عبارت طبیعی و کوتاه است.",
+      "uncertainty": "none"
+    },
+    "stream_text_that_response_is_too_large_to_read": {
+      "verdict": "keep",
+      "reason": "محدودیت اندازه را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "diff_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "هدف بازبینی را درست متمایز می‌کند.",
+      "uncertainty": "none"
+    },
+    "diff_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "خطای بارگیری تفاوت روشن است.",
+      "uncertainty": "none"
+    },
+    "diff_that_request_to_github_failed": {
+      "verdict": "keep",
+      "reason": "شکست درخواست به GitHub روشن است.",
+      "uncertainty": "none"
+    },
+    "file_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "هدف بازبینی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "file_that_file_path_is_not_valid": {
+      "verdict": "keep",
+      "reason": "مسیر فایل را دقیق بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "file_could_not_load_that_file": {
+      "verdict": "keep",
+      "reason": "خطای بارگیری فایل روشن است.",
+      "uncertainty": "none"
+    },
+    "route_no_such_procedure": {
+      "verdict": "keep",
+      "reason": "پیام فنی طبیعی است.",
+      "uncertainty": "none"
+    },
+    "common_file_count": {
+      "verdict": "keep",
+      "reason": "صورت مفرد و جمع فارسی یکسان است و شاخهٔ wildcard کامل است.",
+      "uncertainty": "none"
+    },
+    "common_commit_count": {
+      "verdict": "keep",
+      "reason": "صورت مفرد و جمع فارسی یکسان است و قالب‌بندی عدد حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "common_comment_count": {
+      "verdict": "keep",
+      "reason": "شاخه‌ها برای فارسی طبیعی و کامل‌اند.",
+      "uncertainty": "none"
+    },
+    "common_reply_count": {
+      "verdict": "keep",
+      "reason": "شاخه‌ها و قالب‌بندی عدد حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "common_repository_count": {
+      "verdict": "keep",
+      "reason": "اصطلاح مخزن و شاخه‌ها درست‌اند.",
+      "uncertainty": "none"
+    },
+    "home_served_count": {
+      "verdict": "keep",
+      "reason": "تعداد قالب‌بندی‌شده و معنای ارائه‌شدن حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "filter_hidden_count": {
+      "verdict": "keep",
+      "reason": "برچسب کوتاه و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "filter_status_summary": {
+      "verdict": "keep",
+      "reason": "مقدار پایه، تعداد و جداکننده حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "stack_pull_count": {
+      "verdict": "keep",
+      "reason": "پشته و درخواست ادغام را دقیق حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "comment_line": {
+      "verdict": "keep",
+      "reason": "شمارهٔ خط و جای‌نگهدار حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "comment_line_range": {
+      "verdict": "change",
+      "reason": "«نظر روی» طبیعی نیست؛ ساختار فعلی دامنهٔ خطوط را روشن می‌کند.",
+      "uncertainty": "none"
+    },
+    "sidebar_file_summary": {
+      "verdict": "keep",
+      "reason": "شاخه‌های قابل‌دسترسی فارسی و قالب‌بندی عدد حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "home_credits": {
+      "verdict": "change",
+      "reason": "نام‌های renderer حفظ شدند و جملهٔ ناقص به جمله‌ای طبیعی تبدیل شد.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_phone": {
+      "verdict": "keep",
+      "reason": "مقصد واقعی نسخهٔ تلفن و معنای درخواست ادغام حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_wide": {
+      "verdict": "keep",
+      "reason": "به نوار سمت چپ اشاره می‌کند و با فهرست محلی اشتباه گرفته نمی‌شود.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_phone": {
+      "verdict": "keep",
+      "reason": "اقدام افزودن به فهرست محلی و مقصد تلفن را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_wide": {
+      "verdict": "keep",
+      "reason": "کنترل نام‌گذاری‌شده و محل آن در نوار حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_phone": {
+      "verdict": "change",
+      "reason": "«فهرست درخواست‌های ادغام» برای مقصد تلفن صریح‌تر است.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_wide": {
+      "verdict": "keep",
+      "reason": "بازبینی انسانی را از بررسی‌های خودکار جدا نگه می‌دارد.",
+      "uncertainty": "none"
+    },
+    "watch_offer_action": {
+      "verdict": "keep",
+      "reason": "صریحاً افزودن به فهرست محلی است و معنای اشتراک GitHub نمی‌دهد.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_title": {
+      "verdict": "change",
+      "reason": "حالت افزوده‌شدن را کامل و طبیعی بیان می‌کند.",
+      "uncertainty": "none"
+    },
+    "pull_opened_age": {
+      "verdict": "change",
+      "reason": "نیم‌فاصله و صورت رایج‌تر برچسب وضعیت استفاده شد.",
+      "uncertainty": "none"
+    },
+    "pull_updated_age": {
+      "verdict": "keep",
+      "reason": "کوتاه، طبیعی و مناسب برچسب رابط است.",
+      "uncertainty": "none"
+    },
+    "tree_directory_summary": {
+      "verdict": "keep",
+      "reason": "شاخه‌های عددی و مقدارهای پویا بدون تغییر حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "pull_list_empty": {
+      "verdict": "keep",
+      "reason": "نفی و دامنهٔ مخزن‌ها را درست حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "review_submit_scope": {
+      "verdict": "keep",
+      "reason": "دامنهٔ کل درخواست ادغام و محل ارسال نظرهای خطی روشن است.",
+      "uncertainty": "none"
+    },
+    "review_previous_verdict": {
+      "verdict": "change",
+      "reason": "«جدیدی» برای جملهٔ کامل و مرجع بازبینی لازم بود.",
+      "uncertainty": "none"
+    },
+    "setup_not_installed": {
+      "verdict": "keep",
+      "reason": "احتمال نیاز به تأیید مالک، بدون تبدیل به قطعیت، حفظ شده است.",
+      "uncertainty": "none"
+    },
+    "setup_no_repositories": {
+      "verdict": "keep",
+      "reason": "نصب‌شدن را از دسترسی نداشتن به مخزن‌ها جدا می‌کند.",
+      "uncertainty": "none"
+    },
+    "userscript_manager_description": {
+      "verdict": "change",
+      "reason": "اصطلاح طبیعی‌تر «مدیر اسکریپت کاربر» به‌کار رفت و کنترل‌های GitHub دست‌نخورده ماندند.",
+      "uncertainty": "none"
+    },
+    "pull_row_tooltip": {
+      "verdict": "keep",
+      "reason": "خطوط، placeholderها و جهت ادغام حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "pull_status_description": {
+      "verdict": "keep",
+      "reason": "دو مقدار پویا و جداکننده بدون تغییر حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "auth_required_review": {
+      "verdict": "keep",
+      "reason": "پیش‌نیاز دسترسی پیش از ارسال بازبینی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "auth_required_delete": {
+      "verdict": "keep",
+      "reason": "پیش‌نیاز دسترسی پیش از حذف نظر را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "auth_required_viewed": {
+      "verdict": "keep",
+      "reason": "پیش‌نیاز دسترسی و عمل مشاهده‌شده‌کردن فایل حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "bytes_count": {
+      "verdict": "keep",
+      "reason": "واحد فارسی در هر دو شاخه درست است.",
+      "uncertainty": "none"
+    },
+    "bytes_kilobytes": {
+      "verdict": "keep",
+      "reason": "واحد فنی و placeholder حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "bytes_megabytes": {
+      "verdict": "keep",
+      "reason": "واحد فنی و placeholder حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "app_description": {
+      "verdict": "keep",
+      "reason": "سه نوع هدف، قواعد مسیر و ارسال نظرهای خطی را حفظ می‌کند.",
+      "uncertainty": "none"
+    },
+    "thread_delete_confirmation": {
+      "verdict": "keep",
+      "reason": "حذف در GitHub و بازگشت‌ناپذیری در هر دو شاخه حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "github_patch_missing_files": {
+      "verdict": "change",
+      "reason": "«نمایش تفاوت‌ها» از «تفاوت‌گیری» طبیعی‌تر است و علت و پیامد را نگه می‌دارد.",
+      "uncertainty": "none"
+    },
+    "userscript_open_pull": {
+      "verdict": "keep",
+      "reason": "کنترل کوتاه و نام محصول دست‌نخورده است.",
+      "uncertainty": "none"
+    },
+    "userscript_open_commit": {
+      "verdict": "keep",
+      "reason": "کنترل کوتاه و نام محصول دست‌نخورده است.",
+      "uncertainty": "none"
+    },
+    "userscript_description": {
+      "verdict": "keep",
+      "reason": "محل‌های دقیق دکمه و نام GitHub حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "diff_expand_all": {
+      "verdict": "keep",
+      "reason": "برچسب کنترل کوتاه و روشن است.",
+      "uncertainty": "none"
+    },
+    "diff_no_newline": {
+      "verdict": "keep",
+      "reason": "معنای فنی دقیق و طبیعی است.",
+      "uncertainty": "none"
+    },
+    "tree_git_contains_changes": {
+      "verdict": "keep",
+      "reason": "اصطلاح git و معنای موارد وضعیت حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "review_bytes_read": {
+      "verdict": "keep",
+      "reason": "placeholder و حالت خوانده‌شدن حفظ شده‌اند.",
+      "uncertainty": "none"
+    },
+    "tree_git_added": {
+      "verdict": "keep",
+      "reason": "وضعیت git دقیق است.",
+      "uncertainty": "none"
+    },
+    "tree_git_deleted": {
+      "verdict": "keep",
+      "reason": "وضعیت git دقیق است.",
+      "uncertainty": "none"
+    },
+    "tree_git_ignored": {
+      "verdict": "keep",
+      "reason": "وضعیت git دقیق است.",
+      "uncertainty": "none"
+    },
+    "tree_git_modified": {
+      "verdict": "change",
+      "reason": "صورت «تغییریافته» طبیعی‌تر و درست‌تر است.",
+      "uncertainty": "none"
+    },
+    "tree_git_renamed": {
+      "verdict": "keep",
+      "reason": "وضعیت git دقیق است.",
+      "uncertainty": "none"
+    },
+    "tree_git_untracked": {
+      "verdict": "keep",
+      "reason": "وضعیت git دقیق است.",
+      "uncertainty": "none"
+    },
+    "diff_unmodified_lines": {
+      "verdict": "keep",
+      "reason": "شاخه‌های قابل‌دسترسی فارسی و معنای خط‌های بدون تغییر حفظ شده‌اند.",
+      "uncertainty": "none"
+    }
+  },
+  "followUpFindings": {
+    "locale_language": "Candidate is suitable as the accessible name.",
+    "thread_delete_confirmation": "Restored the exact-count selector so only count=1 means one comment; every other count shows the formatted total.",
+    "app_render_error": "Changed reset to explicit page reload.",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "درست است؛ محدودیت API و بارگیری از وب‌سایت GitHub را حفظ می‌کند.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "0 和 1 为 one；其余验证值匹配 wildcard。"
+  },
+  "reconciledKeys": [
+    "comment_thread_card_open_thread_by",
+    "comments_list_go_to",
+    "home_screen_review_the_commit_this_build_was_made_from",
+    "pull_request_list_open_on_github",
+    "pull_request_list_open_the_open_pull_requests_on_github",
+    "pull_request_list_open_s_open_pull_requests_in_on_github",
+    "review_header_open_on_github",
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on",
+    "watch_offer_dialog_watch",
+    "example_targets_the_widest_file_tree_past_the_api_diff",
+    "filter_status_summary",
+    "comment_line",
+    "comment_line_range",
+    "watch_offer_more_phone",
+    "watch_offer_more_wide",
+    "watch_offer_action",
+    "watch_offer_added_title",
+    "review_submit_scope",
+    "setup_not_installed",
+    "setup_no_repositories",
+    "pull_row_tooltip",
+    "github_patch_missing_files",
+    "app_render_error"
+  ],
+  "humanNativeSpeakerReview": false
+}

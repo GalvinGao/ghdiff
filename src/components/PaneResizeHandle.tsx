@@ -4,6 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
 
 // The seam at the edge of a resizable pane.
@@ -53,7 +54,7 @@ export function PaneResizeHandle({
       aria-valuemin={min}
       aria-valuemax={max}
       tabIndex={0}
-      title="Drag to resize. Double click to reset."
+      title={m.pane_resize_handle_drag_to_resize_double_click_to_reset()}
       onPointerDown={onPointerDown}
       onKeyDown={onKeyDown}
       onDoubleClick={onReset}

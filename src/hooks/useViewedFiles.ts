@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import { type ReviewTarget, reviewTargetKey } from '@/lib/reviewTarget';
@@ -170,7 +171,10 @@ export function useViewedFiles(options: {
             return reverted;
           });
           setError(
-            rpcErrorMessage(cause, 'Could not send that mark to GitHub.')
+            rpcErrorMessage(
+              cause,
+              m.use_viewed_files_could_not_send_that_mark_to_github()
+            )
           );
         }
       })();

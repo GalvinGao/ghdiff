@@ -1,6 +1,7 @@
 import { IconBrandGithub } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
+import { m } from '../paraglide/messages.js';
 import { GitHubAccountPanel } from '@/components/GitHubAccountPanel';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
@@ -46,7 +47,7 @@ export function GitHubAccountControl({
         to="/setup"
       >
         <IconBrandGithub aria-hidden="true" size={14} />
-        Set up access
+        {m.git_hub_account_control_set_up_access()}
       </Link>
     );
   }

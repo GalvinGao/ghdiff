@@ -1,11 +1,22 @@
 import { IconColorAuto, IconColorDark, IconColorLight } from '@pierre/icons';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import type { ColorModeState } from '@/hooks/useColorMode';
 import { wipeOriginFromClick } from '@/lib/colorSchemeWipe';
 
 const ORDER = ['system', 'light', 'dark'] as const;
-const LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' } as const;
+const LABEL = {
+  get system() {
+    return m.color_mode_toggle_auto();
+  },
+  get light() {
+    return m.color_mode_toggle_light();
+  },
+  get dark() {
+    return m.color_mode_toggle_dark();
+  },
+} as const;
 const ICON = {
   system: IconColorAuto,
   light: IconColorLight,
@@ -23,10 +34,13 @@ export function ColorModeToggle({
   const Icon = ICON[colorMode.mode];
   return (
     <Button
-      aria-label={`Color mode: ${LABEL[colorMode.mode]}. Switch to ${LABEL[next]}.`}
+      aria-label={m.color_mode_toggle_color_mode_switch_to({
+        value: LABEL[colorMode.mode],
+        value2: LABEL[next],
+      })}
       className={className}
       size="icon"
-      title={`Color mode: ${LABEL[colorMode.mode]}`}
+      title={m.color_mode_toggle_color_mode({ value: LABEL[colorMode.mode] })}
       variant="chrome"
       // The press is where the new scheme comes in from, so the coordinates
       // travel with the mode — see src/lib/colorSchemeWipe.ts.

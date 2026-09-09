@@ -1,6 +1,7 @@
 import { RPCHandler } from '@orpc/server/fetch';
 import { createFileRoute } from '@tanstack/react-router';
 
+import { m } from '../../../paraglide/messages.js';
 import { withEvlog } from '@/lib/logger';
 import { router } from '@/lib/rpc/router';
 import { resolveGitHubToken } from '@/lib/server/github';
@@ -22,7 +23,7 @@ const serve = withEvlog(async ({ request }: { request: Request }) => {
   });
   return matched
     ? response
-    : new Response('No such procedure.', { status: 404 });
+    : new Response(m.route_no_such_procedure(), { status: 404 });
 });
 
 export const Route = createFileRoute('/api/rpc/$')({

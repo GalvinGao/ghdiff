@@ -1,3 +1,4 @@
+import { m } from '../../paraglide/messages.js';
 // What the setup page asks GitHub: where is this App installed, and how far does
 // each installation reach.
 //
@@ -10,7 +11,6 @@
 // second call asks for one repository per page and reads `total_count` off the
 // answer, so a reviewer with an installation over three hundred repositories
 // pays for one of them.
-
 import type { AppInstallation } from '../installations.ts';
 import { githubJson } from './github.ts';
 
@@ -46,7 +46,7 @@ export async function readInstallations(
       // An installation with no account is not a thing GitHub returns, but the
       // field is optional in its own schema and a blank row on the setup page
       // would be worse than an honest placeholder.
-      account: raw.account?.login ?? 'an account',
+      account: raw.account?.login ?? m.installations_an_account(),
       // GitHub's own URL rather than one built here. A personal installation and
       // an organization's live under different paths, and GitHub is the only
       // authority on which of the two this is.

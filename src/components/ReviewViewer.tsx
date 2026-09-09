@@ -14,6 +14,7 @@ import { CodeView, type CodeViewHandle } from '@pierre/diffs/react';
 import { IconChevron, IconExpandRow } from '@pierre/icons';
 import { memo, type RefObject, useCallback, useMemo } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
 import {
@@ -189,7 +190,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       renderHeaderMetadata={renderHeaderMetadata}
       renderHeaderPrefix={renderHeaderPrefix}
       className={cn(
-        'cv-scrollbar bg-canvas relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto',
+        '[direction:ltr] cv-scrollbar bg-canvas relative h-full min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto',
         // `none`, not `contain`: contain stops the scroll from chaining to the
         // page but still lets this element bounce, and the bounce exposes an
         // unpainted strip at the end of the diff.
@@ -265,7 +266,9 @@ function CollapseFileButton({
   itemId: string;
   onToggle(itemId: string, collapsed: boolean): void;
 }) {
-  const label = collapsed ? 'Show the diff' : 'Hide the diff';
+  const label = collapsed
+    ? m.review_viewer_show_the_diff()
+    : m.review_viewer_hide_the_diff();
   return (
     <Button
       aria-expanded={!collapsed}
@@ -312,8 +315,6 @@ function canExpandWholeFile(fileDiff: FileDiffMetadata): boolean {
   return fileDiff.type === 'change' || fileDiff.type === 'rename-changed';
 }
 
-const EXPAND_WHOLE_FILE_LABEL = 'Show the whole file';
-
 /**
  * The whole file is safe where a single press is: the file was already turned
  * away at `MAX_FILE_BYTES` if it could not be afforded, and the virtualizer
@@ -330,9 +331,9 @@ function ExpandFileButton({
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }) {
   return (
-    <Tooltip label={EXPAND_WHOLE_FILE_LABEL}>
+    <Tooltip label={m.review_viewer_show_the_whole_file()}>
       <Button
-        aria-label={EXPAND_WHOLE_FILE_LABEL}
+        aria-label={m.review_viewer_show_the_whole_file()}
         size="icon-sm"
         variant="quiet"
         onClick={() => {
@@ -376,7 +377,7 @@ function ViewedToggle({
       variant="quiet"
     >
       <ViewedBox checked={viewed} />
-      Viewed
+      {m.review_viewer_viewed()}
     </Button>
   );
 }

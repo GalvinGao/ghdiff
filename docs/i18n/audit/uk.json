@@ -1,0 +1,2338 @@
+{
+  "locale": "uk",
+  "auditor": "codex/gpt-5.6-terra",
+  "fallbackReason": "Antigravity interrupted stream and timeout with no output",
+  "initialSourceSha256": "8c239bbcc87799c690b5b0e64dc662da257e49487c1d5d2f009cb211c084b292",
+  "catalogSha256": "77a174ea2490b44ae53662332d5fd51dc097a895dd035277d4b77f432f62eee0",
+  "hashFormat": "UTF-8 sorted JSON without separator whitespace for catalogSha256",
+  "reviewedMessageCount": 387,
+  "selectionNotes": {
+    "color_mode_toggle_auto": "Короткий стандартний напис.",
+    "color_mode_toggle_light": "Природний український ярлик теми.",
+    "color_mode_toggle_dark": "Природний український ярлик теми.",
+    "color_mode_toggle_color_mode_switch_to": "Збережено обидва значення та дію.",
+    "color_mode_toggle_color_mode": "Збережено змінну.",
+    "comment_author_filter_bar_comment_authors": "Стисла назва фільтра.",
+    "comment_author_filter_bar_all": "Природний універсальний фільтр.",
+    "comment_author_filter_bar_comments_a_person_opened": "Збережено значення авторства.",
+    "comment_author_filter_bar_people": "Короткий ярлик категорії.",
+    "comment_author_filter_bar_comments_a_github_app_opened": "GitHub App не перекладено.",
+    "comment_author_filter_bar_bots": "Усталений технічний термін.",
+    "comment_body_done": "Короткий стан.",
+    "comment_body_not_done": "Збережено заперечення.",
+    "comment_composer_leave_a_comment": "Природна дія.",
+    "comment_composer_comment": "Короткий ярлик.",
+    "comment_composer_cancel": "Стандартна дія скасування.",
+    "comment_composer_cmd_or_ctrl_with_enter": "Збережено клавіші.",
+    "comment_expansion_comment": "Короткий ярлик.",
+    "comment_thread_card_open_thread_by": "Збережено автора.",
+    "comment_thread_card_posting": "Стан надсилання.",
+    "comment_thread_card_click_to_open": "Коротка інструкція.",
+    "comment_thread_card_delete": "Стандартна дія.",
+    "comment_thread_card_close": "Стандартна дія.",
+    "comment_thread_card_on_github": "Назву сервісу збережено.",
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Збережено обмеження відповіді.",
+    "comment_thread_card_reply_on_github": "Збережено місце відповіді.",
+    "comment_thread_card_reply_in_this_browser": "Збережено локальність браузера.",
+    "comment_thread_card_sending": "Стан надсилання.",
+    "comment_thread_card_reply": "Коротка дія.",
+    "comment_thread_card_cmd_or_ctrl_with_enter": "Збережено клавіші.",
+    "comments_list_no_comments_here": "Природний порожній стан.",
+    "comments_list_comments_you_leave_here_are_posted_to_github": "Збережено публікацію на GitHub.",
+    "comments_list_github_has_no_review_thread_for_commits_or": "Збережено відмінність між локальними коментарями й обговореннями GitHub.",
+    "comments_list_posting": "Короткий стан.",
+    "comments_list_failed": "Короткий стан помилки.",
+    "comments_list_go_to": "Збережено шлях.",
+    "confirm_inline_cancel": "Стандартна дія.",
+    "example_targets_label": "Збережено формат.",
+    "filter_menu_added": "Статус файлу.",
+    "filter_menu_modified": "Статус файлу.",
+    "filter_menu_renamed": "Статус файлу.",
+    "filter_menu_deleted": "Статус файлу.",
+    "filter_menu_filter_files": "Природна дія меню.",
+    "filter_menu_file_rules": "Стисла назва.",
+    "filter_menu_git_status": "Git збережено.",
+    "filter_menu_clear_filters": "Природна дія.",
+    "filter_menu_all_files": "Універсальний фільтр.",
+    "git_hub_account_control_set_up_access": "Збережено межу доступу.",
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Збережено авторство коментарів.",
+    "git_hub_account_panel_install_on_another_account": "Природна дія.",
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "Збережено заперечення й наслідок.",
+    "git_hub_account_panel_open_setup_guide": "Природна дія.",
+    "git_hub_account_panel_sign_out": "Стандартна дія.",
+    "git_hub_account_panel_accounts_with_access": "Збережено доступ.",
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "github.com не змінено.",
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "Збережено перевірку доступу.",
+    "home_screen_open_any_github_pull_request_commit_or_compare": "Збережено всі три типи цілей.",
+    "home_screen_narrow_the_file_list_with_preset_path_rules": "Збережено правила шляхів.",
+    "home_screen_read_and_leave_comments": "Коротке пояснення можливостей.",
+    "home_screen_paste_a_github_pull_request_commit_or_compare": "Збережено формат owner/repo#123.",
+    "home_screen_github_pull_request_commit_or_compare_url": "Точний опис поля.",
+    "home_screen_open_this_diff": "Природна дія.",
+    "home_screen_review": "Коротка дія.",
+    "home_screen_set_up_access_for_private_repositories": "Збережено приватний доступ.",
+    "home_screen_userscript": "Усталений термін.",
+    "home_screen_examples": "Короткий ярлик.",
+    "home_screen_watched_repos": "Відстеження подано як локальний список.",
+    "home_screen_github_account": "Назву сервісу збережено.",
+    "home_screen_source_on_github": "Природний ярлик посилання.",
+    "home_screen_review_the_commit_this_build_was_made_from": "Збережено SHA й ghdiff.",
+    "installation_row_current_diff": "Стислий контекст.",
+    "installation_row_configure": "Природна дія.",
+    "not_found_ghdiff_cannot_read_that_url": "Збережено неможливість читання.",
+    "not_found_a_review_needs_a_github_pull_request_a": "Збережено допустимі цілі.",
+    "not_found_open_a_different_review": "Природна дія.",
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": "Збережено обидві дії.",
+    "pull_details_card_loading_pull_request": "Стан завантаження.",
+    "pull_details_card_no_details_yet": "Збережено «поки».",
+    "pull_details_card_files": "Короткий ярлик.",
+    "pull_details_card_added_lines": "Точний лічильник.",
+    "pull_details_card_deleted_lines": "Точний лічильник.",
+    "pull_details_card_commits": "Короткий ярлик.",
+    "pull_details_card_description": "Короткий ярлик.",
+    "pull_list_button_open_pull_requests": "Природний термін.",
+    "pull_list_button_watched_repos": "Локальне відстеження.",
+    "pull_list_button_reload_the_pull_requests": "Природна дія.",
+    "pull_list_button_loading_the_pull_requests": "Стан завантаження.",
+    "pull_rail_open_pull_requests": "Природний термін.",
+    "pull_rail_pull_request_bar_width": "Опис доступності.",
+    "pull_rail_show_the_pull_requests": "Природна дія.",
+    "pull_rail_hide_the_pull_requests": "Природна дія.",
+    "pull_rail_watched_repos": "Локальне відстеження.",
+    "pull_rail_reload_the_pull_requests": "Природна дія.",
+    "pull_rail_loading_the_pull_requests": "Стан завантаження.",
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": "Явно подано як локальне додавання.",
+    "pull_request_list_open_on_github": "Збережено ідентифікатор.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "Збережено змінну й GitHub.",
+    "pull_request_list_you": "Нейтральний займенник.",
+    "pull_request_list_open_s_open_pull_requests_in_on_github": "Збережено автора й репозиторій.",
+    "pull_request_list_set_up_private_access": "Збережено межу доступу.",
+    "pull_request_list_signed_out_no_row_shows_a_status_square": "Збережено наслідки виходу та обидва стани.",
+    "pull_request_list_stack": "Усталений технічний термін.",
+    "pull_request_list_loading_open_pull_requests": "Стан завантаження.",
+    "pull_row_label": "Збережено формат.",
+    "pull_row_draft": "Статус GitHub.",
+    "pull_row_currently_viewing": "Поточний стан.",
+    "pull_state_icon_open": "Статус GitHub.",
+    "pull_state_icon_draft": "Статус GitHub.",
+    "pull_state_icon_merged": "Статус GitHub.",
+    "pull_state_icon_closed": "Статус GitHub.",
+    "review_header_bars": "Стислий ярлик.",
+    "review_header_signs": "Стислий ярлик.",
+    "review_header_none": "Природний нульовий стан.",
+    "review_header_hide_the_file_list": "Природна дія.",
+    "review_header_show_the_file_list": "Природна дія.",
+    "review_header_open_on_github": "Збережено ціль.",
+    "review_header_switch_to_unified_view": "Збережено режим перегляду.",
+    "review_header_switch_to_split_view": "Збережено режим перегляду.",
+    "review_header_split_view": "Короткий ярлик.",
+    "review_header_unified_view": "Короткий ярлик.",
+    "review_header_display_settings": "Природна назва меню.",
+    "review_header_code_font": "Точний термін.",
+    "review_header_change_markers": "Точний термін.",
+    "review_header_wrap_long_lines": "Природна дія.",
+    "review_header_line_numbers": "Короткий ярлик.",
+    "review_header_change_backgrounds": "Точний термін.",
+    "review_header_dim_whitespace_changes": "Збережено зміни пробілів.",
+    "review_header_approve_request_changes_or_comment": "Збережено три різні дії перевірки.",
+    "review_header_review": "Короткий ярлик.",
+    "review_header_review_it_again": "Збережено змінну й повторність.",
+    "review_screen_sidebar_width": "Опис доступності.",
+    "review_screen_dismiss": "Природна дія.",
+    "review_sidebar_sidebar_sections": "Опис доступності.",
+    "review_sidebar_files": "Короткий ярлик.",
+    "review_sidebar_threads_comments": "Повні українські категорії множини.",
+    "review_sidebar_comments": "Короткий ярлик.",
+    "review_sidebar_hide_the_path_search": "Природна дія.",
+    "review_sidebar_search_by_path": "Природна дія.",
+    "review_sidebar_the_current_filter_hides_all_files": "Збережено наслідок фільтра.",
+    "review_sidebar_clear_filters": "Природна дія.",
+    "review_sidebar_added_lines": "Точний лічильник.",
+    "review_sidebar_deleted_lines": "Точний лічильник.",
+    "review_sidebar_search_files_by_path": "Природний опис поля.",
+    "review_sidebar_path_contains": "Природне поле пошуку.",
+    "review_sidebar_clear_the_path_search": "Природна дія.",
+    "review_status_panel_fetching_the_diff": "Стан завантаження.",
+    "review_status_panel_reading_the_patch_for_this_review": "Збережено патч.",
+    "review_status_panel_preparing_the_diff": "Стан підготовки.",
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": "Збережено обидва процеси.",
+    "review_status_panel_starting_the_highlighters": "Стан запуску.",
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": "Збережено фонові процеси.",
+    "review_status_panel_set_up_repository_access": "Збережено межу доступу.",
+    "review_status_panel_try_again": "Коротка нейтральна дія.",
+    "review_submit_dialog_add_a_note_github_needs_one": "Збережено вимогу GitHub.",
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "Збережено обмеження власного пул-реквесту.",
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "Збережено обмеження власного пул-реквесту.",
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Збережено виняток і заборону.",
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": "Збережено причини вимоги.",
+    "review_submit_dialog_submit_a_review": "Природна дія.",
+    "review_submit_dialog_review_body": "Короткий ярлик поля.",
+    "review_submit_dialog_leave_a_note_with_your_review": "Природна інструкція.",
+    "review_submit_dialog_label": "Збережено формат.",
+    "review_viewer_show_the_diff": "Природна дія.",
+    "review_viewer_hide_the_diff": "Природна дія.",
+    "review_viewer_show_the_whole_file": "Природна дія.",
+    "review_viewer_viewed": "Статус.",
+    "setup_screen_set_up_private_repository_access": "Збережено доступ до приватного репозиторію.",
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "Збережено обмеження й порядок кроків.",
+    "setup_screen_sign_in_to_github": "Природна дія.",
+    "setup_screen_this_identifies_your_account_to_github_any_comments": "Збережено ідентичність автора.",
+    "setup_screen_sign_in_with_github": "Природна дія.",
+    "setup_screen_grant_repository_access": "Збережено межу доступу.",
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Збережено, що вхід не надає доступ сам по собі.",
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "Збережено межу доступу й {account}.",
+    "setup_screen_accounts_with_access": "Збережено доступ.",
+    "setup_screen_install_ghdiff": "Назву продукту збережено.",
+    "setup_screen_install_on_another_account": "Природна дія.",
+    "setup_screen_checking": "Стан перевірки.",
+    "setup_screen_check_again": "Природна дія.",
+    "setup_screen_open_the_diff": "Природна дія.",
+    "setup_screen_go_to_the_home_page_to_paste_a": "Збережено допустимі URL.",
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Збережено оновлені дозволи.",
+    "setup_screen_go_to_ghdiff_home": "Назву продукту збережено.",
+    "setup_screen_return_to_the_diff": "Природна дія.",
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Збережено відсутність GitHub App і публічний виняток.",
+    "setup_screen_ghdiff_now_uses_a_github_app": "GitHub App не перекладено.",
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "Збережено видалення лише з браузера та наслідок на GitHub.",
+    "setup_screen_delete_the_token_on_github": "Природна дія.",
+    "userscript_install_add_a_ghdiff_button_to_github_com": "Збережено ghdiff і github.com.",
+    "userscript_install_install": "Природна дія.",
+    "watch_offer_dialog_watch_this_repository": "Локальне відстеження, не підписка GitHub.",
+    "watch_offer_dialog_watch": "Локальне відстеження, змінну збережено.",
+    "watch_offer_dialog_keep_reviewing": "Природна дія.",
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Явно збережено локальність браузера.",
+    "watch_offer_dialog_not_now": "Нейтральна відмова.",
+    "watched_repos_dialog_watched_repositories": "Локальне відстеження.",
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "Явно збережено локальність списку.",
+    "watched_repos_editor_enter_a_repository_as_owner_repo": "Ідентифікатор збережено.",
+    "watched_repos_editor_owner_repo": "Ідентифікатор не перекладено.",
+    "watched_repos_editor_repository_to_watch": "Локальне відстеження.",
+    "watched_repos_editor_add": "Природна дія.",
+    "watched_repos_editor_nothing_watched_yet": "Збережено порожній список.",
+    "watched_repos_editor_remove": "Природна дія.",
+    "dialog_close": "Стандартна дія.",
+    "use_diff_file_loader_could_not_read_that_file_from_github": "Збережено джерело GitHub.",
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": "Збережено часовий наслідок і дію.",
+    "use_diff_file_loader_request_failed": "Збережено статус.",
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": "Збережено невизначеність облікового запису.",
+    "use_installations_could_not_read_where_ghdiff_is_installed": "Збережено встановлення ghdiff.",
+    "use_open_pulls_could_not_load_pull_requests": "Точна помилка завантаження.",
+    "use_pull_details_could_not_load_this_pull_request": "Точна помилка завантаження.",
+    "use_review_comments_could_not_load_comments": "Точна помилка завантаження.",
+    "use_review_comments_could_not_post_that_comment_to_github": "Збережено публікацію на GitHub.",
+    "use_review_comments_could_not_post_this_reply_to_github": "Збережено публікацію на GitHub.",
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": "Збережено невизначеність і перевірку перезавантаженням.",
+    "use_review_patch_request_failed": "Збережено статус.",
+    "use_review_patch_could_not_load_that_diff": "Точна помилка завантаження.",
+    "use_submit_review_could_not_submit_this_review": "Точна помилка надсилання.",
+    "use_viewed_files_could_not_send_that_mark_to_github": "Збережено дію GitHub.",
+    "code_fonts_system": "Короткий ярлик.",
+    "diff_hydration_that_file_is_too_large_to_show_its": "Збережено обмеження розміру.",
+    "example_targets_rewrite_bun_in_rust": "Назви технологій збережено.",
+    "example_targets_2_188_files_1_0m_lines": "Локалізовані числа.",
+    "example_targets_the_largest_of_them_43_mb_of_unified": "Збережено розмір і коміти.",
+    "example_targets_resolve_maimai_net_import_pr_conflicts": "Назву продукту збережено.",
+    "example_targets_25_files_494k_lines": "Локалізовані числа.",
+    "example_targets_one_generated_json_file_holds_465_486_of": "JSON не перекладено.",
+    "example_targets_deps_update_v8_to_14_1": "V8 і версію збережено.",
+    "example_targets_3_420_files_268k_lines": "Локалізовані числа.",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "Збережено ліміт API.",
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "Технічні ідентифікатори збережено.",
+    "example_targets_25_files_88k_lines": "Локалізовані числа.",
+    "example_targets_large_and_still_a_diff_a_person_can": "Збережено людську читабельність.",
+    "example_targets_ghostty_1_3_0_to_1_3_1": "Назву й версії збережено.",
+    "example_targets_53_files_2_6k_lines": "Локалізовані числа.",
+    "example_targets_a_compare_range_of_one_release_100_commits": "Збережено локальність коментарів.",
+    "filter_rules_all_files": "Універсальний фільтр.",
+    "filter_rules_show_every_file_in_the_diff": "Збережено охоплення всіх файлів.",
+    "filter_rules_hide_tests": "Коротка дія.",
+    "filter_rules_hide_test_files_fixtures_and_snapshots": "Збережено всі типи файлів.",
+    "filter_rules_tests_only": "Короткий фільтр.",
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": "Збережено всі типи файлів.",
+    "filter_rules_source_only": "Короткий фільтр.",
+    "filter_rules_show_only_code_files_that_are_not_tests": "Збережено обидва виключення.",
+    "filter_rules_docs_only": "Короткий фільтр.",
+    "filter_rules_show_only_markdown_and_other_prose_files": "Markdown не перекладено.",
+    "filter_rules_config_only": "Короткий фільтр.",
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": "CI не перекладено.",
+    "filter_rules_hide_generated": "Коротка дія.",
+    "filter_rules_hide_lock_files_snapshots_and_build_output": "Збережено всі типи.",
+    "filter_rules_generated_only": "Короткий фільтр.",
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": "Збережено всі типи.",
+    "github_app_sign_in_was_not_completed_on_github_try": "Збережено незавершеність і час дії.",
+    "github_app_the_sign_in_session_timed_out_on_github": "Збережено завершення часу сеансу.",
+    "github_app_security_verification_failed_during_github_sign_in_start": "Збережено перевірку безпеки й джерело повтору.",
+    "github_app_github_could_not_complete_the_sign_in_try": "Збережено невизначеність і коротке очікування.",
+    "installations_all_repositories": "Природний вибір.",
+    "installations_no_repositories_selected": "Збережено нульовий стан.",
+    "pull_details_just_now": "Природний час.",
+    "pull_status_approved": "Людський статус перевірки.",
+    "pull_status_changes_requested": "Вердикт перевірки, не редагування.",
+    "pull_status_no_review_yet": "Людський статус перевірки.",
+    "pull_status_checks_passing": "Автоматичні перевірки, не людські огляди.",
+    "pull_status_checks_running": "Автоматичні перевірки, не людські огляди.",
+    "pull_status_a_check_failed": "Автоматична перевірка.",
+    "pull_status_no_checks": "Автоматичні перевірки.",
+    "pull_status_changes_requested_new_commits_since": "Збережено вердикт і нові коміти.",
+    "review_data_commit": "Збережено змінну.",
+    "review_decision_approve": "Вердикт перевірки.",
+    "review_decision_approving": "Стан вердикту.",
+    "review_decision_request_changes": "Вердикт перевірки, не редагування.",
+    "review_decision_requesting": "Стан вердикту.",
+    "review_decision_comment": "Природна дія.",
+    "review_decision_commenting": "Стан коментування.",
+    "review_decision_approved": "Вердикт перевірки.",
+    "review_decision_changes_requested": "Вердикт перевірки.",
+    "review_decision_commented": "Статус перевірки.",
+    "review_decision_you_approved_this_pull_request": "Збережено дію користувача.",
+    "review_decision_you_requested_changes_on_this_pull_request": "Збережено вердикт перевірки.",
+    "review_decision_you_commented_on_this_pull_request": "Збережено дію користувача.",
+    "review_decision_github_recorded_your_review": "Збережено успішне фіксування GitHub.",
+    "review_failure_the_server_didn_t_respond_your_connection_might": "Збережено можливі, а не певні причини.",
+    "review_failure_you_used_all_5_000_github_requests_for": "Збережено ліміт, час і відновлення.",
+    "review_failure_hourly_github_rate_limit_reached": "Точний стан ліміту.",
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "Збережено неавтентифіковану межу й наслідок доступу.",
+    "review_failure_github_rate_limit_reached": "Точний стан ліміту.",
+    "review_failure_your_github_sign_in_is_no_longer_valid": "Збережено невдале оновлення й наступну дію.",
+    "review_failure_github_sign_in_expired": "Точний стан входу.",
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": "Збережено альтернативні причини й дію.",
+    "review_failure_ghdiff_needs_access_to_this_repository": "Збережено межу доступу.",
+    "review_failure_github_returns_not_found_for_private_repositories_when": "Збережено умовність приватності та дію.",
+    "review_failure_repository_not_found_or_private": "Збережено невизначеність.",
+    "review_failure_could_not_load_the_diff": "Точна помилка.",
+    "contract_enter_a_valid_github_username_or_repository_name": "Збережено GitHub і обидва допустимі поля.",
+    "contract_comment_cannot_be_empty": "Збережено обмеження.",
+    "router_could_not_check_who_you_are_signed_in": "Збережено стан входу.",
+    "router_could_not_read_where_ghdiff_is_installed": "Збережено встановлення.",
+    "router_could_not_load_this_repository": "Точна помилка.",
+    "router_could_not_load_this_pull_request": "Точна помилка.",
+    "router_could_not_load_your_review_of_this_pull": "Точна помилка.",
+    "router_github_accepted_the_review_but_returned_nothing": "Збережено контраст прийняття й порожньої відповіді.",
+    "router_could_not_submit_this_review": "Точна помилка.",
+    "router_could_not_load_comments": "Точна помилка.",
+    "router_github_accepted_the_reply_but_returned_nothing": "Збережено контраст прийняття й порожньої відповіді.",
+    "router_this_comment_is_missing_a_file_or_line": "Збережено відсутні дані.",
+    "router_github_accepted_the_comment_but_returned_nothing": "Збережено контраст прийняття й порожньої відповіді.",
+    "router_could_not_post_this_comment": "Точна помилка.",
+    "router_could_not_delete_this_comment": "Точна помилка.",
+    "router_could_not_load_which_files_you_have_read": "Точна помилка.",
+    "router_not_found": "Стандартний стан.",
+    "router_could_not_send_that_mark_to_github": "Збережено GitHub.",
+    "auth_route_this_ghdiff_has_no_github_app_set_up": "Збережено причинно-наслідковий зв’язок.",
+    "github_your_github_sign_in_is_no_longer_valid": "Збережено наступну дію.",
+    "github_github_rejected_that_query": "Точна помилка.",
+    "github_github_returned_no_data_for_that_query": "Точна порожня відповідь.",
+    "github_github_has_no_such_file_on_that_commit": "Збережено коміт і умову приватності.",
+    "github_app_github_would_not_revoke_that_token": "Збережено відмову GitHub.",
+    "github_app_github_answered_for_that_token_request": "Збережено {status}.",
+    "github_app_github_refused_that": "Збережено {error}.",
+    "github_app_github_answered_with_no_access_token": "Збережено відсутність токена.",
+    "github_patch_github_lists_at_most_files_for_this_diff": "Збережено ліміт і відсутність пізніших файлів.",
+    "installations_an_account": "Нейтральна форма.",
+    "stream_text_that_response_is_too_large_to_read": "Збережено обмеження розміру.",
+    "diff_that_review_target_is_not_valid": "Точна валідація.",
+    "diff_could_not_load_that_diff": "Точна помилка.",
+    "diff_that_request_to_github_failed": "Збережено GitHub.",
+    "file_that_review_target_is_not_valid": "Точна валідація.",
+    "file_that_file_path_is_not_valid": "Точна валідація.",
+    "file_could_not_load_that_file": "Точна помилка.",
+    "route_no_such_procedure": "Точна помилка маршруту.",
+    "common_file_count": "Повні українські категорії множини.",
+    "common_commit_count": "Повні українські категорії множини.",
+    "common_comment_count": "Повні українські категорії множини.",
+    "common_reply_count": "Повні українські категорії множини.",
+    "common_repository_count": "Повні українські категорії множини.",
+    "home_served_count": "Повні українські категорії множини.",
+    "filter_hidden_count": "Повні українські категорії множини.",
+    "filter_status_summary": "Повні українські категорії множини.",
+    "stack_pull_count": "Повні українські категорії множини.",
+    "comment_line": "Збережено номер рядка.",
+    "comment_line_range": "Збережено обидві межі.",
+    "sidebar_file_summary": "Збережено named markup total.",
+    "home_credits": "Збережено обидва named markup теги.",
+    "watch_offer_added_phone": "Збережено телефонну навігацію.",
+    "watch_offer_added_wide": "Збережено широку панель.",
+    "watch_offer_more_phone": "Збережено телефонний маршрут і named markup.",
+    "watch_offer_more_wide": "Збережено широкий маршрут і named markup.",
+    "watch_offer_preview_phone": "Збережено список, перевірки й GitHub.",
+    "watch_offer_preview_wide": "Збережено панель, перевірки й GitHub.",
+    "watch_offer_action": "Локальне відстеження.",
+    "watch_offer_added_title": "Локальний стан відстеження.",
+    "pull_opened_age": "Збережено змінну.",
+    "pull_updated_age": "Збережено змінну.",
+    "tree_directory_summary": "Повні українські категорії множини.",
+    "pull_list_empty": "Збережено репозиторії.",
+    "review_submit_scope": "Збережено named markup strong і межу коментарів.",
+    "review_previous_verdict": "Збережено заміну попереднього вердикту.",
+    "setup_not_installed": "Збережено можливу потребу схвалення.",
+    "setup_no_repositories": "Збережено встановлення без охоплення репозиторіїв.",
+    "userscript_manager_description": "Збережено зовнішні назви елементів GitHub і markup manager.",
+    "pull_row_tooltip": "Збережено нові рядки та змінні.",
+    "pull_status_description": "Збережено відмінність між перевіркою й автоматичними перевірками.",
+    "auth_required_review": "Збережено межу доступу.",
+    "auth_required_delete": "Збережено межу доступу.",
+    "auth_required_viewed": "Збережено межу доступу.",
+    "bytes_count": "Повні українські категорії множини.",
+    "bytes_kilobytes": "Стандартне українське скорочення.",
+    "bytes_megabytes": "Стандартне українське скорочення.",
+    "app_description": "Збережено заміну домену, правила шляхів і публікацію на GitHub.",
+    "thread_delete_confirmation": "Повні українські категорії множини та незворотність.",
+    "github_patch_missing_files": "Збережено точну гілку count=1, шлях і повні категорії множини.",
+    "userscript_open_pull": "Збережено ghdiff.",
+    "userscript_open_commit": "Збережено ghdiff.",
+    "userscript_description": "Збережено зовнішній елемент Browse files.",
+    "diff_expand_all": "Природна дія.",
+    "diff_no_newline": "Усталене повідомлення diff.",
+    "tree_git_contains_changes": "Git збережено.",
+    "review_bytes_read": "Збережено змінну.",
+    "tree_git_added": "Git збережено.",
+    "tree_git_deleted": "Git збережено.",
+    "tree_git_ignored": "Git збережено.",
+    "tree_git_modified": "Git збережено.",
+    "tree_git_renamed": "Git збережено.",
+    "tree_git_untracked": "Git збережено.",
+    "diff_unmodified_lines": "Повні українські категорії множини."
+  },
+  "findings": {
+    "color_mode_toggle_auto": {
+      "verdict": "keep",
+      "reason": "Природний короткий підпис режиму.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_light": {
+      "verdict": "keep",
+      "reason": "Коректна форма для теми оформлення.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_dark": {
+      "verdict": "keep",
+      "reason": "Коректна форма для теми оформлення.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode_switch_to": {
+      "verdict": "keep",
+      "reason": "Зберігає обидва значення та дію перемикання.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode": {
+      "verdict": "keep",
+      "reason": "Природний підпис із збереженим плейсхолдером.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comment_authors": {
+      "verdict": "keep",
+      "reason": "Точний і придатний для фільтра.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_all": {
+      "verdict": "keep",
+      "reason": "Стандартний короткий підпис фільтра.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_person_opened": {
+      "verdict": "change",
+      "reason": "«Користувачем» звужувало значення source; «людиною» зберігає категорію People.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_people": {
+      "verdict": "keep",
+      "reason": "Природна назва категорії авторів-людей.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_github_app_opened": {
+      "verdict": "keep",
+      "reason": "Зберігає розрізнення коментарів, відкритих застосунком GitHub.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_bots": {
+      "verdict": "keep",
+      "reason": "Звичний технічний термін у UI.",
+      "uncertainty": "none"
+    },
+    "comment_body_done": {
+      "verdict": "keep",
+      "reason": "Короткий природний статус.",
+      "uncertainty": "none"
+    },
+    "comment_body_not_done": {
+      "verdict": "keep",
+      "reason": "Зберігає заперечний статус без зміни значення.",
+      "uncertainty": "none"
+    },
+    "comment_composer_leave_a_comment": {
+      "verdict": "keep",
+      "reason": "Природна дія для редактора коментаря.",
+      "uncertainty": "none"
+    },
+    "comment_composer_comment": {
+      "verdict": "keep",
+      "reason": "Коректний короткий підпис.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cancel": {
+      "verdict": "keep",
+      "reason": "Стандартна нейтральна дія скасування.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cmd_or_ctrl_with_enter": {
+      "verdict": "change",
+      "reason": "Позначення клавіші через «+» природніше для української UI-підказки.",
+      "uncertainty": "none"
+    },
+    "comment_expansion_comment": {
+      "verdict": "keep",
+      "reason": "Коректний короткий підпис.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_open_thread_by": {
+      "verdict": "change",
+      "reason": "Source описує відкритий стан обговорення, а не дію його відкриття.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_posting": {
+      "verdict": "keep",
+      "reason": "Нейтральний статус процесу надсилання.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_click_to_open": {
+      "verdict": "keep",
+      "reason": "Natural concise action.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_delete": {
+      "verdict": "keep",
+      "reason": "Correct infinitive control.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_close": {
+      "verdict": "keep",
+      "reason": "Correct control label.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_on_github": {
+      "verdict": "keep",
+      "reason": "Natural destination label.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": {
+      "verdict": "keep",
+      "reason": "Preserves pending state and consequence.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_on_github": {
+      "verdict": "keep",
+      "reason": "Natural external action.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Preserves browser-local boundary.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_sending": {
+      "verdict": "change",
+      "reason": "Changed noun-like form to an active sending state.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "Preserves key names.",
+      "uncertainty": "none"
+    },
+    "comments_list_no_comments_here": {
+      "verdict": "keep",
+      "reason": "Natural empty state.",
+      "uncertainty": "none"
+    },
+    "comments_list_comments_you_leave_here_are_posted_to_github": {
+      "verdict": "keep",
+      "reason": "Preserves posting destination.",
+      "uncertainty": "none"
+    },
+    "comments_list_github_has_no_review_thread_for_commits_or": {
+      "verdict": "keep",
+      "reason": "Preserves unsupported targets and browser-local consequence.",
+      "uncertainty": "none"
+    },
+    "comments_list_posting": {
+      "verdict": "keep",
+      "reason": "Suitable compact status text.",
+      "uncertainty": "none"
+    },
+    "comments_list_failed": {
+      "verdict": "keep",
+      "reason": "Natural failure status.",
+      "uncertainty": "none"
+    },
+    "comments_list_go_to": {
+      "verdict": "keep",
+      "reason": "Placeholder and meaning preserved.",
+      "uncertainty": "none"
+    },
+    "confirm_inline_cancel": {
+      "verdict": "keep",
+      "reason": "Correct control label.",
+      "uncertainty": "none"
+    },
+    "example_targets_label": {
+      "verdict": "keep",
+      "reason": "Placeholders and separator preserved.",
+      "uncertainty": "none"
+    },
+    "filter_menu_added": {
+      "verdict": "keep",
+      "reason": "Correct file-status term.",
+      "uncertainty": "none"
+    },
+    "filter_menu_modified": {
+      "verdict": "keep",
+      "reason": "Correct file-status term.",
+      "uncertainty": "none"
+    },
+    "filter_menu_renamed": {
+      "verdict": "keep",
+      "reason": "Correct file-status term.",
+      "uncertainty": "none"
+    },
+    "filter_menu_deleted": {
+      "verdict": "keep",
+      "reason": "Correct file-status term.",
+      "uncertainty": "none"
+    },
+    "filter_menu_filter_files": {
+      "verdict": "keep",
+      "reason": "Natural command label.",
+      "uncertainty": "none"
+    },
+    "filter_menu_file_rules": {
+      "verdict": "keep",
+      "reason": "Natural technical label.",
+      "uncertainty": "none"
+    },
+    "filter_menu_git_status": {
+      "verdict": "keep",
+      "reason": "Natural Git label.",
+      "uncertainty": "none"
+    },
+    "filter_menu_clear_filters": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "filter_menu_all_files": {
+      "verdict": "keep",
+      "reason": "Correct filter label.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_control_set_up_access": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": {
+      "verdict": "change",
+      "reason": "Clarified that comments are published under the account identity.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Natural installation action.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": {
+      "verdict": "change",
+      "reason": "Replaced ambiguous reflexive possessive with direct second-person wording.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_open_setup_guide": {
+      "verdict": "keep",
+      "reason": "Natural action label.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_sign_out": {
+      "verdict": "keep",
+      "reason": "Correct control label.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Correct access-boundary label.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": {
+      "verdict": "keep",
+      "reason": "Preserves external settings destination and repository scope.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": {
+      "verdict": "keep",
+      "reason": "Preserves capability-check meaning.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_any_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "Natural instruction with all targets preserved.",
+      "uncertainty": "none"
+    },
+    "home_screen_narrow_the_file_list_with_preset_path_rules": {
+      "verdict": "keep",
+      "reason": "Preserves preset path-rule meaning.",
+      "uncertainty": "none"
+    },
+    "home_screen_read_and_leave_comments": {
+      "verdict": "keep",
+      "reason": "Natural concise instruction.",
+      "uncertainty": "none"
+    },
+    "home_screen_paste_a_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "Preserves URL and identifier exactly.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_pull_request_commit_or_compare_url": {
+      "verdict": "keep",
+      "reason": "Natural input label.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_this_diff": {
+      "verdict": "keep",
+      "reason": "Natural label using the provisional Ukrainian diff term.",
+      "uncertainty": "none"
+    },
+    "home_screen_review": {
+      "verdict": "keep",
+      "reason": "Correct concise review action.",
+      "uncertainty": "none"
+    },
+    "home_screen_set_up_access_for_private_repositories": {
+      "verdict": "keep",
+      "reason": "Preserves private-repository access scope.",
+      "uncertainty": "none"
+    },
+    "home_screen_userscript": {
+      "verdict": "keep",
+      "reason": "Natural technical term.",
+      "uncertainty": "none"
+    },
+    "home_screen_examples": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "home_screen_watched_repos": {
+      "verdict": "keep",
+      "reason": "Distinguishes local watched repositories without implying subscriptions.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_account": {
+      "verdict": "keep",
+      "reason": "Correct account label.",
+      "uncertainty": "none"
+    },
+    "home_screen_source_on_github": {
+      "verdict": "keep",
+      "reason": "Natural destination label.",
+      "uncertainty": "none"
+    },
+    "home_screen_review_the_commit_this_build_was_made_from": {
+      "verdict": "keep",
+      "reason": "Preserves SHA and ghdiff destination.",
+      "uncertainty": "none"
+    },
+    "installation_row_current_diff": {
+      "verdict": "keep",
+      "reason": "Correct compact label.",
+      "uncertainty": "none"
+    },
+    "installation_row_configure": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "not_found_ghdiff_cannot_read_that_url": {
+      "verdict": "keep",
+      "reason": "Preserves inability without asserting a cause.",
+      "uncertainty": "none"
+    },
+    "not_found_a_review_needs_a_github_pull_request_a": {
+      "verdict": "keep",
+      "reason": "Preserves required review targets.",
+      "uncertainty": "none"
+    },
+    "not_found_open_a_different_review": {
+      "verdict": "keep",
+      "reason": "Natural recovery action.",
+      "uncertainty": "none"
+    },
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": {
+      "verdict": "keep",
+      "reason": "Natural instructions with both actions preserved.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_loading_pull_request": {
+      "verdict": "keep",
+      "reason": "Correct loading state.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_no_details_yet": {
+      "verdict": "keep",
+      "reason": "Natural empty state.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_files": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_added_lines": {
+      "verdict": "keep",
+      "reason": "Correct change metric.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Correct change metric.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_commits": {
+      "verdict": "keep",
+      "reason": "Natural technical label.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_description": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct list label.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_watched_repos": {
+      "verdict": "keep",
+      "reason": "Preserves local-list concept.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct loading state.",
+      "uncertainty": "none"
+    },
+    "pull_rail_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct list label.",
+      "uncertainty": "none"
+    },
+    "pull_rail_pull_request_bar_width": {
+      "verdict": "keep",
+      "reason": "Natural accessibility label.",
+      "uncertainty": "none"
+    },
+    "pull_rail_show_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "pull_rail_hide_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "pull_rail_watched_repos": {
+      "verdict": "keep",
+      "reason": "Preserves local-list concept.",
+      "uncertainty": "none"
+    },
+    "pull_rail_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "pull_rail_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correct loading state.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": {
+      "verdict": "keep",
+      "reason": "Explicitly frames watch as adding to a local list.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_on_github": {
+      "verdict": "keep",
+      "reason": "Placeholders and destination preserved.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_the_open_pull_requests_on_github": {
+      "verdict": "keep",
+      "reason": "Placeholder and meaning preserved.",
+      "uncertainty": "The supplied value may require runtime plural handling outside this message."
+    },
+    "pull_request_list_you": {
+      "verdict": "keep",
+      "reason": "Correct lowercase second-person label.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_s_open_pull_requests_in_on_github": {
+      "verdict": "keep",
+      "reason": "Avoids inflecting opaque handle while preserving ownership meaning.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_set_up_private_access": {
+      "verdict": "keep",
+      "reason": "Preserves private-access scope.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_signed_out_no_row_shows_a_status_square": {
+      "verdict": "change",
+      "reason": "Restores the explicit square status indicator and uses more natural outcome wording.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_stack": {
+      "verdict": "change",
+      "reason": "Стос is Ukrainian; Стек is an unnecessary Russian-derived borrowing here.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_loading_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Natural concise loading label.",
+      "uncertainty": "none"
+    },
+    "pull_row_label": {
+      "verdict": "keep",
+      "reason": "Placeholder and separator preserved exactly.",
+      "uncertainty": "none"
+    },
+    "pull_row_draft": {
+      "verdict": "keep",
+      "reason": "Accurate compact status label.",
+      "uncertainty": "none"
+    },
+    "pull_row_currently_viewing": {
+      "verdict": "keep",
+      "reason": "Natural current-state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_open": {
+      "verdict": "keep",
+      "reason": "Accurate state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_draft": {
+      "verdict": "keep",
+      "reason": "Accurate state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_merged": {
+      "verdict": "keep",
+      "reason": "Accurate state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_closed": {
+      "verdict": "keep",
+      "reason": "Accurate state label.",
+      "uncertainty": "none"
+    },
+    "review_header_bars": {
+      "verdict": "change",
+      "reason": "Смужки better conveys visual bars.",
+      "uncertainty": "none"
+    },
+    "review_header_signs": {
+      "verdict": "keep",
+      "reason": "Natural UI label.",
+      "uncertainty": "none"
+    },
+    "review_header_none": {
+      "verdict": "keep",
+      "reason": "Accurate compact option.",
+      "uncertainty": "none"
+    },
+    "review_header_hide_the_file_list": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_header_show_the_file_list": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_header_open_on_github": {
+      "verdict": "keep",
+      "reason": "Preserves the target placeholder and GitHub name.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_unified_view": {
+      "verdict": "change",
+      "reason": "Єдиний вигляд is the more idiomatic counterpart to split view.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_split_view": {
+      "verdict": "keep",
+      "reason": "Natural view-switch control.",
+      "uncertainty": "none"
+    },
+    "review_header_split_view": {
+      "verdict": "keep",
+      "reason": "Accurate compact view name.",
+      "uncertainty": "none"
+    },
+    "review_header_unified_view": {
+      "verdict": "change",
+      "reason": "Uses the same idiomatic unified-view terminology as the switch action.",
+      "uncertainty": "none"
+    },
+    "review_header_display_settings": {
+      "verdict": "keep",
+      "reason": "Natural settings label.",
+      "uncertainty": "none"
+    },
+    "review_header_code_font": {
+      "verdict": "keep",
+      "reason": "Accurate technical UI term.",
+      "uncertainty": "none"
+    },
+    "review_header_change_markers": {
+      "verdict": "keep",
+      "reason": "Natural technical label.",
+      "uncertainty": "none"
+    },
+    "review_header_wrap_long_lines": {
+      "verdict": "keep",
+      "reason": "Natural imperative setting.",
+      "uncertainty": "none"
+    },
+    "review_header_line_numbers": {
+      "verdict": "keep",
+      "reason": "Accurate UI label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_backgrounds": {
+      "verdict": "keep",
+      "reason": "Accurate UI label.",
+      "uncertainty": "none"
+    },
+    "review_header_dim_whitespace_changes": {
+      "verdict": "keep",
+      "reason": "Preserves the whitespace-change distinction.",
+      "uncertainty": "none"
+    },
+    "review_header_approve_request_changes_or_comment": {
+      "verdict": "change",
+      "reason": "Uses a clearer Ukrainian action for the review verdict and a parallel action list.",
+      "uncertainty": "none"
+    },
+    "review_header_review": {
+      "verdict": "keep",
+      "reason": "Рев’ю is common concise Ukrainian technical UI terminology.",
+      "uncertainty": "none"
+    },
+    "review_header_review_it_again": {
+      "verdict": "keep",
+      "reason": "Placeholder and direct instruction are preserved.",
+      "uncertainty": "none"
+    },
+    "review_screen_sidebar_width": {
+      "verdict": "keep",
+      "reason": "Accurate settings label.",
+      "uncertainty": "none"
+    },
+    "review_screen_dismiss": {
+      "verdict": "keep",
+      "reason": "Natural dismissal control.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_sidebar_sections": {
+      "verdict": "keep",
+      "reason": "Accurate navigation label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_files": {
+      "verdict": "keep",
+      "reason": "Accurate compact label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_threads_comments": {
+      "verdict": "change",
+      "reason": "Adds Ukrainian other-category coverage and corrects the wildcard wording.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_comments": {
+      "verdict": "keep",
+      "reason": "Accurate compact label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_hide_the_path_search": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_by_path": {
+      "verdict": "keep",
+      "reason": "Accurate search action.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_the_current_filter_hides_all_files": {
+      "verdict": "keep",
+      "reason": "Preserves the filter consequence.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_filters": {
+      "verdict": "keep",
+      "reason": "Natural control label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_added_lines": {
+      "verdict": "keep",
+      "reason": "Accurate diff terminology.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Accurate diff terminology.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_files_by_path": {
+      "verdict": "keep",
+      "reason": "Natural search label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_path_contains": {
+      "verdict": "keep",
+      "reason": "Accurate placeholder wording.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_the_path_search": {
+      "verdict": "keep",
+      "reason": "Natural control label.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_fetching_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural progress label.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_reading_the_patch_for_this_review": {
+      "verdict": "keep",
+      "reason": "Accurate progress sentence.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_preparing_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural progress label.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": {
+      "verdict": "keep",
+      "reason": "Accurate progress sentence.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_starting_the_highlighters": {
+      "verdict": "keep",
+      "reason": "Natural technical progress label.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": {
+      "verdict": "keep",
+      "reason": "Preserves the background-worker and syntax-highlighting meaning.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_set_up_repository_access": {
+      "verdict": "keep",
+      "reason": "Preserves the access-setup action.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_try_again": {
+      "verdict": "keep",
+      "reason": "Natural recovery action.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one": {
+      "verdict": "change",
+      "reason": "Вимагає clearly expresses GitHub’s requirement.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": {
+      "verdict": "keep",
+      "reason": "Preserves the self-approval restriction.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": {
+      "verdict": "change",
+      "reason": "Uses the consistent Ukrainian review-verdict action.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": {
+      "verdict": "keep",
+      "reason": "Preserves the exclusive permission boundary.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": {
+      "verdict": "change",
+      "reason": "Uses the consistent review-verdict wording while retaining the note requirement.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_submit_a_review": {
+      "verdict": "keep",
+      "reason": "Natural concise submission control.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_review_body": {
+      "verdict": "keep",
+      "reason": "Accurate field label.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_leave_a_note_with_your_review": {
+      "verdict": "keep",
+      "reason": "Natural field instruction.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_label": {
+      "verdict": "keep",
+      "reason": "Both placeholders and punctuation are preserved.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_diff": {
+      "verdict": "keep",
+      "reason": "Accurate viewer control.",
+      "uncertainty": "none"
+    },
+    "review_viewer_hide_the_diff": {
+      "verdict": "keep",
+      "reason": "Accurate viewer control.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_whole_file": {
+      "verdict": "keep",
+      "reason": "Natural viewer control.",
+      "uncertainty": "none"
+    },
+    "review_viewer_viewed": {
+      "verdict": "keep",
+      "reason": "Accurate compact state label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_set_up_private_repository_access": {
+      "verdict": "keep",
+      "reason": "Preserves private-repository access scope.",
+      "uncertainty": "none"
+    },
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": {
+      "verdict": "keep",
+      "reason": "Preserves the explicit permission boundary and ordered steps.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_to_github": {
+      "verdict": "keep",
+      "reason": "Natural sign-in control.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_identifies_your_account_to_github_any_comments": {
+      "verdict": "keep",
+      "reason": "Preserves account attribution for comments.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_with_github": {
+      "verdict": "keep",
+      "reason": "Natural sign-in control.",
+      "uncertainty": "none"
+    },
+    "setup_screen_grant_repository_access": {
+      "verdict": "keep",
+      "reason": "Preserves the repository-access action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": {
+      "verdict": "keep",
+      "reason": "Clearly distinguishes identity from repository permissions.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": {
+      "verdict": "keep",
+      "reason": "Preserves the account placeholder and access-list requirement.",
+      "uncertainty": "none"
+    },
+    "setup_screen_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Accurate access-state label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_ghdiff": {
+      "verdict": "keep",
+      "reason": "Preserves the ghdiff product name.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Natural installation action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_checking": {
+      "verdict": "keep",
+      "reason": "Natural progress label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_check_again": {
+      "verdict": "keep",
+      "reason": "Natural retry action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_open_the_diff": {
+      "verdict": "keep",
+      "reason": "Accurate action using the selected diff terminology.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_the_home_page_to_paste_a": {
+      "verdict": "keep",
+      "reason": "Natural imperative; preserves all URL target types.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": {
+      "verdict": "change",
+      "reason": "Uses the more precise term for updated access permissions.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_ghdiff_home": {
+      "verdict": "keep",
+      "reason": "Natural concise control label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural concise control label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": {
+      "verdict": "change",
+      "reason": "Corrects Ukrainian word order while preserving the missing-App condition and public-access boundary.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_now_uses_a_github_app": {
+      "verdict": "keep",
+      "reason": "Accurate and natural.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": {
+      "verdict": "keep",
+      "reason": "Preserves browser-local deletion and the token's continued validity until manually deleted.",
+      "uncertainty": "none"
+    },
+    "setup_screen_delete_the_token_on_github": {
+      "verdict": "keep",
+      "reason": "Natural action label.",
+      "uncertainty": "none"
+    },
+    "userscript_install_add_a_ghdiff_button_to_github_com": {
+      "verdict": "keep",
+      "reason": "Preserves ghdiff and github.com intact.",
+      "uncertainty": "none"
+    },
+    "userscript_install_install": {
+      "verdict": "keep",
+      "reason": "Appropriate infinitive control label.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch_this_repository": {
+      "verdict": "keep",
+      "reason": "Uses the established local-list watch term.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch": {
+      "verdict": "keep",
+      "reason": "Preserves the placeholder and question form.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_keep_reviewing": {
+      "verdict": "keep",
+      "reason": "Natural review-continuation label.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Clearly preserves browser-local storage scope.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_not_now": {
+      "verdict": "keep",
+      "reason": "Natural neutral refusal.",
+      "uncertainty": "none"
+    },
+    "watched_repos_dialog_watched_repositories": {
+      "verdict": "keep",
+      "reason": "Natural state label for repositories on the local list.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": {
+      "verdict": "keep",
+      "reason": "Preserves open pull requests and browser-local list scope.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_enter_a_repository_as_owner_repo": {
+      "verdict": "keep",
+      "reason": "Keeps owner/repo unchanged.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_owner_repo": {
+      "verdict": "keep",
+      "reason": "Identifier is preserved exactly.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_repository_to_watch": {
+      "verdict": "keep",
+      "reason": "Natural field label.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_add": {
+      "verdict": "keep",
+      "reason": "Natural action label.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_nothing_watched_yet": {
+      "verdict": "keep",
+      "reason": "Correctly expresses an empty watch list.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_remove": {
+      "verdict": "keep",
+      "reason": "Natural action label.",
+      "uncertainty": "none"
+    },
+    "dialog_close": {
+      "verdict": "keep",
+      "reason": "Natural action label.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_could_not_read_that_file_from_github": {
+      "verdict": "keep",
+      "reason": "Accurate failure message.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": {
+      "verdict": "keep",
+      "reason": "Preserves change timing and reload consequence.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_request_failed": {
+      "verdict": "keep",
+      "reason": "Preserves {status} exactly.",
+      "uncertainty": "none"
+    },
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Natural and preserves the account-check failure.",
+      "uncertainty": "none"
+    },
+    "use_installations_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "Accurately preserves the installation-scope read failure.",
+      "uncertainty": "none"
+    },
+    "use_open_pulls_could_not_load_pull_requests": {
+      "verdict": "keep",
+      "reason": "Natural technical terminology.",
+      "uncertainty": "none"
+    },
+    "use_pull_details_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natural technical terminology.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Accurate and concise.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_that_comment_to_github": {
+      "verdict": "keep",
+      "reason": "Accurate posting failure.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_this_reply_to_github": {
+      "verdict": "keep",
+      "reason": "Accurate reply-posting failure.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": {
+      "verdict": "keep",
+      "reason": "Preserves uncertainty and the reload instruction.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_request_failed": {
+      "verdict": "keep",
+      "reason": "Preserves {status} exactly.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Natural failure message.",
+      "uncertainty": "none"
+    },
+    "use_submit_review_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Preserves the distinct human-review action.",
+      "uncertainty": "none"
+    },
+    "use_viewed_files_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "Accurate state-mark submission failure.",
+      "uncertainty": "none"
+    },
+    "code_fonts_system": {
+      "verdict": "keep",
+      "reason": "Appropriate compact font-option label.",
+      "uncertainty": "none"
+    },
+    "diff_hydration_that_file_is_too_large_to_show_its": {
+      "verdict": "keep",
+      "reason": "Preserves the size limitation and unmodified-line scope.",
+      "uncertainty": "none"
+    },
+    "example_targets_rewrite_bun_in_rust": {
+      "verdict": "keep",
+      "reason": "Preserves protected product and language names.",
+      "uncertainty": "none"
+    },
+    "example_targets_2_188_files_1_0m_lines": {
+      "verdict": "keep",
+      "reason": "Uses Ukrainian grouping and decimal conventions.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_largest_of_them_43_mb_of_unified": {
+      "verdict": "change",
+      "reason": "Corrects singular agreement and translates unified diff naturally.",
+      "uncertainty": "none"
+    },
+    "example_targets_resolve_maimai_net_import_pr_conflicts": {
+      "verdict": "keep",
+      "reason": "Preserves the Maimai NET name and pull-request conflict meaning.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_494k_lines": {
+      "verdict": "keep",
+      "reason": "Natural abbreviated quantity formatting.",
+      "uncertainty": "none"
+    },
+    "example_targets_one_generated_json_file_holds_465_486_of": {
+      "verdict": "keep",
+      "reason": "Preserves JSON and the exact count.",
+      "uncertainty": "none"
+    },
+    "example_targets_deps_update_v8_to_14_1": {
+      "verdict": "keep",
+      "reason": "Preserves deps, V8, and version identifier.",
+      "uncertainty": "none"
+    },
+    "example_targets_3_420_files_268k_lines": {
+      "verdict": "keep",
+      "reason": "Natural abbreviated quantity formatting.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_widest_file_tree_past_the_api_diff": {
+      "verdict": "change",
+      "reason": "Clarifies that the API diff limit is exceeded while retaining the non-web-host consequence.",
+      "uncertainty": "The intended technical meaning of web host is context-dependent."
+    },
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": {
+      "verdict": "keep",
+      "reason": "Preserves all technical identifiers.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_88k_lines": {
+      "verdict": "keep",
+      "reason": "Natural abbreviated quantity formatting.",
+      "uncertainty": "none"
+    },
+    "example_targets_large_and_still_a_diff_a_person_can": {
+      "verdict": "keep",
+      "reason": "Preserves the human-readable-to-the-end claim.",
+      "uncertainty": "none"
+    },
+    "example_targets_ghostty_1_3_0_to_1_3_1": {
+      "verdict": "keep",
+      "reason": "Preserves product name and versions.",
+      "uncertainty": "none"
+    },
+    "example_targets_53_files_2_6k_lines": {
+      "verdict": "keep",
+      "reason": "Correct Ukrainian noun form after 53 and decimal formatting.",
+      "uncertainty": "none"
+    },
+    "example_targets_a_compare_range_of_one_release_100_commits": {
+      "verdict": "change",
+      "reason": "Adds the required Ukrainian preposition for a natural compare-range phrase.",
+      "uncertainty": "none"
+    },
+    "filter_rules_all_files": {
+      "verdict": "keep",
+      "reason": "Natural filter label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_every_file_in_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural and complete.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_tests": {
+      "verdict": "keep",
+      "reason": "Natural filter label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Accurate technical terms.",
+      "uncertainty": "none"
+    },
+    "filter_rules_tests_only": {
+      "verdict": "keep",
+      "reason": "Natural filter label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Accurate technical terms.",
+      "uncertainty": "none"
+    },
+    "filter_rules_source_only": {
+      "verdict": "keep",
+      "reason": "Natural filter label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_code_files_that_are_not_tests": {
+      "verdict": "keep",
+      "reason": "Preserves both exclusion conditions.",
+      "uncertainty": "none"
+    },
+    "filter_rules_docs_only": {
+      "verdict": "keep",
+      "reason": "Natural concise label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_markdown_and_other_prose_files": {
+      "verdict": "change",
+      "reason": "Avoids broadening prose files to every text file.",
+      "uncertainty": "none"
+    },
+    "filter_rules_config_only": {
+      "verdict": "keep",
+      "reason": "Natural concise label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": {
+      "verdict": "keep",
+      "reason": "Preserves CI and lint configuration distinctions.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_generated": {
+      "verdict": "keep",
+      "reason": "Natural filter label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Preserves all generated-output categories.",
+      "uncertainty": "none"
+    },
+    "filter_rules_generated_only": {
+      "verdict": "keep",
+      "reason": "Natural filter label.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Preserves all generated-output categories.",
+      "uncertainty": "none"
+    },
+    "github_app_sign_in_was_not_completed_on_github_try": {
+      "verdict": "keep",
+      "reason": "Preserves incomplete sign-in and conditional retry timing.",
+      "uncertainty": "none"
+    },
+    "github_app_the_sign_in_session_timed_out_on_github": {
+      "verdict": "keep",
+      "reason": "Preserves timeout and restart instruction.",
+      "uncertainty": "none"
+    },
+    "github_app_security_verification_failed_during_github_sign_in_start": {
+      "verdict": "keep",
+      "reason": "Preserves failed security verification and ghdiff restart location.",
+      "uncertainty": "none"
+    },
+    "github_app_github_could_not_complete_the_sign_in_try": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub-side uncertainty and delayed retry advice.",
+      "uncertainty": "none"
+    },
+    "installations_all_repositories": {
+      "verdict": "keep",
+      "reason": "Natural scope label.",
+      "uncertainty": "none"
+    },
+    "installations_no_repositories_selected": {
+      "verdict": "keep",
+      "reason": "Clearly preserves empty selection state.",
+      "uncertainty": "none"
+    },
+    "pull_details_just_now": {
+      "verdict": "keep",
+      "reason": "Natural short time label.",
+      "uncertainty": "none"
+    },
+    "pull_status_approved": {
+      "verdict": "keep",
+      "reason": "Natural review-state label distinct from automated checks.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested": {
+      "verdict": "keep",
+      "reason": "Natural review-state label.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_review_yet": {
+      "verdict": "change",
+      "reason": "Uses рев’ю to distinguish human review from checks.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_passing": {
+      "verdict": "keep",
+      "reason": "Concise automated-check status.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_running": {
+      "verdict": "keep",
+      "reason": "Natural ongoing-check status.",
+      "uncertainty": "none"
+    },
+    "pull_status_a_check_failed": {
+      "verdict": "keep",
+      "reason": "Preserves singular failed-check meaning.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_checks": {
+      "verdict": "keep",
+      "reason": "Natural absence state.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested_new_commits_since": {
+      "verdict": "keep",
+      "reason": "Preserves the subsequent-commits consequence.",
+      "uncertainty": "none"
+    },
+    "review_data_commit": {
+      "verdict": "keep",
+      "reason": "Correct technical label and placeholder.",
+      "uncertainty": "none"
+    },
+    "review_decision_approve": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_decision_approving": {
+      "verdict": "keep",
+      "reason": "Natural progress state.",
+      "uncertainty": "none"
+    },
+    "review_decision_request_changes": {
+      "verdict": "keep",
+      "reason": "Natural concise review action.",
+      "uncertainty": "none"
+    },
+    "review_decision_requesting": {
+      "verdict": "keep",
+      "reason": "Natural progress state.",
+      "uncertainty": "none"
+    },
+    "review_decision_comment": {
+      "verdict": "change",
+      "reason": "Коментувати is less natural as a one-time submission action.",
+      "uncertainty": "none"
+    },
+    "review_decision_commenting": {
+      "verdict": "change",
+      "reason": "Matches the revised action and progress meaning.",
+      "uncertainty": "none"
+    },
+    "review_decision_approved": {
+      "verdict": "keep",
+      "reason": "Correct completed review state.",
+      "uncertainty": "none"
+    },
+    "review_decision_changes_requested": {
+      "verdict": "keep",
+      "reason": "Correct completed review state.",
+      "uncertainty": "none"
+    },
+    "review_decision_commented": {
+      "verdict": "keep",
+      "reason": "Correct completed review state.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_approved_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natural completed-action message.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_requested_changes_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Preserves the review verdict.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_commented_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natural completed-action message.",
+      "uncertainty": "none"
+    },
+    "review_decision_github_recorded_your_review": {
+      "verdict": "change",
+      "reason": "Рев’ю distinguishes human review from automated checks.",
+      "uncertainty": "none"
+    },
+    "review_failure_the_server_didn_t_respond_your_connection_might": {
+      "verdict": "change",
+      "reason": "Improves the timeout construction while retaining uncertainty.",
+      "uncertainty": "none"
+    },
+    "review_failure_you_used_all_5_000_github_requests_for": {
+      "verdict": "keep",
+      "reason": "Preserves limit, recovery timing, and next step.",
+      "uncertainty": "none"
+    },
+    "review_failure_hourly_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Natural concise error title.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": {
+      "verdict": "keep",
+      "reason": "Preserves authentication boundary and immediate result.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Natural concise error title.",
+      "uncertainty": "none"
+    },
+    "review_failure_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Preserves failed refresh and recovery action.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_sign_in_expired": {
+      "verdict": "keep",
+      "reason": "Natural concise error title.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": {
+      "verdict": "keep",
+      "reason": "Retains alternative access causes and permission consequence.",
+      "uncertainty": "none"
+    },
+    "review_failure_ghdiff_needs_access_to_this_repository": {
+      "verdict": "keep",
+      "reason": "Natural access requirement.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returns_not_found_for_private_repositories_when": {
+      "verdict": "keep",
+      "reason": "Preserves signed-out condition and recovery.",
+      "uncertainty": "none"
+    },
+    "review_failure_repository_not_found_or_private": {
+      "verdict": "keep",
+      "reason": "Preserves uncertainty between not found and private.",
+      "uncertainty": "none"
+    },
+    "review_failure_could_not_load_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural failed-action title.",
+      "uncertainty": "none"
+    },
+    "contract_enter_a_valid_github_username_or_repository_name": {
+      "verdict": "keep",
+      "reason": "Correct validation instruction.",
+      "uncertainty": "none"
+    },
+    "contract_comment_cannot_be_empty": {
+      "verdict": "keep",
+      "reason": "Natural validation message.",
+      "uncertainty": "none"
+    },
+    "router_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Natural account-state error.",
+      "uncertainty": "none"
+    },
+    "router_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "Preserves installation-location meaning.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_repository": {
+      "verdict": "keep",
+      "reason": "Natural failed-action message.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Uses established Ukrainian pull-request form.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_your_review_of_this_pull": {
+      "verdict": "change",
+      "reason": "Рев’ю avoids conflation with checks.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_review_but_returned_nothing": {
+      "verdict": "change",
+      "reason": "Рев’ю is the natural human-review term.",
+      "uncertainty": "none"
+    },
+    "router_could_not_submit_this_review": {
+      "verdict": "change",
+      "reason": "Рев’ю avoids ambiguity with automated checks.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Natural failed-action message.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_reply_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Preserves accepted-but-empty response.",
+      "uncertainty": "none"
+    },
+    "router_this_comment_is_missing_a_file_or_line": {
+      "verdict": "keep",
+      "reason": "Preserves both required missing fields.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_comment_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Preserves accepted-but-empty response.",
+      "uncertainty": "none"
+    },
+    "router_could_not_post_this_comment": {
+      "verdict": "keep",
+      "reason": "Natural failed action.",
+      "uncertainty": "none"
+    },
+    "router_could_not_delete_this_comment": {
+      "verdict": "keep",
+      "reason": "Natural failed action.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_which_files_you_have_read": {
+      "verdict": "keep",
+      "reason": "Preserves read-file list meaning.",
+      "uncertainty": "none"
+    },
+    "router_not_found": {
+      "verdict": "keep",
+      "reason": "Standard concise error label.",
+      "uncertainty": "none"
+    },
+    "router_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "Natural failed action.",
+      "uncertainty": "none"
+    },
+    "auth_route_this_ghdiff_has_no_github_app_set_up": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub App token and sign-in consequence.",
+      "uncertainty": "none"
+    },
+    "github_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Preserves recovery action.",
+      "uncertainty": "none"
+    },
+    "github_github_rejected_that_query": {
+      "verdict": "keep",
+      "reason": "Natural API error message.",
+      "uncertainty": "none"
+    },
+    "github_github_returned_no_data_for_that_query": {
+      "verdict": "keep",
+      "reason": "Natural API response message.",
+      "uncertainty": "none"
+    },
+    "github_github_has_no_such_file_on_that_commit": {
+      "verdict": "keep",
+      "reason": "Preserves commit scope and private-token requirement.",
+      "uncertainty": "none"
+    },
+    "github_app_github_would_not_revoke_that_token": {
+      "verdict": "keep",
+      "reason": "Natural failed revocation message.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_for_that_token_request": {
+      "verdict": "keep",
+      "reason": "Preserves {status}.",
+      "uncertainty": "none"
+    },
+    "github_app_github_refused_that": {
+      "verdict": "keep",
+      "reason": "Preserves {error}.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_with_no_access_token": {
+      "verdict": "keep",
+      "reason": "Natural missing-token message.",
+      "uncertainty": "none"
+    },
+    "github_patch_github_lists_at_most_files_for_this_diff": {
+      "verdict": "change",
+      "reason": "Наступні files expresses files omitted after the limit more naturally.",
+      "uncertainty": "none"
+    },
+    "installations_an_account": {
+      "verdict": "keep",
+      "reason": "Correct indefinite account phrase.",
+      "uncertainty": "none"
+    },
+    "stream_text_that_response_is_too_large_to_read": {
+      "verdict": "keep",
+      "reason": "Natural concise size-limit message.",
+      "uncertainty": "none"
+    },
+    "diff_that_review_target_is_not_valid": {
+      "verdict": "change",
+      "reason": "Uses the human-review term consistently.",
+      "uncertainty": "none"
+    },
+    "diff_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Natural failed-action message.",
+      "uncertainty": "none"
+    },
+    "diff_that_request_to_github_failed": {
+      "verdict": "keep",
+      "reason": "Natural failed-request message.",
+      "uncertainty": "none"
+    },
+    "file_that_review_target_is_not_valid": {
+      "verdict": "change",
+      "reason": "Uses the human-review term consistently.",
+      "uncertainty": "none"
+    },
+    "file_that_file_path_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Natural validation message.",
+      "uncertainty": "none"
+    },
+    "file_could_not_load_that_file": {
+      "verdict": "keep",
+      "reason": "Natural failed-action message.",
+      "uncertainty": "none"
+    },
+    "route_no_such_procedure": {
+      "verdict": "keep",
+      "reason": "Natural route error.",
+      "uncertainty": "none"
+    },
+    "common_file_count": {
+      "verdict": "keep",
+      "reason": "Complete Ukrainian CLDR branches and wildcard.",
+      "uncertainty": "none"
+    },
+    "common_commit_count": {
+      "verdict": "keep",
+      "reason": "Complete Ukrainian CLDR branches and wildcard.",
+      "uncertainty": "none"
+    },
+    "common_comment_count": {
+      "verdict": "keep",
+      "reason": "Complete Ukrainian CLDR branches and wildcard.",
+      "uncertainty": "none"
+    },
+    "common_reply_count": {
+      "verdict": "keep",
+      "reason": "Complete Ukrainian CLDR branches and wildcard.",
+      "uncertainty": "none"
+    },
+    "common_repository_count": {
+      "verdict": "keep",
+      "reason": "Complete Ukrainian CLDR branches and wildcard.",
+      "uncertainty": "none"
+    },
+    "home_served_count": {
+      "verdict": "keep",
+      "reason": "Complete Ukrainian CLDR branches and wildcard.",
+      "uncertainty": "none"
+    },
+    "filter_hidden_count": {
+      "verdict": "change",
+      "reason": "Wildcard arm was malformed and must be countPlural=*.",
+      "uncertainty": "none"
+    },
+    "filter_status_summary": {
+      "verdict": "keep",
+      "reason": "Complete Ukrainian CLDR branches and wildcard.",
+      "uncertainty": "none"
+    },
+    "stack_pull_count": {
+      "verdict": "keep",
+      "reason": "Natural count inflection for a pull-request stack.",
+      "uncertainty": "none"
+    },
+    "comment_line": {
+      "verdict": "keep",
+      "reason": "Natural line-comment label and placeholder.",
+      "uncertainty": "none"
+    },
+    "comment_line_range": {
+      "verdict": "keep",
+      "reason": "Natural concise line-range label with both placeholders preserved.",
+      "uncertainty": "none"
+    },
+    "sidebar_file_summary": {
+      "verdict": "keep",
+      "reason": "Ukrainian plural forms and numeric interpolation are preserved.",
+      "uncertainty": "none"
+    },
+    "home_credits": {
+      "verdict": "change",
+      "reason": "Added an em dash for more natural Ukrainian parallel phrasing.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_phone": {
+      "verdict": "keep",
+      "reason": "Preserves the phone-specific destination and local watch-state result.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_wide": {
+      "verdict": "keep",
+      "reason": "Preserves the desktop left-panel destination.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_phone": {
+      "verdict": "keep",
+      "reason": "Preserves the local-list action, named control, and alternate home-page route.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_wide": {
+      "verdict": "keep",
+      "reason": "Preserves the panel location and named control.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_phone": {
+      "verdict": "change",
+      "reason": "Clarified that review status and automated checks are distinct.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_wide": {
+      "verdict": "change",
+      "reason": "Clarified that review status and automated checks are distinct.",
+      "uncertainty": "none"
+    },
+    "watch_offer_action": {
+      "verdict": "keep",
+      "reason": "Matches the approved local watch-list action term.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_title": {
+      "verdict": "keep",
+      "reason": "Natural neutral state message with subject intact.",
+      "uncertainty": "none"
+    },
+    "pull_opened_age": {
+      "verdict": "keep",
+      "reason": "Compact and natural metadata label.",
+      "uncertainty": "none"
+    },
+    "pull_updated_age": {
+      "verdict": "keep",
+      "reason": "Compact and natural metadata label.",
+      "uncertainty": "none"
+    },
+    "tree_directory_summary": {
+      "verdict": "keep",
+      "reason": "Correct Ukrainian count branches and placeholders.",
+      "uncertainty": "none"
+    },
+    "pull_list_empty": {
+      "verdict": "keep",
+      "reason": "Natural empty-state sentence that retains the repository scope.",
+      "uncertainty": "none"
+    },
+    "review_submit_scope": {
+      "verdict": "change",
+      "reason": "Uses a clearer term for a submitted review and future wording for later publication.",
+      "uncertainty": "none"
+    },
+    "review_previous_verdict": {
+      "verdict": "keep",
+      "reason": "Preserves replacement of the previous verdict without overstating outcome.",
+      "uncertainty": "none"
+    },
+    "setup_not_installed": {
+      "verdict": "keep",
+      "reason": "Retains the conditional organization-owner approval boundary.",
+      "uncertainty": "none"
+    },
+    "setup_no_repositories": {
+      "verdict": "change",
+      "reason": "Uses a more precise Ukrainian review term while retaining the no-access scope.",
+      "uncertainty": "none"
+    },
+    "userscript_manager_description": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub control names and the manager requirement.",
+      "uncertainty": "none"
+    },
+    "pull_row_tooltip": {
+      "verdict": "keep",
+      "reason": "Keeps newline structure and opaque values intact.",
+      "uncertainty": "none"
+    },
+    "pull_status_description": {
+      "verdict": "keep",
+      "reason": "Preserves distinct injected review and checks values.",
+      "uncertainty": "none"
+    },
+    "auth_required_review": {
+      "verdict": "change",
+      "reason": "Uses the same precise term for submitting a review.",
+      "uncertainty": "none"
+    },
+    "auth_required_delete": {
+      "verdict": "keep",
+      "reason": "Natural access prerequisite with action intact.",
+      "uncertainty": "none"
+    },
+    "auth_required_viewed": {
+      "verdict": "keep",
+      "reason": "Natural access prerequisite with viewed-file action intact.",
+      "uncertainty": "none"
+    },
+    "bytes_count": {
+      "verdict": "keep",
+      "reason": "Correct Ukrainian byte inflection by CLDR category.",
+      "uncertainty": "none"
+    },
+    "bytes_kilobytes": {
+      "verdict": "keep",
+      "reason": "Standard Ukrainian kilobyte abbreviation.",
+      "uncertainty": "none"
+    },
+    "bytes_megabytes": {
+      "verdict": "keep",
+      "reason": "Standard Ukrainian megabyte abbreviation.",
+      "uncertainty": "none"
+    },
+    "app_description": {
+      "verdict": "change",
+      "reason": "Improved imperative flow and corrected the direction of posting comments to GitHub.",
+      "uncertainty": "none"
+    },
+    "thread_delete_confirmation": {
+      "verdict": "change",
+      "reason": "Uses a more idiomatic term for a comment thread while preserving irreversibility.",
+      "uncertainty": "none"
+    },
+    "github_patch_missing_files": {
+      "verdict": "change",
+      "reason": "Rephrased the size limitation naturally while preserving GitHub's judgment and the absence of lines.",
+      "uncertainty": "none"
+    },
+    "userscript_open_pull": {
+      "verdict": "keep",
+      "reason": "Natural concise action with product name intact.",
+      "uncertainty": "none"
+    },
+    "userscript_open_commit": {
+      "verdict": "keep",
+      "reason": "Natural concise action with product name intact.",
+      "uncertainty": "none"
+    },
+    "userscript_description": {
+      "verdict": "keep",
+      "reason": "Preserves both target locations and GitHub control name.",
+      "uncertainty": "none"
+    },
+    "diff_expand_all": {
+      "verdict": "keep",
+      "reason": "Natural compact control label.",
+      "uncertainty": "none"
+    },
+    "diff_no_newline": {
+      "verdict": "keep",
+      "reason": "Accurately describes the missing trailing newline.",
+      "uncertainty": "none"
+    },
+    "tree_git_contains_changes": {
+      "verdict": "keep",
+      "reason": "Preserves the git-status concept without translating git.",
+      "uncertainty": "none"
+    },
+    "review_bytes_read": {
+      "verdict": "keep",
+      "reason": "Natural compact completion label with amount intact.",
+      "uncertainty": "none"
+    },
+    "tree_git_added": {
+      "verdict": "keep",
+      "reason": "Accurate git status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_deleted": {
+      "verdict": "keep",
+      "reason": "Accurate git status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_ignored": {
+      "verdict": "keep",
+      "reason": "Accurate git status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_modified": {
+      "verdict": "keep",
+      "reason": "Accurate git status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_renamed": {
+      "verdict": "keep",
+      "reason": "Accurate git status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_untracked": {
+      "verdict": "keep",
+      "reason": "Accurate untracked-state label.",
+      "uncertainty": "none"
+    },
+    "diff_unmodified_lines": {
+      "verdict": "keep",
+      "reason": "Correct Ukrainian count inflection and unchanged-line meaning.",
+      "uncertainty": "none"
+    }
+  },
+  "followUpFindings": {
+    "locale_language": "Переклад правильний для доступної назви кнопки вибору мови.",
+    "thread_delete_confirmation": "Відновлено точний селектор count=1; усі інші значення, зокрема 21 і 101, показують відформатовану кількість та повідомляють про видалення всіх коментарів.",
+    "app_render_error": "OK",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "«Найбільше» замінено на «найширше», щоб зберегти значення охоплення.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "1、21、101 为 one；2、3 为 few；0、5、11、1000000 为 many。"
+  },
+  "reconciledKeys": [
+    "pull_request_list_open_the_open_pull_requests_on_github",
+    "example_targets_the_widest_file_tree_past_the_api_diff",
+    "watch_offer_more_phone",
+    "watch_offer_more_wide",
+    "app_render_error"
+  ],
+  "humanNativeSpeakerReview": false
+}

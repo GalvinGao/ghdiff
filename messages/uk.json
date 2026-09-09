@@ -1,0 +1,685 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "Авто",
+  "color_mode_toggle_light": "Світла",
+  "color_mode_toggle_dark": "Темна",
+  "color_mode_toggle_color_mode_switch_to": "Колірний режим: {value}. Перемкнути на {value2}.",
+  "color_mode_toggle_color_mode": "Колірний режим: {value}",
+  "comment_author_filter_bar_comment_authors": "Автори коментарів",
+  "comment_author_filter_bar_all": "Усі",
+  "comment_author_filter_bar_comments_a_person_opened": "Коментарі, відкриті людиною",
+  "comment_author_filter_bar_people": "Люди",
+  "comment_author_filter_bar_comments_a_github_app_opened": "Коментарі, відкриті застосунком GitHub",
+  "comment_author_filter_bar_bots": "Боти",
+  "comment_body_done": "Готово",
+  "comment_body_not_done": "Не готово",
+  "comment_composer_leave_a_comment": "Залишити коментар",
+  "comment_composer_comment": "Коментар",
+  "comment_composer_cancel": "Скасувати",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd або Ctrl + Enter",
+  "comment_expansion_comment": "Коментар",
+  "comment_thread_card_open_thread_by": "Відкрите обговорення від {author}",
+  "comment_thread_card_posting": "Надсилання…",
+  "comment_thread_card_click_to_open": "Натисніть, щоб відкрити",
+  "comment_thread_card_delete": "Видалити",
+  "comment_thread_card_close": "Закрити",
+  "comment_thread_card_on_github": "На GitHub",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Цей коментар ще не надійшов до GitHub, тому на нього не можна відповісти.",
+  "comment_thread_card_reply_on_github": "Відповісти на GitHub",
+  "comment_thread_card_reply_in_this_browser": "Відповісти в цьому браузері",
+  "comment_thread_card_sending": "Надсилається…",
+  "comment_thread_card_reply": "Відповісти",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd або Ctrl з Enter",
+  "comments_list_no_comments_here": "Тут немає коментарів.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "Коментарі, залишені тут, публікуються на GitHub.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub не має обговорень рев’ю для комітів чи діапазонів порівняння. Коментарі залишаються в цьому браузері.",
+  "comments_list_posting": "надсилання",
+  "comments_list_failed": "не вдалося",
+  "comments_list_go_to": "Перейти до {path}",
+  "confirm_inline_cancel": "Скасувати",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "Додано",
+  "filter_menu_modified": "Змінено",
+  "filter_menu_renamed": "Перейменовано",
+  "filter_menu_deleted": "Видалено",
+  "filter_menu_filter_files": "Фільтрувати файли",
+  "filter_menu_file_rules": "Правила файлів",
+  "filter_menu_git_status": "Стан Git",
+  "filter_menu_clear_filters": "Очистити фільтри",
+  "filter_menu_all_files": "Усі файли",
+  "git_hub_account_control_set_up_access": "Налаштувати доступ",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Залишені коментарі публікуються на GitHub від імені цього облікового запису.",
+  "git_hub_account_panel_install_on_another_account": "Установити для іншого облікового запису",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff не встановлено для жодного облікового запису. Налаштуйте його, щоб читати ваш код.",
+  "git_hub_account_panel_open_setup_guide": "Відкрити посібник із налаштування",
+  "git_hub_account_panel_sign_out": "Вийти",
+  "git_hub_account_panel_accounts_with_access": "Облікові записи з доступом",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "Відкриває налаштування на github.com, щоб додати або видалити репозиторії.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "Перевірка облікових записів GitHub, які може читати ghdiff…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "Відкрийте будь-який пул-реквест, коміт або діапазон порівняння GitHub.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "Звузьте список файлів за готовими правилами шляхів.",
+  "home_screen_read_and_leave_comments": "Читайте й залишайте коментарі.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "Вставте URL пул-реквесту, коміту або порівняння GitHub чи введіть owner/repo#123.",
+  "home_screen_github_pull_request_commit_or_compare_url": "URL пул-реквесту, коміту або порівняння GitHub",
+  "home_screen_open_this_diff": "Відкрити ці відмінності",
+  "home_screen_review": "Переглянути",
+  "home_screen_set_up_access_for_private_repositories": "Налаштувати доступ до приватних репозиторіїв",
+  "home_screen_userscript": "Користувацький скрипт",
+  "home_screen_examples": "Приклади",
+  "home_screen_watched_repos": "Відстежувані репозиторії",
+  "home_screen_github_account": "Обліковий запис GitHub",
+  "home_screen_source_on_github": "Вихідний код на GitHub",
+  "home_screen_review_the_commit_this_build_was_made_from": "Переглянути в ghdiff коміт {sha}, з якого зібрано цю версію",
+  "installation_row_current_diff": "поточні відмінності",
+  "installation_row_configure": "Налаштувати",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff не може прочитати цей URL",
+  "not_found_a_review_needs_a_github_pull_request_a": "Для перегляду потрібні пул-реквест, коміт або діапазон порівняння GitHub.",
+  "not_found_open_a_different_review": "Відкрити інший перегляд",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "Перетягніть, щоб змінити розмір. Двічі клацніть, щоб скинути.",
+  "pull_details_card_loading_pull_request": "Завантаження пул-реквесту…",
+  "pull_details_card_no_details_yet": "Деталей ще немає.",
+  "pull_details_card_files": "Файли",
+  "pull_details_card_added_lines": "Додані рядки",
+  "pull_details_card_deleted_lines": "Видалені рядки",
+  "pull_details_card_commits": "Коміти",
+  "pull_details_card_description": "Опис",
+  "pull_list_button_open_pull_requests": "Відкриті пул-реквести",
+  "pull_list_button_watched_repos": "Відстежувані репозиторії",
+  "pull_list_button_reload_the_pull_requests": "Перезавантажити пул-реквести",
+  "pull_list_button_loading_the_pull_requests": "Завантаження пул-реквестів",
+  "pull_rail_open_pull_requests": "Відкриті пул-реквести",
+  "pull_rail_pull_request_bar_width": "Ширина панелі пул-реквестів",
+  "pull_rail_show_the_pull_requests": "Показати пул-реквести",
+  "pull_rail_hide_the_pull_requests": "Сховати пул-реквести",
+  "pull_rail_watched_repos": "Відстежувані репозиторії",
+  "pull_rail_reload_the_pull_requests": "Перезавантажити пул-реквести",
+  "pull_rail_loading_the_pull_requests": "Завантаження пул-реквестів",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "Додайте репозиторій до списку відстеження, щоб бачити його відкриті пул-реквести.",
+  "pull_request_list_open_on_github": "Відкрити {owner}/{repo} на GitHub",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=one": "Відкрити {formatted} відкритий пул-реквест на GitHub",
+        "category=few": "Відкрити {formatted} відкриті пул-реквести на GitHub",
+        "category=many": "Відкрити {formatted} відкритих пул-реквестів на GitHub",
+        "category=*": "Відкрити {formatted} відкритих пул-реквестів на GitHub"
+      }
+    }
+  ],
+  "pull_request_list_you": "ви",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "Відкрити пул-реквести користувача {author} у {owner}/{repo} на GitHub",
+  "pull_request_list_set_up_private_access": "Налаштувати приватний доступ",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "Ви вийшли з облікового запису: жоден рядок не показує квадрат стану чи позначку на ваших пул-реквестах. Після входу з’являться обидва.",
+  "pull_request_list_stack": "Стос",
+  "pull_request_list_loading_open_pull_requests": "Завантаження відкритих пул-реквестів…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "Чернетка",
+  "pull_row_currently_viewing": "Переглядається зараз",
+  "pull_state_icon_open": "Відкрито",
+  "pull_state_icon_draft": "Чернетка",
+  "pull_state_icon_merged": "Об’єднано",
+  "pull_state_icon_closed": "Закрито",
+  "review_header_bars": "Смужки",
+  "review_header_signs": "Позначки",
+  "review_header_none": "Немає",
+  "review_header_hide_the_file_list": "Сховати список файлів",
+  "review_header_show_the_file_list": "Показати список файлів",
+  "review_header_open_on_github": "Відкрити {targetLabel} на GitHub",
+  "review_header_switch_to_unified_view": "Перемкнутися на єдиний вигляд",
+  "review_header_switch_to_split_view": "Перемкнутися на розділений вигляд",
+  "review_header_split_view": "Розділений вигляд",
+  "review_header_unified_view": "Єдиний вигляд",
+  "review_header_display_settings": "Налаштування відображення",
+  "review_header_code_font": "Шрифт коду",
+  "review_header_change_markers": "Позначки змін",
+  "review_header_wrap_long_lines": "Переносити довгі рядки",
+  "review_header_line_numbers": "Номери рядків",
+  "review_header_change_backgrounds": "Фони змін",
+  "review_header_dim_whitespace_changes": "Приглушити зміни пробілів",
+  "review_header_approve_request_changes_or_comment": "Схвалити, запитати зміни або залишити коментар",
+  "review_header_review": "Рев’ю",
+  "review_header_review_it_again": "{value} Перегляньте ще раз.",
+  "review_screen_sidebar_width": "Ширина бічної панелі",
+  "review_screen_dismiss": "Закрити",
+  "review_sidebar_sidebar_sections": "Розділи бічної панелі",
+  "review_sidebar_files": "Файли",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=one, comments=one": "{threadNumber} обговорення, {commentNumber} коментар",
+        "threads=one, comments=few": "{threadNumber} обговорення, {commentNumber} коментарі",
+        "threads=one, comments=many": "{threadNumber} обговорення, {commentNumber} коментарів",
+        "threads=one, comments=other": "{threadNumber} обговорення, {commentNumber} коментаря",
+        "threads=few, comments=one": "{threadNumber} обговорення, {commentNumber} коментар",
+        "threads=few, comments=few": "{threadNumber} обговорення, {commentNumber} коментарі",
+        "threads=few, comments=many": "{threadNumber} обговорення, {commentNumber} коментарів",
+        "threads=few, comments=other": "{threadNumber} обговорення, {commentNumber} коментаря",
+        "threads=many, comments=one": "{threadNumber} обговорень, {commentNumber} коментар",
+        "threads=many, comments=few": "{threadNumber} обговорень, {commentNumber} коментарі",
+        "threads=many, comments=many": "{threadNumber} обговорень, {commentNumber} коментарів",
+        "threads=many, comments=other": "{threadNumber} обговорень, {commentNumber} коментаря",
+        "threads=other, comments=one": "{threadNumber} обговорення, {commentNumber} коментар",
+        "threads=other, comments=few": "{threadNumber} обговорення, {commentNumber} коментарі",
+        "threads=other, comments=many": "{threadNumber} обговорення, {commentNumber} коментарів",
+        "threads=*, comments=*": "{threadNumber} обговорення, {commentNumber} коментаря"
+      }
+    }
+  ],
+  "review_sidebar_comments": "Коментарі",
+  "review_sidebar_hide_the_path_search": "Сховати пошук за шляхом",
+  "review_sidebar_search_by_path": "Шукати за шляхом",
+  "review_sidebar_the_current_filter_hides_all_files": "Поточний фільтр приховує всі файли.",
+  "review_sidebar_clear_filters": "Очистити фільтри",
+  "review_sidebar_added_lines": "Додані рядки",
+  "review_sidebar_deleted_lines": "Видалені рядки",
+  "review_sidebar_search_files_by_path": "Шукати файли за шляхом",
+  "review_sidebar_path_contains": "Шлях містить…",
+  "review_sidebar_clear_the_path_search": "Очистити пошук за шляхом",
+  "review_status_panel_fetching_the_diff": "Отримання відмінностей",
+  "review_status_panel_reading_the_patch_for_this_review": "Читання патчу для цього перегляду.",
+  "review_status_panel_preparing_the_diff": "Підготовка відмінностей",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "Розбір патчу та створення списку файлів.",
+  "review_status_panel_starting_the_highlighters": "Запуск підсвічувачів",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "Фонові процеси готуються підсвітити ваш код.",
+  "review_status_panel_set_up_repository_access": "Налаштувати доступ до репозиторію",
+  "review_status_panel_try_again": "Спробувати ще раз",
+  "review_submit_dialog_add_a_note_github_needs_one": "Додайте примітку. GitHub її вимагає.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub не дозволяє схвалити власний пул-реквест.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub не дозволяє запитувати зміни у власному пул-реквесті.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Ви можете коментувати власний пул-реквест. GitHub не дозволяє нічого іншого.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "Додайте примітку. GitHub потребує її, щоб запитати зміни або залишити коментар.",
+  "review_submit_dialog_submit_a_review": "Надіслати рев’ю",
+  "review_submit_dialog_review_body": "Текст рев’ю",
+  "review_submit_dialog_leave_a_note_with_your_review": "Залиште примітку до свого рев’ю",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "Показати відмінності",
+  "review_viewer_hide_the_diff": "Сховати відмінності",
+  "review_viewer_show_the_whole_file": "Показати весь файл",
+  "review_viewer_viewed": "Переглянуто",
+  "setup_screen_set_up_private_repository_access": "Налаштувати доступ до приватного репозиторію",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub дозволяє ghdiff читати лише репозиторії, до яких ви надали доступ. Виконайте ці три кроки по черзі.",
+  "setup_screen_sign_in_to_github": "Увійти до GitHub",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "Це ідентифікує ваш обліковий запис для GitHub. Усі залишені коментарі буде опубліковано від цього облікового запису.",
+  "setup_screen_sign_in_with_github": "Увійти через GitHub",
+  "setup_screen_grant_repository_access": "Надати доступ до репозиторію",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Вхід лише ідентифікує вас. Виберіть облікові записи й репозиторії, які може читати ghdiff.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "Вхід лише ідентифікує вас. Установіть ghdiff для {account} і переконайтеся, що цей репозиторій є у списку доступу.",
+  "setup_screen_accounts_with_access": "Облікові записи з доступом",
+  "setup_screen_install_ghdiff": "Установити ghdiff",
+  "setup_screen_install_on_another_account": "Установити для іншого облікового запису",
+  "setup_screen_checking": "Перевірка…",
+  "setup_screen_check_again": "Перевірити ще раз",
+  "setup_screen_open_the_diff": "Відкрити відмінності",
+  "setup_screen_go_to_the_home_page_to_paste_a": "Перейдіть на головну сторінку, щоб вставити URL пул-реквесту, коміту або порівняння.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Поверніться до відмінностей. ghdiff отримає їх знову з вашими оновленими правами доступу.",
+  "setup_screen_go_to_ghdiff_home": "Перейти на головну сторінку ghdiff",
+  "setup_screen_return_to_the_diff": "Повернутися до відмінностей",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Для цього розгортання ghdiff GitHub App не налаштовано. Ви все одно можете переглядати будь-які публічні відмінності.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff тепер використовує GitHub App",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff видалив ваш старий персональний токен доступу з цього браузера й більше не запитує його. GitHub і далі прийматиме цей токен, доки ви не видалите його в налаштуваннях GitHub.",
+  "setup_screen_delete_the_token_on_github": "Видалити токен на GitHub",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "Додати кнопку ghdiff на github.com",
+  "userscript_install_install": "Установити",
+  "watch_offer_dialog_watch_this_repository": "Відстежувати цей репозиторій?",
+  "watch_offer_dialog_watch": "Відстежувати {subject}?",
+  "watch_offer_dialog_keep_reviewing": "Продовжити перевірку",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Ваш список відстеження залишається в цьому браузері.",
+  "watch_offer_dialog_not_now": "Не зараз",
+  "watched_repos_dialog_watched_repositories": "Відстежувані репозиторії",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff показує відкриті пул-реквести для цих репозиторіїв. Список залишається в цьому браузері.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "Введіть репозиторій як owner/repo.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "Репозиторій для відстеження",
+  "watched_repos_editor_add": "Додати",
+  "watched_repos_editor_nothing_watched_yet": "Ще нічого не відстежується.",
+  "watched_repos_editor_remove": "Видалити",
+  "dialog_close": "Закрити",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "Не вдалося прочитати цей файл із GitHub.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "Цей файл змінився на GitHub після створення цих відмінностей. Перезавантажте, щоб побачити його незмінені рядки.",
+  "use_diff_file_loader_request_failed": "Запит не вдався ({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "Не вдалося перевірити, під яким обліковим записом ви ввійшли.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "Не вдалося прочитати, де встановлено ghdiff.",
+  "use_open_pulls_could_not_load_pull_requests": "Не вдалося завантажити пул-реквести.",
+  "use_pull_details_could_not_load_this_pull_request": "Не вдалося завантажити цей пул-реквест.",
+  "use_review_comments_could_not_load_comments": "Не вдалося завантажити коментарі.",
+  "use_review_comments_could_not_post_that_comment_to_github": "Не вдалося опублікувати цей коментар на GitHub.",
+  "use_review_comments_could_not_post_this_reply_to_github": "Не вдалося опублікувати цю відповідь на GitHub.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "Не вдалося видалити це обговорення на GitHub. Перезавантажте, щоб перевірити.",
+  "use_review_patch_request_failed": "Запит не вдався ({status}).",
+  "use_review_patch_could_not_load_that_diff": "Не вдалося завантажити ці відмінності.",
+  "use_submit_review_could_not_submit_this_review": "Не вдалося надіслати цю перевірку.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "Не вдалося надіслати цю позначку на GitHub.",
+  "code_fonts_system": "Системний",
+  "diff_hydration_that_file_is_too_large_to_show_its": "Цей файл завеликий, щоб показати його незмінені рядки.",
+  "example_targets_rewrite_bun_in_rust": "Переписати Bun на Rust",
+  "example_targets_2_188_files_1_0m_lines": "2 188 файлів · 1,0 млн рядків",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "Найбільший із них. 43 МБ уніфікованого diff за 6 755 комітів.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Усунути конфлікти імпорту пул-реквесту Maimai NET",
+  "example_targets_25_files_494k_lines": "25 файлів · 494 тис. рядків",
+  "example_targets_one_generated_json_file_holds_465_486_of": "Один згенерований JSON-файл містить 465 486 із цих рядків.",
+  "example_targets_deps_update_v8_to_14_1": "deps: оновити V8 до 14.1",
+  "example_targets_3_420_files_268k_lines": "3 420 файлів · 268 тис. рядків",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "Найширше дерево файлів. Воно перевищує обмеження API на розмір відмінностей, тому ghdiff завантажує його з вебсайту GitHub.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: Вилучити всі залежності libc++ і libc++ ABI",
+  "example_targets_25_files_88k_lines": "25 файлів · 88 тис. рядків",
+  "example_targets_large_and_still_a_diff_a_person_can": "Великий, але все ще такий набір відмінностей, який людина може прочитати до кінця.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 до 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53 файли · 2,6 тис. рядків",
+  "example_targets_a_compare_range_of_one_release_100_commits": "Діапазон порівняння для одного випуску. 100 комітів, а коментарі залишаються локальними.",
+  "filter_rules_all_files": "Усі файли",
+  "filter_rules_show_every_file_in_the_diff": "Показати кожен файл у відмінностях.",
+  "filter_rules_hide_tests": "Сховати тести",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "Сховати тестові файли, фікстури та знімки.",
+  "filter_rules_tests_only": "Лише тести",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "Показати лише тестові файли, фікстури та знімки.",
+  "filter_rules_source_only": "Лише вихідний код",
+  "filter_rules_show_only_code_files_that_are_not_tests": "Показати лише файли коду, які не є тестами й не згенеровані.",
+  "filter_rules_docs_only": "Лише документація",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Показати лише Markdown та інші файли з прозовим текстом.",
+  "filter_rules_config_only": "Лише конфігурація",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "Показати лише маніфести, конфігурації лінтера й файли CI.",
+  "filter_rules_hide_generated": "Сховати згенеровані",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "Сховати lock-файли, знімки та результат збірки.",
+  "filter_rules_generated_only": "Лише згенеровані",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "Показати лише lock-файли, знімки та результат збірки.",
+  "github_app_sign_in_was_not_completed_on_github_try": "Вхід не завершено на GitHub. Спробуйте ще раз, коли будете готові.",
+  "github_app_the_sign_in_session_timed_out_on_github": "Час сеансу входу на GitHub минув. Почніть вхід знову.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "Під час входу до GitHub не пройдено перевірку безпеки. Почніть процес знову в ghdiff.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub не зміг завершити вхід. Спробуйте ще раз за мить.",
+  "installations_all_repositories": "Усі репозиторії",
+  "installations_no_repositories_selected": "Не вибрано жодного репозиторію",
+  "pull_details_just_now": "щойно",
+  "pull_status_approved": "Схвалено",
+  "pull_status_changes_requested": "Запитано зміни",
+  "pull_status_no_review_yet": "Ще немає рев’ю",
+  "pull_status_checks_passing": "перевірки успішні",
+  "pull_status_checks_running": "перевірки виконуються",
+  "pull_status_a_check_failed": "одна перевірка не пройшла",
+  "pull_status_no_checks": "немає перевірок",
+  "pull_status_changes_requested_new_commits_since": "Запитано зміни, після цього є нові коміти",
+  "review_data_commit": "Коміт {value}",
+  "review_decision_approve": "Схвалити",
+  "review_decision_approving": "Схвалення…",
+  "review_decision_request_changes": "Запитати зміни",
+  "review_decision_requesting": "Запит змін…",
+  "review_decision_comment": "Залишити коментар",
+  "review_decision_commenting": "Додавання коментаря…",
+  "review_decision_approved": "Схвалено",
+  "review_decision_changes_requested": "Запитано зміни",
+  "review_decision_commented": "Прокоментовано",
+  "review_decision_you_approved_this_pull_request": "Ви схвалили цей пул-реквест.",
+  "review_decision_you_requested_changes_on_this_pull_request": "Ви запитали зміни в цьому пул-реквесті.",
+  "review_decision_you_commented_on_this_pull_request": "Ви прокоментували цей пул-реквест.",
+  "review_decision_github_recorded_your_review": "GitHub зафіксував ваше рев’ю.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "Сервер не відповів. Можливо, з’єднання офлайн або вичерпано час очікування запиту.",
+  "review_failure_you_used_all_5_000_github_requests_for": "Ви використали всі 5 000 запитів GitHub за цю годину. Зачекайте кілька хвилин, доки ліміт скинеться, і спробуйте ще раз.",
+  "review_failure_hourly_github_rate_limit_reached": "Досягнуто погодинного ліміту GitHub",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub обмежує неавтентифіковані запити до 60 на годину. Налаштуйте доступ, щоб одразу отримати 5 000 запитів на годину.",
+  "review_failure_github_rate_limit_reached": "Досягнуто ліміту запитів GitHub",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "Ваш вхід до GitHub більше не дійсний, і ghdiff не зміг його оновити. Налаштуйте доступ знову, щоб переглянути ці відмінності.",
+  "review_failure_github_sign_in_expired": "Термін входу до GitHub минув",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "GitHub повернув «Не знайдено», оскільки ghdiff не встановлено для цього репозиторію або бракує доступу. Налаштуйте доступ, щоб надати дозвіл.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff потребує доступу до цього репозиторію",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "GitHub повертає «Не знайдено» для приватних репозиторіїв, коли ви вийшли з облікового запису. Налаштуйте доступ, щоб переглянути ці відмінності.",
+  "review_failure_repository_not_found_or_private": "Репозиторій не знайдено або він приватний",
+  "review_failure_could_not_load_the_diff": "Не вдалося завантажити відмінності",
+  "contract_enter_a_valid_github_username_or_repository_name": "Введіть дійсне ім’я користувача GitHub або назву репозиторію.",
+  "contract_comment_cannot_be_empty": "Коментар не може бути порожнім.",
+  "router_could_not_check_who_you_are_signed_in": "Не вдалося перевірити, під яким обліковим записом ви ввійшли.",
+  "router_could_not_read_where_ghdiff_is_installed": "Не вдалося прочитати, де встановлено ghdiff.",
+  "router_could_not_load_this_repository": "Не вдалося завантажити цей репозиторій.",
+  "router_could_not_load_this_pull_request": "Не вдалося завантажити цей пул-реквест.",
+  "router_could_not_load_your_review_of_this_pull": "Не вдалося завантажити ваше рев’ю цього пул-реквесту.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub прийняв рев’ю, але нічого не повернув.",
+  "router_could_not_submit_this_review": "Не вдалося надіслати це рев’ю.",
+  "router_could_not_load_comments": "Не вдалося завантажити коментарі.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub прийняв відповідь, але нічого не повернув.",
+  "router_this_comment_is_missing_a_file_or_line": "У цьому коментарі немає файлу або номера рядка.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub прийняв коментар, але нічого не повернув.",
+  "router_could_not_post_this_comment": "Не вдалося опублікувати цей коментар.",
+  "router_could_not_delete_this_comment": "Не вдалося видалити цей коментар.",
+  "router_could_not_load_which_files_you_have_read": "Не вдалося завантажити перелік прочитаних вами файлів.",
+  "router_not_found": "Не знайдено",
+  "router_could_not_send_that_mark_to_github": "Не вдалося надіслати цю позначку на GitHub.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "Для цього ghdiff не налаштовано GitHub App, тому він не може виконати вхід.",
+  "github_your_github_sign_in_is_no_longer_valid": "Ваш вхід до GitHub більше не дійсний. Налаштуйте доступ знову, щоб продовжити.",
+  "github_github_rejected_that_query": "GitHub відхилив цей запит.",
+  "github_github_returned_no_data_for_that_query": "GitHub не повернув даних для цього запиту.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub не має такого файлу в цьому коміті. Для приватного репозиторію потрібен токен.",
+  "github_app_github_would_not_revoke_that_token": "GitHub не відкликав цей токен.",
+  "github_app_github_answered_for_that_token_request": "GitHub відповів {status} на запит токена.",
+  "github_app_github_refused_that": "GitHub відмовив: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub відповів без токена доступу.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub показує щонайбільше {fileCount} файлів для цих відмінностей, тому наступні файли відсутні.",
+  "installations_an_account": "обліковий запис",
+  "stream_text_that_response_is_too_large_to_read": "Ця відповідь завелика для читання.",
+  "diff_that_review_target_is_not_valid": "Ціль рев’ю недійсна.",
+  "diff_could_not_load_that_diff": "Не вдалося завантажити ці відмінності.",
+  "diff_that_request_to_github_failed": "Цей запит до GitHub не вдався.",
+  "file_that_review_target_is_not_valid": "Ціль рев’ю недійсна.",
+  "file_that_file_path_is_not_valid": "Шлях до файлу недійсний.",
+  "file_could_not_load_that_file": "Не вдалося завантажити цей файл.",
+  "route_no_such_procedure": "Такої процедури немає.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} файл",
+        "countPlural=few": "{formatted} файли",
+        "countPlural=many": "{formatted} файлів",
+        "countPlural=other": "{formatted} файла",
+        "countPlural=*": "{formatted} файла"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} коміт",
+        "countPlural=few": "{formatted} коміти",
+        "countPlural=many": "{formatted} комітів",
+        "countPlural=other": "{formatted} коміту",
+        "countPlural=*": "{formatted} коміту"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} коментар",
+        "countPlural=few": "{formatted} коментарі",
+        "countPlural=many": "{formatted} коментарів",
+        "countPlural=other": "{formatted} коментаря",
+        "countPlural=*": "{formatted} коментаря"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} відповідь",
+        "countPlural=few": "{formatted} відповіді",
+        "countPlural=many": "{formatted} відповідей",
+        "countPlural=other": "{formatted} відповіді",
+        "countPlural=*": "{formatted} відповіді"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} репозиторій",
+        "countPlural=few": "{formatted} репозиторії",
+        "countPlural=many": "{formatted} репозиторіїв",
+        "countPlural=other": "{formatted} репозиторію",
+        "countPlural=*": "{formatted} репозиторію"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Обслуговано {formatted} набір відмінностей",
+        "countPlural=few": "Обслуговано {formatted} набори відмінностей",
+        "countPlural=many": "Обслуговано {formatted} наборів відмінностей",
+        "countPlural=other": "Обслуговано {formatted} набору відмінностей",
+        "countPlural=*": "Обслуговано {formatted} набору відмінностей"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} приховано",
+        "countPlural=few": "{formatted} приховано",
+        "countPlural=many": "{formatted} приховано",
+        "countPlural=other": "{formatted} приховано",
+        "countPlural=*": "{formatted} приховано"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{base} · {formatted} стан",
+        "countPlural=few": "{base} · {formatted} стани",
+        "countPlural=many": "{base} · {formatted} станів",
+        "countPlural=other": "{base} · {formatted} стану",
+        "countPlural=*": "{base} · {formatted} стану"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Стек із {formatted} пул-реквесту",
+        "countPlural=few": "Стек із {formatted} пул-реквестів",
+        "countPlural=many": "Стек із {formatted} пул-реквестів",
+        "countPlural=other": "Стек із {formatted} пул-реквесту",
+        "countPlural=*": "Стек із {formatted} пул-реквесту"
+      }
+    }
+  ],
+  "comment_line": "Коментар до рядка {line}",
+  "comment_line_range": "Коментар до рядків з {start} до {end}",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} файл{#total} з {total}{/total}",
+        "countPlural=few": "{formatted} файли{#total} з {total}{/total}",
+        "countPlural=many": "{formatted} файлів{#total} з {total}{/total}",
+        "countPlural=other": "{formatted} файла{#total} з {total}{/total}",
+        "countPlural=*": "{formatted} файла{#total} з {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "Відмінності через {#diffs}CodeView{/diffs}, а список файлів — через {#trees}FileTree{/trees}.",
+  "watch_offer_added_phone": "Його відкриті пул-реквести тепер є у списку пул-реквестів угорі ліворуч.",
+  "watch_offer_added_wide": "Його відкриті пул-реквести тепер є на панелі ліворуч.",
+  "watch_offer_more_phone": "Щоб відстежувати більше репозиторіїв, відкрийте цей список і скористайтеся {#strong}{label}{/strong} або перейдіть на головну сторінку ghdiff.",
+  "watch_offer_more_wide": "Щоб відстежувати більше репозиторіїв, скористайтеся {#strong}{label}{/strong} внизу панелі або перейдіть на головну сторінку ghdiff.",
+  "watch_offer_preview_phone": "Переглядайте його відкриті пул-реквести у списку пул-реквестів угорі ліворуч — кожен зі статусом рецензії та автоматичних перевірок. Переходьте між ними, не повертаючись до GitHub.",
+  "watch_offer_preview_wide": "Переглядайте його відкриті пул-реквести на панелі ліворуч — кожен зі статусом рецензії та автоматичних перевірок. Переходьте між ними, не повертаючись до GitHub.",
+  "watch_offer_action": "Відстежувати {subject}",
+  "watch_offer_added_title": "{subject} тепер відстежується",
+  "pull_opened_age": "Відкрито: {age}",
+  "pull_updated_age": "Оновлено: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} файл, {added} {deleted}",
+        "countPlural=few": "{formatted} файли, {added} {deleted}",
+        "countPlural=many": "{formatted} файлів, {added} {deleted}",
+        "countPlural=other": "{formatted} файла, {added} {deleted}",
+        "countPlural=*": "{formatted} файла, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "У {repositories} немає відкритих пул-реквестів.",
+  "review_submit_scope": "Це рецензія всього пул-реквесту для {#strong}{target}{/strong}. Коментарі до рядків буде опубліковано там, де ви їх пишете.",
+  "review_previous_verdict": "{verdict} Нове рішення замінить його.",
+  "setup_not_installed": "ghdiff ще не встановлено для {#strong}{account}{/strong}. Якщо це організація, власнику може знадобитися схвалити встановлення.",
+  "setup_no_repositories": "ghdiff установлено для {#strong}{account}{/strong}, але він ще не охоплює жодного репозиторію. Відкрийте налаштування, щоб вибрати репозиторії для рецензування.",
+  "userscript_manager_description": "Це додає кнопку поруч із Files changed у пул-реквесті та поруч із Browse files у коміті. Потрібен менеджер користувацьких скриптів, наприклад {#manager}Tampermonkey{/manager}.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} у {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "Налаштуйте доступ до GitHub перед надсиланням рецензії.",
+  "auth_required_delete": "Налаштуйте доступ до GitHub перед видаленням коментаря.",
+  "auth_required_viewed": "Налаштуйте доступ до GitHub перед позначенням файлу як переглянутого.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} байт",
+        "countPlural=few": "{formatted} байти",
+        "countPlural=many": "{formatted} байтів",
+        "countPlural=other": "{formatted} байта",
+        "countPlural=*": "{formatted} байта"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} кБ",
+  "bytes_megabytes": "{value} МБ",
+  "app_description": "Відкривайте будь-який пул-реквест, коміт або діапазон порівняння GitHub, замінивши github.com на ghdiff.com. Звужуйте список файлів готовими правилами шляхів і публікуйте коментарі до рядків у GitHub.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "Видалити цей коментар на GitHub? Цю дію не можна скасувати.",
+        "count=*, countPlural=one": "Видалити всі {formatted} коментар у цій гілці на GitHub? Цю дію не можна скасувати.",
+        "count=*, countPlural=few": "Видалити всі {formatted} коментарі в цій гілці на GitHub? Цю дію не можна скасувати.",
+        "count=*, countPlural=many": "Видалити всі {formatted} коментарів у цій гілці на GitHub? Цю дію не можна скасувати.",
+        "count=*, countPlural=*": "Видалити всі {formatted} коментаря в цій гілці на GitHub? Цю дію не можна скасувати."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=one": "GitHub визнав {formatted} файл завеликим для показу відмінностей, тому не показує рядків: {path}.",
+        "count=1, countPlural=few": "GitHub визнав {formatted} файл завеликим для показу відмінностей, тому не показує рядків: {path}.",
+        "count=1, countPlural=many": "GitHub визнав {formatted} файл завеликим для показу відмінностей, тому не показує рядків: {path}.",
+        "count=1, countPlural=other": "GitHub визнав {formatted} файл завеликим для показу відмінностей, тому не показує рядків: {path}.",
+        "count=1, countPlural=*": "GitHub визнав {formatted} файл завеликим для показу відмінностей, тому не показує рядків: {path}.",
+        "count=*, countPlural=one": "GitHub визнав {formatted} файл завеликим для показу відмінностей, тому не показує рядків.",
+        "count=*, countPlural=few": "GitHub визнав {formatted} файли завеликими для показу відмінностей, тому не показує рядків.",
+        "count=*, countPlural=many": "GitHub визнав {formatted} файлів завеликими для показу відмінностей, тому вони не показують рядків.",
+        "count=*, countPlural=other": "GitHub визнав {formatted} файла завеликими для показу відмінностей, тому вони не показують рядків.",
+        "count=*, countPlural=*": "GitHub визнав {formatted} файла завеликими для показу відмінностей, тому вони не показують рядків."
+      }
+    }
+  ],
+  "userscript_open_pull": "Відкрити цей пул-реквест у ghdiff",
+  "userscript_open_commit": "Відкрити цей коміт у ghdiff",
+  "userscript_description": "Додає кнопку ghdiff до рядка вкладок кожного пул-реквесту GitHub і поруч із Browse files у кожному коміті.",
+  "diff_expand_all": "Розгорнути все",
+  "diff_no_newline": "Немає нового рядка в кінці файлу",
+  "tree_git_contains_changes": "Містить елементи зі статусом git",
+  "review_bytes_read": "Прочитано: {amount}",
+  "tree_git_added": "Статус git: додано",
+  "tree_git_deleted": "Статус git: видалено",
+  "tree_git_ignored": "Статус git: проігноровано",
+  "tree_git_modified": "Статус git: змінено",
+  "tree_git_renamed": "Статус git: перейменовано",
+  "tree_git_untracked": "Статус git: не відстежується",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} незмінений рядок",
+        "countPlural=few": "{formatted} незмінені рядки",
+        "countPlural=many": "{formatted} незмінених рядків",
+        "countPlural=other": "{formatted} незміненого рядка",
+        "countPlural=*": "{formatted} незміненого рядка"
+      }
+    }
+  ],
+  "locale_language": "Мова",
+  "app_render_error": "ghdiff не вдалося відобразити цю сторінку. Перезавантажте сторінку, щоб спробувати ще раз."
+}

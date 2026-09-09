@@ -4,6 +4,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
+import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
 
 // GFM for comment bodies: tables, task lists, strikethrough, autolinks, fences.
@@ -43,7 +44,7 @@ function isTaskItem(className: string | undefined): boolean {
 // description. `role="img"` with `aria-label` names the state for a screen
 // reader and draws nothing.
 function TaskMarker({ checked }: { checked: boolean }) {
-  const label = checked ? 'Done' : 'Not done';
+  const label = checked ? m.comment_body_done() : m.comment_body_not_done();
   return (
     <svg
       aria-label={label}
@@ -113,10 +114,17 @@ const COMPONENTS: Components = {
     // <pre>; an inline span has neither.
     const isBlock = className != null && className.startsWith('language-');
     if (isBlock) {
-      return <code className="font-mono text-[0.85em]">{children}</code>;
+      return (
+        <code dir="ltr" className="font-mono text-[0.85em]">
+          {children}
+        </code>
+      );
     }
     return (
-      <code className="bg-surface rounded px-1 py-0.5 font-mono text-[0.85em]">
+      <code
+        dir="ltr"
+        className="bg-surface rounded px-1 py-0.5 font-mono text-[0.85em]"
+      >
         {children}
       </code>
     );
@@ -200,7 +208,10 @@ export const CommentBody = memo(function CommentBody({
   className?: string;
 }) {
   return (
-    <div className={cn('text-sm leading-snug break-words', className)}>
+    <div
+      dir="auto"
+      className={cn('text-sm leading-snug break-words', className)}
+    >
       <Markdown
         components={COMPONENTS}
         rehypePlugins={REHYPE_PLUGINS}

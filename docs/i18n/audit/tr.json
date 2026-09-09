@@ -1,0 +1,2338 @@
+{
+  "locale": "tr",
+  "auditor": "codex/gpt-5.6-terra",
+  "fallbackReason": "Antigravity interrupted stream and timeout with no output",
+  "initialSourceSha256": "8c239bbcc87799c690b5b0e64dc662da257e49487c1d5d2f009cb211c084b292",
+  "catalogSha256": "4668873b0b10b35eda62cc8f59968a3e19ecee8a7de3f8a877dea2455466f8f1",
+  "hashFormat": "UTF-8 sorted JSON without separator whitespace for catalogSha256",
+  "reviewedMessageCount": 387,
+  "selectionNotes": {
+    "color_mode_toggle_auto": "Kısa ve yerleşik arayüz karşılığı seçildi.",
+    "color_mode_toggle_light": "Renk modu bağlamında doğal kısa etiket seçildi.",
+    "color_mode_toggle_dark": "Renk modu bağlamında doğal kısa etiket seçildi.",
+    "color_mode_toggle_color_mode_switch_to": "İki dinamik değeri koruyup Türkçe cümle düzeni kullanıldı.",
+    "color_mode_toggle_color_mode": "Yer tutucu korunarak kısa durum etiketi kullanıldı.",
+    "comment_author_filter_bar_comment_authors": "Filtre kategorisi için doğal çoğul etiket seçildi.",
+    "comment_author_filter_bar_all": "Kısa standart filtre etiketi seçildi.",
+    "comment_author_filter_bar_comments_a_person_opened": "Açan kişinin insan olduğunu koruyan açık ifade seçildi.",
+    "comment_author_filter_bar_people": "Kısa kategori etiketi seçildi.",
+    "comment_author_filter_bar_comments_a_github_app_opened": "GitHub App adı korunarak eylem açıklandı.",
+    "comment_author_filter_bar_bots": "Yerleşik teknik çoğul karşılık seçildi.",
+    "comment_body_done": "Durum için kısa nötr karşılık seçildi.",
+    "comment_body_not_done": "Olumsuz durum doğrudan korundu.",
+    "comment_composer_leave_a_comment": "Eylem odaklı kısa kontrol etiketi seçildi.",
+    "comment_composer_comment": "Gönderme eylemini belirten doğal kontrol etiketi seçildi.",
+    "comment_composer_cancel": "Standart kısa kontrol etiketi seçildi.",
+    "comment_composer_cmd_or_ctrl_with_enter": "Tuş adları korunarak Türkçe bağlaç kullanıldı.",
+    "comment_expansion_comment": "Tekil arayüz etiketi seçildi.",
+    "comment_thread_card_open_thread_by": "Yazar yer tutucusuna ek getirmeden yeniden kuruldu.",
+    "comment_thread_card_posting": "Devam eden durum doğal biçimde verildi.",
+    "comment_thread_card_click_to_open": "Kısa doğrudan yönerge seçildi.",
+    "comment_thread_card_delete": "Standart kısa eylem etiketi seçildi.",
+    "comment_thread_card_close": "Standart kısa eylem etiketi seçildi.",
+    "comment_thread_card_on_github": "GitHub adı ve konum anlamı korundu.",
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Henüz gönderilmemiş olma ve yanıt verememe sonucu korundu.",
+    "comment_thread_card_reply_on_github": "GitHub üzerindeki eylem açıkça ayrıştırıldı.",
+    "comment_thread_card_reply_in_this_browser": "Tarayıcı sınırı açıkça korundu.",
+    "comment_thread_card_sending": "Devam eden durum doğal biçimde verildi.",
+    "comment_thread_card_reply": "Kısa standart eylem etiketi seçildi.",
+    "comment_thread_card_cmd_or_ctrl_with_enter": "Tuş adları korunarak Türkçe bağlaç kullanıldı.",
+    "comments_list_no_comments_here": "Boş durum kısa ve kesin biçimde korundu.",
+    "comments_list_comments_you_leave_here_are_posted_to_github": "GitHub'a gönderilme sonucu korundu.",
+    "comments_list_github_has_no_review_thread_for_commits_or": "GitHub sınırı, inceleme ileti dizisi ayrımı ve tarayıcı-yerel saklama korundu.",
+    "comments_list_posting": "Küçük harfli durum etiketi korundu.",
+    "comments_list_failed": "Küçük harfli başarısız durum etiketi seçildi.",
+    "comments_list_go_to": "{path} aynen korunarak doğal yönlendirme kuruldu.",
+    "confirm_inline_cancel": "Standart kısa kontrol etiketi seçildi.",
+    "example_targets_label": "Her iki yer tutucu ve ayırıcı korundu.",
+    "filter_menu_added": "Git durumuna uygun kısa durum etiketi seçildi.",
+    "filter_menu_modified": "Git durumuna uygun kısa durum etiketi seçildi.",
+    "filter_menu_renamed": "Git durumuna uygun kısa durum etiketi seçildi.",
+    "filter_menu_deleted": "Git durumuna uygun kısa durum etiketi seçildi.",
+    "filter_menu_filter_files": "Doğrudan dosya filtresi eylemi seçildi.",
+    "filter_menu_file_rules": "Kısa kategori etiketi seçildi.",
+    "filter_menu_git_status": "Git özel adı korunarak doğal etiket seçildi.",
+    "filter_menu_clear_filters": "Çoğul filtreleri temizleme eylemi korundu.",
+    "filter_menu_all_files": "Kısa kapsam etiketi seçildi.",
+    "git_hub_account_control_set_up_access": "Erişim yapılandırma eylemi kısa biçimde korundu.",
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Hesap altında GitHub'a gönderilme anlamı korundu.",
+    "git_hub_account_panel_install_on_another_account": "Hedefin başka hesap olduğu açıkça korundu.",
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "Olumsuz kurulum durumu ve kod okuma amacı korundu.",
+    "git_hub_account_panel_open_setup_guide": "Kısa doğrudan eylem etiketi seçildi.",
+    "git_hub_account_panel_sign_out": "Türkçe arayüzlerde yerleşik etiket seçildi.",
+    "git_hub_account_panel_accounts_with_access": "Erişim yetkisi anlamı korundu.",
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "github.com adı, ayar hedefi ve depo ekleme-kaldırma kapsamı korundu.",
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "Okuma erişiminin denetlendiği, kesin sonuç olmadığı korundu.",
+    "home_screen_open_any_github_pull_request_commit_or_compare": "Üç ayrı GitHub hedefi korunarak Türkçe yeniden yapılandırıldı.",
+    "home_screen_narrow_the_file_list_with_preset_path_rules": "Hazır yol kurallarıyla daraltma eylemi korundu.",
+    "home_screen_read_and_leave_comments": "Okuma ve yorum bırakma ayrı eylemler olarak korundu.",
+    "home_screen_paste_a_github_pull_request_commit_or_compare": "URL seçenekleri, yazma alternatifi ve owner/repo#123 kimliği aynen korundu.",
+    "home_screen_github_pull_request_commit_or_compare_url": "Teknik terimleri tanınır tuttu.",
+    "home_screen_open_this_diff": "Kısa eylem etiketi seçildi.",
+    "home_screen_review": "İnceleme anlamı korundu.",
+    "home_screen_set_up_access_for_private_repositories": "Erişim sınırı korundu.",
+    "home_screen_userscript": "Yerleşik teknik karşılık seçildi.",
+    "home_screen_examples": "Doğal kısa etiket.",
+    "home_screen_watched_repos": "Yerel takip bağlamına uygun.",
+    "home_screen_github_account": "Marka korunarak çevrildi.",
+    "home_screen_source_on_github": "Kaynak bağlantısı anlamı korundu.",
+    "home_screen_review_the_commit_this_build_was_made_from": "SHA ve ghdiff korundu.",
+    "installation_row_current_diff": "Bağlamdaki durum etiketi korundu.",
+    "installation_row_configure": "Kısa kontrol etiketi.",
+    "not_found_ghdiff_cannot_read_that_url": "Başarısız eylem açıkça korundu.",
+    "not_found_a_review_needs_a_github_pull_request_a": "Gerekli hedef türleri eksiksiz korundu.",
+    "not_found_open_a_different_review": "Sonraki adım doğrudan ifade edildi.",
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": "İki ayrı hareket korundu.",
+    "pull_details_card_loading_pull_request": "Yükleme durumu korundu.",
+    "pull_details_card_no_details_yet": "Henüz olumsuzluğu korundu.",
+    "pull_details_card_files": "Kısa bölüm etiketi.",
+    "pull_details_card_added_lines": "Satır ekleme anlamı korundu.",
+    "pull_details_card_deleted_lines": "Satır silme anlamı korundu.",
+    "pull_details_card_commits": "Teknik terim doğal çoğullaştırıldı.",
+    "pull_details_card_description": "Doğal bölüm adı.",
+    "pull_list_button_open_pull_requests": "Açık durum korundu.",
+    "pull_list_button_watched_repos": "Yerel takip listesi bağlamı korundu.",
+    "pull_list_button_reload_the_pull_requests": "Yeniden yükleme eylemi korundu.",
+    "pull_list_button_loading_the_pull_requests": "Devam eden yükleme durumu korundu.",
+    "pull_rail_open_pull_requests": "Açık durum korundu.",
+    "pull_rail_pull_request_bar_width": "Boyutlandırılan öğe açık tutuldu.",
+    "pull_rail_show_the_pull_requests": "Görünürlük eylemi korundu.",
+    "pull_rail_hide_the_pull_requests": "Gizleme eylemi korundu.",
+    "pull_rail_watched_repos": "Yerel takip bağlamı korundu.",
+    "pull_rail_reload_the_pull_requests": "Yeniden yükleme eylemi korundu.",
+    "pull_rail_loading_the_pull_requests": "Yükleme durumu korundu.",
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": "Takibin amaç-sonuç ilişkisi korundu.",
+    "pull_request_list_open_on_github": "Yer tutucular aynen korundu.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "Sayı yer tutucusu ve açık durum korundu.",
+    "pull_request_list_you": "Nötr ikinci kişi seçildi.",
+    "pull_request_list_open_s_open_pull_requests_in_on_github": "İsme ek getirmeden doğal yapı kuruldu.",
+    "pull_request_list_set_up_private_access": "Özel erişim sınırı korundu.",
+    "pull_request_list_signed_out_no_row_shows_a_status_square": "Oturum kapalıyken eksiklik ve oturum açmanın sonucu korundu.",
+    "pull_request_list_stack": "Kısa teknik etiket.",
+    "pull_request_list_loading_open_pull_requests": "Yükleme durumu ve açık durum korundu.",
+    "pull_row_label": "Biçim ve yer tutucu aynen korundu.",
+    "pull_row_draft": "PR taslak durumu korundu.",
+    "pull_row_currently_viewing": "Geçerli görüntüleme durumu korundu.",
+    "pull_state_icon_open": "Durum etiketi kısa tutuldu.",
+    "pull_state_icon_draft": "Durum etiketi korundu.",
+    "pull_state_icon_merged": "Birleştirilmiş durum korundu.",
+    "pull_state_icon_closed": "Kapalı durum korundu.",
+    "review_header_bars": "Kısa arayüz etiketi.",
+    "review_header_signs": "Kısa arayüz etiketi.",
+    "review_header_none": "Olumsuz boş durum korundu.",
+    "review_header_hide_the_file_list": "Gizleme eylemi korundu.",
+    "review_header_show_the_file_list": "Gösterme eylemi korundu.",
+    "review_header_open_on_github": "Dinamik hedef etiketi korundu.",
+    "review_header_switch_to_unified_view": "Görünüm değişikliği korundu.",
+    "review_header_switch_to_split_view": "Görünüm değişikliği korundu.",
+    "review_header_split_view": "Kısa görünüm adı.",
+    "review_header_unified_view": "Kısa görünüm adı.",
+    "review_header_display_settings": "Kısa ayar etiketi seçildi.",
+    "review_header_code_font": "Yerleşik teknik UI terimi kullanıldı.",
+    "review_header_change_markers": "Görsel işaretleme anlamı korundu.",
+    "review_header_wrap_long_lines": "Doğrudan, kısa kontrol ifadesi seçildi.",
+    "review_header_line_numbers": "Standart kod inceleme terimi kullanıldı.",
+    "review_header_change_backgrounds": "Görsel arka plan anlamı korundu.",
+    "review_header_dim_whitespace_changes": "Boşluk değişikliklerini soluklaştırma korunuyor.",
+    "review_header_approve_request_changes_or_comment": "Üç inceleme eylemi ayrıştırıldı.",
+    "review_header_review": "Kısa inceleme eylemi seçildi.",
+    "review_header_review_it_again": "Yer tutucu ve tamamlanmış cümle korundu.",
+    "review_screen_sidebar_width": "Ayar etiketi olarak doğal ifade seçildi.",
+    "review_screen_dismiss": "Nötr kapatma eylemi seçildi.",
+    "review_sidebar_sidebar_sections": "Arayüz yapısı korunarak çevrildi.",
+    "review_sidebar_files": "Standart kısa etiket seçildi.",
+    "review_sidebar_threads_comments": "Türkçede sayıya göre ad biçimi değişmedi; tüm erişilebilir çoğul kolları korundu.",
+    "review_sidebar_comments": "Standart etiket seçildi.",
+    "review_sidebar_hide_the_path_search": "Arama yüzeyini gizleme eylemi korundu.",
+    "review_sidebar_search_by_path": "Yola göre arama anlamı korundu.",
+    "review_sidebar_the_current_filter_hides_all_files": "Filtrenin sonucu açıkça korundu.",
+    "review_sidebar_clear_filters": "Kısa kontrol ifadesi seçildi.",
+    "review_sidebar_added_lines": "Diff bağlamındaki ekleme anlamı korundu.",
+    "review_sidebar_deleted_lines": "Diff bağlamındaki silme anlamı korundu.",
+    "review_sidebar_search_files_by_path": "Dosya ve yol kapsamı korundu.",
+    "review_sidebar_path_contains": "Arama yer tutucusu ve üç nokta korundu.",
+    "review_sidebar_clear_the_path_search": "Belirli arama yüzeyini temizleme korunuyor.",
+    "review_status_panel_fetching_the_diff": "Devam eden durum doğal biçimde çevrildi.",
+    "review_status_panel_reading_the_patch_for_this_review": "İnceleme kapsamı ve tamamlanmış cümle korundu.",
+    "review_status_panel_preparing_the_diff": "Devam eden hazırlık durumu korundu.",
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": "Her iki işlem de korundu.",
+    "review_status_panel_starting_the_highlighters": "Teknik işlem durumu korundu.",
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": "Arka plan çalışanları ve kod renklendirme anlamı korundu.",
+    "review_status_panel_set_up_repository_access": "Erişim kurulum eylemi seçildi.",
+    "review_status_panel_try_again": "Kısa, nötr yeniden deneme ifadesi seçildi.",
+    "review_submit_dialog_add_a_note_github_needs_one": "GitHub gereksinimi açıkça korundu.",
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "Kendi pull request'i için onay engeli korundu.",
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "Kendi pull request'i için değişiklik isteme engeli korundu.",
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Yalnızca yorum yapabilme sınırı korundu.",
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": "Not gereksinimi ve iki eylem korundu.",
+    "review_submit_dialog_submit_a_review": "Doğrudan gönderme eylemi seçildi.",
+    "review_submit_dialog_review_body": "Form alanı için doğal kısa etiket seçildi.",
+    "review_submit_dialog_leave_a_note_with_your_review": "İncelemeyle not bırakma anlamı korundu.",
+    "review_submit_dialog_label": "Her iki yer tutucu ve ayırıcı korundu.",
+    "review_viewer_show_the_diff": "Diff görüntüleme eylemi korundu.",
+    "review_viewer_hide_the_diff": "Diff gizleme eylemi korundu.",
+    "review_viewer_show_the_whole_file": "Dosyanın tamamını görüntüleme anlamı korundu.",
+    "review_viewer_viewed": "Durum etiketi olarak kısa karşılık seçildi.",
+    "setup_screen_set_up_private_repository_access": "Özel erişim kapsamı korundu.",
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "İzin sınırı, ghdiff adı ve adım sırası korundu.",
+    "setup_screen_sign_in_to_github": "GitHub adı korunarak kısa eylem seçildi.",
+    "setup_screen_this_identifies_your_account_to_github_any_comments": "Hesap kimliği ve yorumların hangi hesap altında yayımlandığı korundu.",
+    "setup_screen_sign_in_with_github": "Harici kimlik doğrulama eylemi korundu.",
+    "setup_screen_grant_repository_access": "Erişim verme eylemi kısa tutuldu.",
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Oturum açmanın sınırlı etkisi ve seçim sorumluluğu korundu.",
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "{account}, yükleme ve erişim listesi koşulu korundu.",
+    "setup_screen_accounts_with_access": "Erişim bağlamı korundu.",
+    "setup_screen_install_ghdiff": "Ürün adı değiştirilmeden eylem seçildi.",
+    "setup_screen_install_on_another_account": "Başka hesap seçeneği korundu.",
+    "setup_screen_checking": "Devam eden durum ve üç nokta korundu.",
+    "setup_screen_check_again": "Kısa yeniden kontrol eylemi seçildi.",
+    "setup_screen_open_the_diff": "Diff açma eylemi korundu.",
+    "setup_screen_go_to_the_home_page_to_paste_a": "URL türlerini ve yönlendirme amacını korur.",
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Yeniden getirme ve güncellenmiş izin sonucu korunur.",
+    "setup_screen_go_to_ghdiff_home": "Kısa eylem etiketi seçildi.",
+    "setup_screen_return_to_the_diff": "Kısa eylem etiketi seçildi.",
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Yapılandırma eksikliği ve herkese açık erişim sınırı korunur.",
+    "setup_screen_ghdiff_now_uses_a_github_app": "GitHub App adı korunur.",
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "Tarayıcı kapsamı, artık istenmemesi ve GitHub'daki silme sonucu korunur.",
+    "setup_screen_delete_the_token_on_github": "GitHub hedefi açık tutulur.",
+    "userscript_install_add_a_ghdiff_button_to_github_com": "Ürün adı ve alan adı değiştirilmedi.",
+    "userscript_install_install": "Standart kısa kontrol etiketi.",
+    "watch_offer_dialog_watch_this_repository": "GitHub aboneliğini çağrıştırmamak için yerel liste açıkça belirtildi.",
+    "watch_offer_dialog_watch": "Yerel liste anlamı korunurken yer tutucu korundu.",
+    "watch_offer_dialog_keep_reviewing": "İnceleme eylemi korunur.",
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Tarayıcı-yerel sınır açıkça korunur.",
+    "watch_offer_dialog_not_now": "Tarafsız ret ifadesi seçildi.",
+    "watched_repos_dialog_watched_repositories": "Yerel takip bağlamına uygun kısa başlık.",
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "Açık pull request listesi ve tarayıcı-yerel saklama korunur.",
+    "watched_repos_editor_enter_a_repository_as_owner_repo": "Tanımlayıcı aynen korundu.",
+    "watched_repos_editor_owner_repo": "Girdi tanımlayıcısı değişmeden bırakıldı.",
+    "watched_repos_editor_repository_to_watch": "Yerel takip eylemi kısa biçimde ifade edildi.",
+    "watched_repos_editor_add": "Kısa eylem etiketi.",
+    "watched_repos_editor_nothing_watched_yet": "Boş takip listesi anlamı korunur.",
+    "watched_repos_editor_remove": "Kısa eylem etiketi.",
+    "dialog_close": "Standart iletişim kutusu eylemi.",
+    "use_diff_file_loader_could_not_read_that_file_from_github": "Başarısız eylem ve GitHub kaynağı korunur.",
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": "Değişiklik koşulu ve yeniden yükleme adımı korunur.",
+    "use_diff_file_loader_request_failed": "Durum yer tutucusu aynen korundu.",
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": "Oturum kimliği denetiminin başarısızlığı korunur.",
+    "use_installations_could_not_read_where_ghdiff_is_installed": "Kurulum kapsamını okuma başarısızlığı korunur.",
+    "use_open_pulls_could_not_load_pull_requests": "Pull request yükleme hatası korunur.",
+    "use_pull_details_could_not_load_this_pull_request": "Belirli pull request bağlamı korunur.",
+    "use_review_comments_could_not_load_comments": "Yorum yükleme hatası korunur.",
+    "use_review_comments_could_not_post_that_comment_to_github": "Yorum gönderme ve GitHub hedefi korunur.",
+    "use_review_comments_could_not_post_this_reply_to_github": "Yanıt ile yorum ayrımı korunur.",
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": "Silme hatası ve denetleme için yeniden yükleme korunur.",
+    "use_review_patch_request_failed": "Durum yer tutucusu aynen korundu.",
+    "use_review_patch_could_not_load_that_diff": "Fark yükleme hatası korunur.",
+    "use_submit_review_could_not_submit_this_review": "İnceleme gönderme hatası korunur.",
+    "use_viewed_files_could_not_send_that_mark_to_github": "İşaret gönderme eylemi korunur.",
+    "code_fonts_system": "Yerleşik kısa seçenek etiketi.",
+    "diff_hydration_that_file_is_too_large_to_show_its": "Boyut sınırı ve değişmemiş satırlar korunur.",
+    "example_targets_rewrite_bun_in_rust": "Bun ve Rust adları korunur.",
+    "example_targets_2_188_files_1_0m_lines": "Türkçe sayı biçimi kullanıldı.",
+    "example_targets_the_largest_of_them_43_mb_of_unified": "Boyut, birleşik fark ve commit miktarı korunur.",
+    "example_targets_resolve_maimai_net_import_pr_conflicts": "Özel ad ve pull request anlamı korunur.",
+    "example_targets_25_files_494k_lines": "Türkçe kısa sayı biçimi kullanıldı.",
+    "example_targets_one_generated_json_file_holds_465_486_of": "JSON dosyası ve kesin satır sayısı korunur.",
+    "example_targets_deps_update_v8_to_14_1": "Teknik önek ve V8 sürümü korundu.",
+    "example_targets_3_420_files_268k_lines": "Türkçe sayı biçimi kullanıldı.",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "API sınırı ve web sunucusu sonucu korunur.",
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "Teknik adlar aynen korundu.",
+    "example_targets_25_files_88k_lines": "Türkçe kısa sayı biçimi kullanıldı.",
+    "example_targets_large_and_still_a_diff_a_person_can": "İnsanın okuyabilmesi vurgusu korunur.",
+    "example_targets_ghostty_1_3_0_to_1_3_1": "Ürün ve sürüm numaraları korunur.",
+    "example_targets_53_files_2_6k_lines": "Türkçe kısa sayı biçimi kullanıldı.",
+    "example_targets_a_compare_range_of_one_release_100_commits": "Karşılaştırma aralığı, commit sayısı ve yerel yorumlar korunur.",
+    "filter_rules_all_files": "Kısa filtre etiketi.",
+    "filter_rules_show_every_file_in_the_diff": "Fark kapsamı korunur.",
+    "filter_rules_hide_tests": "Kısa filtre etiketi.",
+    "filter_rules_hide_test_files_fixtures_and_snapshots": "Üç ayrı gizleme hedefi korunur.",
+    "filter_rules_tests_only": "Kısa filtre etiketi için doğal teknik kullanım seçildi.",
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": "Fixture teknik terim olarak korundu; kapsam eksiksiz aktarıldı.",
+    "filter_rules_source_only": "Kaynak dosyaları anlamını taşıyan kısa etiket seçildi.",
+    "filter_rules_show_only_code_files_that_are_not_tests": "Hem test dışı hem oluşturulmamış olma koşulları korundu.",
+    "filter_rules_docs_only": "Kısa ve yerleşik arayüz etiketi seçildi.",
+    "filter_rules_show_only_markdown_and_other_prose_files": "Markdown adı korundu; düz yazı dosyaları doğal biçimde ifade edildi.",
+    "filter_rules_config_only": "Kısa arayüz etiketi seçildi.",
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": "Manifest, lint ve CI teknik adları korunarak kapsam aktarıldı.",
+    "filter_rules_hide_generated": "Oluşturulmuş dosyaları gizleme anlamı korundu.",
+    "filter_rules_hide_lock_files_snapshots_and_build_output": "Üç dosya/çıktı türü ve gizleme eylemi eksiksiz korundu.",
+    "filter_rules_generated_only": "Yalnızca oluşturulmuş içerik anlamı korundu.",
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": "Üç içerik türü ve yalnızca gösterme kısıtı korundu.",
+    "github_app_sign_in_was_not_completed_on_github_try": "Tamamlanmama durumu ve koşullu yeniden deneme korundu.",
+    "github_app_the_sign_in_session_timed_out_on_github": "Süre dolması ile işlemi yeniden başlatma adımı korundu.",
+    "github_app_security_verification_failed_during_github_sign_in_start": "Güvenlik doğrulama başarısızlığı ve ghdiff'ten başlatma sınırı korundu.",
+    "github_app_github_could_not_complete_the_sign_in_try": "GitHub'ın işlemi tamamlayamadığı belirtilerek kesin neden eklenmedi.",
+    "installations_all_repositories": "Kısa seçim etiketi seçildi.",
+    "installations_no_repositories_selected": "Sıfır seçim durumu açıkça korundu.",
+    "pull_details_just_now": "Türkçe zaman ifadesi kısa tutuldu.",
+    "pull_status_approved": "İnsan inceleme onayı için yerleşik durum etiketi seçildi.",
+    "pull_status_changes_requested": "İnceleme kararı olarak değişiklik isteme anlamı korundu.",
+    "pull_status_no_review_yet": "İnceleme yokluğu açıkça korundu.",
+    "pull_status_checks_passing": "Otomatik kontroller insan incelemesinden ayrı tutuldu.",
+    "pull_status_checks_running": "Otomatik kontrollerin devam ettiği belirtildi.",
+    "pull_status_a_check_failed": "Tek bir kontrolün başarısızlığı korundu.",
+    "pull_status_no_checks": "Kontrol bulunmama durumu kısa aktarıldı.",
+    "pull_status_changes_requested_new_commits_since": "İnceleme kararı ve sonrasındaki yeni commit'ler ayrı anlamlarla korundu.",
+    "review_data_commit": "Commit teknik adı ve {value} yer tutucusu korundu.",
+    "review_decision_approve": "Kısa onay eylemi seçildi.",
+    "review_decision_approving": "Devam eden onay durumu ve üç nokta korundu.",
+    "review_decision_request_changes": "İnceleme kararı eylemi doğal emir kipinde verildi.",
+    "review_decision_requesting": "Devam eden değişiklik isteme durumu korundu.",
+    "review_decision_comment": "Kontrol için doğal eylem etiketi seçildi.",
+    "review_decision_commenting": "Devam eden yorum gönderme durumu korundu.",
+    "review_decision_approved": "Tamamlanmış onay durumu seçildi.",
+    "review_decision_changes_requested": "Tamamlanmış değişiklik isteme durumu seçildi.",
+    "review_decision_commented": "Tamamlanmış yorum durumu seçildi.",
+    "review_decision_you_approved_this_pull_request": "İkinci kişi ve kullanıcının onay eylemi korundu.",
+    "review_decision_you_requested_changes_on_this_pull_request": "Kullanıcının değişiklik isteme incelemesi açıkça korundu.",
+    "review_decision_you_commented_on_this_pull_request": "Kullanıcının yorum eylemi korundu.",
+    "review_decision_github_recorded_your_review": "GitHub'ın incelemeyi kaydettiği belirtildi.",
+    "review_failure_the_server_didn_t_respond_your_connection_might": "Olasılık bildiren iki neden belirsizlik korunarak aktarıldı.",
+    "review_failure_you_used_all_5_000_github_requests_for": "5.000 sayısı, saatlik sınır ve bekleme sonrası deneme adımı korundu.",
+    "review_failure_hourly_github_rate_limit_reached": "Saatlik GitHub limiti açıkça belirtildi.",
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "Oturum açılmamış istek sınırı, 60/5.000 değerleri ve erişim sonucu korundu.",
+    "review_failure_github_rate_limit_reached": "Kısa hata başlığı seçildi.",
+    "review_failure_your_github_sign_in_is_no_longer_valid": "Geçersiz oturum, yenileme başarısızlığı ve diff erişimi için yeniden kurulum adımı korundu.",
+    "review_failure_github_sign_in_expired": "Süre dolmuş GitHub oturumu kısa başlıkta korundu.",
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": "Bulunamadı yanıtının iki olası erişim nedeninden kaynaklanabileceği korunarak izin adımı eklendi.",
+    "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff adı ve depo erişim gereksinimi korundu.",
+    "review_failure_github_returns_not_found_for_private_repositories_when": "Oturum kapalıyken özel depolara ilişkin davranış ve erişimle çözüm korundu.",
+    "review_failure_repository_not_found_or_private": "Bulunamama ile özel olma olasılığı ayrı tutuldu.",
+    "review_failure_could_not_load_the_diff": "Başarısız eylem kısa ve doğrudan ifade edildi.",
+    "contract_enter_a_valid_github_username_or_repository_name": "GitHub adı korunarak iki geçerli giriş türü belirtildi.",
+    "contract_comment_cannot_be_empty": "Doğrulama kısıtı doğrudan korundu.",
+    "router_could_not_check_who_you_are_signed_in": "Oturum açılmış hesap kontrolünün başarısızlığı korundu.",
+    "router_could_not_read_where_ghdiff_is_installed": "ghdiff adı ve kurulum konumunu okuma başarısızlığı korundu.",
+    "router_could_not_load_this_repository": "Belirli depoyu yükleme başarısızlığı korundu.",
+    "router_could_not_load_this_pull_request": "Belirli pull request'i yükleme başarısızlığı korundu.",
+    "router_could_not_load_your_review_of_this_pull": "Kullanıcının bu pull request üzerindeki incelemesini yükleme başarısızlığı korundu.",
+    "router_github_accepted_the_review_but_returned_nothing": "Kabul edildiğini ve boş yanıtı koruyan doğal hata metni.",
+    "router_could_not_submit_this_review": "Kısa, doğrudan eylem hatası.",
+    "router_could_not_load_comments": "Yükleme başarısızlığını açıkça belirtir.",
+    "router_github_accepted_the_reply_but_returned_nothing": "Yanıt ile inceleme ayrımını korur.",
+    "router_this_comment_is_missing_a_file_or_line": "Eksik dosya veya satır bilgisini korur.",
+    "router_github_accepted_the_comment_but_returned_nothing": "Yorum işlemi ve boş yanıt korunur.",
+    "router_could_not_post_this_comment": "Gönderme hatası için kısa ifade.",
+    "router_could_not_delete_this_comment": "Silme hatasını doğrudan belirtir.",
+    "router_could_not_load_which_files_you_have_read": "Okunmuş dosya durumunu korur.",
+    "router_not_found": "Türkçe standart durum etiketi.",
+    "router_could_not_send_that_mark_to_github": "İşaretin GitHub'a gönderilmesi ayrımını korur.",
+    "auth_route_this_ghdiff_has_no_github_app_set_up": "Kurulum eksikliği ile oturum açma sonucunu korur.",
+    "github_your_github_sign_in_is_no_longer_valid": "Geçersiz oturum ve gerekli sonraki adım korunur.",
+    "github_github_rejected_that_query": "Sorgu reddini kısa biçimde korur.",
+    "github_github_returned_no_data_for_that_query": "Veri dönmemesi korunur.",
+    "github_github_has_no_such_file_on_that_commit": "Dosya yokluğu, commit ve özel depo koşulu korunur.",
+    "github_app_github_would_not_revoke_that_token": "İptal etmeme sonucu korunur.",
+    "github_app_github_answered_for_that_token_request": "{status} yer tutucusu korunur.",
+    "github_app_github_refused_that": "Hata yer tutucusu ve ret korunur.",
+    "github_app_github_answered_with_no_access_token": "Erişim belirteci yokluğu korunur.",
+    "github_patch_github_lists_at_most_files_for_this_diff": "Üst sınır ve sonraki dosyaların yokluğu korunur.",
+    "installations_an_account": "Belirsiz hesap ifadesi korunur.",
+    "stream_text_that_response_is_too_large_to_read": "Boyut sınırı korunur.",
+    "diff_that_review_target_is_not_valid": "Geçersiz inceleme hedefini korur.",
+    "diff_could_not_load_that_diff": "Fark yükleme hatasını korur.",
+    "diff_that_request_to_github_failed": "GitHub isteğinin başarısızlığını korur.",
+    "file_that_review_target_is_not_valid": "Geçersiz inceleme hedefini korur.",
+    "file_that_file_path_is_not_valid": "Geçersiz dosya yolunu korur.",
+    "file_could_not_load_that_file": "Dosya yükleme hatasını korur.",
+    "route_no_such_procedure": "Teknik yordam kavramını korur.",
+    "common_file_count": "Türkçede tüm sayılar için tek wildcard kolu yeterlidir.",
+    "common_commit_count": "Türkçede tek sayı kategorisi kullanılır.",
+    "common_comment_count": "Türkçede tek sayı kategorisi kullanılır.",
+    "common_reply_count": "Türkçede tek sayı kategorisi kullanılır.",
+    "common_repository_count": "Türkçede tek sayı kategorisi kullanılır.",
+    "home_served_count": "Sunulan fark sayısını korur.",
+    "filter_hidden_count": "Gizli öğe sayısını kısa tutar.",
+    "filter_status_summary": "Temel filtre ve durum sayısını korur.",
+    "stack_pull_count": "Pull request yığını anlamını korur.",
+    "comment_line": "Satır hedefli yorum eylemi korunur.",
+    "comment_line_range": "Satır aralığı anlamını korur.",
+    "sidebar_file_summary": "Toplam için koşullu markup korunur.",
+    "home_credits": "CodeView ve FileTree markup adları korunur.",
+    "watch_offer_added_phone": "Telefon listesinin gerçek konumu korunur.",
+    "watch_offer_added_wide": "Masaüstü sol çubuk konumu korunur.",
+    "watch_offer_more_phone": "Tarayıcı-yerel takip listesi eylemini açıklaştırır.",
+    "watch_offer_more_wide": "Çubuk altındaki gerçek denetimi korur.",
+    "watch_offer_preview_phone": "İnceleme ve otomatik kontroller ayrımını korur.",
+    "watch_offer_preview_wide": "İnceleme ve otomatik kontroller ayrımını korur.",
+    "watch_offer_action": "GitHub aboneliği yerine listeye ekleme anlamını açıklaştırır.",
+    "watch_offer_added_title": "Yerel takip durumunu kısa belirtir.",
+    "pull_opened_age": "Açılma zamanını korur.",
+    "pull_updated_age": "Güncellenme zamanını korur.",
+    "tree_directory_summary": "Dosya sayısı ile ekleme/silme değerlerini korur.",
+    "pull_list_empty": "Açık pull request yokluğu korunur.",
+    "review_submit_scope": "Tüm pull request incelemesi ile satır yorumlarını ayırır.",
+    "review_previous_verdict": "Yeni incelemenin önceki hükmün yerini alacağını korur.",
+    "setup_not_installed": "Kurulum yokluğu ve olası sahip onayı korunur.",
+    "setup_no_repositories": "Kurulu olup depo kapsamama durumunu korur.",
+    "userscript_manager_description": "GitHub denetim adlarını ve Tampermonkey markup'ını korur.",
+    "pull_row_tooltip": "Yerleşik başlık satırları ve hedef dal ilişkisi korundu.",
+    "pull_status_description": "İnceleme ve otomatik kontrol ayrımı korunarak ayraç değişmeden bırakıldı.",
+    "auth_required_review": "GitHub erişimi ön koşulu ve inceleme gönderme eylemi korundu.",
+    "auth_required_delete": "GitHub erişimi ön koşulu ve yorum silme eylemi korundu.",
+    "auth_required_viewed": "GitHub erişimi ön koşulu ve görüntülendi işaretleme eylemi korundu.",
+    "bytes_count": "Türkçede bayt sayısı çoğul ekine göre değişmediği için iki ulaşılabilir kol aynı çevrildi.",
+    "bytes_kilobytes": "Birim ve yer tutucu korundu.",
+    "bytes_megabytes": "Birim ve yer tutucu korundu.",
+    "app_description": "Üç hedef türü, ana bilgisayar değiştirme yöntemi, yol kuralları ve GitHub'a yorum gönderme korundu.",
+    "thread_delete_confirmation": "Tek yorum ile ileti dizisindeki tüm yorumlar ve geri alınamazlık ayrımı korundu.",
+    "github_patch_missing_files": "GitHub'ın değerlendirmesi, dosya sayısı ve satırların gösterilmemesi sonucu korundu.",
+    "userscript_open_pull": "Kısa kontrol etiketi ve ghdiff markası korundu.",
+    "userscript_open_commit": "Kısa kontrol etiketi ve ghdiff markası korundu.",
+    "userscript_description": "Pull request sekme satırı ile commit'teki Browse files yanındaki farklı konumlar korundu.",
+    "diff_expand_all": "Kısa eylem etiketi seçildi.",
+    "diff_no_newline": "Dosya sonundaki yeni satırın yokluğu doğrudan belirtildi.",
+    "tree_git_contains_changes": "Git durum öğeleri anlamı korundu.",
+    "review_bytes_read": "Okuma durumu ve miktar yer tutucusu korundu.",
+    "tree_git_added": "Git durumunun eklenmiş dosya anlamı korundu.",
+    "tree_git_deleted": "Git durumunun silinmiş dosya anlamı korundu.",
+    "tree_git_ignored": "Git'in yok sayma durumu korundu.",
+    "tree_git_modified": "Git'in değiştirilmiş durumu korundu.",
+    "tree_git_renamed": "Git'in yeniden adlandırma durumu korundu.",
+    "tree_git_untracked": "Git'in izlenmeyen durumu korundu.",
+    "diff_unmodified_lines": "Türkçede satır sayısında çoğul ekine gerek olmadığı için iki ulaşılabilir kol aynı çevrildi."
+  },
+  "findings": {
+    "color_mode_toggle_auto": {
+      "verdict": "keep",
+      "reason": "Doğal ve kısa ayar etiketi.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_light": {
+      "verdict": "keep",
+      "reason": "Arayüzlerde açık renk modu için yerleşik kullanım.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_dark": {
+      "verdict": "keep",
+      "reason": "Arayüzlerde koyu renk modu için yerleşik kullanım.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode_switch_to": {
+      "verdict": "keep",
+      "reason": "Yer tutucuları koruyor; eylem açık ve doğal.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode": {
+      "verdict": "keep",
+      "reason": "Kısa ve doğal durum etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comment_authors": {
+      "verdict": "keep",
+      "reason": "Filtre başlığı için doğru terim.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_all": {
+      "verdict": "keep",
+      "reason": "Filtre seçeneği için doğal.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_person_opened": {
+      "verdict": "keep",
+      "reason": "Açılan yorumları doğru ifade ediyor.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_people": {
+      "verdict": "keep",
+      "reason": "Kategori etiketi olarak uygun.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_github_app_opened": {
+      "verdict": "change",
+      "reason": "GitHub App özel adı korunurken Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_bots": {
+      "verdict": "keep",
+      "reason": "Yerleşik ve kısa kategori etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_body_done": {
+      "verdict": "keep",
+      "reason": "Durum ifadesi doğru ve doğal.",
+      "uncertainty": "none"
+    },
+    "comment_body_not_done": {
+      "verdict": "keep",
+      "reason": "Olumsuz durum doğru korunuyor.",
+      "uncertainty": "none"
+    },
+    "comment_composer_leave_a_comment": {
+      "verdict": "keep",
+      "reason": "Yorum yazma eylemi için doğal emir kipi.",
+      "uncertainty": "none"
+    },
+    "comment_composer_comment": {
+      "verdict": "keep",
+      "reason": "Gönderme düğmesi için kısa ve doğal.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cancel": {
+      "verdict": "keep",
+      "reason": "Standart denetim etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "Klavye kısayolunu ve teknik tuş adlarını koruyor.",
+      "uncertainty": "none"
+    },
+    "comment_expansion_comment": {
+      "verdict": "keep",
+      "reason": "Tekil yorum etiketi için doğru.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_open_thread_by": {
+      "verdict": "keep",
+      "reason": "{author} yer tutucusunu koruyor ve erişilebilir eylemi açıkça belirtiyor.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_posting": {
+      "verdict": "keep",
+      "reason": "Devam eden gönderme durumunu doğru aktarıyor.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_click_to_open": {
+      "verdict": "keep",
+      "reason": "Doğal ve kısa eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_delete": {
+      "verdict": "keep",
+      "reason": "Yerleşik kısa eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_close": {
+      "verdict": "keep",
+      "reason": "Doğal kontrol etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_on_github": {
+      "verdict": "keep",
+      "reason": "GitHub bağlamı doğru korunuyor.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": {
+      "verdict": "change",
+      "reason": "Sonuç daha doğal biçimde ifade edildi; yorumun henüz GitHub'a ulaşmadığı korundu.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_on_github": {
+      "verdict": "keep",
+      "reason": "Hedef platform ve eylem korunuyor.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Tarayıcıya yerel eylem açıkça korunuyor.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_sending": {
+      "verdict": "keep",
+      "reason": "Doğal durum etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply": {
+      "verdict": "keep",
+      "reason": "Kısa ve doğal eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "Tuş adları korunmuş, ifade doğal.",
+      "uncertainty": "none"
+    },
+    "comments_list_no_comments_here": {
+      "verdict": "keep",
+      "reason": "Doğal boş durum metni.",
+      "uncertainty": "none"
+    },
+    "comments_list_comments_you_leave_here_are_posted_to_github": {
+      "verdict": "keep",
+      "reason": "Gönderilme sonucu doğru aktarılıyor.",
+      "uncertainty": "none"
+    },
+    "comments_list_github_has_no_review_thread_for_commits_or": {
+      "verdict": "keep",
+      "reason": "GitHub sınırı ve tarayıcıda kalma sonucu korunuyor.",
+      "uncertainty": "none"
+    },
+    "comments_list_posting": {
+      "verdict": "keep",
+      "reason": "Kısa durum etiketi.",
+      "uncertainty": "none"
+    },
+    "comments_list_failed": {
+      "verdict": "keep",
+      "reason": "Kısa durum etiketi.",
+      "uncertainty": "none"
+    },
+    "comments_list_go_to": {
+      "verdict": "keep",
+      "reason": "Yer tutucu aynen korunmuş.",
+      "uncertainty": "none"
+    },
+    "confirm_inline_cancel": {
+      "verdict": "keep",
+      "reason": "Standart Türkçe kontrol etiketi.",
+      "uncertainty": "none"
+    },
+    "example_targets_label": {
+      "verdict": "keep",
+      "reason": "Yer tutucular ve ayırıcı aynen korunmuş.",
+      "uncertainty": "none"
+    },
+    "filter_menu_added": {
+      "verdict": "keep",
+      "reason": "Dosya durumu için doğal karşılık.",
+      "uncertainty": "none"
+    },
+    "filter_menu_modified": {
+      "verdict": "keep",
+      "reason": "Dosya durumu için doğal karşılık.",
+      "uncertainty": "none"
+    },
+    "filter_menu_renamed": {
+      "verdict": "keep",
+      "reason": "Dosya durumu için doğal karşılık.",
+      "uncertainty": "none"
+    },
+    "filter_menu_deleted": {
+      "verdict": "keep",
+      "reason": "Dosya durumu için doğal karşılık.",
+      "uncertainty": "none"
+    },
+    "filter_menu_filter_files": {
+      "verdict": "keep",
+      "reason": "Açık eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_menu_file_rules": {
+      "verdict": "keep",
+      "reason": "Anlam ve kısa UI biçimi korunuyor.",
+      "uncertainty": "none"
+    },
+    "filter_menu_git_status": {
+      "verdict": "keep",
+      "reason": "Yerleşik teknik terim korunuyor.",
+      "uncertainty": "none"
+    },
+    "filter_menu_clear_filters": {
+      "verdict": "keep",
+      "reason": "Doğal eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_menu_all_files": {
+      "verdict": "keep",
+      "reason": "Doğal seçenek etiketi.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_control_set_up_access": {
+      "verdict": "keep",
+      "reason": "Erişim kurulum eylemi doğru.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": {
+      "verdict": "keep",
+      "reason": "Hesap üzerinden GitHub'a gönderilme anlamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Doğal eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": {
+      "verdict": "keep",
+      "reason": "Olumsuzluk, hesap kapsamı ve sonraki adım korunuyor.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_open_setup_guide": {
+      "verdict": "keep",
+      "reason": "Doğal eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_sign_out": {
+      "verdict": "keep",
+      "reason": "Standart kontrol etiketi.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Erişim kapsamı doğru aktarılıyor.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": {
+      "verdict": "keep",
+      "reason": "github.com ve depo ekleme/kaldırma eylemleri korunuyor.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": {
+      "verdict": "keep",
+      "reason": "Okuma erişimi denetlenmesi doğru aktarılıyor.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_any_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "Üç teknik hedef korunuyor.",
+      "uncertainty": "none"
+    },
+    "home_screen_narrow_the_file_list_with_preset_path_rules": {
+      "verdict": "keep",
+      "reason": "Hazır yol kuralları anlamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "home_screen_read_and_leave_comments": {
+      "verdict": "keep",
+      "reason": "İki eylem de açık ve doğal.",
+      "uncertainty": "none"
+    },
+    "home_screen_paste_a_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "URL türleri ve owner/repo#123 tanımlayıcısı aynen korunuyor.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_pull_request_commit_or_compare_url": {
+      "verdict": "keep",
+      "reason": "Teknik URL türleri korunuyor.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_this_diff": {
+      "verdict": "keep",
+      "reason": "Kısa ve doğal eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "home_screen_review": {
+      "verdict": "keep",
+      "reason": "Doğal inceleme eylemi.",
+      "uncertainty": "none"
+    },
+    "home_screen_set_up_access_for_private_repositories": {
+      "verdict": "keep",
+      "reason": "Özel depo erişim kapsamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "home_screen_userscript": {
+      "verdict": "keep",
+      "reason": "Yerleşik teknik karşılık.",
+      "uncertainty": "none"
+    },
+    "home_screen_examples": {
+      "verdict": "keep",
+      "reason": "Doğal bölüm etiketi.",
+      "uncertainty": "none"
+    },
+    "home_screen_watched_repos": {
+      "verdict": "keep",
+      "reason": "Yerel izleme listesi için uygun ifade.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_account": {
+      "verdict": "keep",
+      "reason": "Doğal bölüm etiketi.",
+      "uncertainty": "none"
+    },
+    "home_screen_source_on_github": {
+      "verdict": "keep",
+      "reason": "GitHub üzerindeki kaynak anlamı doğru.",
+      "uncertainty": "none"
+    },
+    "home_screen_review_the_commit_this_build_was_made_from": {
+      "verdict": "keep",
+      "reason": "{sha}, ghdiff ve derleme kaynağı anlamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "installation_row_current_diff": {
+      "verdict": "keep",
+      "reason": "Kısa durum etiketi.",
+      "uncertainty": "none"
+    },
+    "installation_row_configure": {
+      "verdict": "keep",
+      "reason": "Doğal teknik eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "not_found_ghdiff_cannot_read_that_url": {
+      "verdict": "keep",
+      "reason": "Okuma sınırı doğru aktarılıyor.",
+      "uncertainty": "none"
+    },
+    "not_found_a_review_needs_a_github_pull_request_a": {
+      "verdict": "keep",
+      "reason": "Gerekli üç hedef doğru korunuyor.",
+      "uncertainty": "none"
+    },
+    "not_found_open_a_different_review": {
+      "verdict": "keep",
+      "reason": "Doğal kurtarma eylemi.",
+      "uncertainty": "none"
+    },
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": {
+      "verdict": "keep",
+      "reason": "İki ayrı etkileşim talimatı korunuyor.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_loading_pull_request": {
+      "verdict": "keep",
+      "reason": "Doğal yükleme durumu.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_no_details_yet": {
+      "verdict": "keep",
+      "reason": "Doğal boş durum metni.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_files": {
+      "verdict": "keep",
+      "reason": "Doğal bölüm etiketi.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_added_lines": {
+      "verdict": "keep",
+      "reason": "Anlam doğru.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Anlam doğru.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_commits": {
+      "verdict": "keep",
+      "reason": "Teknik terim için yaygın UI biçimi.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_description": {
+      "verdict": "keep",
+      "reason": "Doğal bölüm etiketi.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Açık durum ve teknik terim korunuyor.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_watched_repos": {
+      "verdict": "keep",
+      "reason": "Yerel izleme listesi bağlamına uygun.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Doğal yeniden yükleme eylemi.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Doğal yükleme durumu.",
+      "uncertainty": "none"
+    },
+    "pull_rail_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Açık durum ve teknik terim korunuyor.",
+      "uncertainty": "none"
+    },
+    "pull_rail_pull_request_bar_width": {
+      "verdict": "keep",
+      "reason": "Boyut ayarı anlamı açık.",
+      "uncertainty": "none"
+    },
+    "pull_rail_show_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Doğal görünürlük eylemi.",
+      "uncertainty": "none"
+    },
+    "pull_rail_hide_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Doğal görünürlük eylemi.",
+      "uncertainty": "none"
+    },
+    "pull_rail_watched_repos": {
+      "verdict": "keep",
+      "reason": "Yerel izleme listesi bağlamına uygun.",
+      "uncertainty": "none"
+    },
+    "pull_rail_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Doğal yeniden yükleme eylemi.",
+      "uncertainty": "none"
+    },
+    "pull_rail_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Doğal yükleme durumu.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": {
+      "verdict": "keep",
+      "reason": "Depoyu yerel olarak takip etme eylemi ve sonucu korunuyor.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_on_github": {
+      "verdict": "keep",
+      "reason": "Yer tutucular korunmuş, depo hedefi açık.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_the_open_pull_requests_on_github": {
+      "verdict": "keep",
+      "reason": "{value} korunmuş ve açık pull request kapsamı doğru.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_you": {
+      "verdict": "keep",
+      "reason": "Kısa kullanıcı göstergesi için uygun.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_s_open_pull_requests_in_on_github": {
+      "verdict": "keep",
+      "reason": "Tüm yer tutucular, sahiplik ve depo kapsamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_set_up_private_access": {
+      "verdict": "keep",
+      "reason": "Özel erişim kurulum eylemi doğru.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_signed_out_no_row_shows_a_status_square": {
+      "verdict": "keep",
+      "reason": "Negation, scope, and sign-in consequence are preserved.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_stack": {
+      "verdict": "keep",
+      "reason": "Natural compact label for a pull-request stack.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_loading_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Natural loading-state wording; technical term remains recognizable.",
+      "uncertainty": "none"
+    },
+    "pull_row_label": {
+      "verdict": "keep",
+      "reason": "Placeholder and separator are preserved.",
+      "uncertainty": "none"
+    },
+    "pull_row_draft": {
+      "verdict": "keep",
+      "reason": "Natural UI state label.",
+      "uncertainty": "none"
+    },
+    "pull_row_currently_viewing": {
+      "verdict": "keep",
+      "reason": "Meaning and current-state aspect are preserved.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_open": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_draft": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_merged": {
+      "verdict": "keep",
+      "reason": "Correct completed merge state.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_closed": {
+      "verdict": "keep",
+      "reason": "Correct completed closed state.",
+      "uncertainty": "none"
+    },
+    "review_header_bars": {
+      "verdict": "keep",
+      "reason": "Concise display-option label.",
+      "uncertainty": "none"
+    },
+    "review_header_signs": {
+      "verdict": "keep",
+      "reason": "Concise display-option label.",
+      "uncertainty": "none"
+    },
+    "review_header_none": {
+      "verdict": "keep",
+      "reason": "Natural option label.",
+      "uncertainty": "none"
+    },
+    "review_header_hide_the_file_list": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_header_show_the_file_list": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_header_open_on_github": {
+      "verdict": "keep",
+      "reason": "Preserves placeholder and GitHub name.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_unified_view": {
+      "verdict": "keep",
+      "reason": "Correct view-switching action.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_split_view": {
+      "verdict": "keep",
+      "reason": "Correct view-switching action.",
+      "uncertainty": "none"
+    },
+    "review_header_split_view": {
+      "verdict": "keep",
+      "reason": "Natural display mode label.",
+      "uncertainty": "none"
+    },
+    "review_header_unified_view": {
+      "verdict": "keep",
+      "reason": "Natural display mode label.",
+      "uncertainty": "none"
+    },
+    "review_header_display_settings": {
+      "verdict": "keep",
+      "reason": "Natural settings label.",
+      "uncertainty": "none"
+    },
+    "review_header_code_font": {
+      "verdict": "keep",
+      "reason": "Correct typography setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_markers": {
+      "verdict": "keep",
+      "reason": "Correct setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_wrap_long_lines": {
+      "verdict": "keep",
+      "reason": "Natural imperative setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_line_numbers": {
+      "verdict": "keep",
+      "reason": "Correct setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_backgrounds": {
+      "verdict": "keep",
+      "reason": "Correct setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_dim_whitespace_changes": {
+      "verdict": "keep",
+      "reason": "Preserves the visual-dimming action.",
+      "uncertainty": "none"
+    },
+    "review_header_approve_request_changes_or_comment": {
+      "verdict": "keep",
+      "reason": "Keeps three distinct human review actions.",
+      "uncertainty": "none"
+    },
+    "review_header_review": {
+      "verdict": "keep",
+      "reason": "Natural concise label.",
+      "uncertainty": "none"
+    },
+    "review_header_review_it_again": {
+      "verdict": "keep",
+      "reason": "Preserves placeholder and repeated-review action.",
+      "uncertainty": "none"
+    },
+    "review_screen_sidebar_width": {
+      "verdict": "keep",
+      "reason": "Correct layout-setting label.",
+      "uncertainty": "none"
+    },
+    "review_screen_dismiss": {
+      "verdict": "keep",
+      "reason": "Natural dismissal control.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_sidebar_sections": {
+      "verdict": "keep",
+      "reason": "Correct navigation label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_files": {
+      "verdict": "keep",
+      "reason": "Natural concise label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_threads_comments": {
+      "verdict": "change",
+      "reason": "Added Turkish one and other plural match arms while retaining a full wildcard; Turkish count nouns do not inflect here.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_comments": {
+      "verdict": "keep",
+      "reason": "Natural concise label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_hide_the_path_search": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_by_path": {
+      "verdict": "keep",
+      "reason": "Correct search action.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_the_current_filter_hides_all_files": {
+      "verdict": "keep",
+      "reason": "Preserves that the current filter hides every file.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_filters": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_added_lines": {
+      "verdict": "keep",
+      "reason": "Correct diff metric label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Correct diff metric label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_files_by_path": {
+      "verdict": "keep",
+      "reason": "Correct file-search action.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_path_contains": {
+      "verdict": "keep",
+      "reason": "Natural placeholder wording.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_the_path_search": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_fetching_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct loading status.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_reading_the_patch_for_this_review": {
+      "verdict": "keep",
+      "reason": "Preserves review-specific patch-reading progress.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_preparing_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct preparation status.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": {
+      "verdict": "keep",
+      "reason": "Preserves both parsing and file-list construction.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_starting_the_highlighters": {
+      "verdict": "keep",
+      "reason": "Natural technical loading status.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": {
+      "verdict": "keep",
+      "reason": "Preserves background-worker and syntax-coloring meaning.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_set_up_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct access-setup action.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_try_again": {
+      "verdict": "keep",
+      "reason": "Natural concise retry control.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub requirement.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub's approval restriction on own pull requests.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub's request-changes restriction on own pull requests.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": {
+      "verdict": "keep",
+      "reason": "Preserves that commenting is allowed and all other actions are not.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": {
+      "verdict": "keep",
+      "reason": "Preserves note requirement for both request changes and comment.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_submit_a_review": {
+      "verdict": "keep",
+      "reason": "Natural submission control.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_review_body": {
+      "verdict": "keep",
+      "reason": "Correct field label.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_leave_a_note_with_your_review": {
+      "verdict": "keep",
+      "reason": "Natural field instruction.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_label": {
+      "verdict": "keep",
+      "reason": "Both placeholders and separator are preserved.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural display action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_hide_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural display action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_whole_file": {
+      "verdict": "keep",
+      "reason": "Correct whole-file action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_viewed": {
+      "verdict": "keep",
+      "reason": "Correct completed viewing state.",
+      "uncertainty": "none"
+    },
+    "setup_screen_set_up_private_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct private-access setup action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": {
+      "verdict": "keep",
+      "reason": "Preserves the explicit GitHub permission boundary and ordered steps.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_to_github": {
+      "verdict": "keep",
+      "reason": "Natural sign-in action; GitHub remains intact.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_identifies_your_account_to_github_any_comments": {
+      "verdict": "keep",
+      "reason": "Preserves account attribution for comments.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_with_github": {
+      "verdict": "keep",
+      "reason": "Natural sign-in control.",
+      "uncertainty": "none"
+    },
+    "setup_screen_grant_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct permission-grant action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": {
+      "verdict": "keep",
+      "reason": "Preserves that signing in only identifies the user and does not itself grant access.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": {
+      "verdict": "keep",
+      "reason": "Preserves the account placeholder, installation step, and repository access-list condition.",
+      "uncertainty": "none"
+    },
+    "setup_screen_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Correct access-state label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_ghdiff": {
+      "verdict": "keep",
+      "reason": "Preserves protected product name.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Natural installation action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_checking": {
+      "verdict": "keep",
+      "reason": "Natural progress state.",
+      "uncertainty": "none"
+    },
+    "setup_screen_check_again": {
+      "verdict": "keep",
+      "reason": "Natural retry-check action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_open_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural diff-opening action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_the_home_page_to_paste_a": {
+      "verdict": "keep",
+      "reason": "Anlamı, URL'yi ve yönlendirmeyi doğru koruyor.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": {
+      "verdict": "keep",
+      "reason": "İzinlerin güncellenmesi ve yeniden getirme sonucu korunuyor.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_ghdiff_home": {
+      "verdict": "keep",
+      "reason": "Doğal, kısa denetim etiketi.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_the_diff": {
+      "verdict": "keep",
+      "reason": "Doğal, kısa denetim etiketi.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": {
+      "verdict": "change",
+      "reason": "GitHub App adı korunarak daha doğal yapı kuruldu.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_now_uses_a_github_app": {
+      "verdict": "change",
+      "reason": "Belirsiz artikel kaldırıldı; marka adı korundu.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": {
+      "verdict": "keep",
+      "reason": "Tarayıcıdan kaldırma ve GitHub'ın tokenı kabul etmeye devam etmesi korunuyor.",
+      "uncertainty": "none"
+    },
+    "setup_screen_delete_the_token_on_github": {
+      "verdict": "keep",
+      "reason": "Kısa ve doğal eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "userscript_install_add_a_ghdiff_button_to_github_com": {
+      "verdict": "keep",
+      "reason": "Hedef alan adı ve eylem korunuyor.",
+      "uncertainty": "none"
+    },
+    "userscript_install_install": {
+      "verdict": "keep",
+      "reason": "Uygun kısa yükleme denetimi.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch_this_repository": {
+      "verdict": "keep",
+      "reason": "Yerel takip listesine ekleme anlamını açıkça veriyor.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch": {
+      "verdict": "keep",
+      "reason": "Yerel liste eylemini ve {subject} yer tutucusunu koruyor.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_keep_reviewing": {
+      "verdict": "keep",
+      "reason": "İncelemeye devam etme eylemi doğal.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Tarayıcı-yerel sınırı doğru korunuyor.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_not_now": {
+      "verdict": "keep",
+      "reason": "Nötr ret ifadesi.",
+      "uncertainty": "none"
+    },
+    "watched_repos_dialog_watched_repositories": {
+      "verdict": "keep",
+      "reason": "Yerel takip listesindeki depo durumunu doğru adlandırıyor.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": {
+      "verdict": "keep",
+      "reason": "Açık pull request listesi ve tarayıcı-yerel sınır korunuyor.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_enter_a_repository_as_owner_repo": {
+      "verdict": "keep",
+      "reason": "owner/repo tanımlayıcısı aynen korunuyor.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_owner_repo": {
+      "verdict": "keep",
+      "reason": "Teknik tanımlayıcı aynen korunuyor.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_repository_to_watch": {
+      "verdict": "change",
+      "reason": "Yerel listeye ekleme anlamı daha açık hale getirildi.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_add": {
+      "verdict": "keep",
+      "reason": "Doğal kısa denetim etiketi.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_nothing_watched_yet": {
+      "verdict": "keep",
+      "reason": "Boş takip listesi durumunu doğru belirtiyor.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_remove": {
+      "verdict": "keep",
+      "reason": "Doğal kısa denetim etiketi.",
+      "uncertainty": "none"
+    },
+    "dialog_close": {
+      "verdict": "keep",
+      "reason": "Doğal kısa denetim etiketi.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_could_not_read_that_file_from_github": {
+      "verdict": "keep",
+      "reason": "Başarısız okuma işlemini doğru ifade ediyor.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": {
+      "verdict": "keep",
+      "reason": "Değişiklik nedeni ve yalnızca değişmemiş satırları görme adımı korunuyor.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_request_failed": {
+      "verdict": "keep",
+      "reason": "{status} yer tutucusu korunuyor.",
+      "uncertainty": "none"
+    },
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Oturum hesabını denetleyememe anlamı doğru.",
+      "uncertainty": "none"
+    },
+    "use_installations_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "change",
+      "reason": "Kurulum kapsamının depolar olduğu netleştirildi.",
+      "uncertainty": "none"
+    },
+    "use_open_pulls_could_not_load_pull_requests": {
+      "verdict": "keep",
+      "reason": "Yükleme hatasını kısa ve doğru anlatıyor.",
+      "uncertainty": "none"
+    },
+    "use_pull_details_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Belirli pull request yükleme hatası korunuyor.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Yorum yükleme hatası doğru.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_that_comment_to_github": {
+      "verdict": "keep",
+      "reason": "GitHub'a gönderme başarısızlığını doğru koruyor.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_this_reply_to_github": {
+      "verdict": "keep",
+      "reason": "Yanıtı GitHub'a gönderememe anlamı doğru.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": {
+      "verdict": "keep",
+      "reason": "Silme başarısızlığı ve denetleme için yenileme adımı korunuyor.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_request_failed": {
+      "verdict": "keep",
+      "reason": "{status} yer tutucusu korunuyor.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Fark yükleme hatası doğru.",
+      "uncertainty": "none"
+    },
+    "use_submit_review_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "İnceleme gönderme hatası doğru.",
+      "uncertainty": "none"
+    },
+    "use_viewed_files_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "İşaretin GitHub'a gönderilememesi korunuyor.",
+      "uncertainty": "none"
+    },
+    "code_fonts_system": {
+      "verdict": "keep",
+      "reason": "Sistem yazı tipi seçeneği için doğal.",
+      "uncertainty": "none"
+    },
+    "diff_hydration_that_file_is_too_large_to_show_its": {
+      "verdict": "keep",
+      "reason": "Boyut sınırı ve değişmemiş satırlar korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_rewrite_bun_in_rust": {
+      "verdict": "keep",
+      "reason": "Teknik adlar korunuyor; eylem doğal.",
+      "uncertainty": "none"
+    },
+    "example_targets_2_188_files_1_0m_lines": {
+      "verdict": "keep",
+      "reason": "Türkçe sayı ayırıcıları ve milyon kısaltması uygun.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_largest_of_them_43_mb_of_unified": {
+      "verdict": "keep",
+      "reason": "Boyut, commit sayısı ve birleşik fark anlamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_resolve_maimai_net_import_pr_conflicts": {
+      "verdict": "keep",
+      "reason": "Proje adı ve pull request bağlamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_494k_lines": {
+      "verdict": "keep",
+      "reason": "Miktar ve kısa UI biçimi uygun.",
+      "uncertainty": "none"
+    },
+    "example_targets_one_generated_json_file_holds_465_486_of": {
+      "verdict": "keep",
+      "reason": "Tam sayı ve oluşturulmuş JSON dosyası anlamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_deps_update_v8_to_14_1": {
+      "verdict": "keep",
+      "reason": "deps: öneki ve V8 sürümü korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_3_420_files_268k_lines": {
+      "verdict": "keep",
+      "reason": "Miktar ve kısa UI biçimi uygun.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_widest_file_tree_past_the_api_diff": {
+      "verdict": "keep",
+      "reason": "API sınırını aşma sonucu olan web sunucusundan gelmeme korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": {
+      "verdict": "keep",
+      "reason": "Teknik bağımlılık adları korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_88k_lines": {
+      "verdict": "keep",
+      "reason": "Miktar ve kısa UI biçimi uygun.",
+      "uncertainty": "none"
+    },
+    "example_targets_large_and_still_a_diff_a_person_can": {
+      "verdict": "keep",
+      "reason": "İnsan tarafından sonuna kadar okunabilir olma anlamı korunuyor.",
+      "uncertainty": "none"
+    },
+    "example_targets_ghostty_1_3_0_to_1_3_1": {
+      "verdict": "keep",
+      "reason": "Ürün adı ve sürüm aralığı doğru.",
+      "uncertainty": "none"
+    },
+    "example_targets_53_files_2_6k_lines": {
+      "verdict": "keep",
+      "reason": "Türkçe ondalık ayırıcı ve kısa UI biçimi uygun.",
+      "uncertainty": "none"
+    },
+    "example_targets_a_compare_range_of_one_release_100_commits": {
+      "verdict": "keep",
+      "reason": "Karşılaştırma aralığı, commit sayısı ve yerel yorum sınırı korunuyor.",
+      "uncertainty": "none"
+    },
+    "filter_rules_all_files": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_every_file_in_the_diff": {
+      "verdict": "keep",
+      "reason": "Farktaki tüm dosyaları gösterme anlamı doğru.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_tests": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Üç dosya türü de korunuyor.",
+      "uncertainty": "none"
+    },
+    "filter_rules_tests_only": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": {
+      "verdict": "change",
+      "reason": "Terminoloji snapshot ile tutarlı hale getirildi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_source_only": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_code_files_that_are_not_tests": {
+      "verdict": "change",
+      "reason": "Olumsuz koşullar daha doğal Türkçe söz dizimiyle korundu.",
+      "uncertainty": "none"
+    },
+    "filter_rules_docs_only": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_markdown_and_other_prose_files": {
+      "verdict": "change",
+      "reason": "Prose için düz yazı daha uygun karşılık.",
+      "uncertainty": "none"
+    },
+    "filter_rules_config_only": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": {
+      "verdict": "keep",
+      "reason": "Liste öğeleri ve CI tanımlayıcısı korunuyor.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_generated": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_lock_files_snapshots_and_build_output": {
+      "verdict": "change",
+      "reason": "Snapshot terminolojisi diğer filtreyle tutarlı hale getirildi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_generated_only": {
+      "verdict": "keep",
+      "reason": "Doğal filtre etiketi.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": {
+      "verdict": "change",
+      "reason": "Snapshot terminolojisi diğer filtreyle tutarlı hale getirildi.",
+      "uncertainty": "none"
+    },
+    "github_app_sign_in_was_not_completed_on_github_try": {
+      "verdict": "keep",
+      "reason": "GitHub'da tamamlanmayan oturum açma ve yeniden deneme koşulu korunuyor.",
+      "uncertainty": "none"
+    },
+    "github_app_the_sign_in_session_timed_out_on_github": {
+      "verdict": "keep",
+      "reason": "Süre dolumu ve süreci yeniden başlatma adımı korunuyor.",
+      "uncertainty": "none"
+    },
+    "github_app_security_verification_failed_during_github_sign_in_start": {
+      "verdict": "keep",
+      "reason": "Güvenlik doğrulaması hatası ve ghdiff'ten yeniden başlatma korunuyor.",
+      "uncertainty": "none"
+    },
+    "github_app_github_could_not_complete_the_sign_in_try": {
+      "verdict": "keep",
+      "reason": "GitHub'ın işlemi tamamlayamaması ve kısa bekleme önerisi korunuyor.",
+      "uncertainty": "none"
+    },
+    "installations_all_repositories": {
+      "verdict": "keep",
+      "reason": "Kurulum kapsamı etiketi doğal.",
+      "uncertainty": "none"
+    },
+    "installations_no_repositories_selected": {
+      "verdict": "keep",
+      "reason": "Boş seçim durumunu doğru ifade ediyor.",
+      "uncertainty": "none"
+    },
+    "pull_details_just_now": {
+      "verdict": "keep",
+      "reason": "Kısa zaman etiketi doğal.",
+      "uncertainty": "none"
+    },
+    "pull_status_approved": {
+      "verdict": "keep",
+      "reason": "İnsan incelemesi onay durumunu doğru ifade ediyor.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested": {
+      "verdict": "change",
+      "reason": "Kaynak çoğul değişiklikleri ifade ediyor.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_review_yet": {
+      "verdict": "keep",
+      "reason": "Doğal ve kısa durum metni.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_passing": {
+      "verdict": "keep",
+      "reason": "Otomatik kontrolleri incelemeden ayırır.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_running": {
+      "verdict": "keep",
+      "reason": "Doğal durum metni.",
+      "uncertainty": "none"
+    },
+    "pull_status_a_check_failed": {
+      "verdict": "keep",
+      "reason": "Tekil kontrol başarısızlığını korur.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_checks": {
+      "verdict": "keep",
+      "reason": "Kısa ve doğal.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested_new_commits_since": {
+      "verdict": "change",
+      "reason": "Aday ifade doğal değildi; zaman sırasını koruyacak şekilde düzeltildi.",
+      "uncertainty": "none"
+    },
+    "review_data_commit": {
+      "verdict": "keep",
+      "reason": "Teknik UI terimi olarak doğal kullanım.",
+      "uncertainty": "none"
+    },
+    "review_decision_approve": {
+      "verdict": "keep",
+      "reason": "Uygun eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "review_decision_approving": {
+      "verdict": "keep",
+      "reason": "Devam eden eylemi doğru ifade eder.",
+      "uncertainty": "none"
+    },
+    "review_decision_request_changes": {
+      "verdict": "keep",
+      "reason": "İnceleme kararı eylemini korur.",
+      "uncertainty": "none"
+    },
+    "review_decision_requesting": {
+      "verdict": "keep",
+      "reason": "Devam eden karar gönderimini doğru ifade eder.",
+      "uncertainty": "none"
+    },
+    "review_decision_comment": {
+      "verdict": "keep",
+      "reason": "Uygun eylem etiketi.",
+      "uncertainty": "none"
+    },
+    "review_decision_commenting": {
+      "verdict": "keep",
+      "reason": "Devam eden eylemi doğru ifade eder.",
+      "uncertainty": "none"
+    },
+    "review_decision_approved": {
+      "verdict": "keep",
+      "reason": "Doğal durum metni.",
+      "uncertainty": "none"
+    },
+    "review_decision_changes_requested": {
+      "verdict": "change",
+      "reason": "Kaynak çoğul değişiklikleri ifade ediyor.",
+      "uncertainty": "none"
+    },
+    "review_decision_commented": {
+      "verdict": "keep",
+      "reason": "Doğal durum metni.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_approved_this_pull_request": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti ve ek kullanımı düzeltildi.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_requested_changes_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Anlamı ve inceleme kararı korunuyor.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_commented_on_this_pull_request": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "review_decision_github_recorded_your_review": {
+      "verdict": "keep",
+      "reason": "Doğal ve tam anlamlı.",
+      "uncertainty": "none"
+    },
+    "review_failure_the_server_didn_t_respond_your_connection_might": {
+      "verdict": "keep",
+      "reason": "Belirsiz nedenleri korur.",
+      "uncertainty": "none"
+    },
+    "review_failure_you_used_all_5_000_github_requests_for": {
+      "verdict": "keep",
+      "reason": "Limit, süre ve sonraki adımı korur.",
+      "uncertainty": "none"
+    },
+    "review_failure_hourly_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Kısa ve doğru hata başlığı.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": {
+      "verdict": "keep",
+      "reason": "Kimliği doğrulanmamış istek sınırını ve erişim sonucunu korur.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Doğal hata başlığı.",
+      "uncertainty": "none"
+    },
+    "review_failure_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Geçersizlik, yenileme başarısızlığı ve kurtarma adımı korunur.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_sign_in_expired": {
+      "verdict": "keep",
+      "reason": "Doğal hata başlığı.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": {
+      "verdict": "keep",
+      "reason": "Olası erişim nedenlerini kesinlik iddiası olmadan korur.",
+      "uncertainty": "none"
+    },
+    "review_failure_ghdiff_needs_access_to_this_repository": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returns_not_found_for_private_repositories_when": {
+      "verdict": "keep",
+      "reason": "Oturum durumu ve özel depo koşulu korunur.",
+      "uncertainty": "none"
+    },
+    "review_failure_repository_not_found_or_private": {
+      "verdict": "keep",
+      "reason": "Belirsizliği koruyan kısa başlık.",
+      "uncertainty": "none"
+    },
+    "review_failure_could_not_load_the_diff": {
+      "verdict": "keep",
+      "reason": "Başarısız eylemi doğrudan belirtir.",
+      "uncertainty": "none"
+    },
+    "contract_enter_a_valid_github_username_or_repository_name": {
+      "verdict": "keep",
+      "reason": "Doğal doğrulama metni.",
+      "uncertainty": "none"
+    },
+    "contract_comment_cannot_be_empty": {
+      "verdict": "keep",
+      "reason": "Doğal doğrulama metni.",
+      "uncertainty": "none"
+    },
+    "router_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Oturum hesabını kontrol etme hatasını korur.",
+      "uncertainty": "none"
+    },
+    "router_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_repository": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Teknik terimi koruyan doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_your_review_of_this_pull": {
+      "verdict": "keep",
+      "reason": "İnceleme ile pull request ayrımını korur.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_review_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Kabul ile boş yanıt ayrımını korur.",
+      "uncertainty": "none"
+    },
+    "router_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_reply_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Kabul ile boş yanıt ayrımını korur.",
+      "uncertainty": "none"
+    },
+    "router_this_comment_is_missing_a_file_or_line": {
+      "verdict": "keep",
+      "reason": "Eksik alanları doğru belirtir.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_comment_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Kabul ile boş yanıt ayrımını korur.",
+      "uncertainty": "none"
+    },
+    "router_could_not_post_this_comment": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "router_could_not_delete_this_comment": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_which_files_you_have_read": {
+      "verdict": "keep",
+      "reason": "Okunmuş dosya durumunu korur.",
+      "uncertainty": "none"
+    },
+    "router_not_found": {
+      "verdict": "keep",
+      "reason": "Standart hata ifadesi.",
+      "uncertainty": "none"
+    },
+    "router_could_not_send_that_mark_to_github": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "auth_route_this_ghdiff_has_no_github_app_set_up": {
+      "verdict": "keep",
+      "reason": "GitHub App yapılandırması ve sonuç korunur.",
+      "uncertainty": "none"
+    },
+    "github_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Geçersizlik ve erişimi yeniden ayarlama adımı korunur.",
+      "uncertainty": "none"
+    },
+    "github_github_rejected_that_query": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "github_github_returned_no_data_for_that_query": {
+      "verdict": "keep",
+      "reason": "Boş veri sonucunu doğru ifade eder.",
+      "uncertainty": "none"
+    },
+    "github_github_has_no_such_file_on_that_commit": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "github_app_github_would_not_revoke_that_token": {
+      "verdict": "keep",
+      "reason": "Belirteç iptalinin gerçekleşmediğini korur.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_for_that_token_request": {
+      "verdict": "keep",
+      "reason": "{status} yer tutucusu ve anlam korunur.",
+      "uncertainty": "none"
+    },
+    "github_app_github_refused_that": {
+      "verdict": "keep",
+      "reason": "{error} yer tutucusu ve neden ayrımı korunur.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_with_no_access_token": {
+      "verdict": "keep",
+      "reason": "Erişim belirtecinin yokluğunu korur.",
+      "uncertainty": "none"
+    },
+    "github_patch_github_lists_at_most_files_for_this_diff": {
+      "verdict": "keep",
+      "reason": "{fileCount} sınırı ve sonraki dosyaların yokluğu korunur.",
+      "uncertainty": "none"
+    },
+    "installations_an_account": {
+      "verdict": "keep",
+      "reason": "Doğal belirsiz ad öbeği.",
+      "uncertainty": "none"
+    },
+    "stream_text_that_response_is_too_large_to_read": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "diff_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Doğal doğrulama metni.",
+      "uncertainty": "none"
+    },
+    "diff_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "diff_that_request_to_github_failed": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "file_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Doğal doğrulama metni.",
+      "uncertainty": "none"
+    },
+    "file_that_file_path_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Doğal doğrulama metni.",
+      "uncertainty": "none"
+    },
+    "file_could_not_load_that_file": {
+      "verdict": "keep",
+      "reason": "Doğal hata metni.",
+      "uncertainty": "none"
+    },
+    "route_no_such_procedure": {
+      "verdict": "keep",
+      "reason": "Teknik yordam terimi uygundur.",
+      "uncertainty": "none"
+    },
+    "common_file_count": {
+      "verdict": "keep",
+      "reason": "Türkçede bu sayım için tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "common_commit_count": {
+      "verdict": "keep",
+      "reason": "Türkçede bu sayım için tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "common_comment_count": {
+      "verdict": "keep",
+      "reason": "Türkçede bu sayım için tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "common_reply_count": {
+      "verdict": "keep",
+      "reason": "Türkçede bu sayım için tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "common_repository_count": {
+      "verdict": "keep",
+      "reason": "Türkçede bu sayım için tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "home_served_count": {
+      "verdict": "keep",
+      "reason": "Türkçe sözdizimi doğal; tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "filter_hidden_count": {
+      "verdict": "keep",
+      "reason": "Türkçede bu sayım için tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "filter_status_summary": {
+      "verdict": "keep",
+      "reason": "Türkçede bu sayım için tek genel dal yeterlidir.",
+      "uncertainty": "none"
+    },
+    "stack_pull_count": {
+      "verdict": "change",
+      "reason": "Türkçe kesme işareti düzeltildi.",
+      "uncertainty": "none"
+    },
+    "comment_line": {
+      "verdict": "keep",
+      "reason": "Satır numarası yerleşimi ve eylem etiketi doğal.",
+      "uncertainty": "none"
+    },
+    "comment_line_range": {
+      "verdict": "change",
+      "reason": "Turkish word order was unnatural without the line-range lead.",
+      "uncertainty": "none"
+    },
+    "sidebar_file_summary": {
+      "verdict": "change",
+      "reason": "The candidate's semicolon did not clearly express the total relationship.",
+      "uncertainty": "none"
+    },
+    "home_credits": {
+      "verdict": "keep",
+      "reason": "Natural and preserves markup tags and renderer names.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_phone": {
+      "verdict": "change",
+      "reason": "Adds the repository referent needed by Turkish possessive wording.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_wide": {
+      "verdict": "change",
+      "reason": "Adds the repository referent needed by Turkish possessive wording.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_phone": {
+      "verdict": "change",
+      "reason": "Uses an explicit local-list construction rather than an ambiguous watch/subscription term.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_wide": {
+      "verdict": "change",
+      "reason": "Uses an explicit local-list construction rather than an ambiguous watch/subscription term.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_phone": {
+      "verdict": "change",
+      "reason": "Clarifies human review state versus automated checks.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_wide": {
+      "verdict": "change",
+      "reason": "Clarifies human review state versus automated checks.",
+      "uncertainty": "none"
+    },
+    "watch_offer_action": {
+      "verdict": "change",
+      "reason": "Avoids attaching an uncertain Turkish suffix to an opaque subject value.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_title": {
+      "verdict": "change",
+      "reason": "Uses the same explicit local-list terminology.",
+      "uncertainty": "none"
+    },
+    "pull_opened_age": {
+      "verdict": "keep",
+      "reason": "Concise and natural status label.",
+      "uncertainty": "none"
+    },
+    "pull_updated_age": {
+      "verdict": "keep",
+      "reason": "Concise and natural status label.",
+      "uncertainty": "none"
+    },
+    "tree_directory_summary": {
+      "verdict": "keep",
+      "reason": "Turkish does not require a distinct plural noun form here.",
+      "uncertainty": "none"
+    },
+    "pull_list_empty": {
+      "verdict": "keep",
+      "reason": "Preserves the empty-state meaning.",
+      "uncertainty": "none"
+    },
+    "review_submit_scope": {
+      "verdict": "change",
+      "reason": "Makes clear that line comments are posted at the lines where they are written.",
+      "uncertainty": "none"
+    },
+    "review_previous_verdict": {
+      "verdict": "change",
+      "reason": "The revised wording states that the new review replaces the prior one naturally.",
+      "uncertainty": "none"
+    },
+    "setup_not_installed": {
+      "verdict": "keep",
+      "reason": "Preserves the conditional organization-owner approval boundary.",
+      "uncertainty": "none"
+    },
+    "setup_no_repositories": {
+      "verdict": "keep",
+      "reason": "Preserves installation coverage and the next step.",
+      "uncertainty": "none"
+    },
+    "userscript_manager_description": {
+      "verdict": "keep",
+      "reason": "Preserves both external GitHub control names and manager requirement.",
+      "uncertainty": "none"
+    },
+    "pull_row_tooltip": {
+      "verdict": "keep",
+      "reason": "The arrow is a compact, natural equivalent for the branch direction.",
+      "uncertainty": "none"
+    },
+    "pull_status_description": {
+      "verdict": "keep",
+      "reason": "Dynamic review and checks values remain intact and distinct.",
+      "uncertainty": "none"
+    },
+    "auth_required_review": {
+      "verdict": "keep",
+      "reason": "Preserves the access prerequisite before submission.",
+      "uncertainty": "none"
+    },
+    "auth_required_delete": {
+      "verdict": "keep",
+      "reason": "Preserves the access prerequisite before deletion.",
+      "uncertainty": "none"
+    },
+    "auth_required_viewed": {
+      "verdict": "keep",
+      "reason": "Preserves the access prerequisite before marking viewed.",
+      "uncertainty": "none"
+    },
+    "bytes_count": {
+      "verdict": "keep",
+      "reason": "Turkish unit wording is identical across reachable plural categories.",
+      "uncertainty": "none"
+    },
+    "bytes_kilobytes": {
+      "verdict": "keep",
+      "reason": "Standard compact unit formatting is preserved.",
+      "uncertainty": "none"
+    },
+    "bytes_megabytes": {
+      "verdict": "keep",
+      "reason": "Standard compact unit formatting is preserved.",
+      "uncertainty": "none"
+    },
+    "app_description": {
+      "verdict": "keep",
+      "reason": "Natural imperative copy that preserves all supported target types and actions.",
+      "uncertainty": "none"
+    },
+    "thread_delete_confirmation": {
+      "verdict": "keep",
+      "reason": "Preserves scope, GitHub target, question form, and irreversibility.",
+      "uncertainty": "none"
+    },
+    "github_patch_missing_files": {
+      "verdict": "change",
+      "reason": "Uses the established technical term diff instead of the overly general fark.",
+      "uncertainty": "none"
+    },
+    "userscript_open_pull": {
+      "verdict": "keep",
+      "reason": "Natural concise control label.",
+      "uncertainty": "none"
+    },
+    "userscript_open_commit": {
+      "verdict": "keep",
+      "reason": "Natural concise control label.",
+      "uncertainty": "none"
+    },
+    "userscript_description": {
+      "verdict": "keep",
+      "reason": "Preserves the different insertion locations for pull requests and commits.",
+      "uncertainty": "none"
+    },
+    "diff_expand_all": {
+      "verdict": "keep",
+      "reason": "Natural imperative control label.",
+      "uncertainty": "none"
+    },
+    "diff_no_newline": {
+      "verdict": "keep",
+      "reason": "Accurate standard diff terminology.",
+      "uncertainty": "none"
+    },
+    "tree_git_contains_changes": {
+      "verdict": "keep",
+      "reason": "Accurately describes Git-status items.",
+      "uncertainty": "none"
+    },
+    "review_bytes_read": {
+      "verdict": "keep",
+      "reason": "Natural passive status wording.",
+      "uncertainty": "none"
+    },
+    "tree_git_added": {
+      "verdict": "keep",
+      "reason": "Accurate Git-status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_deleted": {
+      "verdict": "keep",
+      "reason": "Accurate Git-status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_ignored": {
+      "verdict": "keep",
+      "reason": "Accurate Git-status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_modified": {
+      "verdict": "keep",
+      "reason": "Accurate Git-status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_renamed": {
+      "verdict": "keep",
+      "reason": "Accurate Git-status label.",
+      "uncertainty": "none"
+    },
+    "tree_git_untracked": {
+      "verdict": "keep",
+      "reason": "Accurate Git-status label.",
+      "uncertainty": "none"
+    },
+    "diff_unmodified_lines": {
+      "verdict": "keep",
+      "reason": "Turkish noun wording is identical across reachable plural categories.",
+      "uncertainty": "none"
+    }
+  },
+  "followUpFindings": {
+    "locale_language": "Correct accessible name for the language selector.",
+    "thread_delete_confirmation": "Restored the exact count selector so only count=1 deletes one comment; every other count shows the formatted count.",
+    "app_render_error": "OK",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "Doğru; API sınırını ve GitHub web sitesinden yüklemeyi koruyor.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "土耳其语只有 other 类别；移除了不可达的 one 分支。"
+  },
+  "reconciledKeys": [
+    "pull_request_list_open_the_open_pull_requests_on_github",
+    "example_targets_the_widest_file_tree_past_the_api_diff",
+    "watch_offer_more_phone",
+    "watch_offer_more_wide",
+    "app_render_error"
+  ],
+  "humanNativeSpeakerReview": false
+}

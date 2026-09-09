@@ -1,0 +1,1954 @@
+{
+  "locale": "nl",
+  "auditor": "codex/gpt-5.6-terra",
+  "fallbackReason": "Antigravity interrupted stream and timeout with no output",
+  "initialSourceSha256": "8c239bbcc87799c690b5b0e64dc662da257e49487c1d5d2f009cb211c084b292",
+  "catalogSha256": "099eb7b965ab38a188fd8a235182960e35e8a3c097c12e5e8a72af3ff3dd85c1",
+  "hashFormat": "UTF-8 sorted JSON without separator whitespace for catalogSha256",
+  "reviewedMessageCount": 387,
+  "selectionNotes": {
+    "_selection": "Idiomatic Dutch in a concise, informal UI register; protected product names, identifiers, placeholders, markup tags, permissions, uncertainty, browser-local watch semantics, and the distinction between reviews and automated checks are preserved."
+  },
+  "findings": {
+    "color_mode_toggle_auto": {
+      "verdict": "keep",
+      "reason": "Natuurlijke korte UI-label.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_light": {
+      "verdict": "keep",
+      "reason": "Gebruikelijke label voor lichte modus.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_dark": {
+      "verdict": "keep",
+      "reason": "Gebruikelijke label voor donkere modus.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode_switch_to": {
+      "verdict": "keep",
+      "reason": "Betekenis en placeholders zijn behouden; formulering is natuurlijk.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode": {
+      "verdict": "keep",
+      "reason": "Natuurlijke toegankelijkheidslabel met behouden placeholder.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comment_authors": {
+      "verdict": "keep",
+      "reason": "Correcte, neutrale filtertitel.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_all": {
+      "verdict": "keep",
+      "reason": "Correcte compacte filteroptie.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_person_opened": {
+      "verdict": "change",
+      "reason": "De oorspronkelijke woordvolgorde was onnatuurlijk; de herziene versie maakt duidelijk dat een persoon de opmerkingen opende.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_people": {
+      "verdict": "change",
+      "reason": "Mensen is natuurlijker en gebruikelijker in een korte UI-label dan Personen.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_github_app_opened": {
+      "verdict": "change",
+      "reason": "De herziene woordvolgorde is natuurlijker; GitHub-app blijft intact.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_bots": {
+      "verdict": "keep",
+      "reason": "Gangbare technische UI-term.",
+      "uncertainty": "none"
+    },
+    "comment_body_done": {
+      "verdict": "keep",
+      "reason": "Korte, natuurlijke status.",
+      "uncertainty": "none"
+    },
+    "comment_body_not_done": {
+      "verdict": "keep",
+      "reason": "Correcte ontkennende tegenhanger van de status.",
+      "uncertainty": "none"
+    },
+    "comment_composer_leave_a_comment": {
+      "verdict": "keep",
+      "reason": "Natuurlijke actieomschrijving.",
+      "uncertainty": "none"
+    },
+    "comment_composer_comment": {
+      "verdict": "keep",
+      "reason": "Correct zelfstandig naamwoord voor het invoerveld.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cancel": {
+      "verdict": "keep",
+      "reason": "Standaard Nederlandse annuleren-knop.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "Sneltoets is duidelijk en behoudt de technische toetsen.",
+      "uncertainty": "none"
+    },
+    "comment_expansion_comment": {
+      "verdict": "keep",
+      "reason": "Correcte compacte actie- of labelterm.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_open_thread_by": {
+      "verdict": "keep",
+      "reason": "Natuurlijke instructie met behouden auteurplaceholder.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_posting": {
+      "verdict": "keep",
+      "reason": "Correcte voortgangsstatus met behouden beletselteken.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_click_to_open": {
+      "verdict": "keep",
+      "reason": "Natuurlijke, compacte actie.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_delete": {
+      "verdict": "keep",
+      "reason": "Correcte beknopte actie.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_close": {
+      "verdict": "keep",
+      "reason": "Correcte beknopte actie.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_on_github": {
+      "verdict": "keep",
+      "reason": "Correcte platformverwijzing.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": {
+      "verdict": "change",
+      "reason": "Antwoord krijgen is natuurlijker dan antwoord ontvangen.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_on_github": {
+      "verdict": "keep",
+      "reason": "Correcte actie en platformnaam behouden.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Behoudt browserlokale grens.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_sending": {
+      "verdict": "change",
+      "reason": "Doorlopende status vereist een passieve formulering.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply": {
+      "verdict": "keep",
+      "reason": "Correcte actie.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_cmd_or_ctrl_with_enter": {
+      "verdict": "keep",
+      "reason": "Correcte sneltoetsformulering.",
+      "uncertainty": "none"
+    },
+    "comments_list_no_comments_here": {
+      "verdict": "keep",
+      "reason": "Natuurlijk en compact.",
+      "uncertainty": "none"
+    },
+    "comments_list_comments_you_leave_here_are_posted_to_github": {
+      "verdict": "change",
+      "reason": "Achterlaat volgt de bronbetekenis nauwkeuriger.",
+      "uncertainty": "none"
+    },
+    "comments_list_github_has_no_review_thread_for_commits_or": {
+      "verdict": "keep",
+      "reason": "Behoudt beperking en browserlokale opslag.",
+      "uncertainty": "none"
+    },
+    "comments_list_posting": {
+      "verdict": "keep",
+      "reason": "Compacte statusvorm.",
+      "uncertainty": "none"
+    },
+    "comments_list_failed": {
+      "verdict": "keep",
+      "reason": "Correcte foutstatus.",
+      "uncertainty": "none"
+    },
+    "comments_list_go_to": {
+      "verdict": "keep",
+      "reason": "Placeholder behouden en natuurlijke actie.",
+      "uncertainty": "none"
+    },
+    "confirm_inline_cancel": {
+      "verdict": "keep",
+      "reason": "Standaard Nederlandse actie.",
+      "uncertainty": "none"
+    },
+    "example_targets_label": {
+      "verdict": "keep",
+      "reason": "Alle placeholders en scheidingsteken behouden.",
+      "uncertainty": "none"
+    },
+    "filter_menu_added": {
+      "verdict": "keep",
+      "reason": "Correcte bestandsstatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_modified": {
+      "verdict": "keep",
+      "reason": "Correcte bestandsstatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_renamed": {
+      "verdict": "keep",
+      "reason": "Correcte bestandsstatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_deleted": {
+      "verdict": "keep",
+      "reason": "Correcte bestandsstatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_filter_files": {
+      "verdict": "keep",
+      "reason": "Natuurlijke menuactie.",
+      "uncertainty": "none"
+    },
+    "filter_menu_file_rules": {
+      "verdict": "keep",
+      "reason": "Correcte technische term.",
+      "uncertainty": "none"
+    },
+    "filter_menu_git_status": {
+      "verdict": "keep",
+      "reason": "Natuurlijke samenstelling.",
+      "uncertainty": "none"
+    },
+    "filter_menu_clear_filters": {
+      "verdict": "keep",
+      "reason": "Correcte actie.",
+      "uncertainty": "none"
+    },
+    "filter_menu_all_files": {
+      "verdict": "keep",
+      "reason": "Correcte label.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_control_set_up_access": {
+      "verdict": "keep",
+      "reason": "Correcte toegangactie.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": {
+      "verdict": "change",
+      "reason": "Woordvolgorde maakt de accountcontext duidelijker.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Correcte installatieactie.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": {
+      "verdict": "change",
+      "reason": "Voor geen enkel account is nauwkeuriger voor een app-installatie.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_open_setup_guide": {
+      "verdict": "keep",
+      "reason": "Natuurlijke actie.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_sign_out": {
+      "verdict": "keep",
+      "reason": "Standaard actie.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Correcte toegangsomschrijving.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": {
+      "verdict": "keep",
+      "reason": "Behoudt github.com en toevoegen/verwijderen.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": {
+      "verdict": "change",
+      "reason": "Volledige statuszin is natuurlijker in het Nederlands.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_any_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "Correcte beknopte instructie.",
+      "uncertainty": "none"
+    },
+    "home_screen_narrow_the_file_list_with_preset_path_rules": {
+      "verdict": "keep",
+      "reason": "Correcte betekenis.",
+      "uncertainty": "none"
+    },
+    "home_screen_read_and_leave_comments": {
+      "verdict": "keep",
+      "reason": "Natuurlijke parallelle acties.",
+      "uncertainty": "none"
+    },
+    "home_screen_paste_a_github_pull_request_commit_or_compare": {
+      "verdict": "change",
+      "reason": "Vergelijkingsbereik behoudt de precieze bronbetekenis.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_pull_request_commit_or_compare_url": {
+      "verdict": "change",
+      "reason": "Vergelijkingsbereik is preciezer dan vergelijking.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_this_diff": {
+      "verdict": "change",
+      "reason": "Enkelvoudige diff moet enkelvoud blijven.",
+      "uncertainty": "none"
+    },
+    "home_screen_review": {
+      "verdict": "keep",
+      "reason": "Geschikte compacte actie.",
+      "uncertainty": "none"
+    },
+    "home_screen_set_up_access_for_private_repositories": {
+      "verdict": "change",
+      "reason": "Privérepositories voorkomt een onjuiste apostrof.",
+      "uncertainty": "none"
+    },
+    "home_screen_userscript": {
+      "verdict": "keep",
+      "reason": "Technische term blijft intact.",
+      "uncertainty": "none"
+    },
+    "home_screen_examples": {
+      "verdict": "keep",
+      "reason": "Correcte label.",
+      "uncertainty": "none"
+    },
+    "home_screen_watched_repos": {
+      "verdict": "change",
+      "reason": "Vermijdt de implicatie van GitHub-abonnementen.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_account": {
+      "verdict": "keep",
+      "reason": "Correcte samenstelling.",
+      "uncertainty": "none"
+    },
+    "home_screen_source_on_github": {
+      "verdict": "keep",
+      "reason": "Natuurlijke bronverwijzing.",
+      "uncertainty": "none"
+    },
+    "home_screen_review_the_commit_this_build_was_made_from": {
+      "verdict": "keep",
+      "reason": "Behoudt SHA, ghdiff en de betekenis.",
+      "uncertainty": "none"
+    },
+    "installation_row_current_diff": {
+      "verdict": "change",
+      "reason": "De bron verwijst naar één diff.",
+      "uncertainty": "none"
+    },
+    "installation_row_configure": {
+      "verdict": "keep",
+      "reason": "Correcte actie.",
+      "uncertainty": "none"
+    },
+    "not_found_ghdiff_cannot_read_that_url": {
+      "verdict": "keep",
+      "reason": "Behoudt de beperking zonder oorzaak te veronderstellen.",
+      "uncertainty": "none"
+    },
+    "not_found_a_review_needs_a_github_pull_request_a": {
+      "verdict": "keep",
+      "reason": "Alle geldige doeltypen behouden.",
+      "uncertainty": "none"
+    },
+    "not_found_open_a_different_review": {
+      "verdict": "keep",
+      "reason": "Correcte herstelactie.",
+      "uncertainty": "none"
+    },
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": {
+      "verdict": "keep",
+      "reason": "Natuurlijke instructies.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_loading_pull_request": {
+      "verdict": "keep",
+      "reason": "Correcte laadstatus.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_no_details_yet": {
+      "verdict": "keep",
+      "reason": "Natuurlijk en compact.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_files": {
+      "verdict": "keep",
+      "reason": "Correcte label.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_added_lines": {
+      "verdict": "keep",
+      "reason": "Correcte technische label.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Correcte technische label.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_commits": {
+      "verdict": "keep",
+      "reason": "Gebruikelijke technische term.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_description": {
+      "verdict": "keep",
+      "reason": "Correcte label.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_open_pull_requests": {
+      "verdict": "change",
+      "reason": "Openstaande is natuurlijke Nederlandse statuskopie.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_watched_repos": {
+      "verdict": "change",
+      "reason": "Vermijdt abonnementsbetekenis van volgen.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correcte actie.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Geschikte compacte laadstatus.",
+      "uncertainty": "none"
+    },
+    "pull_rail_open_pull_requests": {
+      "verdict": "change",
+      "reason": "Openstaande is natuurlijke Nederlandse statuskopie.",
+      "uncertainty": "none"
+    },
+    "pull_rail_pull_request_bar_width": {
+      "verdict": "change",
+      "reason": "Correct lidwoord en Nederlandse samenstelling.",
+      "uncertainty": "none"
+    },
+    "pull_rail_show_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correcte actie.",
+      "uncertainty": "none"
+    },
+    "pull_rail_hide_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correcte actie.",
+      "uncertainty": "none"
+    },
+    "pull_rail_watched_repos": {
+      "verdict": "change",
+      "reason": "Vermijdt abonnementsbetekenis van volgen.",
+      "uncertainty": "none"
+    },
+    "pull_rail_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correcte actie.",
+      "uncertainty": "none"
+    },
+    "pull_rail_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Geschikte compacte laadstatus.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": {
+      "verdict": "change",
+      "reason": "Expliciete lijstactie voorkomt een GitHub Watch-implicatie.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_on_github": {
+      "verdict": "keep",
+      "reason": "Placeholders en GitHub behouden.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_the_open_pull_requests_on_github": {
+      "verdict": "keep",
+      "reason": "Placeholder behouden en actie correct.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_you": {
+      "verdict": "keep",
+      "reason": "Passende informele aanduiding.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_s_open_pull_requests_in_on_github": {
+      "verdict": "keep",
+      "reason": "Natuurlijke formulering met alle identifiers intact.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_set_up_private_access": {
+      "verdict": "keep",
+      "reason": "Correcte toegangactie.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_signed_out_no_row_shows_a_status_square": {
+      "verdict": "change",
+      "reason": "Made the signed-out condition and post-sign-in result natural Dutch.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_stack": {
+      "verdict": "keep",
+      "reason": "Natural compact label.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_loading_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Natural loading state.",
+      "uncertainty": "none"
+    },
+    "pull_row_label": {
+      "verdict": "keep",
+      "reason": "Placeholder and punctuation preserved.",
+      "uncertainty": "none"
+    },
+    "pull_row_draft": {
+      "verdict": "keep",
+      "reason": "Correct pull-request state label.",
+      "uncertainty": "none"
+    },
+    "pull_row_currently_viewing": {
+      "verdict": "change",
+      "reason": "Candidate implied an action rather than the current-viewing state.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_open": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_draft": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_merged": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_closed": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "review_header_bars": {
+      "verdict": "keep",
+      "reason": "Concise and natural label.",
+      "uncertainty": "none"
+    },
+    "review_header_signs": {
+      "verdict": "keep",
+      "reason": "Concise and natural label.",
+      "uncertainty": "none"
+    },
+    "review_header_none": {
+      "verdict": "keep",
+      "reason": "Correct option label.",
+      "uncertainty": "none"
+    },
+    "review_header_hide_the_file_list": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_header_show_the_file_list": {
+      "verdict": "keep",
+      "reason": "Natural imperative control.",
+      "uncertainty": "none"
+    },
+    "review_header_open_on_github": {
+      "verdict": "keep",
+      "reason": "Placeholder and GitHub name preserved.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_unified_view": {
+      "verdict": "keep",
+      "reason": "Correct display action.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_split_view": {
+      "verdict": "keep",
+      "reason": "Correct display action.",
+      "uncertainty": "none"
+    },
+    "review_header_split_view": {
+      "verdict": "keep",
+      "reason": "Correct display label.",
+      "uncertainty": "none"
+    },
+    "review_header_unified_view": {
+      "verdict": "keep",
+      "reason": "Correct display label.",
+      "uncertainty": "none"
+    },
+    "review_header_display_settings": {
+      "verdict": "keep",
+      "reason": "Natural settings label.",
+      "uncertainty": "none"
+    },
+    "review_header_code_font": {
+      "verdict": "keep",
+      "reason": "Natural technical label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_markers": {
+      "verdict": "keep",
+      "reason": "Accurate setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_wrap_long_lines": {
+      "verdict": "keep",
+      "reason": "Natural setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_line_numbers": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_backgrounds": {
+      "verdict": "keep",
+      "reason": "Accurate setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_dim_whitespace_changes": {
+      "verdict": "keep",
+      "reason": "Accurate action label.",
+      "uncertainty": "none"
+    },
+    "review_header_approve_request_changes_or_comment": {
+      "verdict": "keep",
+      "reason": "Preserves distinct review outcomes and commenting.",
+      "uncertainty": "none"
+    },
+    "review_header_review": {
+      "verdict": "keep",
+      "reason": "Established technical UI term.",
+      "uncertainty": "none"
+    },
+    "review_header_review_it_again": {
+      "verdict": "keep",
+      "reason": "Placeholder and review action preserved.",
+      "uncertainty": "none"
+    },
+    "review_screen_sidebar_width": {
+      "verdict": "change",
+      "reason": "Added the required Dutch article.",
+      "uncertainty": "none"
+    },
+    "review_screen_dismiss": {
+      "verdict": "keep",
+      "reason": "Appropriate concise control.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_sidebar_sections": {
+      "verdict": "change",
+      "reason": "Added the natural Dutch possessive construction.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_files": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_threads_comments": {
+      "verdict": "keep",
+      "reason": "Dutch has one and other plural categories; wildcard branches cover all remaining values.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_comments": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_hide_the_path_search": {
+      "verdict": "keep",
+      "reason": "Natural compact control.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_by_path": {
+      "verdict": "keep",
+      "reason": "Natural search label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_the_current_filter_hides_all_files": {
+      "verdict": "keep",
+      "reason": "Meaning and consequence preserved.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_filters": {
+      "verdict": "keep",
+      "reason": "Correct control label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_added_lines": {
+      "verdict": "keep",
+      "reason": "Correct technical label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Correct technical label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_files_by_path": {
+      "verdict": "keep",
+      "reason": "Natural search placeholder.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_path_contains": {
+      "verdict": "keep",
+      "reason": "Correct placeholder.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_the_path_search": {
+      "verdict": "keep",
+      "reason": "Natural compact control.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_fetching_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural loading state.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_reading_the_patch_for_this_review": {
+      "verdict": "keep",
+      "reason": "Meaning preserved.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_preparing_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural loading state.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": {
+      "verdict": "keep",
+      "reason": "Technical meaning preserved.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_starting_the_highlighters": {
+      "verdict": "keep",
+      "reason": "Acceptable concise technical state.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": {
+      "verdict": "keep",
+      "reason": "Meaning preserved without overstating completion.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_set_up_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct access-setup action.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_try_again": {
+      "verdict": "keep",
+      "reason": "Correct recovery action.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one": {
+      "verdict": "change",
+      "reason": "Replaced unnatural pronoun construction with natural Dutch.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": {
+      "verdict": "change",
+      "reason": "Made GitHub's permission boundary explicit and natural.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": {
+      "verdict": "change",
+      "reason": "Made the prohibited review verdict explicit and natural.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": {
+      "verdict": "keep",
+      "reason": "Preserves the allowed action and strict limitation.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": {
+      "verdict": "keep",
+      "reason": "Preserves the note requirement for both actions.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_submit_a_review": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_review_body": {
+      "verdict": "keep",
+      "reason": "Natural field label.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_leave_a_note_with_your_review": {
+      "verdict": "keep",
+      "reason": "Natural instruction.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_label": {
+      "verdict": "keep",
+      "reason": "Placeholders and separator preserved.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct viewer action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_hide_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct viewer action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_whole_file": {
+      "verdict": "change",
+      "reason": "Added the required Dutch article.",
+      "uncertainty": "none"
+    },
+    "review_viewer_viewed": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_set_up_private_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct access-setup action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": {
+      "verdict": "change",
+      "reason": "Made the ordered next steps more natural in Dutch.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_to_github": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_identifies_your_account_to_github_any_comments": {
+      "verdict": "keep",
+      "reason": "Preserves account identity and posting consequence.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_with_github": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_grant_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct permission action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": {
+      "verdict": "keep",
+      "reason": "Preserves the limit of signing in and separate access choice.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": {
+      "verdict": "keep",
+      "reason": "Preserves the placeholder, installation scope, and access-list requirement.",
+      "uncertainty": "none"
+    },
+    "setup_screen_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_ghdiff": {
+      "verdict": "keep",
+      "reason": "Product name preserved.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_checking": {
+      "verdict": "keep",
+      "reason": "Correct progress state.",
+      "uncertainty": "none"
+    },
+    "setup_screen_check_again": {
+      "verdict": "keep",
+      "reason": "Correct recovery action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_open_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_the_home_page_to_paste_a": {
+      "verdict": "keep",
+      "reason": "Natuurlijk en volledig; URL en technische termen blijven intact.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": {
+      "verdict": "change",
+      "reason": "‘verschillen’ is hier onhandig meervoud; de technische UI-term is ‘diff’.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_ghdiff_home": {
+      "verdict": "keep",
+      "reason": "Beknopte, passende navigatielabel.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_the_diff": {
+      "verdict": "change",
+      "reason": "Gebruik de consistente technische term ‘diff’.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": {
+      "verdict": "change",
+      "reason": "‘Elke openbare diff’ behoudt de universele reikwijdte van ‘any’.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_now_uses_a_github_app": {
+      "verdict": "keep",
+      "reason": "Correcte, beknopte formulering.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": {
+      "verdict": "change",
+      "reason": "‘Persoonlijke toegangstoken’ corrigeert het ontbrekende bijvoeglijk naamwoord.",
+      "uncertainty": "none"
+    },
+    "setup_screen_delete_the_token_on_github": {
+      "verdict": "keep",
+      "reason": "Duidelijk label met GitHub intact.",
+      "uncertainty": "none"
+    },
+    "userscript_install_add_a_ghdiff_button_to_github_com": {
+      "verdict": "keep",
+      "reason": "Natuurlijke infinitief voor een actie.",
+      "uncertainty": "none"
+    },
+    "userscript_install_install": {
+      "verdict": "keep",
+      "reason": "Correct standaard actielabel.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch_this_repository": {
+      "verdict": "keep",
+      "reason": "Volgen past bij de lokale volglijst in deze context.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch": {
+      "verdict": "keep",
+      "reason": "Placeholder is behouden en woordvolgorde is natuurlijk.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_keep_reviewing": {
+      "verdict": "keep",
+      "reason": "Passend compact label voor doorgaan met een review.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Behoudt expliciet dat de lijst browser-lokaal blijft.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_not_now": {
+      "verdict": "keep",
+      "reason": "Neutrale weigering, passend voor een knop.",
+      "uncertainty": "none"
+    },
+    "watched_repos_dialog_watched_repositories": {
+      "verdict": "keep",
+      "reason": "Correcte statusbenaming voor repositories in de lokale lijst.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": {
+      "verdict": "keep",
+      "reason": "Behoudt open pull requests en de browser-lokale opslaggrens.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_enter_a_repository_as_owner_repo": {
+      "verdict": "keep",
+      "reason": "Identifier owner/repo blijft ongewijzigd.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_owner_repo": {
+      "verdict": "keep",
+      "reason": "Beschermde invoeridentifier is exact behouden.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_repository_to_watch": {
+      "verdict": "keep",
+      "reason": "Duidelijk veldlabel.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_add": {
+      "verdict": "keep",
+      "reason": "Correct compact actielabel.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_nothing_watched_yet": {
+      "verdict": "change",
+      "reason": "De nieuwe tekst noemt expliciet repositories en voorkomt een onnatuurlijke, vage elliptische formulering.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_remove": {
+      "verdict": "keep",
+      "reason": "Correct compact actielabel.",
+      "uncertainty": "none"
+    },
+    "dialog_close": {
+      "verdict": "keep",
+      "reason": "Correct dialooglabel.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_could_not_read_that_file_from_github": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding met GitHub intact.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": {
+      "verdict": "change",
+      "reason": "‘Deze diff’ is grammaticaal en terminologisch consistenter.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_request_failed": {
+      "verdict": "keep",
+      "reason": "Placeholder en betekenis zijn behouden.",
+      "uncertainty": "none"
+    },
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Natuurlijke formulering zonder ongewenste formaliteit.",
+      "uncertainty": "none"
+    },
+    "use_installations_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "use_open_pulls_could_not_load_pull_requests": {
+      "verdict": "keep",
+      "reason": "Correcte technische terminologie.",
+      "uncertainty": "none"
+    },
+    "use_pull_details_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Correcte technische terminologie.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_that_comment_to_github": {
+      "verdict": "keep",
+      "reason": "Behoudt de mislukte actie en bestemming.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_this_reply_to_github": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": {
+      "verdict": "keep",
+      "reason": "Behoudt onzekerheid en de controle-instructie.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_request_failed": {
+      "verdict": "keep",
+      "reason": "Placeholder en betekenis zijn behouden.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_could_not_load_that_diff": {
+      "verdict": "change",
+      "reason": "‘Die diff’ is de gebruikelijke technische term in deze UI.",
+      "uncertainty": "none"
+    },
+    "use_submit_review_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Correct onderscheid van review indienen.",
+      "uncertainty": "none"
+    },
+    "use_viewed_files_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "code_fonts_system": {
+      "verdict": "keep",
+      "reason": "Correcte korte systeemfontoptie.",
+      "uncertainty": "none"
+    },
+    "diff_hydration_that_file_is_too_large_to_show_its": {
+      "verdict": "keep",
+      "reason": "Behoudt de beperking tot ongewijzigde regels.",
+      "uncertainty": "none"
+    },
+    "example_targets_rewrite_bun_in_rust": {
+      "verdict": "keep",
+      "reason": "Natuurlijke titel met beschermde namen intact.",
+      "uncertainty": "none"
+    },
+    "example_targets_2_188_files_1_0m_lines": {
+      "verdict": "keep",
+      "reason": "Nederlandse decimaal- en groepsnotatie is passend.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_largest_of_them_43_mb_of_unified": {
+      "verdict": "change",
+      "reason": "‘Uniforme verschillen’ is onjuist; ‘unified diff’ is een technische constructie.",
+      "uncertainty": "none"
+    },
+    "example_targets_resolve_maimai_net_import_pr_conflicts": {
+      "verdict": "keep",
+      "reason": "Betekenis en projectnaam blijven intact.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_494k_lines": {
+      "verdict": "keep",
+      "reason": "Correct compact aantalformaat.",
+      "uncertainty": "none"
+    },
+    "example_targets_one_generated_json_file_holds_465_486_of": {
+      "verdict": "keep",
+      "reason": "Correcte betekenis en Nederlandse cijfergroepering.",
+      "uncertainty": "none"
+    },
+    "example_targets_deps_update_v8_to_14_1": {
+      "verdict": "keep",
+      "reason": "Technische prefix en versienummer blijven intact.",
+      "uncertainty": "none"
+    },
+    "example_targets_3_420_files_268k_lines": {
+      "verdict": "keep",
+      "reason": "Correct compact aantalformaat.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_widest_file_tree_past_the_api_diff": {
+      "verdict": "change",
+      "reason": "‘Diffs’ is hier de passende technische meervoudsvorm.",
+      "uncertainty": "none"
+    },
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": {
+      "verdict": "keep",
+      "reason": "Beschermde technische identifiers zijn intact en zin is natuurlijk.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_88k_lines": {
+      "verdict": "keep",
+      "reason": "Correct compact aantalformaat.",
+      "uncertainty": "none"
+    },
+    "example_targets_large_and_still_a_diff_a_person_can": {
+      "verdict": "change",
+      "reason": "Enkelvoudige ‘diff’ herstelt de betekenis en grammatica.",
+      "uncertainty": "none"
+    },
+    "example_targets_ghostty_1_3_0_to_1_3_1": {
+      "verdict": "keep",
+      "reason": "Natuurlijke aanduiding van een vergelijkingsbereik.",
+      "uncertainty": "none"
+    },
+    "example_targets_53_files_2_6k_lines": {
+      "verdict": "keep",
+      "reason": "Correct compact aantalformaat.",
+      "uncertainty": "none"
+    },
+    "example_targets_a_compare_range_of_one_release_100_commits": {
+      "verdict": "keep",
+      "reason": "Behoudt het vergelijkingsbereik en lokale opmerkingen.",
+      "uncertainty": "none"
+    },
+    "filter_rules_all_files": {
+      "verdict": "keep",
+      "reason": "Correct filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_every_file_in_the_diff": {
+      "verdict": "change",
+      "reason": "Gebruik de consistente technische term ‘diff’.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_tests": {
+      "verdict": "keep",
+      "reason": "Correct compact filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Correcte technische termen en betekenis.",
+      "uncertainty": "none"
+    },
+    "filter_rules_tests_only": {
+      "verdict": "keep",
+      "reason": "Correct compact filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Correcte technische termen en betekenis.",
+      "uncertainty": "none"
+    },
+    "filter_rules_source_only": {
+      "verdict": "keep",
+      "reason": "Natuurlijk filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_code_files_that_are_not_tests": {
+      "verdict": "change",
+      "reason": "Herformulering corrigeert de grammatica en behoudt beide uitsluitingen.",
+      "uncertainty": "none"
+    },
+    "filter_rules_docs_only": {
+      "verdict": "keep",
+      "reason": "Correct filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_markdown_and_other_prose_files": {
+      "verdict": "keep",
+      "reason": "Correcte betekenis en passende terminologie.",
+      "uncertainty": "none"
+    },
+    "filter_rules_config_only": {
+      "verdict": "keep",
+      "reason": "Correct compact filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": {
+      "verdict": "change",
+      "reason": "‘Manifesten’ is de natuurlijke Nederlandse meervoudsvorm.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_generated": {
+      "verdict": "keep",
+      "reason": "Correct filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Correcte technische termen.",
+      "uncertainty": "none"
+    },
+    "filter_rules_generated_only": {
+      "verdict": "keep",
+      "reason": "Correct filterlabel.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Correcte technische termen.",
+      "uncertainty": "none"
+    },
+    "github_app_sign_in_was_not_completed_on_github_try": {
+      "verdict": "keep",
+      "reason": "Behoudt mislukking zonder schuld toe te wijzen en de voorwaarde voor opnieuw proberen.",
+      "uncertainty": "none"
+    },
+    "github_app_the_sign_in_session_timed_out_on_github": {
+      "verdict": "keep",
+      "reason": "Duidelijke oorzaak en passende herstelstap.",
+      "uncertainty": "none"
+    },
+    "github_app_security_verification_failed_during_github_sign_in_start": {
+      "verdict": "keep",
+      "reason": "Correcte beveiligingsmelding en herkomst van de herstelstap.",
+      "uncertainty": "none"
+    },
+    "github_app_github_could_not_complete_the_sign_in_try": {
+      "verdict": "keep",
+      "reason": "Natuurlijke, beknopte tijdelijke-herstelmelding.",
+      "uncertainty": "none"
+    },
+    "installations_all_repositories": {
+      "verdict": "keep",
+      "reason": "Correcte statusbenaming.",
+      "uncertainty": "none"
+    },
+    "installations_no_repositories_selected": {
+      "verdict": "keep",
+      "reason": "Correcte expliciete nulstatus.",
+      "uncertainty": "none"
+    },
+    "pull_details_just_now": {
+      "verdict": "keep",
+      "reason": "Natuurlijke relatieve tijdsaanduiding.",
+      "uncertainty": "none"
+    },
+    "pull_status_approved": {
+      "verdict": "keep",
+      "reason": "Correcte reviewstatus, onderscheiden van checks.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested": {
+      "verdict": "keep",
+      "reason": "Correcte reviewstatus.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_review_yet": {
+      "verdict": "keep",
+      "reason": "Natuurlijke compacte status.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_passing": {
+      "verdict": "keep",
+      "reason": "Behoudt automatische controles als afzonderlijk concept.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_running": {
+      "verdict": "keep",
+      "reason": "Correcte lopende status.",
+      "uncertainty": "none"
+    },
+    "pull_status_a_check_failed": {
+      "verdict": "keep",
+      "reason": "Correcte enkelvoudige foutstatus.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_checks": {
+      "verdict": "keep",
+      "reason": "Correcte afwezigheidsstatus.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested_new_commits_since": {
+      "verdict": "keep",
+      "reason": "Behoudt beide statuselementen.",
+      "uncertainty": "none"
+    },
+    "review_data_commit": {
+      "verdict": "keep",
+      "reason": "Technische term en placeholder blijven intact.",
+      "uncertainty": "none"
+    },
+    "review_decision_approve": {
+      "verdict": "keep",
+      "reason": "Passend actief label.",
+      "uncertainty": "none"
+    },
+    "review_decision_approving": {
+      "verdict": "keep",
+      "reason": "Passende voortgangstekst.",
+      "uncertainty": "none"
+    },
+    "review_decision_request_changes": {
+      "verdict": "keep",
+      "reason": "Correcte reviewactie.",
+      "uncertainty": "none"
+    },
+    "review_decision_requesting": {
+      "verdict": "keep",
+      "reason": "Passende voortgangstekst.",
+      "uncertainty": "none"
+    },
+    "review_decision_comment": {
+      "verdict": "change",
+      "reason": "Zelfstandig naamwoord is geen actie; expliciete actie is nodig.",
+      "uncertainty": "none"
+    },
+    "review_decision_commenting": {
+      "verdict": "keep",
+      "reason": "Correcte voortgangsactie.",
+      "uncertainty": "none"
+    },
+    "review_decision_approved": {
+      "verdict": "keep",
+      "reason": "Correcte reviewuitkomst.",
+      "uncertainty": "none"
+    },
+    "review_decision_changes_requested": {
+      "verdict": "keep",
+      "reason": "Correcte reviewuitkomst.",
+      "uncertainty": "none"
+    },
+    "review_decision_commented": {
+      "verdict": "keep",
+      "reason": "Correcte voltooide status.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_approved_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natuurlijk en volledig.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_requested_changes_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Correcte reviewbetekenis.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_commented_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natuurlijk en volledig.",
+      "uncertainty": "none"
+    },
+    "review_decision_github_recorded_your_review": {
+      "verdict": "keep",
+      "reason": "Correcte bevestiging.",
+      "uncertainty": "none"
+    },
+    "review_failure_the_server_didn_t_respond_your_connection_might": {
+      "verdict": "keep",
+      "reason": "Behoudt onzekerheid en beide mogelijke oorzaken.",
+      "uncertainty": "none"
+    },
+    "review_failure_you_used_all_5_000_github_requests_for": {
+      "verdict": "keep",
+      "reason": "Behoudt limiet en herstelstap.",
+      "uncertainty": "none"
+    },
+    "review_failure_hourly_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Duidelijke fouttitel.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": {
+      "verdict": "keep",
+      "reason": "Behoudt aanmeldingsgrens en gevolg.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Duidelijke fouttitel.",
+      "uncertainty": "none"
+    },
+    "review_failure_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Behoudt vernieuwingsfout en herstelstap.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_sign_in_expired": {
+      "verdict": "keep",
+      "reason": "Correcte korte status.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": {
+      "verdict": "keep",
+      "reason": "Behoudt alternatieve toegangsoorzaken.",
+      "uncertainty": "none"
+    },
+    "review_failure_ghdiff_needs_access_to_this_repository": {
+      "verdict": "keep",
+      "reason": "Correcte toegangsgrens.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returns_not_found_for_private_repositories_when": {
+      "verdict": "keep",
+      "reason": "Behoudt voorwaarde bij afmelding.",
+      "uncertainty": "none"
+    },
+    "review_failure_repository_not_found_or_private": {
+      "verdict": "keep",
+      "reason": "Behoudt onzeker alternatief.",
+      "uncertainty": "none"
+    },
+    "review_failure_could_not_load_the_diff": {
+      "verdict": "keep",
+      "reason": "Correcte fouttitel.",
+      "uncertainty": "none"
+    },
+    "contract_enter_a_valid_github_username_or_repository_name": {
+      "verdict": "keep",
+      "reason": "Correcte invoervalidatie.",
+      "uncertainty": "none"
+    },
+    "contract_comment_cannot_be_empty": {
+      "verdict": "keep",
+      "reason": "Natuurlijk validatiebericht.",
+      "uncertainty": "none"
+    },
+    "router_could_not_check_who_you_are_signed_in": {
+      "verdict": "change",
+      "reason": "Kandidaat is grammaticaal onnatuurlijk.",
+      "uncertainty": "none"
+    },
+    "router_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "Correcte technische foutmelding.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_repository": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_your_review_of_this_pull": {
+      "verdict": "keep",
+      "reason": "Correcte reviewbetekenis.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_review_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Behoudt onverwachte lege respons.",
+      "uncertainty": "none"
+    },
+    "router_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_reply_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Behoudt onverwachte lege respons.",
+      "uncertainty": "none"
+    },
+    "router_this_comment_is_missing_a_file_or_line": {
+      "verdict": "keep",
+      "reason": "Behoudt beide ontbrekende mogelijkheden.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_comment_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Behoudt onverwachte lege respons.",
+      "uncertainty": "none"
+    },
+    "router_could_not_post_this_comment": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "router_could_not_delete_this_comment": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_which_files_you_have_read": {
+      "verdict": "keep",
+      "reason": "Correcte betekenis.",
+      "uncertainty": "none"
+    },
+    "router_not_found": {
+      "verdict": "keep",
+      "reason": "Standaard Nederlandse fouttekst.",
+      "uncertainty": "none"
+    },
+    "router_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "auth_route_this_ghdiff_has_no_github_app_set_up": {
+      "verdict": "keep",
+      "reason": "Behoudt configuratiegrens en gevolg.",
+      "uncertainty": "none"
+    },
+    "github_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Correcte herstelmelding.",
+      "uncertainty": "none"
+    },
+    "github_github_rejected_that_query": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "github_github_returned_no_data_for_that_query": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "github_github_has_no_such_file_on_that_commit": {
+      "verdict": "keep",
+      "reason": "Behoudt tokenvereiste voor privérepository's.",
+      "uncertainty": "none"
+    },
+    "github_app_github_would_not_revoke_that_token": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_for_that_token_request": {
+      "verdict": "keep",
+      "reason": "Placeholder blijft intact.",
+      "uncertainty": "none"
+    },
+    "github_app_github_refused_that": {
+      "verdict": "keep",
+      "reason": "Placeholder en oorzaak blijven intact.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_with_no_access_token": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "github_patch_github_lists_at_most_files_for_this_diff": {
+      "verdict": "keep",
+      "reason": "Behoudt maximum en gevolg voor latere bestanden.",
+      "uncertainty": "none"
+    },
+    "installations_an_account": {
+      "verdict": "keep",
+      "reason": "Correcte onbepaalde vorm.",
+      "uncertainty": "none"
+    },
+    "stream_text_that_response_is_too_large_to_read": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "diff_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Correcte validatiemelding.",
+      "uncertainty": "none"
+    },
+    "diff_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "diff_that_request_to_github_failed": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "file_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Correcte validatiemelding.",
+      "uncertainty": "none"
+    },
+    "file_that_file_path_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Correcte validatiemelding.",
+      "uncertainty": "none"
+    },
+    "file_could_not_load_that_file": {
+      "verdict": "keep",
+      "reason": "Correcte foutmelding.",
+      "uncertainty": "none"
+    },
+    "route_no_such_procedure": {
+      "verdict": "change",
+      "reason": "Kandidaat is formeel en onnatuurlijk.",
+      "uncertainty": "none"
+    },
+    "common_file_count": {
+      "verdict": "keep",
+      "reason": "Nederlandse enkelvoud/meervoudstakken zijn volledig.",
+      "uncertainty": "none"
+    },
+    "common_commit_count": {
+      "verdict": "keep",
+      "reason": "Nederlandse technische meervoudsvorm is passend.",
+      "uncertainty": "none"
+    },
+    "common_comment_count": {
+      "verdict": "keep",
+      "reason": "Correcte telvormen.",
+      "uncertainty": "none"
+    },
+    "common_reply_count": {
+      "verdict": "keep",
+      "reason": "Correcte telvormen.",
+      "uncertainty": "none"
+    },
+    "common_repository_count": {
+      "verdict": "keep",
+      "reason": "Correcte telvormen.",
+      "uncertainty": "none"
+    },
+    "home_served_count": {
+      "verdict": "keep",
+      "reason": "Behoudt de aangeboden-kwaliteit van served.",
+      "uncertainty": "none"
+    },
+    "filter_hidden_count": {
+      "verdict": "keep",
+      "reason": "Nederlandse vorm is voor beide aantallen gelijk.",
+      "uncertainty": "none"
+    },
+    "filter_status_summary": {
+      "verdict": "keep",
+      "reason": "Correcte telvormen.",
+      "uncertainty": "none"
+    },
+    "stack_pull_count": {
+      "verdict": "keep",
+      "reason": "Correcte telvormen en technische term.",
+      "uncertainty": "none"
+    },
+    "comment_line": {
+      "verdict": "keep",
+      "reason": "Correcte compacte labeltekst met placeholder.",
+      "uncertainty": "none"
+    },
+    "comment_line_range": {
+      "verdict": "keep",
+      "reason": "Natuurlijke aanduiding van een regelbereik.",
+      "uncertainty": "none"
+    },
+    "sidebar_file_summary": {
+      "verdict": "keep",
+      "reason": "Correcte Nederlandse enkelvoud- en meervoudsvormen; markup blijft intact.",
+      "uncertainty": "none"
+    },
+    "home_credits": {
+      "verdict": "keep",
+      "reason": "Natuurlijk en beknopt; merknamen en markup blijven behouden.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_phone": {
+      "verdict": "keep",
+      "reason": "Behoudt de bestemming op telefoon en is natuurlijk geformuleerd.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_wide": {
+      "verdict": "keep",
+      "reason": "Behoudt de balk links als werkelijke desktopbestemming.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_phone": {
+      "verdict": "keep",
+      "reason": "Behoudt de telefoonroute, het label en de lokale volgactie.",
+      "uncertainty": "De term volgen kan zonder verdere context licht aan GitHub-abonnementen doen denken, maar de omringende kopie maakt de lijstfunctie duidelijk."
+    },
+    "watch_offer_more_wide": {
+      "verdict": "keep",
+      "reason": "Behoudt de locatie onderaan de balk en de ghdiff-startpagina als alternatief.",
+      "uncertainty": "De term volgen kan zonder verdere context licht aan GitHub-abonnementen doen denken, maar de omringende kopie maakt de lijstfunctie duidelijk."
+    },
+    "watch_offer_preview_phone": {
+      "verdict": "keep",
+      "reason": "Onderscheidt reviews van controles en behoudt de telefoonbestemming.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_wide": {
+      "verdict": "keep",
+      "reason": "Onderscheidt reviews van controles en behoudt de desktopbestemming.",
+      "uncertainty": "none"
+    },
+    "watch_offer_action": {
+      "verdict": "keep",
+      "reason": "Korte, passende actie met behouden interpolatie.",
+      "uncertainty": "De lokale aard van volgen blijkt pas uit de omliggende dialoog."
+    },
+    "watch_offer_added_title": {
+      "verdict": "keep",
+      "reason": "Correcte statusmelding met behouden onderwerp.",
+      "uncertainty": "none"
+    },
+    "pull_opened_age": {
+      "verdict": "keep",
+      "reason": "Compacte, natuurlijke metadata-aanduiding.",
+      "uncertainty": "none"
+    },
+    "pull_updated_age": {
+      "verdict": "keep",
+      "reason": "Compacte, natuurlijke metadata-aanduiding.",
+      "uncertainty": "none"
+    },
+    "tree_directory_summary": {
+      "verdict": "keep",
+      "reason": "Correcte Nederlandse pluralisatie en behouden dynamische waarden.",
+      "uncertainty": "none"
+    },
+    "pull_list_empty": {
+      "verdict": "keep",
+      "reason": "Behoudt expliciet dat er geen open pull requests zijn.",
+      "uncertainty": "none"
+    },
+    "review_submit_scope": {
+      "verdict": "keep",
+      "reason": "Behoudt de scope van de gehele pull request en de afzonderlijke regelopmerkingen.",
+      "uncertainty": "none"
+    },
+    "review_previous_verdict": {
+      "verdict": "keep",
+      "reason": "Behoudt dat een nieuwe review de vorige vervangt.",
+      "uncertainty": "none"
+    },
+    "setup_not_installed": {
+      "verdict": "keep",
+      "reason": "Behoudt onzekerheid over organisatiegoedkeuring en de toegangsgrens.",
+      "uncertainty": "none"
+    },
+    "setup_no_repositories": {
+      "verdict": "keep",
+      "reason": "Behoudt installatie zonder repositorytoegang en de volgende stap.",
+      "uncertainty": "none"
+    },
+    "userscript_manager_description": {
+      "verdict": "keep",
+      "reason": "Behoudt beide GitHub-controls, de vereiste userscriptmanager en merknamen.",
+      "uncertainty": "none"
+    },
+    "pull_row_tooltip": {
+      "verdict": "keep",
+      "reason": "Behoudt alle regels en placeholders; naar past bij de branchrichting.",
+      "uncertainty": "none"
+    },
+    "pull_status_description": {
+      "verdict": "keep",
+      "reason": "Neutraal formaat met behouden review- en checkwaarden.",
+      "uncertainty": "none"
+    },
+    "auth_required_review": {
+      "verdict": "keep",
+      "reason": "Behoudt vereiste GitHub-toegang vóór het indienen.",
+      "uncertainty": "none"
+    },
+    "auth_required_delete": {
+      "verdict": "keep",
+      "reason": "Behoudt vereiste GitHub-toegang vóór verwijderen.",
+      "uncertainty": "none"
+    },
+    "auth_required_viewed": {
+      "verdict": "keep",
+      "reason": "Behoudt vereiste GitHub-toegang vóór markeren als bekeken.",
+      "uncertainty": "none"
+    },
+    "bytes_count": {
+      "verdict": "keep",
+      "reason": "Dutch gebruikt byte in enkelvoud en bytes in meervoud; beide bereikbare takken zijn aanwezig.",
+      "uncertainty": "none"
+    },
+    "bytes_kilobytes": {
+      "verdict": "keep",
+      "reason": "Gebruikelijke compacte eenheidsnotatie.",
+      "uncertainty": "none"
+    },
+    "bytes_megabytes": {
+      "verdict": "keep",
+      "reason": "Gebruikelijke compacte eenheidsnotatie.",
+      "uncertainty": "none"
+    },
+    "app_description": {
+      "verdict": "keep",
+      "reason": "Behoudt alle drie doeltypen, padregels en het terugplaatsen van regelopmerkingen naar GitHub.",
+      "uncertainty": "none"
+    },
+    "thread_delete_confirmation": {
+      "verdict": "keep",
+      "reason": "Behoudt de onomkeerbaarheid en het onderscheid tussen één opmerking en de hele thread.",
+      "uncertainty": "none"
+    },
+    "github_patch_missing_files": {
+      "verdict": "change",
+      "reason": "Vervangt het onnatuurlijke 'te groot voor verschillen' door de technische, natuurlijke formulering 'te groot voor een diff' en behoudt alle semantische takken.",
+      "uncertainty": "none"
+    },
+    "userscript_open_pull": {
+      "verdict": "keep",
+      "reason": "Korte en natuurlijke actie; ghdiff blijft intact.",
+      "uncertainty": "none"
+    },
+    "userscript_open_commit": {
+      "verdict": "keep",
+      "reason": "Korte en natuurlijke actie; ghdiff blijft intact.",
+      "uncertainty": "none"
+    },
+    "userscript_description": {
+      "verdict": "keep",
+      "reason": "Behoudt tabrij, Browse files en het bereik van elke pull request en commit.",
+      "uncertainty": "none"
+    },
+    "diff_expand_all": {
+      "verdict": "keep",
+      "reason": "Natuurlijke beknopte bedieningstekst.",
+      "uncertainty": "none"
+    },
+    "diff_no_newline": {
+      "verdict": "keep",
+      "reason": "Natuurlijke standaardformulering voor diffs.",
+      "uncertainty": "none"
+    },
+    "tree_git_contains_changes": {
+      "verdict": "keep",
+      "reason": "Behoudt de technische Git-statusbetekenis.",
+      "uncertainty": "none"
+    },
+    "review_bytes_read": {
+      "verdict": "keep",
+      "reason": "Compacte status met behouden hoeveelheid.",
+      "uncertainty": "none"
+    },
+    "tree_git_added": {
+      "verdict": "keep",
+      "reason": "Correcte Git-statusvertaling.",
+      "uncertainty": "none"
+    },
+    "tree_git_deleted": {
+      "verdict": "keep",
+      "reason": "Correcte Git-statusvertaling.",
+      "uncertainty": "none"
+    },
+    "tree_git_ignored": {
+      "verdict": "keep",
+      "reason": "Correcte Git-statusvertaling.",
+      "uncertainty": "none"
+    },
+    "tree_git_modified": {
+      "verdict": "keep",
+      "reason": "Correcte Git-statusvertaling.",
+      "uncertainty": "none"
+    },
+    "tree_git_renamed": {
+      "verdict": "keep",
+      "reason": "Correcte Git-statusvertaling.",
+      "uncertainty": "none"
+    },
+    "tree_git_untracked": {
+      "verdict": "keep",
+      "reason": "Correcte Git-statusvertaling.",
+      "uncertainty": "none"
+    },
+    "diff_unmodified_lines": {
+      "verdict": "keep",
+      "reason": "Correcte Nederlandse enkelvoud- en meervoudsvormen.",
+      "uncertainty": "none"
+    }
+  },
+  "followUpFindings": {
+    "locale_language": "Correcte, beknopte toegankelijke naam voor de taalkeuzeknop.",
+    "thread_delete_confirmation": "De kandidaat verloor de exacte count=1-selector; hersteld zodat alleen 1 enkelvoud gebruikt en alle andere aantallen het opgemaakte aantal tonen.",
+    "app_render_error": "OK",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "«Grootste» is gewijzigd in «breedste» om de betekenis van reikwijdte te behouden.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "1 为 one；其余验证值匹配 wildcard。"
+  },
+  "reconciledKeys": [
+    "pull_request_list_open_the_open_pull_requests_on_github",
+    "example_targets_the_widest_file_tree_past_the_api_diff",
+    "watch_offer_more_phone",
+    "watch_offer_more_wide",
+    "app_render_error"
+  ],
+  "humanNativeSpeakerReview": false
+}

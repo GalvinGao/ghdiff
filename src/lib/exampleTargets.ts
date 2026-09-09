@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 import { type ReviewTarget } from './reviewTarget.ts';
 
 // Diffs worth opening before there is one of your own to read.
@@ -23,51 +24,77 @@ export interface ExampleTarget {
 
 export const EXAMPLE_TARGETS: readonly ExampleTarget[] = [
   {
-    title: 'Rewrite Bun in Rust',
+    get title() {
+      return m.example_targets_rewrite_bun_in_rust();
+    },
     target: {
       kind: 'github-pull',
       owner: 'oven-sh',
       repo: 'bun',
       number: 30412,
     },
-    scale: '2,188 files · 1.0M lines',
-    note: 'The largest of them. 43 MB of unified diff over 6,755 commits.',
+    get scale() {
+      return m.example_targets_2_188_files_1_0m_lines();
+    },
+    get note() {
+      return m.example_targets_the_largest_of_them_43_mb_of_unified();
+    },
   },
   {
-    title: 'Resolve Maimai NET import PR conflicts',
+    get title() {
+      return m.example_targets_resolve_maimai_net_import_pr_conflicts();
+    },
     target: {
       kind: 'github-commit',
       owner: 'gekichumai',
       repo: 'dxrating',
       sha: '637a9c80f69d3222d1c3aed3ae8f4aefdb613bc9',
     },
-    scale: '25 files · 494k lines',
-    note: 'One generated JSON file holds 465,486 of those lines.',
+    get scale() {
+      return m.example_targets_25_files_494k_lines();
+    },
+    get note() {
+      return m.example_targets_one_generated_json_file_holds_465_486_of();
+    },
   },
   {
-    title: 'deps: update V8 to 14.1',
+    get title() {
+      return m.example_targets_deps_update_v8_to_14_1();
+    },
     target: {
       kind: 'github-pull',
       owner: 'nodejs',
       repo: 'node',
       number: 59805,
     },
-    scale: '3,420 files · 268k lines',
-    note: 'The widest file tree. Past the API diff cap, so it comes off the web host.',
+    get scale() {
+      return m.example_targets_3_420_files_268k_lines();
+    },
+    get note() {
+      return m.example_targets_the_widest_file_tree_past_the_api_diff();
+    },
   },
   {
-    title: 'libghostty: Remove all libc++ and libc++ ABI dependencies',
+    get title() {
+      return m.example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies();
+    },
     target: {
       kind: 'github-pull',
       owner: 'ghostty-org',
       repo: 'ghostty',
       number: 12291,
     },
-    scale: '25 files · 88k lines',
-    note: 'Large, and still a diff a person can read to the end.',
+    get scale() {
+      return m.example_targets_25_files_88k_lines();
+    },
+    get note() {
+      return m.example_targets_large_and_still_a_diff_a_person_can();
+    },
   },
   {
-    title: 'Ghostty 1.3.0 to 1.3.1',
+    get title() {
+      return m.example_targets_ghostty_1_3_0_to_1_3_1();
+    },
     target: {
       kind: 'github-compare',
       owner: 'ghostty-org',
@@ -75,7 +102,11 @@ export const EXAMPLE_TARGETS: readonly ExampleTarget[] = [
       base: 'v1.3.0',
       head: 'v1.3.1',
     },
-    scale: '53 files · 2.6k lines',
-    note: 'A compare range of one release. 100 commits, and comments stay local.',
+    get scale() {
+      return m.example_targets_53_files_2_6k_lines();
+    },
+    get note() {
+      return m.example_targets_a_compare_range_of_one_release_100_commits();
+    },
   },
 ];

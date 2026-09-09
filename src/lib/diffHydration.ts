@@ -1,5 +1,7 @@
 import { type FileDiffMetadata, SPLIT_WITH_NEWLINES } from '@pierre/diffs';
 
+import { m } from '../paraglide/messages.js';
+
 // Turning a patch back into the two whole files it was cut from.
 //
 // A patch carries the changed lines and three lines of context either side, and
@@ -38,7 +40,7 @@ export const MAX_FILE_BYTES = 4 * 1024 * 1024;
 
 /** What both ends say when a file runs past it. */
 export const FILE_TOO_LARGE =
-  'That file is too large to show its unmodified lines.';
+  m.diff_hydration_that_file_is_too_large_to_show_its;
 
 /**
  * Splits file text into lines, each keeping its own line break. The library

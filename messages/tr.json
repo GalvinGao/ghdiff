@@ -1,0 +1,613 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "Otomatik",
+  "color_mode_toggle_light": "Açık",
+  "color_mode_toggle_dark": "Koyu",
+  "color_mode_toggle_color_mode_switch_to": "Renk modu: {value}. {value2} moduna geç.",
+  "color_mode_toggle_color_mode": "Renk modu: {value}",
+  "comment_author_filter_bar_comment_authors": "Yorum yazarları",
+  "comment_author_filter_bar_all": "Tümü",
+  "comment_author_filter_bar_comments_a_person_opened": "Bir kişinin açtığı yorumlar",
+  "comment_author_filter_bar_people": "Kişiler",
+  "comment_author_filter_bar_comments_a_github_app_opened": "Bir GitHub App’in açtığı yorumlar",
+  "comment_author_filter_bar_bots": "Botlar",
+  "comment_body_done": "Tamamlandı",
+  "comment_body_not_done": "Tamamlanmadı",
+  "comment_composer_leave_a_comment": "Yorum bırak",
+  "comment_composer_comment": "Yorum yap",
+  "comment_composer_cancel": "İptal",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd veya Ctrl + Enter",
+  "comment_expansion_comment": "Yorum",
+  "comment_thread_card_open_thread_by": "{author} tarafından açılan ileti dizisini aç",
+  "comment_thread_card_posting": "Gönderiliyor…",
+  "comment_thread_card_click_to_open": "Açmak için tıkla",
+  "comment_thread_card_delete": "Sil",
+  "comment_thread_card_close": "Kapat",
+  "comment_thread_card_on_github": "GitHub'da",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Bu yorum henüz GitHub'a ulaşmadı; bu nedenle yanıt alamaz.",
+  "comment_thread_card_reply_on_github": "GitHub'da yanıtla",
+  "comment_thread_card_reply_in_this_browser": "Bu tarayıcıda yanıtla",
+  "comment_thread_card_sending": "Gönderiliyor…",
+  "comment_thread_card_reply": "Yanıtla",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd veya Ctrl + Enter",
+  "comments_list_no_comments_here": "Burada yorum yok.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "Burada bıraktığınız yorumlar GitHub'a gönderilir.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub, commit'ler veya karşılaştırma aralıkları için inceleme ileti dizisi sunmaz. Yorumlar bu tarayıcıda kalır.",
+  "comments_list_posting": "gönderiliyor",
+  "comments_list_failed": "başarısız",
+  "comments_list_go_to": "{path} konumuna git",
+  "confirm_inline_cancel": "İptal",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "Eklendi",
+  "filter_menu_modified": "Değiştirildi",
+  "filter_menu_renamed": "Yeniden adlandırıldı",
+  "filter_menu_deleted": "Silindi",
+  "filter_menu_filter_files": "Dosyaları filtrele",
+  "filter_menu_file_rules": "Dosya kuralları",
+  "filter_menu_git_status": "Git durumu",
+  "filter_menu_clear_filters": "Filtreleri temizle",
+  "filter_menu_all_files": "Tüm dosyalar",
+  "git_hub_account_control_set_up_access": "Erişimi ayarla",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Bıraktığınız yorumlar bu hesapla GitHub'a gider.",
+  "git_hub_account_panel_install_on_another_account": "Başka bir hesaba yükle",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff hiçbir hesapta yüklü değil. Kodunuzu okumak için erişimi ayarlayın.",
+  "git_hub_account_panel_open_setup_guide": "Kurulum rehberini aç",
+  "git_hub_account_panel_sign_out": "Oturumu kapat",
+  "git_hub_account_panel_accounts_with_access": "Erişimi olan hesaplar",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "Depo eklemek veya kaldırmak için github.com'da ayarları açar.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "ghdiff'in hangi GitHub hesaplarını okuyabildiği denetleniyor…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "Herhangi bir GitHub pull request'ini, commit'i veya karşılaştırma aralığını açın.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "Dosya listesini hazır yol kurallarıyla daraltın.",
+  "home_screen_read_and_leave_comments": "Yorumları okuyun ve yorum bırakın.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "Bir GitHub pull request'i, commit'i veya karşılaştırma URL'si yapıştırın ya da owner/repo#123 yazın.",
+  "home_screen_github_pull_request_commit_or_compare_url": "GitHub pull request, commit veya karşılaştırma URL'si",
+  "home_screen_open_this_diff": "Bu farkı aç",
+  "home_screen_review": "İncele",
+  "home_screen_set_up_access_for_private_repositories": "Özel depolar için erişimi ayarla",
+  "home_screen_userscript": "Kullanıcı betiği",
+  "home_screen_examples": "Örnekler",
+  "home_screen_watched_repos": "Takip edilen depolar",
+  "home_screen_github_account": "GitHub hesabı",
+  "home_screen_source_on_github": "GitHub'daki kaynak",
+  "home_screen_review_the_commit_this_build_was_made_from": "Bu derlemenin oluşturulduğu {sha} commit'ini ghdiff'te incele",
+  "installation_row_current_diff": "geçerli fark",
+  "installation_row_configure": "Yapılandır",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff bu URL'yi okuyamıyor",
+  "not_found_a_review_needs_a_github_pull_request_a": "İnceleme için bir GitHub pull request'i, commit veya karşılaştırma aralığı gerekir.",
+  "not_found_open_a_different_review": "Başka bir inceleme aç",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "Yeniden boyutlandırmak için sürükleyin. Sıfırlamak için çift tıklayın.",
+  "pull_details_card_loading_pull_request": "Pull request yükleniyor…",
+  "pull_details_card_no_details_yet": "Henüz ayrıntı yok.",
+  "pull_details_card_files": "Dosyalar",
+  "pull_details_card_added_lines": "Eklenen satırlar",
+  "pull_details_card_deleted_lines": "Silinen satırlar",
+  "pull_details_card_commits": "Commit'ler",
+  "pull_details_card_description": "Açıklama",
+  "pull_list_button_open_pull_requests": "Açık pull request'ler",
+  "pull_list_button_watched_repos": "Takip edilen depolar",
+  "pull_list_button_reload_the_pull_requests": "Pull request'leri yeniden yükle",
+  "pull_list_button_loading_the_pull_requests": "Pull request'ler yükleniyor",
+  "pull_rail_open_pull_requests": "Açık pull request'ler",
+  "pull_rail_pull_request_bar_width": "Pull request çubuğu genişliği",
+  "pull_rail_show_the_pull_requests": "Pull request'leri göster",
+  "pull_rail_hide_the_pull_requests": "Pull request'leri gizle",
+  "pull_rail_watched_repos": "Takip edilen depolar",
+  "pull_rail_reload_the_pull_requests": "Pull request'leri yeniden yükle",
+  "pull_rail_loading_the_pull_requests": "Pull request'ler yükleniyor",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "Açık pull request'lerini görmek için bir depoyu takip edin.",
+  "pull_request_list_open_on_github": "{owner}/{repo} deposunu GitHub'da aç",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=*": "GitHub'daki {formatted} açık pull request'i aç"
+      }
+    }
+  ],
+  "pull_request_list_you": "siz",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "{author} adlı kullanıcının {owner}/{repo} deposundaki açık pull request'lerini GitHub'da aç",
+  "pull_request_list_set_up_private_access": "Özel erişimi ayarla",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "Oturum kapalıyken hiçbir satırda durum karesi veya kendi pull request'lerinizde işaret gösterilmez. Oturum açmak ikisini de sağlar.",
+  "pull_request_list_stack": "Yığın",
+  "pull_request_list_loading_open_pull_requests": "Açık pull request'ler yükleniyor…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "Taslak",
+  "pull_row_currently_viewing": "Şu anda görüntüleniyor",
+  "pull_state_icon_open": "Açık",
+  "pull_state_icon_draft": "Taslak",
+  "pull_state_icon_merged": "Birleştirildi",
+  "pull_state_icon_closed": "Kapatıldı",
+  "review_header_bars": "Çubuklar",
+  "review_header_signs": "İşaretler",
+  "review_header_none": "Yok",
+  "review_header_hide_the_file_list": "Dosya listesini gizle",
+  "review_header_show_the_file_list": "Dosya listesini göster",
+  "review_header_open_on_github": "{targetLabel} öğesini GitHub'da aç",
+  "review_header_switch_to_unified_view": "Birleşik görünüme geç",
+  "review_header_switch_to_split_view": "Bölünmüş görünüme geç",
+  "review_header_split_view": "Bölünmüş görünüm",
+  "review_header_unified_view": "Birleşik görünüm",
+  "review_header_display_settings": "Görüntü ayarları",
+  "review_header_code_font": "Kod yazı tipi",
+  "review_header_change_markers": "Değişiklik işaretleri",
+  "review_header_wrap_long_lines": "Uzun satırları kaydır",
+  "review_header_line_numbers": "Satır numaraları",
+  "review_header_change_backgrounds": "Değişiklik arka planları",
+  "review_header_dim_whitespace_changes": "Boşluk değişikliklerini soluklaştır",
+  "review_header_approve_request_changes_or_comment": "Onayla, değişiklik iste veya yorum yap",
+  "review_header_review": "İnceleme",
+  "review_header_review_it_again": "{value} Yeniden incele.",
+  "review_screen_sidebar_width": "Kenar çubuğu genişliği",
+  "review_screen_dismiss": "Kapat",
+  "review_sidebar_sidebar_sections": "Kenar çubuğu bölümleri",
+  "review_sidebar_files": "Dosyalar",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=one, comments=one": "{threadNumber} tartışma, {commentNumber} yorum",
+        "threads=one, comments=other": "{threadNumber} tartışma, {commentNumber} yorum",
+        "threads=other, comments=one": "{threadNumber} tartışma, {commentNumber} yorum",
+        "threads=other, comments=other": "{threadNumber} tartışma, {commentNumber} yorum",
+        "threads=*, comments=*": "{threadNumber} tartışma, {commentNumber} yorum"
+      }
+    }
+  ],
+  "review_sidebar_comments": "Yorumlar",
+  "review_sidebar_hide_the_path_search": "Yol aramasını gizle",
+  "review_sidebar_search_by_path": "Yola göre ara",
+  "review_sidebar_the_current_filter_hides_all_files": "Geçerli filtre tüm dosyaları gizliyor.",
+  "review_sidebar_clear_filters": "Filtreleri temizle",
+  "review_sidebar_added_lines": "Eklenen satırlar",
+  "review_sidebar_deleted_lines": "Silinen satırlar",
+  "review_sidebar_search_files_by_path": "Dosyaları yola göre ara",
+  "review_sidebar_path_contains": "Yol şunu içerir…",
+  "review_sidebar_clear_the_path_search": "Yol aramasını temizle",
+  "review_status_panel_fetching_the_diff": "Farklar alınıyor",
+  "review_status_panel_reading_the_patch_for_this_review": "Bu inceleme için yama okunuyor.",
+  "review_status_panel_preparing_the_diff": "Farklar hazırlanıyor",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "Yama ayrıştırılıyor ve dosya listesi oluşturuluyor.",
+  "review_status_panel_starting_the_highlighters": "Vurgulayıcılar başlatılıyor",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "Arka plan çalışanları kodunuzu renklendirmeye hazırlanıyor.",
+  "review_status_panel_set_up_repository_access": "Depo erişimini ayarla",
+  "review_status_panel_try_again": "Tekrar dene",
+  "review_submit_dialog_add_a_note_github_needs_one": "Not ekleyin. GitHub bunu gerektirir.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub, kendi pull request'inizi onaylamanıza izin vermez.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub, kendi pull request'inizde değişiklik istemenize izin vermez.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Kendi pull request'inize yorum yapabilirsiniz. GitHub başka hiçbir işleme izin vermez.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "Not ekleyin. GitHub, değişiklik istemek veya yorum yapmak için bunu gerektirir.",
+  "review_submit_dialog_submit_a_review": "İncelemeyi gönder",
+  "review_submit_dialog_review_body": "İnceleme metni",
+  "review_submit_dialog_leave_a_note_with_your_review": "İncelemenizle birlikte bir not bırakın",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "Farkları göster",
+  "review_viewer_hide_the_diff": "Farkları gizle",
+  "review_viewer_show_the_whole_file": "Dosyanın tamamını göster",
+  "review_viewer_viewed": "Görüntülendi",
+  "setup_screen_set_up_private_repository_access": "Özel depo erişimini ayarla",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub, ghdiff'in yalnızca erişim verdiğiniz depoları okumasına izin verir. Bu üç adımı sırayla tamamlayın.",
+  "setup_screen_sign_in_to_github": "GitHub'da oturum aç",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "Bu işlem hesabınızı GitHub'a tanıtır. Bıraktığınız tüm yorumlar bu hesap altında yayımlanır.",
+  "setup_screen_sign_in_with_github": "GitHub ile oturum aç",
+  "setup_screen_grant_repository_access": "Depo erişimi ver",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Oturum açmak yalnızca kimliğinizi tanıtır. ghdiff'in okuyabileceği hesapları ve depoları seçin.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "Oturum açmak yalnızca kimliğinizi tanıtır. ghdiff'i {account} hesabına yükleyin ve bu deponun erişim listesine dahil olduğundan emin olun.",
+  "setup_screen_accounts_with_access": "Erişimi olan hesaplar",
+  "setup_screen_install_ghdiff": "ghdiff'i yükle",
+  "setup_screen_install_on_another_account": "Başka bir hesaba yükle",
+  "setup_screen_checking": "Kontrol ediliyor…",
+  "setup_screen_check_again": "Tekrar kontrol et",
+  "setup_screen_open_the_diff": "Farkları aç",
+  "setup_screen_go_to_the_home_page_to_paste_a": "Bir pull request, commit veya karşılaştırma URL'si yapıştırmak için ana sayfaya gidin.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Farkınıza dönün. ghdiff, güncellenmiş izinlerinizle farkı yeniden getirecek.",
+  "setup_screen_go_to_ghdiff_home": "ghdiff ana sayfasına git",
+  "setup_screen_return_to_the_diff": "Farka dön",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Bu ghdiff dağıtımında GitHub App yapılandırılmamış. Yine de herkese açık tüm farkları görüntüleyebilirsiniz.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff artık GitHub App kullanıyor",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff, eski kişisel erişim belirtecinizi bu tarayıcıdan kaldırdı ve artık istemiyor. GitHub, GitHub ayarlarınızdan silene kadar bu belirteci kabul etmeye devam eder.",
+  "setup_screen_delete_the_token_on_github": "Belirteci GitHub'da sil",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "github.com'a ghdiff düğmesi ekleyin",
+  "userscript_install_install": "Yükle",
+  "watch_offer_dialog_watch_this_repository": "Bu depoyu takip listesine eklemek ister misiniz?",
+  "watch_offer_dialog_watch": "{subject} takip listesine eklensin mi?",
+  "watch_offer_dialog_keep_reviewing": "İncelemeye devam et",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Takip listeniz bu tarayıcıda kalır.",
+  "watch_offer_dialog_not_now": "Şimdi değil",
+  "watched_repos_dialog_watched_repositories": "Takip edilen depolar",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff, bu depolardaki açık pull request'leri listeler. Liste bu tarayıcıda kalır.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "Bir depoyu owner/repo biçiminde girin.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "Takip listesine eklenecek depo",
+  "watched_repos_editor_add": "Ekle",
+  "watched_repos_editor_nothing_watched_yet": "Henüz takip edilen depo yok.",
+  "watched_repos_editor_remove": "Kaldır",
+  "dialog_close": "Kapat",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "Bu dosya GitHub'dan okunamadı.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "Bu dosya, bu fark oluşturulduktan sonra GitHub'da değişti. Değişmemiş satırlarını görmek için yeniden yükleyin.",
+  "use_diff_file_loader_request_failed": "İstek başarısız oldu ({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "Hangi hesapla oturum açtığınız denetlenemedi.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "ghdiff'in hangi depolarda yüklü olduğu okunamadı.",
+  "use_open_pulls_could_not_load_pull_requests": "Pull request'ler yüklenemedi.",
+  "use_pull_details_could_not_load_this_pull_request": "Bu pull request yüklenemedi.",
+  "use_review_comments_could_not_load_comments": "Yorumlar yüklenemedi.",
+  "use_review_comments_could_not_post_that_comment_to_github": "Bu yorum GitHub'a gönderilemedi.",
+  "use_review_comments_could_not_post_this_reply_to_github": "Bu yanıt GitHub'a gönderilemedi.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "Bu ileti dizisi GitHub'da silinemedi. Denetlemek için yeniden yükleyin.",
+  "use_review_patch_request_failed": "İstek başarısız oldu ({status}).",
+  "use_review_patch_could_not_load_that_diff": "Bu fark yüklenemedi.",
+  "use_submit_review_could_not_submit_this_review": "Bu inceleme gönderilemedi.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "Bu işaret GitHub'a gönderilemedi.",
+  "code_fonts_system": "Sistem",
+  "diff_hydration_that_file_is_too_large_to_show_its": "Bu dosya, değişmemiş satırlarını göstermek için fazla büyük.",
+  "example_targets_rewrite_bun_in_rust": "Bun'ı Rust ile yeniden yaz",
+  "example_targets_2_188_files_1_0m_lines": "2.188 dosya · 1,0 Mn satır",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "Bunların en büyüğü. 6.755 commit boyunca 43 MB birleşik fark.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Maimai NET içe aktarma pull request çakışmalarını çöz",
+  "example_targets_25_files_494k_lines": "25 dosya · 494 B satır",
+  "example_targets_one_generated_json_file_holds_465_486_of": "Oluşturulmuş tek bir JSON dosyası bu satırların 465.486'sını içeriyor.",
+  "example_targets_deps_update_v8_to_14_1": "deps: V8'i 14.1'e güncelle",
+  "example_targets_3_420_files_268k_lines": "3.420 dosya · 268 B satır",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "En geniş dosya ağacı. API fark boyutu sınırını aştığı için ghdiff bunu GitHub web sitesinden yükler.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: Tüm libc++ ve libc++ ABI bağımlılıklarını kaldır",
+  "example_targets_25_files_88k_lines": "25 dosya · 88 B satır",
+  "example_targets_large_and_still_a_diff_a_person_can": "Büyük, ancak bir kişinin sonuna kadar okuyabileceği bir fark.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0'dan 1.3.1'e",
+  "example_targets_53_files_2_6k_lines": "53 dosya · 2,6 B satır",
+  "example_targets_a_compare_range_of_one_release_100_commits": "Tek sürümlük bir karşılaştırma aralığı. 100 commit ve yorumlar yerel kalır.",
+  "filter_rules_all_files": "Tüm dosyalar",
+  "filter_rules_show_every_file_in_the_diff": "Farktaki tüm dosyaları göster.",
+  "filter_rules_hide_tests": "Testleri gizle",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "Test dosyalarını, fixture'ları ve snapshot'ları gizle.",
+  "filter_rules_tests_only": "Yalnızca testler",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "Yalnızca test dosyalarını, fixture'ları ve snapshot'ları göster.",
+  "filter_rules_source_only": "Yalnızca kaynak",
+  "filter_rules_show_only_code_files_that_are_not_tests": "Yalnızca test veya oluşturulmuş olmayan kod dosyalarını göster.",
+  "filter_rules_docs_only": "Yalnızca belgeler",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Yalnızca Markdown ve diğer düz yazı dosyalarını göster.",
+  "filter_rules_config_only": "Yalnızca yapılandırma",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "Yalnızca manifestleri, lint yapılandırmalarını ve CI dosyalarını göster.",
+  "filter_rules_hide_generated": "Oluşturulanları gizle",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "Kilit dosyalarını, snapshot'ları ve derleme çıktısını gizle.",
+  "filter_rules_generated_only": "Yalnızca oluşturulanlar",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "Yalnızca kilit dosyalarını, snapshot'ları ve derleme çıktısını göster.",
+  "github_app_sign_in_was_not_completed_on_github_try": "GitHub'da oturum açma tamamlanmadı. Hazır olduğunuzda tekrar deneyin.",
+  "github_app_the_sign_in_session_timed_out_on_github": "GitHub'daki oturum açma oturumunun süresi doldu. Oturum açma işlemini yeniden başlatın.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "GitHub oturum açma işlemi sırasında güvenlik doğrulaması başarısız oldu. İşlemi ghdiff'ten yeniden başlatın.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub oturum açmayı tamamlayamadı. Biraz sonra tekrar deneyin.",
+  "installations_all_repositories": "Tüm depolar",
+  "installations_no_repositories_selected": "Hiçbir depo seçilmedi",
+  "pull_details_just_now": "az önce",
+  "pull_status_approved": "Onaylandı",
+  "pull_status_changes_requested": "Değişiklikler istendi",
+  "pull_status_no_review_yet": "Henüz inceleme yok",
+  "pull_status_checks_passing": "kontroller başarılı",
+  "pull_status_checks_running": "kontroller çalışıyor",
+  "pull_status_a_check_failed": "bir kontrol başarısız oldu",
+  "pull_status_no_checks": "kontrol yok",
+  "pull_status_changes_requested_new_commits_since": "Değişiklikler istendi, o zamandan beri yeni commit'ler geldi",
+  "review_data_commit": "Commit {value}",
+  "review_decision_approve": "Onayla",
+  "review_decision_approving": "Onaylanıyor…",
+  "review_decision_request_changes": "Değişiklik iste",
+  "review_decision_requesting": "Değişiklik isteniyor…",
+  "review_decision_comment": "Yorum yap",
+  "review_decision_commenting": "Yorum yapılıyor…",
+  "review_decision_approved": "Onaylandı",
+  "review_decision_changes_requested": "Değişiklikler istendi",
+  "review_decision_commented": "Yorum yapıldı",
+  "review_decision_you_approved_this_pull_request": "Bu pull request’i onayladınız.",
+  "review_decision_you_requested_changes_on_this_pull_request": "Bu pull request için değişiklik istediniz.",
+  "review_decision_you_commented_on_this_pull_request": "Bu pull request’e yorum yaptınız.",
+  "review_decision_github_recorded_your_review": "GitHub incelemenizi kaydetti.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "Sunucu yanıt vermedi. Bağlantınız çevrim dışı olabilir veya isteğin süresi dolmuş olabilir.",
+  "review_failure_you_used_all_5_000_github_requests_for": "Bu saat için 5.000 GitHub isteğinin tamamını kullandınız. Limitinizin sıfırlanması için birkaç dakika bekleyip tekrar deneyin.",
+  "review_failure_hourly_github_rate_limit_reached": "Saatlik GitHub istek limitine ulaşıldı",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub, oturum açılmamış istekleri saatte 60 ile sınırlar. Saatte 5.000 istek almak için erişimi hemen ayarlayın.",
+  "review_failure_github_rate_limit_reached": "GitHub istek limitine ulaşıldı",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "GitHub oturumunuz artık geçerli değil ve ghdiff bunu yenileyemedi. Bu farkı görüntülemek için erişimi yeniden ayarlayın.",
+  "review_failure_github_sign_in_expired": "GitHub oturumunun süresi doldu",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "ghdiff bu depoda yüklü olmadığı veya erişim eksik olduğu için GitHub Bulunamadı yanıtını verdi. İzin vermek için erişimi ayarlayın.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff’in bu depoya erişmesi gerekiyor",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "Oturumunuz kapalıyken GitHub özel depolar için Bulunamadı yanıtı verir. Bu farkı görüntülemek için erişimi ayarlayın.",
+  "review_failure_repository_not_found_or_private": "Depo bulunamadı veya özel",
+  "review_failure_could_not_load_the_diff": "Fark yüklenemedi",
+  "contract_enter_a_valid_github_username_or_repository_name": "Geçerli bir GitHub kullanıcı adı veya depo adı girin.",
+  "contract_comment_cannot_be_empty": "Yorum boş olamaz.",
+  "router_could_not_check_who_you_are_signed_in": "Hangi hesapla oturum açtığınız kontrol edilemedi.",
+  "router_could_not_read_where_ghdiff_is_installed": "ghdiff’in nerede yüklü olduğu okunamadı.",
+  "router_could_not_load_this_repository": "Bu depo yüklenemedi.",
+  "router_could_not_load_this_pull_request": "Bu pull request yüklenemedi.",
+  "router_could_not_load_your_review_of_this_pull": "Bu pull request için incelemeniz yüklenemedi.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub incelemeyi kabul etti ancak hiçbir şey döndürmedi.",
+  "router_could_not_submit_this_review": "Bu inceleme gönderilemedi.",
+  "router_could_not_load_comments": "Yorumlar yüklenemedi.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub yanıtı kabul etti ancak hiçbir şey döndürmedi.",
+  "router_this_comment_is_missing_a_file_or_line": "Bu yorumda dosya veya satır numarası eksik.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub yorumu kabul etti ancak hiçbir şey döndürmedi.",
+  "router_could_not_post_this_comment": "Bu yorum gönderilemedi.",
+  "router_could_not_delete_this_comment": "Bu yorum silinemedi.",
+  "router_could_not_load_which_files_you_have_read": "Okuduğunuz dosyalar yüklenemedi.",
+  "router_not_found": "Bulunamadı",
+  "router_could_not_send_that_mark_to_github": "Bu işaret GitHub’a gönderilemedi.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "Bu ghdiff için GitHub App ayarlanmamış; bu nedenle oturum açamazsınız.",
+  "github_your_github_sign_in_is_no_longer_valid": "GitHub oturumunuz artık geçerli değil. Devam etmek için erişimi yeniden ayarlayın.",
+  "github_github_rejected_that_query": "GitHub bu sorguyu reddetti.",
+  "github_github_returned_no_data_for_that_query": "GitHub bu sorgu için veri döndürmedi.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub’da bu commit’te böyle bir dosya yok. Özel bir depo için belirteç gerekir.",
+  "github_app_github_would_not_revoke_that_token": "GitHub bu belirteci iptal etmedi.",
+  "github_app_github_answered_for_that_token_request": "GitHub bu belirteç isteğine {status} yanıtını verdi.",
+  "github_app_github_refused_that": "GitHub bunu reddetti: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub erişim belirteci olmadan yanıt verdi.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub bu fark için en fazla {fileCount} dosya listeliyor; bu nedenle sonraki dosyalar görünmüyor.",
+  "installations_an_account": "bir hesap",
+  "stream_text_that_response_is_too_large_to_read": "Bu yanıt okunamayacak kadar büyük.",
+  "diff_that_review_target_is_not_valid": "Bu inceleme hedefi geçerli değil.",
+  "diff_could_not_load_that_diff": "Bu fark yüklenemedi.",
+  "diff_that_request_to_github_failed": "GitHub’a yapılan bu istek başarısız oldu.",
+  "file_that_review_target_is_not_valid": "Bu inceleme hedefi geçerli değil.",
+  "file_that_file_path_is_not_valid": "Bu dosya yolu geçerli değil.",
+  "file_could_not_load_that_file": "Bu dosya yüklenemedi.",
+  "route_no_such_procedure": "Böyle bir yordam yok.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} dosya"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} commit"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} yorum"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} yanıt"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} depo"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} fark sunuldu"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} gizli"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{base} · {formatted} durum"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} pull request’ten oluşan yığın"
+      }
+    }
+  ],
+  "comment_line": "{line}. satıra yorum yap",
+  "comment_line_range": "{start}–{end}. satırlara yorum yap",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} dosya{#total} / toplam {total}{/total}",
+        "countPlural=*": "{formatted} dosya{#total} / toplam {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "Farklar {#diffs}CodeView{/diffs}, dosya listesi ise {#trees}FileTree{/trees} tarafından sağlanır.",
+  "watch_offer_added_phone": "Bu deponun açık pull request'leri artık sol üstteki pull request listesinde.",
+  "watch_offer_added_wide": "Bu deponun açık pull request'leri artık soldaki çubukta.",
+  "watch_offer_more_phone": "Daha fazla depoyu izleme listesine eklemek için bu listeyi açıp {#strong}{label}{/strong} seçeneğini kullanın veya ghdiff ana sayfasına gidin.",
+  "watch_offer_more_wide": "Daha fazla depoyu izleme listesine eklemek için çubuğun altındaki {#strong}{label}{/strong} seçeneğini kullanın veya ghdiff ana sayfasına gidin.",
+  "watch_offer_preview_phone": "Açık pull request'lerini sol üstteki pull request listesinde, her birinin inceleme durumu ve kontrolleriyle birlikte görün. GitHub'a dönmeden aralarında geçiş yapın.",
+  "watch_offer_preview_wide": "Açık pull request'lerini soldaki çubukta, her birinin inceleme durumu ve kontrolleriyle birlikte görün. GitHub'a dönmeden aralarında geçiş yapın.",
+  "watch_offer_action": "{subject} öğesini izleme listesine ekle",
+  "watch_offer_added_title": "{subject} artık izleme listesinde",
+  "pull_opened_age": "Açıldı: {age}",
+  "pull_updated_age": "Güncellendi: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} dosya, {added} {deleted}",
+        "countPlural=*": "{formatted} dosya, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "{repositories} içinde açık pull request yok.",
+  "review_submit_scope": "Bu, {#strong}{target}{/strong} için pull request'in tamamına yönelik bir incelemedir. Satır yorumları, yazdığınız satırlarda gönderilir.",
+  "review_previous_verdict": "{verdict} Yeni bir inceleme onun yerini alır.",
+  "setup_not_installed": "ghdiff henüz {#strong}{account}{/strong} üzerinde yüklü değil. Bu bir kuruluşsa, yüklemenin bir sahip tarafından onaylanması gerekebilir.",
+  "setup_no_repositories": "ghdiff, {#strong}{account}{/strong} üzerinde yüklü ancak henüz hiçbir depoyu kapsamıyor. İncelediğiniz depoları seçmek için ayarlarını açın.",
+  "userscript_manager_description": "Bu, bir pull request'te Files changed seçeneğinin, bir commit'te ise Browse files seçeneğinin yanına düğme ekler. {#manager}Tampermonkey{/manager} gibi bir kullanıcı betiği yöneticisi gerektirir.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} → {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "İnceleme göndermeden önce GitHub erişimini ayarlayın.",
+  "auth_required_delete": "Yorumu silmeden önce GitHub erişimini ayarlayın.",
+  "auth_required_viewed": "Dosyayı görüntülendi olarak işaretlemeden önce GitHub erişimini ayarlayın.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} bayt",
+        "countPlural=*": "{formatted} bayt"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "github.com yerine ghdiff.com yazarak herhangi bir GitHub pull request'ini, commit'i veya karşılaştırma aralığını açın. Dosya listesini hazır yol kurallarıyla daraltın ve satır yorumlarını GitHub'a gönderin.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub'daki bu yorum silinsin mi? Bu işlem geri alınamaz.",
+        "count=*, countPlural=*": "Bu ileti dizisindeki {formatted} yorumun tamamı GitHub'dan silinsin mi? Bu işlem geri alınamaz."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub, {formatted} dosyayı diff için fazla büyük buldu; bu yüzden hiçbir satırını göstermiyor: {path}.",
+        "count=*, countPlural=one": "GitHub, {formatted} dosyayı diff için fazla büyük buldu; bu yüzden hiçbir satırını göstermiyor.",
+        "count=*, countPlural=*": "GitHub, {formatted} dosyayı diff için fazla büyük buldu; bu yüzden hiçbir satırını göstermiyor."
+      }
+    }
+  ],
+  "userscript_open_pull": "Bu pull request'i ghdiff'te aç",
+  "userscript_open_commit": "Bu commit'i ghdiff'te aç",
+  "userscript_description": "Her GitHub pull request'inin sekme satırına bir ghdiff düğmesi, her commit'te de Browse files düğmesinin yanına bir düğme ekler.",
+  "diff_expand_all": "Tümünü genişlet",
+  "diff_no_newline": "Dosyanın sonunda yeni satır yok",
+  "tree_git_contains_changes": "Git durumundaki öğeleri içeriyor",
+  "review_bytes_read": "{amount} okundu",
+  "tree_git_added": "Git durumu: eklendi",
+  "tree_git_deleted": "Git durumu: silindi",
+  "tree_git_ignored": "Git durumu: yok sayıldı",
+  "tree_git_modified": "Git durumu: değiştirildi",
+  "tree_git_renamed": "Git durumu: yeniden adlandırıldı",
+  "tree_git_untracked": "Git durumu: izlenmiyor",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} değiştirilmemiş satır",
+        "countPlural=*": "{formatted} değiştirilmemiş satır"
+      }
+    }
+  ],
+  "locale_language": "Dil",
+  "app_render_error": "ghdiff bu sayfayı görüntüleyemedi. Yeniden denemek için sayfayı yeniden yükleyin."
+}

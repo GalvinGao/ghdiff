@@ -3,8 +3,15 @@ import * as Primitive from '@radix-ui/react-dropdown-menu';
 import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/cn';
+import { textDirection } from '@/lib/locale';
+import { getLocale } from '@/paraglide/runtime';
 
-export const DropdownMenu = Primitive.Root;
+export function DropdownMenu({
+  dir = textDirection(getLocale()),
+  ...props
+}: ComponentProps<typeof Primitive.Root>) {
+  return <Primitive.Root dir={dir} {...props} />;
+}
 export const DropdownMenuTrigger = Primitive.Trigger;
 export const DropdownMenuGroup = Primitive.Group;
 export const DropdownMenuPortal = Primitive.Portal;

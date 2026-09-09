@@ -1,6 +1,7 @@
 import type { FileDiffContentsLoader, FileDiffMetadata } from '@pierre/diffs';
 import { useCallback, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import {
   FILE_TOO_LARGE,
@@ -23,9 +24,10 @@ import { readStreamedText } from '@/lib/streamText';
 // Both are said out loud rather than logged. A reviewer pressed something and
 // nothing happened, and the strip along the foot of the screen is where the
 // reason goes.
-const GENERIC_FAILURE = 'Could not read that file from GitHub.';
+const GENERIC_FAILURE =
+  m.use_diff_file_loader_could_not_read_that_file_from_github;
 const STALE_FAILURE =
-  'That file has changed on GitHub since this diff was made. Reload to see its unmodified lines.';
+  m.use_diff_file_loader_that_file_has_changed_on_github_since_this;
 
 export interface DiffFileLoader {
   /** Passed straight to the viewer as its `loadDiffFiles` option. */
@@ -57,7 +59,7 @@ export function useDiffFileLoader(options: {
         }
         const newLines = splitFileLines(contents);
         if (!patchFitsNewFile(fileDiff, newLines)) {
-          throw new Error(STALE_FAILURE);
+          throw new Error(STALE_FAILURE());
         }
         return {
           oldFile: {
@@ -67,7 +69,7 @@ export function useDiffFileLoader(options: {
           newFile,
         };
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : GENERIC_FAILURE);
+        setError(cause instanceof Error ? cause.message : GENERIC_FAILURE());
         // Rethrown: the viewer must not hydrate a file it cannot trust, and
         // leaving the diff partial is what lets the reviewer press again.
         throw cause;
@@ -91,13 +93,13 @@ async function fetchFile(query: string, path: string): Promise<string> {
     throw new Error(
       body.trim().length > 0
         ? body.trim()
-        : `Request failed (${response.status}).`
+        : m.use_diff_file_loader_request_failed({ status: response.status })
     );
   }
   // Counted on the way in, because the route can only turn away a file whose
   // size GitHub declared, and a compressed answer declares the wrong one.
   return await readStreamedText(response, {
     maxBytes: MAX_FILE_BYTES,
-    tooLarge: FILE_TOO_LARGE,
+    tooLarge: FILE_TOO_LARGE(),
   });
 }

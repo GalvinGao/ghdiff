@@ -1,0 +1,1969 @@
+{
+  "locale": "de",
+  "auditor": "codex/gpt-5.6-terra",
+  "fallbackReason": "Antigravity interrupted stream and timeout with no output",
+  "initialSourceSha256": "8c239bbcc87799c690b5b0e64dc662da257e49487c1d5d2f009cb211c084b292",
+  "catalogSha256": "63a300f9a614240d93602bc964ff3fdfe204c2c8eeb3dba49d69b0d79f44bce7",
+  "hashFormat": "UTF-8 sorted JSON without separator whitespace for catalogSha256",
+  "reviewedMessageCount": 387,
+  "selectionNotes": {
+    "color_mode_toggle_auto": "Kurzes deutsches UI-Label.",
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Übermittlungsgrenze und Folge erhalten.",
+    "comments_list_github_has_no_review_thread_for_commits_or": "Browser-lokale Kommentare klar abgegrenzt.",
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "Fehlende Installation ohne Übertreibung benannt.",
+    "pull_request_list_signed_out_no_row_shows_a_status_square": "Abmeldung, fehlende Anzeige und Wirkung der Anmeldung erhalten.",
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub-Beschränkung eindeutig bewahrt.",
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "Zugriffsgrenze und Reihenfolge erhalten.",
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Beobachtungsliste ausdrücklich browser-lokal.",
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": "Zwei mögliche Ursachen nicht zu einer Gewissheit verdichtet.",
+    "review_failure_github_returns_not_found_for_private_repositories_when": "Bedingung für private Repositorys und nächster Schritt erhalten.",
+    "review_sidebar_threads_comments": "Deutsche Singular-/Pluralformen bei beiden Selektoren beibehalten.",
+    "common_file_count": "Deutsche Singular-/Pluralformen mit unveränderten Deklarationen.",
+    "sidebar_file_summary": "Benannte Markup-Tags und optionale Gesamtzahl erhalten.",
+    "github_patch_missing_files": "Exakten count=1-Zweig sowie generische Pluralzweige erhalten.",
+    "thread_delete_confirmation": "Irreversibilität ausdrücklich erhalten.",
+    "userscript_manager_description": "GitHub-Steuerelemente und Tampermonkey-Markup unverändert gelassen."
+  },
+  "findings": {
+    "color_mode_toggle_auto": {
+      "verdict": "keep",
+      "reason": "Natürliche Bezeichnung für den automatischen Farbmodus.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_light": {
+      "verdict": "keep",
+      "reason": "Übliche kurze Bezeichnung für den hellen Modus.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_dark": {
+      "verdict": "keep",
+      "reason": "Übliche kurze Bezeichnung für den dunklen Modus.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode_switch_to": {
+      "verdict": "keep",
+      "reason": "Korrekte, knappe Beschriftung mit erhaltenen Platzhaltern.",
+      "uncertainty": "none"
+    },
+    "color_mode_toggle_color_mode": {
+      "verdict": "keep",
+      "reason": "Korrekte Statusbeschreibung mit erhaltenem Platzhalter.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comment_authors": {
+      "verdict": "keep",
+      "reason": "Inklusive und passende Bezeichnung für die Filtergruppe.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_all": {
+      "verdict": "keep",
+      "reason": "Passende kurze Filteroption.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_person_opened": {
+      "verdict": "change",
+      "reason": "Das Passiv ist im Deutschen natürlicher und grammatisch klarer.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_people": {
+      "verdict": "keep",
+      "reason": "Passende Gruppenbezeichnung.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_comments_a_github_app_opened": {
+      "verdict": "change",
+      "reason": "Das Passiv ist im Deutschen natürlicher und ordnet GitHub App klar als Urheber zu.",
+      "uncertainty": "none"
+    },
+    "comment_author_filter_bar_bots": {
+      "verdict": "keep",
+      "reason": "Etablierte, kurze technische Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "comment_body_done": {
+      "verdict": "keep",
+      "reason": "Passender Status für eine erledigte Aufgabe oder Anmerkung.",
+      "uncertainty": "none"
+    },
+    "comment_body_not_done": {
+      "verdict": "keep",
+      "reason": "Korrekte Verneinung des Status.",
+      "uncertainty": "none"
+    },
+    "comment_composer_leave_a_comment": {
+      "verdict": "keep",
+      "reason": "Natürliche Infinitivbeschriftung für die Aktion.",
+      "uncertainty": "none"
+    },
+    "comment_composer_comment": {
+      "verdict": "keep",
+      "reason": "Passende knappe Aktionsbeschriftung.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cancel": {
+      "verdict": "keep",
+      "reason": "Standardmäßige deutsche Abbruchaktion.",
+      "uncertainty": "none"
+    },
+    "comment_composer_cmd_or_ctrl_with_enter": {
+      "verdict": "change",
+      "reason": "Die Plus-Schreibweise mit „Eingabetaste“ ist für Tastenkürzel im Deutschen üblicher.",
+      "uncertainty": "none"
+    },
+    "comment_expansion_comment": {
+      "verdict": "keep",
+      "reason": "Passende Substantivbeschriftung.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_open_thread_by": {
+      "verdict": "change",
+      "reason": "Die Umstellung ist natürlicher und erhält den Autorplatzhalter ohne Kasusproblem.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_posting": {
+      "verdict": "keep",
+      "reason": "Natürliche Verlaufsanzeige für das Veröffentlichen eines Kommentars.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_click_to_open": {
+      "verdict": "keep",
+      "reason": "Natürliches, knappes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_delete": {
+      "verdict": "keep",
+      "reason": "Passendes Standardlabel.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_close": {
+      "verdict": "keep",
+      "reason": "Passendes Standardlabel.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_on_github": {
+      "verdict": "keep",
+      "reason": "Natürliche Präpositionsform.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_this_comment_has_not_reached_github_yet_so": {
+      "verdict": "keep",
+      "reason": "Negation und Folge bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_on_github": {
+      "verdict": "keep",
+      "reason": "Natürliches Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Browser-Lokalität bleibt klar.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_sending": {
+      "verdict": "change",
+      "reason": "Ellipsenzeichen ohne vorangestelltes Leerzeichen ist typografisch korrekt.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_reply": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "comment_thread_card_cmd_or_ctrl_with_enter": {
+      "verdict": "change",
+      "reason": "Eingabetaste ist die natürliche deutsche Tastenbezeichnung.",
+      "uncertainty": "none"
+    },
+    "comments_list_no_comments_here": {
+      "verdict": "keep",
+      "reason": "Natürlich und knapp.",
+      "uncertainty": "none"
+    },
+    "comments_list_comments_you_leave_here_are_posted_to_github": {
+      "verdict": "change",
+      "reason": "An GitHub gesendet trifft „posted“ präziser als veröffentlicht.",
+      "uncertainty": "none"
+    },
+    "comments_list_github_has_no_review_thread_for_commits_or": {
+      "verdict": "keep",
+      "reason": "Unterscheidung und Browser-Lokalität bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "comments_list_posting": {
+      "verdict": "change",
+      "reason": "Status „wird gesendet“ ist natürlicher und entspricht dem Senden an GitHub.",
+      "uncertainty": "none"
+    },
+    "comments_list_failed": {
+      "verdict": "keep",
+      "reason": "Passender Status.",
+      "uncertainty": "none"
+    },
+    "comments_list_go_to": {
+      "verdict": "change",
+      "reason": "Die Handlung „Go to“ benötigt ein Verb.",
+      "uncertainty": "none"
+    },
+    "confirm_inline_cancel": {
+      "verdict": "keep",
+      "reason": "Passendes Standardlabel.",
+      "uncertainty": "none"
+    },
+    "example_targets_label": {
+      "verdict": "keep",
+      "reason": "Nur Platzhalter und Trennzeichen; unverändert korrekt.",
+      "uncertainty": "none"
+    },
+    "filter_menu_added": {
+      "verdict": "keep",
+      "reason": "Passender Dateistatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_modified": {
+      "verdict": "keep",
+      "reason": "Passender Dateistatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_renamed": {
+      "verdict": "keep",
+      "reason": "Passender Dateistatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_deleted": {
+      "verdict": "keep",
+      "reason": "Passender Dateistatus.",
+      "uncertainty": "none"
+    },
+    "filter_menu_filter_files": {
+      "verdict": "keep",
+      "reason": "Natürliches Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "filter_menu_file_rules": {
+      "verdict": "keep",
+      "reason": "Prägnante technische Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_menu_git_status": {
+      "verdict": "keep",
+      "reason": "Etablierte Schreibweise.",
+      "uncertainty": "none"
+    },
+    "filter_menu_clear_filters": {
+      "verdict": "keep",
+      "reason": "Natürliches Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "filter_menu_all_files": {
+      "verdict": "keep",
+      "reason": "Natürliche Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_control_set_up_access": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_comments_you_leave_go_to_github_under_this": {
+      "verdict": "change",
+      "reason": "„An GitHub gesendet“ vermeidet die falsche Implikation einer Veröffentlichung.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Natürliches Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": {
+      "verdict": "keep",
+      "reason": "Zugriffsgrenze und nächster Schritt bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_open_setup_guide": {
+      "verdict": "keep",
+      "reason": "Natürliches Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_sign_out": {
+      "verdict": "keep",
+      "reason": "Passendes Standardlabel.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Bedeutung korrekt.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_opens_settings_on_github_com_to_add_or": {
+      "verdict": "keep",
+      "reason": "Ziel und mögliche Aktionen bleiben vollständig.",
+      "uncertainty": "none"
+    },
+    "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": {
+      "verdict": "change",
+      "reason": "Zugriff auf Konten ist idiomatischer als Konten lesen.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_any_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "Direkte, natürliche Anweisung.",
+      "uncertainty": "none"
+    },
+    "home_screen_narrow_the_file_list_with_preset_path_rules": {
+      "verdict": "keep",
+      "reason": "Bedeutung und technische Pfadregeln bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "home_screen_read_and_leave_comments": {
+      "verdict": "keep",
+      "reason": "Natürlich und vollständig.",
+      "uncertainty": "none"
+    },
+    "home_screen_paste_a_github_pull_request_commit_or_compare": {
+      "verdict": "keep",
+      "reason": "URL und Identifier bleiben intakt.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_pull_request_commit_or_compare_url": {
+      "verdict": "keep",
+      "reason": "Natürliche Feldbezeichnung.",
+      "uncertainty": "none"
+    },
+    "home_screen_open_this_diff": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "home_screen_review": {
+      "verdict": "keep",
+      "reason": "Technischer UI-Begriff ist etabliert.",
+      "uncertainty": "none"
+    },
+    "home_screen_set_up_access_for_private_repositories": {
+      "verdict": "keep",
+      "reason": "Zugriffsgrenze bleibt präzise.",
+      "uncertainty": "none"
+    },
+    "home_screen_userscript": {
+      "verdict": "keep",
+      "reason": "Technischer Begriff bleibt erkennbar.",
+      "uncertainty": "none"
+    },
+    "home_screen_examples": {
+      "verdict": "keep",
+      "reason": "Natürliche Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "home_screen_watched_repos": {
+      "verdict": "keep",
+      "reason": "Beobachten wird hier als lokale Liste verstanden.",
+      "uncertainty": "none"
+    },
+    "home_screen_github_account": {
+      "verdict": "keep",
+      "reason": "Natürliche Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "home_screen_source_on_github": {
+      "verdict": "keep",
+      "reason": "Bedeutung korrekt.",
+      "uncertainty": "none"
+    },
+    "home_screen_review_the_commit_this_build_was_made_from": {
+      "verdict": "change",
+      "reason": "„überprüfen“ ist im Deutschen natürlicher als „reviewen“.",
+      "uncertainty": "none"
+    },
+    "installation_row_current_diff": {
+      "verdict": "keep",
+      "reason": "Korrekte kompakte Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "installation_row_configure": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "not_found_ghdiff_cannot_read_that_url": {
+      "verdict": "keep",
+      "reason": "Grenze wird ohne falsche Ursache klar benannt.",
+      "uncertainty": "none"
+    },
+    "not_found_a_review_needs_a_github_pull_request_a": {
+      "verdict": "keep",
+      "reason": "Zulässige Zieltypen bleiben vollständig.",
+      "uncertainty": "none"
+    },
+    "not_found_open_a_different_review": {
+      "verdict": "keep",
+      "reason": "Natürliches Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "pane_resize_handle_drag_to_resize_double_click_to_reset": {
+      "verdict": "keep",
+      "reason": "Beide Interaktionen bleiben klar.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_loading_pull_request": {
+      "verdict": "change",
+      "reason": "Ellipsenzeichen ohne Leerzeichen ist korrekt.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_no_details_yet": {
+      "verdict": "keep",
+      "reason": "Natürliches Statuslabel.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_files": {
+      "verdict": "keep",
+      "reason": "Passende Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_added_lines": {
+      "verdict": "keep",
+      "reason": "Bedeutung korrekt.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Bedeutung korrekt.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_commits": {
+      "verdict": "keep",
+      "reason": "Technischer Begriff ist verständlich.",
+      "uncertainty": "none"
+    },
+    "pull_details_card_description": {
+      "verdict": "keep",
+      "reason": "Passende Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Natürliche Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_watched_repos": {
+      "verdict": "keep",
+      "reason": "Lokale Beobachtungsliste bleibt klar.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "pull_list_button_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Passender Ladezustand.",
+      "uncertainty": "none"
+    },
+    "pull_rail_open_pull_requests": {
+      "verdict": "keep",
+      "reason": "Natürliche Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "pull_rail_pull_request_bar_width": {
+      "verdict": "keep",
+      "reason": "Bedeutung korrekt.",
+      "uncertainty": "none"
+    },
+    "pull_rail_show_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "pull_rail_hide_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "pull_rail_watched_repos": {
+      "verdict": "keep",
+      "reason": "Lokale Beobachtungsliste bleibt klar.",
+      "uncertainty": "none"
+    },
+    "pull_rail_reload_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Passendes Aktionslabel.",
+      "uncertainty": "none"
+    },
+    "pull_rail_loading_the_pull_requests": {
+      "verdict": "keep",
+      "reason": "Passender Ladezustand.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_watch_a_repository_to_see_its_open_pull": {
+      "verdict": "keep",
+      "reason": "Aktion und lokale Liste werden passend ausgedrückt.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_on_github": {
+      "verdict": "keep",
+      "reason": "Platzhalter bleiben unverändert.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_the_open_pull_requests_on_github": {
+      "verdict": "keep",
+      "reason": "Wertplatzhalter und Bedeutung bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_you": {
+      "verdict": "keep",
+      "reason": "Entspricht dem festgelegten kleingeschriebenen du-Register.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_open_s_open_pull_requests_in_on_github": {
+      "verdict": "keep",
+      "reason": "Besitzbeziehung wird ohne Veränderung des Namens ausgedrückt.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_set_up_private_access": {
+      "verdict": "keep",
+      "reason": "Zugriffsgrenze bleibt erhalten.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_signed_out_no_row_shows_a_status_square": {
+      "verdict": "keep",
+      "reason": "Meaning and signed-out consequence are preserved.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_stack": {
+      "verdict": "keep",
+      "reason": "Natural compact label.",
+      "uncertainty": "none"
+    },
+    "pull_request_list_loading_open_pull_requests": {
+      "verdict": "change",
+      "reason": "Removed nonstandard spacing before the ellipsis.",
+      "uncertainty": "none"
+    },
+    "pull_row_label": {
+      "verdict": "keep",
+      "reason": "Placeholder and separator are preserved.",
+      "uncertainty": "none"
+    },
+    "pull_row_draft": {
+      "verdict": "keep",
+      "reason": "Correct pull-request state label.",
+      "uncertainty": "none"
+    },
+    "pull_row_currently_viewing": {
+      "verdict": "keep",
+      "reason": "Natural current-state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_open": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_draft": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_merged": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "pull_state_icon_closed": {
+      "verdict": "keep",
+      "reason": "Correct state label.",
+      "uncertainty": "none"
+    },
+    "review_header_bars": {
+      "verdict": "keep",
+      "reason": "Natural label for bars.",
+      "uncertainty": "none"
+    },
+    "review_header_signs": {
+      "verdict": "keep",
+      "reason": "Natural compact label.",
+      "uncertainty": "none"
+    },
+    "review_header_none": {
+      "verdict": "keep",
+      "reason": "Correct neutral option label.",
+      "uncertainty": "none"
+    },
+    "review_header_hide_the_file_list": {
+      "verdict": "keep",
+      "reason": "Correct infinitive control label.",
+      "uncertainty": "none"
+    },
+    "review_header_show_the_file_list": {
+      "verdict": "keep",
+      "reason": "Correct infinitive control label.",
+      "uncertainty": "none"
+    },
+    "review_header_open_on_github": {
+      "verdict": "keep",
+      "reason": "Placeholder and GitHub brand are preserved.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_unified_view": {
+      "verdict": "keep",
+      "reason": "Natural view-switch control.",
+      "uncertainty": "none"
+    },
+    "review_header_switch_to_split_view": {
+      "verdict": "keep",
+      "reason": "Natural view-switch control.",
+      "uncertainty": "none"
+    },
+    "review_header_split_view": {
+      "verdict": "keep",
+      "reason": "Correct view name.",
+      "uncertainty": "none"
+    },
+    "review_header_unified_view": {
+      "verdict": "keep",
+      "reason": "Correct view name.",
+      "uncertainty": "none"
+    },
+    "review_header_display_settings": {
+      "verdict": "keep",
+      "reason": "Natural settings label.",
+      "uncertainty": "none"
+    },
+    "review_header_code_font": {
+      "verdict": "keep",
+      "reason": "Correct technical label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_markers": {
+      "verdict": "keep",
+      "reason": "Correct display-setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_wrap_long_lines": {
+      "verdict": "keep",
+      "reason": "Natural infinitive control label.",
+      "uncertainty": "none"
+    },
+    "review_header_line_numbers": {
+      "verdict": "keep",
+      "reason": "Correct technical label.",
+      "uncertainty": "none"
+    },
+    "review_header_change_backgrounds": {
+      "verdict": "keep",
+      "reason": "Correct display-setting label.",
+      "uncertainty": "none"
+    },
+    "review_header_dim_whitespace_changes": {
+      "verdict": "keep",
+      "reason": "Meaning is preserved.",
+      "uncertainty": "none"
+    },
+    "review_header_approve_request_changes_or_comment": {
+      "verdict": "keep",
+      "reason": "Preserves the three distinct review actions.",
+      "uncertainty": "none"
+    },
+    "review_header_review": {
+      "verdict": "keep",
+      "reason": "Established technical borrowing fits the compact UI.",
+      "uncertainty": "none"
+    },
+    "review_header_review_it_again": {
+      "verdict": "change",
+      "reason": "Improved German sentence order while retaining the review action and placeholder.",
+      "uncertainty": "none"
+    },
+    "review_screen_sidebar_width": {
+      "verdict": "keep",
+      "reason": "Correct settings label.",
+      "uncertainty": "none"
+    },
+    "review_screen_dismiss": {
+      "verdict": "keep",
+      "reason": "Natural dismissal action.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_sidebar_sections": {
+      "verdict": "keep",
+      "reason": "Correct structural label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_files": {
+      "verdict": "keep",
+      "reason": "Correct compact label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_threads_comments": {
+      "verdict": "keep",
+      "reason": "German one/other plural branches are complete and preserve declarations.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_comments": {
+      "verdict": "keep",
+      "reason": "Correct compact label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_hide_the_path_search": {
+      "verdict": "keep",
+      "reason": "Correct control label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_by_path": {
+      "verdict": "keep",
+      "reason": "Natural search action.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_the_current_filter_hides_all_files": {
+      "verdict": "keep",
+      "reason": "Preserves the filter consequence.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_filters": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_added_lines": {
+      "verdict": "keep",
+      "reason": "Correct diff terminology.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_deleted_lines": {
+      "verdict": "keep",
+      "reason": "Correct diff terminology.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_search_files_by_path": {
+      "verdict": "keep",
+      "reason": "Natural search action.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_path_contains": {
+      "verdict": "change",
+      "reason": "Removed nonstandard spacing before the ellipsis.",
+      "uncertainty": "none"
+    },
+    "review_sidebar_clear_the_path_search": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_fetching_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural progress status.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_reading_the_patch_for_this_review": {
+      "verdict": "keep",
+      "reason": "Meaning is preserved.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_preparing_the_diff": {
+      "verdict": "keep",
+      "reason": "Natural progress status.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_parsing_the_patch_and_building_the_file_list": {
+      "verdict": "keep",
+      "reason": "Both processing actions are preserved.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_starting_the_highlighters": {
+      "verdict": "keep",
+      "reason": "Correct technical progress status.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_background_workers_are_getting_ready_to_color_your": {
+      "verdict": "change",
+      "reason": "Uses natural syntax-highlighting terminology instead of literal code coloring.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_set_up_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct access-setup action.",
+      "uncertainty": "none"
+    },
+    "review_status_panel_try_again": {
+      "verdict": "keep",
+      "reason": "Concise recovery action.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one": {
+      "verdict": "change",
+      "reason": "Makes the required note explicit and natural in German.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub's restriction on self-approval.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": {
+      "verdict": "keep",
+      "reason": "Preserves GitHub's restriction on requesting changes on one's own pull request.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_you_can_comment_on_your_own_pull_request": {
+      "verdict": "keep",
+      "reason": "Preserves the exclusive permission boundary.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_add_a_note_github_needs_one_to_request": {
+      "verdict": "change",
+      "reason": "Makes the required note explicit while retaining both possible actions.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_submit_a_review": {
+      "verdict": "keep",
+      "reason": "Natural submit action.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_review_body": {
+      "verdict": "change",
+      "reason": "Uses a more natural German field label.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_leave_a_note_with_your_review": {
+      "verdict": "keep",
+      "reason": "Natural instruction retaining the review context.",
+      "uncertainty": "none"
+    },
+    "review_submit_dialog_label": {
+      "verdict": "keep",
+      "reason": "Both placeholders and punctuation are preserved.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct viewer action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_hide_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct viewer action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_show_the_whole_file": {
+      "verdict": "keep",
+      "reason": "Correct viewer action.",
+      "uncertainty": "none"
+    },
+    "review_viewer_viewed": {
+      "verdict": "change",
+      "reason": "Angesehen is the natural completed-state label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_set_up_private_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct access-setup title.",
+      "uncertainty": "none"
+    },
+    "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": {
+      "verdict": "change",
+      "reason": "Clarifies that access is granted to ghdiff and preserves the read-only boundary.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_to_github": {
+      "verdict": "keep",
+      "reason": "Correct sign-in action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_identifies_your_account_to_github_any_comments": {
+      "verdict": "keep",
+      "reason": "Preserves account identity and posting consequence.",
+      "uncertainty": "none"
+    },
+    "setup_screen_sign_in_with_github": {
+      "verdict": "keep",
+      "reason": "Correct sign-in action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_grant_repository_access": {
+      "verdict": "keep",
+      "reason": "Correct access action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_choose_the_accounts": {
+      "verdict": "keep",
+      "reason": "Preserves that sign-in alone does not grant repository access.",
+      "uncertainty": "none"
+    },
+    "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": {
+      "verdict": "change",
+      "reason": "Uses the natural account-installation construction while preserving the placeholder and access-list requirement.",
+      "uncertainty": "none"
+    },
+    "setup_screen_accounts_with_access": {
+      "verdict": "keep",
+      "reason": "Correct label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_ghdiff": {
+      "verdict": "keep",
+      "reason": "Product name remains intact.",
+      "uncertainty": "none"
+    },
+    "setup_screen_install_on_another_account": {
+      "verdict": "keep",
+      "reason": "Correct action label.",
+      "uncertainty": "none"
+    },
+    "setup_screen_checking": {
+      "verdict": "change",
+      "reason": "Removed nonstandard spacing before the ellipsis.",
+      "uncertainty": "none"
+    },
+    "setup_screen_check_again": {
+      "verdict": "keep",
+      "reason": "Correct retry action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_open_the_diff": {
+      "verdict": "keep",
+      "reason": "Correct final action.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_the_home_page_to_paste_a": {
+      "verdict": "change",
+      "reason": "Bindestriche machen die Aufzählung der URL-Typen grammatisch eindeutig.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": {
+      "verdict": "keep",
+      "reason": "Bedeutung, Berechtigungsbezug und nächster Schritt bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "setup_screen_go_to_ghdiff_home": {
+      "verdict": "keep",
+      "reason": "Knappe, natürliche Aktionsbeschriftung.",
+      "uncertainty": "none"
+    },
+    "setup_screen_return_to_the_diff": {
+      "verdict": "keep",
+      "reason": "Natürliche infinitivische Aktionsbeschriftung.",
+      "uncertainty": "none"
+    },
+    "setup_screen_this_ghdiff_deployment_has_no_github_app_set": {
+      "verdict": "keep",
+      "reason": "Fehlende Einrichtung und Zugriff auf öffentliche Diffs bleiben klar getrennt.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_now_uses_a_github_app": {
+      "verdict": "keep",
+      "reason": "Natürlich und sachlich.",
+      "uncertainty": "none"
+    },
+    "setup_screen_ghdiff_removed_your_old_personal_access_token_from": {
+      "verdict": "keep",
+      "reason": "Entfernung aus dem Browser, Ende der Abfrage und weiterhin gültiger GitHub-Token bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "setup_screen_delete_the_token_on_github": {
+      "verdict": "keep",
+      "reason": "Präzise Aktionsbeschriftung.",
+      "uncertainty": "none"
+    },
+    "userscript_install_add_a_ghdiff_button_to_github_com": {
+      "verdict": "keep",
+      "reason": "Natürliche infinitivische Beschriftung bei unverändertem Hostnamen.",
+      "uncertainty": "none"
+    },
+    "userscript_install_install": {
+      "verdict": "keep",
+      "reason": "Standardbeschriftung.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch_this_repository": {
+      "verdict": "keep",
+      "reason": "Beobachten passt zur lokalen Liste im gegebenen Kontext.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_watch": {
+      "verdict": "keep",
+      "reason": "Platzhalter bleibt unverändert; Formulierung ist kompakt.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_keep_reviewing": {
+      "verdict": "keep",
+      "reason": "Informelle technische UI-Sprache; neutraler Weiter-Aktionsbezug.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_your_watch_list_stays_in_this_browser": {
+      "verdict": "keep",
+      "reason": "Macht die Browser-Lokalität ausdrücklich klar.",
+      "uncertainty": "none"
+    },
+    "watch_offer_dialog_not_now": {
+      "verdict": "keep",
+      "reason": "Neutrale Ablehnung.",
+      "uncertainty": "none"
+    },
+    "watched_repos_dialog_watched_repositories": {
+      "verdict": "keep",
+      "reason": "Passende Zustandsbezeichnung.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": {
+      "verdict": "keep",
+      "reason": "Offene Pull Requests und browserlokale Liste bleiben getrennt.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_enter_a_repository_as_owner_repo": {
+      "verdict": "keep",
+      "reason": "Identifikator bleibt exakt erhalten.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_owner_repo": {
+      "verdict": "keep",
+      "reason": "Technischer Eingabewert bleibt unverändert.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_repository_to_watch": {
+      "verdict": "keep",
+      "reason": "Natürliche Feldbeschriftung.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_add": {
+      "verdict": "keep",
+      "reason": "Standardaktion.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_nothing_watched_yet": {
+      "verdict": "keep",
+      "reason": "Beschreibt die leere lokale Liste, nicht fehlende Pull Requests.",
+      "uncertainty": "none"
+    },
+    "watched_repos_editor_remove": {
+      "verdict": "keep",
+      "reason": "Standardaktion.",
+      "uncertainty": "none"
+    },
+    "dialog_close": {
+      "verdict": "keep",
+      "reason": "Standardbeschriftung.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_could_not_read_that_file_from_github": {
+      "verdict": "keep",
+      "reason": "Fehlerhandlung und Quelle bleiben klar.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_that_file_has_changed_on_github_since_this": {
+      "verdict": "keep",
+      "reason": "Änderungszeitpunkt und Zweck des Neuladens bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "use_diff_file_loader_request_failed": {
+      "verdict": "keep",
+      "reason": "Platzhalter bleibt erhalten; knappe Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "use_git_hub_session_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Anmeldestatus wird korrekt als nicht prüfbar dargestellt.",
+      "uncertainty": "none"
+    },
+    "use_installations_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "Installationsreichweite wird korrekt als nicht lesbar dargestellt.",
+      "uncertainty": "none"
+    },
+    "use_open_pulls_could_not_load_pull_requests": {
+      "verdict": "keep",
+      "reason": "Präzise Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "use_pull_details_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Präzise Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Präzise Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_that_comment_to_github": {
+      "verdict": "keep",
+      "reason": "Veröffentlichung auf GitHub wird korrekt als fehlgeschlagen dargestellt.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_post_this_reply_to_github": {
+      "verdict": "keep",
+      "reason": "Veröffentlichung auf GitHub wird korrekt als fehlgeschlagen dargestellt.",
+      "uncertainty": "none"
+    },
+    "use_review_comments_could_not_delete_that_thread_on_github_reload": {
+      "verdict": "keep",
+      "reason": "Fehlschlag und Aufforderung zur Überprüfung bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_request_failed": {
+      "verdict": "keep",
+      "reason": "Platzhalter bleibt erhalten; knappe Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "use_review_patch_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Präzise Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "use_submit_review_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Übermittlung des Reviews bleibt klar abgegrenzt.",
+      "uncertainty": "none"
+    },
+    "use_viewed_files_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "Markierung und Ziel GitHub bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "code_fonts_system": {
+      "verdict": "keep",
+      "reason": "Standardbezeichnung für die Systemschrift.",
+      "uncertainty": "none"
+    },
+    "diff_hydration_that_file_is_too_large_to_show_its": {
+      "verdict": "keep",
+      "reason": "Größenlimit und betroffene unveränderte Zeilen bleiben klar.",
+      "uncertainty": "none"
+    },
+    "example_targets_rewrite_bun_in_rust": {
+      "verdict": "keep",
+      "reason": "Natürliche Beschreibung eines Änderungsziels.",
+      "uncertainty": "none"
+    },
+    "example_targets_2_188_files_1_0m_lines": {
+      "verdict": "keep",
+      "reason": "Deutsche Dezimal- und Tausenderformatierung ist korrekt.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_largest_of_them_43_mb_of_unified": {
+      "verdict": "change",
+      "reason": "„Unified Diff“ ist die etablierte technische Bezeichnung und klarer als „einheitliches Diff“.",
+      "uncertainty": "none"
+    },
+    "example_targets_resolve_maimai_net_import_pr_conflicts": {
+      "verdict": "keep",
+      "reason": "Technische Begriffe und Produktname bleiben intakt.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_494k_lines": {
+      "verdict": "keep",
+      "reason": "Kompakte deutsche Mengenangabe passt zur UI.",
+      "uncertainty": "none"
+    },
+    "example_targets_one_generated_json_file_holds_465_486_of": {
+      "verdict": "keep",
+      "reason": "Menge und generierter Dateityp bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "example_targets_deps_update_v8_to_14_1": {
+      "verdict": "keep",
+      "reason": "Präfix und Versionsnummer bleiben intakt.",
+      "uncertainty": "none"
+    },
+    "example_targets_3_420_files_268k_lines": {
+      "verdict": "keep",
+      "reason": "Kompakte deutsche Mengenangabe passt zur UI.",
+      "uncertainty": "none"
+    },
+    "example_targets_the_widest_file_tree_past_the_api_diff": {
+      "verdict": "change",
+      "reason": "„wird nicht bereitgestellt“ bewahrt die Folge, ohne eine Verfügbarkeit im Allgemeinen zu behaupten.",
+      "uncertainty": "none"
+    },
+    "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": {
+      "verdict": "keep",
+      "reason": "Technische Bibliotheksnamen bleiben unverändert.",
+      "uncertainty": "none"
+    },
+    "example_targets_25_files_88k_lines": {
+      "verdict": "keep",
+      "reason": "Kompakte deutsche Mengenangabe passt zur UI.",
+      "uncertainty": "none"
+    },
+    "example_targets_large_and_still_a_diff_a_person_can": {
+      "verdict": "keep",
+      "reason": "Kontrast zwischen Größe und menschlicher Lesbarkeit bleibt erhalten.",
+      "uncertainty": "none"
+    },
+    "example_targets_ghostty_1_3_0_to_1_3_1": {
+      "verdict": "keep",
+      "reason": "Versionswerte bleiben unverändert und „bis“ ist natürlich.",
+      "uncertainty": "none"
+    },
+    "example_targets_53_files_2_6k_lines": {
+      "verdict": "keep",
+      "reason": "Deutsche Dezimalformatierung ist korrekt.",
+      "uncertainty": "none"
+    },
+    "example_targets_a_compare_range_of_one_release_100_commits": {
+      "verdict": "keep",
+      "reason": "Vergleichsbereich, Commitzahl und lokale Kommentare bleiben klar getrennt.",
+      "uncertainty": "none"
+    },
+    "filter_rules_all_files": {
+      "verdict": "keep",
+      "reason": "Natürliche Filterbezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_every_file_in_the_diff": {
+      "verdict": "keep",
+      "reason": "Präzise Filtererklärung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_tests": {
+      "verdict": "keep",
+      "reason": "Knappe Filterbezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Alle Dateikategorien bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "filter_rules_tests_only": {
+      "verdict": "keep",
+      "reason": "Knappe Filterbezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_test_files_fixtures_and_snapshots": {
+      "verdict": "keep",
+      "reason": "Exklusivität und alle Dateikategorien bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "filter_rules_source_only": {
+      "verdict": "keep",
+      "reason": "Natürliche Filterbezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_code_files_that_are_not_tests": {
+      "verdict": "keep",
+      "reason": "Beide Ausschlüsse bleiben klar.",
+      "uncertainty": "none"
+    },
+    "filter_rules_docs_only": {
+      "verdict": "keep",
+      "reason": "Kompakte, etablierte UI-Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_markdown_and_other_prose_files": {
+      "verdict": "keep",
+      "reason": "Markdown bleibt als technischer Name erhalten.",
+      "uncertainty": "none"
+    },
+    "filter_rules_config_only": {
+      "verdict": "keep",
+      "reason": "Kompakte UI-Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_manifests_lint_configs_and_ci_files": {
+      "verdict": "keep",
+      "reason": "Technische Kategorien bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_generated": {
+      "verdict": "keep",
+      "reason": "Knappe Filterbezeichnung.",
+      "uncertainty": "none"
+    },
+    "filter_rules_hide_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Alle ausgeschlossenen Kategorien bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "filter_rules_generated_only": {
+      "verdict": "change",
+      "reason": "„Generierte Dateien“ ist ohne ausgelassenes Bezugswort natürlich und eindeutig.",
+      "uncertainty": "none"
+    },
+    "filter_rules_show_only_lock_files_snapshots_and_build_output": {
+      "verdict": "keep",
+      "reason": "Exklusivität und technische Kategorien bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "github_app_sign_in_was_not_completed_on_github_try": {
+      "verdict": "keep",
+      "reason": "Nicht abgeschlossene Anmeldung und bedingter nächster Schritt bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "github_app_the_sign_in_session_timed_out_on_github": {
+      "verdict": "keep",
+      "reason": "Ablauf der Sitzung und Neustart sind klar.",
+      "uncertainty": "none"
+    },
+    "github_app_security_verification_failed_during_github_sign_in_start": {
+      "verdict": "keep",
+      "reason": "Sicherheitsprüfung, Kontext und Ausgangspunkt bleiben präzise.",
+      "uncertainty": "none"
+    },
+    "github_app_github_could_not_complete_the_sign_in_try": {
+      "verdict": "keep",
+      "reason": "GitHub als Fehlerquelle und zeitnaher Wiederholungsversuch bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "installations_all_repositories": {
+      "verdict": "keep",
+      "reason": "Natürliche Bereichsbezeichnung.",
+      "uncertainty": "none"
+    },
+    "installations_no_repositories_selected": {
+      "verdict": "keep",
+      "reason": "Leerer Auswahlzustand bleibt klar.",
+      "uncertainty": "none"
+    },
+    "pull_details_just_now": {
+      "verdict": "keep",
+      "reason": "Natürliche Zeitangabe.",
+      "uncertainty": "none"
+    },
+    "pull_status_approved": {
+      "verdict": "keep",
+      "reason": "Passende Bezeichnung für einen menschlichen Review-Status.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested": {
+      "verdict": "keep",
+      "reason": "Natürlicher Status für ein angefordertes Review-Ergebnis.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_review_yet": {
+      "verdict": "keep",
+      "reason": "Kurz und klar; bezieht sich auf menschliche Reviews.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_passing": {
+      "verdict": "keep",
+      "reason": "Knapper Status für automatisierte Checks.",
+      "uncertainty": "none"
+    },
+    "pull_status_checks_running": {
+      "verdict": "keep",
+      "reason": "Präziser laufender Check-Status.",
+      "uncertainty": "none"
+    },
+    "pull_status_a_check_failed": {
+      "verdict": "keep",
+      "reason": "Bewahrt die Aussage, dass mindestens ein automatisierter Check fehlgeschlagen ist.",
+      "uncertainty": "none"
+    },
+    "pull_status_no_checks": {
+      "verdict": "keep",
+      "reason": "Korrekte knappe Negation.",
+      "uncertainty": "none"
+    },
+    "pull_status_changes_requested_new_commits_since": {
+      "verdict": "keep",
+      "reason": "Bewahrt beide Statusinformationen.",
+      "uncertainty": "none"
+    },
+    "review_data_commit": {
+      "verdict": "keep",
+      "reason": "Technischer Begriff und Platzhalter bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "review_decision_approve": {
+      "verdict": "keep",
+      "reason": "Passender Infinitiv für eine Steuerfläche.",
+      "uncertainty": "none"
+    },
+    "review_decision_approving": {
+      "verdict": "change",
+      "reason": "Leerzeichen vor Auslassungspunkten entfernt.",
+      "uncertainty": "none"
+    },
+    "review_decision_request_changes": {
+      "verdict": "keep",
+      "reason": "Korrekte Review-Aktion, keine Bearbeitungsanweisung.",
+      "uncertainty": "none"
+    },
+    "review_decision_requesting": {
+      "verdict": "change",
+      "reason": "Leerzeichen vor Auslassungspunkten entfernt.",
+      "uncertainty": "none"
+    },
+    "review_decision_comment": {
+      "verdict": "keep",
+      "reason": "Passender Infinitiv für eine Steuerfläche.",
+      "uncertainty": "none"
+    },
+    "review_decision_commenting": {
+      "verdict": "change",
+      "reason": "Leerzeichen vor Auslassungspunkten entfernt.",
+      "uncertainty": "none"
+    },
+    "review_decision_approved": {
+      "verdict": "keep",
+      "reason": "Korrekte abgeschlossene Review-Entscheidung.",
+      "uncertainty": "none"
+    },
+    "review_decision_changes_requested": {
+      "verdict": "keep",
+      "reason": "Korrekte abgeschlossene Review-Entscheidung.",
+      "uncertainty": "none"
+    },
+    "review_decision_commented": {
+      "verdict": "keep",
+      "reason": "Korrekte abgeschlossene Review-Aktion.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_approved_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natürliche direkte Bestätigung.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_requested_changes_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Bewahrt die Review-Entscheidung und ihren Bezug.",
+      "uncertainty": "none"
+    },
+    "review_decision_you_commented_on_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natürliche direkte Bestätigung.",
+      "uncertainty": "none"
+    },
+    "review_decision_github_recorded_your_review": {
+      "verdict": "keep",
+      "reason": "Präzise Bestätigung des extern gespeicherten Reviews.",
+      "uncertainty": "none"
+    },
+    "review_failure_the_server_didn_t_respond_your_connection_might": {
+      "verdict": "change",
+      "reason": "Zeitüberschreitung wird präziser als solche benannt.",
+      "uncertainty": "none"
+    },
+    "review_failure_you_used_all_5_000_github_requests_for": {
+      "verdict": "keep",
+      "reason": "Limit, Zeitraum und Wiederherstellungsschritt bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "review_failure_hourly_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Knappe, genaue Überschrift.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": {
+      "verdict": "keep",
+      "reason": "Bewahrt unauthentifizierten Zustand, Limit und Zugriffsfolge.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_rate_limit_reached": {
+      "verdict": "keep",
+      "reason": "Knappe, genaue Überschrift.",
+      "uncertainty": "none"
+    },
+    "review_failure_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Ungültige Anmeldung, fehlgeschlagene Aktualisierung und nächster Schritt bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_sign_in_expired": {
+      "verdict": "keep",
+      "reason": "Knappe, korrekte Überschrift.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returned_not_found_because_ghdiff_is_not": {
+      "verdict": "keep",
+      "reason": "Bewahrt die alternativen Zugriffsursachen.",
+      "uncertainty": "none"
+    },
+    "review_failure_ghdiff_needs_access_to_this_repository": {
+      "verdict": "keep",
+      "reason": "Klare Berechtigungsgrenze.",
+      "uncertainty": "none"
+    },
+    "review_failure_github_returns_not_found_for_private_repositories_when": {
+      "verdict": "keep",
+      "reason": "Bewahrt die bedingte Ursache und verwechselt sie nicht mit einer Gewissheit.",
+      "uncertainty": "none"
+    },
+    "review_failure_repository_not_found_or_private": {
+      "verdict": "keep",
+      "reason": "Bewahrt die zwei möglichen Zustände.",
+      "uncertainty": "none"
+    },
+    "review_failure_could_not_load_the_diff": {
+      "verdict": "keep",
+      "reason": "Kurze Benennung der fehlgeschlagenen Aktion.",
+      "uncertainty": "none"
+    },
+    "contract_enter_a_valid_github_username_or_repository_name": {
+      "verdict": "keep",
+      "reason": "Natürliche Validierungsmeldung.",
+      "uncertainty": "none"
+    },
+    "contract_comment_cannot_be_empty": {
+      "verdict": "keep",
+      "reason": "Klare Validierungsmeldung.",
+      "uncertainty": "none"
+    },
+    "router_could_not_check_who_you_are_signed_in": {
+      "verdict": "keep",
+      "reason": "Grammatisch korrekt und präzise.",
+      "uncertainty": "none"
+    },
+    "router_could_not_read_where_ghdiff_is_installed": {
+      "verdict": "keep",
+      "reason": "Bewahrt die fehlgeschlagene Installationsermittlung.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_repository": {
+      "verdict": "keep",
+      "reason": "Natürliche Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_this_pull_request": {
+      "verdict": "keep",
+      "reason": "Natürliche Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_your_review_of_this_pull": {
+      "verdict": "keep",
+      "reason": "Bewahrt Besitzbezug und Review-Kontext.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_review_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Bewahrt den wichtigen Kontrast zwischen Annahme und leerer Antwort.",
+      "uncertainty": "none"
+    },
+    "router_could_not_submit_this_review": {
+      "verdict": "keep",
+      "reason": "Korrekte fehlgeschlagene Aktion.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_comments": {
+      "verdict": "keep",
+      "reason": "Korrekte Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_reply_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Bewahrt den wichtigen Kontrast zwischen Annahme und leerer Antwort.",
+      "uncertainty": "none"
+    },
+    "router_this_comment_is_missing_a_file_or_line": {
+      "verdict": "keep",
+      "reason": "Bewahrt beide möglichen fehlenden Angaben.",
+      "uncertainty": "none"
+    },
+    "router_github_accepted_the_comment_but_returned_nothing": {
+      "verdict": "keep",
+      "reason": "Bewahrt den wichtigen Kontrast zwischen Annahme und leerer Antwort.",
+      "uncertainty": "none"
+    },
+    "router_could_not_post_this_comment": {
+      "verdict": "keep",
+      "reason": "Natürliche Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "router_could_not_delete_this_comment": {
+      "verdict": "keep",
+      "reason": "Natürliche Fehlermeldung.",
+      "uncertainty": "none"
+    },
+    "router_could_not_load_which_files_you_have_read": {
+      "verdict": "keep",
+      "reason": "Bewahrt die Information über gelesene Dateien.",
+      "uncertainty": "none"
+    },
+    "router_not_found": {
+      "verdict": "keep",
+      "reason": "Übliche deutsche Systemmeldung.",
+      "uncertainty": "none"
+    },
+    "router_could_not_send_that_mark_to_github": {
+      "verdict": "keep",
+      "reason": "Korrekte fehlgeschlagene Übertragung.",
+      "uncertainty": "none"
+    },
+    "auth_route_this_ghdiff_has_no_github_app_set_up": {
+      "verdict": "keep",
+      "reason": "Bewahrt die Konfigurationsursache und Konsequenz.",
+      "uncertainty": "none"
+    },
+    "github_your_github_sign_in_is_no_longer_valid": {
+      "verdict": "keep",
+      "reason": "Klarer Wiederherstellungshinweis.",
+      "uncertainty": "none"
+    },
+    "github_github_rejected_that_query": {
+      "verdict": "keep",
+      "reason": "Korrekte externe Ablehnung.",
+      "uncertainty": "none"
+    },
+    "github_github_returned_no_data_for_that_query": {
+      "verdict": "keep",
+      "reason": "Korrekte leere Datenantwort.",
+      "uncertainty": "none"
+    },
+    "github_github_has_no_such_file_on_that_commit": {
+      "verdict": "keep",
+      "reason": "Bewahrt Commit-Bezug und Token-Anforderung für private Repositorys.",
+      "uncertainty": "none"
+    },
+    "github_app_github_would_not_revoke_that_token": {
+      "verdict": "keep",
+      "reason": "Bewahrt die verweigerte Widerrufsaktion.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_for_that_token_request": {
+      "verdict": "keep",
+      "reason": "Platzhalter und Anfragekontext sind erhalten.",
+      "uncertainty": "none"
+    },
+    "github_app_github_refused_that": {
+      "verdict": "keep",
+      "reason": "Platzhalter und Ablehnungsbedeutung sind erhalten.",
+      "uncertainty": "none"
+    },
+    "github_app_github_answered_with_no_access_token": {
+      "verdict": "keep",
+      "reason": "Bewahrt das Fehlen eines Zugriffstokens.",
+      "uncertainty": "none"
+    },
+    "github_patch_github_lists_at_most_files_for_this_diff": {
+      "verdict": "keep",
+      "reason": "Bewahrt das Maximum und die Folge für spätere Dateien.",
+      "uncertainty": "none"
+    },
+    "installations_an_account": {
+      "verdict": "keep",
+      "reason": "Korrekte neutrale Bezeichnung.",
+      "uncertainty": "none"
+    },
+    "stream_text_that_response_is_too_large_to_read": {
+      "verdict": "keep",
+      "reason": "Natürliche knappe Größenfehlermeldung.",
+      "uncertainty": "none"
+    },
+    "diff_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Korrekte Validierungsmeldung.",
+      "uncertainty": "none"
+    },
+    "diff_could_not_load_that_diff": {
+      "verdict": "keep",
+      "reason": "Korrekte fehlgeschlagene Aktion.",
+      "uncertainty": "none"
+    },
+    "diff_that_request_to_github_failed": {
+      "verdict": "keep",
+      "reason": "Korrekte fehlgeschlagene externe Anfrage.",
+      "uncertainty": "none"
+    },
+    "file_that_review_target_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Korrekte Validierungsmeldung.",
+      "uncertainty": "none"
+    },
+    "file_that_file_path_is_not_valid": {
+      "verdict": "keep",
+      "reason": "Korrekte Validierungsmeldung.",
+      "uncertainty": "none"
+    },
+    "file_could_not_load_that_file": {
+      "verdict": "keep",
+      "reason": "Korrekte fehlgeschlagene Aktion.",
+      "uncertainty": "none"
+    },
+    "route_no_such_procedure": {
+      "verdict": "change",
+      "reason": "„Prozedur“ ist für eine API-Route treffender als „Verfahren“.",
+      "uncertainty": "none"
+    },
+    "common_file_count": {
+      "verdict": "keep",
+      "reason": "Deutsche Singular- und sonstige Pluralform sind vollständig erreichbar.",
+      "uncertainty": "none"
+    },
+    "common_commit_count": {
+      "verdict": "keep",
+      "reason": "Deutsche Singular- und sonstige Pluralform sind vollständig erreichbar.",
+      "uncertainty": "none"
+    },
+    "common_comment_count": {
+      "verdict": "keep",
+      "reason": "Deutsche Singular- und sonstige Pluralform sind vollständig erreichbar.",
+      "uncertainty": "none"
+    },
+    "common_reply_count": {
+      "verdict": "keep",
+      "reason": "Deutsche Singular- und sonstige Pluralform sind vollständig erreichbar.",
+      "uncertainty": "none"
+    },
+    "common_repository_count": {
+      "verdict": "keep",
+      "reason": "Deutsche Singular- und sonstige Pluralform sind vollständig erreichbar.",
+      "uncertainty": "none"
+    },
+    "home_served_count": {
+      "verdict": "keep",
+      "reason": "Natürliche Statusform mit korrekten Zahlzweigen.",
+      "uncertainty": "none"
+    },
+    "filter_hidden_count": {
+      "verdict": "keep",
+      "reason": "Die Form ist für Singular und Plural unverändert korrekt.",
+      "uncertainty": "none"
+    },
+    "filter_status_summary": {
+      "verdict": "keep",
+      "reason": "„Status“ hat dieselbe Singular- und Pluralform.",
+      "uncertainty": "none"
+    },
+    "stack_pull_count": {
+      "verdict": "keep",
+      "reason": "Natürliche Beschreibung mit korrekten Zahlzweigen.",
+      "uncertainty": "none"
+    },
+    "comment_line": {
+      "verdict": "keep",
+      "reason": "Korrekte Zuordnung des Kommentars zu einer Zeile.",
+      "uncertainty": "none"
+    },
+    "comment_line_range": {
+      "verdict": "keep",
+      "reason": "Natürlich und grammatisch korrekt.",
+      "uncertainty": "none"
+    },
+    "sidebar_file_summary": {
+      "verdict": "keep",
+      "reason": "Korrekte Pluralformen und Platzhalter.",
+      "uncertainty": "none"
+    },
+    "home_credits": {
+      "verdict": "keep",
+      "reason": "Markuptags und technische Namen bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_phone": {
+      "verdict": "change",
+      "reason": "Besitzbezug zum gerade hinzugefügten Repository ergänzt.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_wide": {
+      "verdict": "change",
+      "reason": "Besitzbezug zum gerade hinzugefügten Repository ergänzt.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_phone": {
+      "verdict": "keep",
+      "reason": "Lokale Beobachtungsliste und Ziel bleiben klar.",
+      "uncertainty": "none"
+    },
+    "watch_offer_more_wide": {
+      "verdict": "keep",
+      "reason": "Lokale Beobachtungsliste und Ziel bleiben klar.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_phone": {
+      "verdict": "change",
+      "reason": "Besitzbezug des Repositorys ergänzt; Reviews und Checks bleiben getrennt.",
+      "uncertainty": "none"
+    },
+    "watch_offer_preview_wide": {
+      "verdict": "change",
+      "reason": "Besitzbezug des Repositorys ergänzt; Reviews und Checks bleiben getrennt.",
+      "uncertainty": "none"
+    },
+    "watch_offer_action": {
+      "verdict": "keep",
+      "reason": "Passende Infinitivbeschriftung.",
+      "uncertainty": "none"
+    },
+    "watch_offer_added_title": {
+      "verdict": "keep",
+      "reason": "Natürliche Statusmeldung.",
+      "uncertainty": "none"
+    },
+    "pull_opened_age": {
+      "verdict": "keep",
+      "reason": "Kompakte, passende Zeitangabe.",
+      "uncertainty": "none"
+    },
+    "pull_updated_age": {
+      "verdict": "keep",
+      "reason": "Kompakte, passende Zeitangabe.",
+      "uncertainty": "none"
+    },
+    "tree_directory_summary": {
+      "verdict": "keep",
+      "reason": "Korrekte Pluralformen und Platzhalter.",
+      "uncertainty": "none"
+    },
+    "pull_list_empty": {
+      "verdict": "keep",
+      "reason": "Negation und Repository-Platzhalter bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "review_submit_scope": {
+      "verdict": "keep",
+      "reason": "Umfang des Reviews und separate Zeilenkommentare bleiben eindeutig.",
+      "uncertainty": "none"
+    },
+    "review_previous_verdict": {
+      "verdict": "keep",
+      "reason": "Bedeutung des Ersetzens bleibt erhalten.",
+      "uncertainty": "none"
+    },
+    "setup_not_installed": {
+      "verdict": "keep",
+      "reason": "Mögliche Genehmigung durch eine:n Inhaber:in bleibt als Unsicherheit erhalten.",
+      "uncertainty": "none"
+    },
+    "setup_no_repositories": {
+      "verdict": "change",
+      "reason": "Natürliches Verb für das Überprüfen von Repositorys verwendet.",
+      "uncertainty": "none"
+    },
+    "userscript_manager_description": {
+      "verdict": "keep",
+      "reason": "Externe GitHub-Steuerelemente und Voraussetzung bleiben unverändert.",
+      "uncertainty": "none"
+    },
+    "pull_row_tooltip": {
+      "verdict": "keep",
+      "reason": "Kompakte, natürliche Zielbeziehung.",
+      "uncertainty": "none"
+    },
+    "pull_status_description": {
+      "verdict": "keep",
+      "reason": "Trennt Review und automatisierte Checks unverändert.",
+      "uncertainty": "none"
+    },
+    "auth_required_review": {
+      "verdict": "keep",
+      "reason": "Erforderlicher GitHub-Zugriff und Handlung bleiben klar.",
+      "uncertainty": "none"
+    },
+    "auth_required_delete": {
+      "verdict": "keep",
+      "reason": "Erforderlicher GitHub-Zugriff und Löschhandlung bleiben klar.",
+      "uncertainty": "none"
+    },
+    "auth_required_viewed": {
+      "verdict": "change",
+      "reason": "„Als angesehen markieren“ ist die natürliche UI-Formulierung.",
+      "uncertainty": "none"
+    },
+    "bytes_count": {
+      "verdict": "keep",
+      "reason": "Korrekte technische Einheiten und Pluralzweige.",
+      "uncertainty": "none"
+    },
+    "bytes_kilobytes": {
+      "verdict": "keep",
+      "reason": "Übliche deutsche Einheitsschreibweise.",
+      "uncertainty": "none"
+    },
+    "bytes_megabytes": {
+      "verdict": "keep",
+      "reason": "Übliche deutsche Einheitsschreibweise.",
+      "uncertainty": "none"
+    },
+    "app_description": {
+      "verdict": "change",
+      "reason": "GitHub-Pull-Request korrekt als zusammengesetzter Ausdruck geschrieben.",
+      "uncertainty": "none"
+    },
+    "thread_delete_confirmation": {
+      "verdict": "keep",
+      "reason": "Unwiderruflichkeit und Unterscheidung einzelner bzw. aller Kommentare bleiben erhalten.",
+      "uncertainty": "none"
+    },
+    "github_patch_missing_files": {
+      "verdict": "change",
+      "reason": "„für ein Diff“ korrigiert den Artikel; exakter Ein-Datei-Zweig bleibt erhalten.",
+      "uncertainty": "none"
+    },
+    "userscript_open_pull": {
+      "verdict": "keep",
+      "reason": "Korrekte, knappe Aktionsbeschriftung.",
+      "uncertainty": "none"
+    },
+    "userscript_open_commit": {
+      "verdict": "keep",
+      "reason": "Korrekte, knappe Aktionsbeschriftung.",
+      "uncertainty": "none"
+    },
+    "userscript_description": {
+      "verdict": "change",
+      "reason": "Satzbau und GitHub-Pull-Request-Kompositum korrigiert.",
+      "uncertainty": "none"
+    },
+    "diff_expand_all": {
+      "verdict": "keep",
+      "reason": "Knappe, natürliche Aktionsbeschriftung.",
+      "uncertainty": "none"
+    },
+    "diff_no_newline": {
+      "verdict": "keep",
+      "reason": "Übliche technische Formulierung.",
+      "uncertainty": "none"
+    },
+    "tree_git_contains_changes": {
+      "verdict": "keep",
+      "reason": "Bedeutung der Git-Status-Einträge bleibt erhalten.",
+      "uncertainty": "none"
+    },
+    "review_bytes_read": {
+      "verdict": "keep",
+      "reason": "Kompakte Statusangabe mit Platzhalter.",
+      "uncertainty": "none"
+    },
+    "tree_git_added": {
+      "verdict": "keep",
+      "reason": "Korrekte Git-Statusbezeichnung.",
+      "uncertainty": "none"
+    },
+    "tree_git_deleted": {
+      "verdict": "keep",
+      "reason": "Korrekte Git-Statusbezeichnung.",
+      "uncertainty": "none"
+    },
+    "tree_git_ignored": {
+      "verdict": "keep",
+      "reason": "Korrekte Git-Statusbezeichnung.",
+      "uncertainty": "none"
+    },
+    "tree_git_modified": {
+      "verdict": "keep",
+      "reason": "Korrekte Git-Statusbezeichnung.",
+      "uncertainty": "none"
+    },
+    "tree_git_renamed": {
+      "verdict": "keep",
+      "reason": "Korrekte Git-Statusbezeichnung.",
+      "uncertainty": "none"
+    },
+    "tree_git_untracked": {
+      "verdict": "keep",
+      "reason": "Korrekte Git-Statusbezeichnung.",
+      "uncertainty": "none"
+    },
+    "diff_unmodified_lines": {
+      "verdict": "keep",
+      "reason": "Korrekte Pluralformen und technische Bedeutung.",
+      "uncertainty": "none"
+    }
+  },
+  "followUpFindings": {
+    "locale_language": "Correct German accessible name.",
+    "thread_delete_confirmation": "Restored the exact count=1 branch; all other counts retain the formatted count and delete every comment in the thread.",
+    "app_render_error": "OK",
+    "example_targets_the_widest_file_tree_past_the_api_diff": "Correcta; conserva el límite de la API y la carga desde GitHub.",
+    "pull_request_list_open_the_open_pull_requests_on_github": "1 为 one；其余验证值匹配 wildcard。复数分支需保留一个 {formatted}。"
+  },
+  "reconciledKeys": [
+    "pull_request_list_open_the_open_pull_requests_on_github",
+    "example_targets_the_widest_file_tree_past_the_api_diff",
+    "watch_offer_more_phone",
+    "watch_offer_more_wide",
+    "app_render_error"
+  ],
+  "humanNativeSpeakerReview": false
+}
