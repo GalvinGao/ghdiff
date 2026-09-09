@@ -100,3 +100,32 @@ pnpm lint         pnpm fmt          pnpm fmt:check
 ```
 
 `AGENTS.md` holds the project conventions.
+
+## Component captures
+
+Run `pnpm storybook` to open the component workshop at http://localhost:6006. It
+uses the real app CSS with light/dark themes and local fixtures, without
+starting the Cloudflare Worker. `pnpm storybook:build` creates a static
+workshop. Use `pnpm storybook --port 6017` when another worktree owns the
+default port.
+
+Install Chromium once with `pnpm exec playwright install chromium`, then run:
+
+```bash
+pnpm storybook:shot                             # status overview PNG
+pnpm storybook:shot ui-dialog--open dark         # dark dialog PNG
+pnpm storybook:video                            # scripted dialog WebM
+HEADLESS=1 pnpm storybook:video                  # automated environments
+```
+
+The server must be running. Set `STORYBOOK_URL` for a different origin. Each
+capture gets its own temporary directory; the command prints the artifact path.
+The video includes setup footage: use the skill's `finish-video.py` with
+inspected frame boundaries to produce the final MP4 (requires Python 3 and
+ffmpeg).
+
+Add `*.stories.tsx` alongside components. Use static stories for screenshots and
+scenario modules like `scripts/storybook-dialog.mjs` for repeatable
+interactions. The
+[PR visual evidence skill](.agents/skills/pr-visual-evidence/SKILL.md) covers
+framing, before/after composition, video trimming, and attaching evidence.

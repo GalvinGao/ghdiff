@@ -19,3 +19,5 @@ coverage/
 .DS_Store
 Thumbs.db
 .playwright-mcp/
+
+storybook-static/

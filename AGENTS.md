@@ -2001,3 +2001,12 @@ the `storage` event and a subscription per key would have cost anyway — with t
 tab synchronization and the read-on-mount contract left to be got right here
 rather than upstream. Everything else in this app is React state or a ref, and
 adding a second store would be the change to argue for.
+
+## PR visual evidence
+
+For reviewer-visible UI changes, use
+[the PR visual evidence skill](.agents/skills/pr-visual-evidence/SKILL.md). Run
+`pnpm storybook` for component fixtures and `pnpm storybook:shot` or
+`pnpm storybook:video` for captures. Keep fixture stories beside components;
+Storybook's separate Vite config must not load the app's Cloudflare/Start
+plugins.

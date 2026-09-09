@@ -38,6 +38,7 @@
     "src/routeTree.gen.ts",
     "worker-configuration.d.ts",
     "*.patch",
-    "*.diff"
+    "*.diff",
+    "storybook-static"
   ]
 }
