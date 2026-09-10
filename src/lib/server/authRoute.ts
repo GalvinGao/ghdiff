@@ -7,6 +7,7 @@
 // with two `set-cookie` keys keeps one of them, and which one it keeps is not
 // something to find out in production.
 
+import { parseDeploymentConfig } from './config.ts';
 import { readAppConfig, type AppConfig } from './githubApp.ts';
 import { readKeyring } from './session.ts';
 
@@ -22,8 +23,9 @@ export interface AuthSetup {
  * in — so these routes say so plainly rather than fail as though something broke.
  */
 export function readAuthSetup(): AuthSetup | undefined {
-  const config = readAppConfig();
-  const keyring = readKeyring();
+  const deployment = parseDeploymentConfig(process.env);
+  const config = readAppConfig(deployment);
+  const keyring = readKeyring(deployment);
   if (config == null || keyring == null) return undefined;
   return { config, keyring };
 }

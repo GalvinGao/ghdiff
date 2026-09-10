@@ -52,3 +52,13 @@ SESSION_SECRET=
 # offer, which is what `fromSession` on `viewer.get` is for.
 #
 # GITHUB_TOKEN=
+
+# --- The self-hosted Node server ------------------------------------------------
+#
+# Only the Node build (`pnpm start`) reads these; the Worker ignores them.
+# `--env-file` accepts this same file, so one .dev.vars serves both runtimes.
+
+# Where the server listens. Defaults: 3000 and 0.0.0.0.
+#
+# PORT=
+# HOST=

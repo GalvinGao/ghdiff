@@ -10,6 +10,7 @@
 import { gitHubErrorMessage } from '../githubError.ts';
 import { rateLimitedStatus } from '../rateLimit.ts';
 import { accessTokenUsable, refreshDue, withinMaxAge } from '../session.ts';
+import { parseDeploymentConfig } from './config.ts';
 import { readKeyring, readSession } from './session.ts';
 
 const GITHUB_API_ROOT = 'https://api.github.com';
@@ -96,7 +97,8 @@ export async function resolveGitHubToken(
     return { token: bearer, fromSession: false, refreshDue: false };
   }
 
-  const keyring = readKeyring();
+  const deployment = parseDeploymentConfig(process.env);
+  const keyring = readKeyring(deployment);
   if (keyring != null) {
     const session = await readSession(request, keyring);
     const now = Date.now();
@@ -114,9 +116,8 @@ export async function resolveGitHubToken(
     }
   }
 
-  const fromEnv = process.env.GITHUB_TOKEN?.trim();
   return {
-    token: fromEnv != null && fromEnv.length > 0 ? fromEnv : undefined,
+    token: deployment.github.token,
     fromSession: false,
     refreshDue: false,
   };

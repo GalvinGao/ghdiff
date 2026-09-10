@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:node": "GHDIFF_TARGET=node vite build",
     "preview": "vite preview",
+    "start": "node --env-file-if-exists=.dev.vars .output/server/index.mjs",
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types",
     "typecheck": "wrangler types && tsc --noEmit",
@@ -43,6 +45,7 @@
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.6.0",
+    "unstorage": "^1.17.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -53,6 +56,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-react": "^6.1.0",
+    "nitro": "3.0.260903-beta",
     "oxfmt": "^0.64.0",
     "oxlint": "^1.79.0",
     "tailwindcss": "^4.3.3",

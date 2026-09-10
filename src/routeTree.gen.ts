@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
 import { Route as ApiFileRouteImport } from './routes/api/file'
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthzRoute = HealthzRouteImport.update({
+  id: '/healthz',
+  path: '/healthz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SetupRoute = SetupRouteImport.update({
@@ -80,6 +86,7 @@ const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/healthz': typeof HealthzRoute
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/healthz': typeof HealthzRoute
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/healthz': typeof HealthzRoute
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/healthz'
     | '/setup'
     | '/api/diff'
     | '/api/file'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
+    | '/healthz'
     | '/setup'
     | '/api/diff'
     | '/api/file'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$'
+    | '/healthz'
     | '/setup'
     | '/api/diff'
     | '/api/file'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  HealthzRoute: typeof HealthzRoute
   SetupRoute: typeof SetupRoute
   ApiDiffRoute: typeof ApiDiffRoute
   ApiFileRoute: typeof ApiFileRoute
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/healthz': {
+      id: '/healthz'
+      path: '/healthz'
+      fullPath: '/healthz'
+      preLoaderRoute: typeof HealthzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/setup': {
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  HealthzRoute: HealthzRoute,
   SetupRoute: SetupRoute,
   ApiDiffRoute: ApiDiffRoute,
   ApiFileRoute: ApiFileRoute,
