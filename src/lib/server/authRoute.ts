@@ -7,6 +7,7 @@
 // with two `set-cookie` keys keeps one of them, and which one it keeps is not
 // something to find out in production.
 
+import { parseDeploymentConfig } from './config.ts';
 import { readAppConfig, type AppConfig } from './githubApp.ts';
 import { readKeyring } from './session.ts';
 
@@ -22,8 +23,9 @@ export interface AuthSetup {
  * in — so these routes say so plainly rather than fail as though something broke.
  */
 export function readAuthSetup(): AuthSetup | undefined {
-  const config = readAppConfig();
-  const keyring = readKeyring();
+  const deployment = parseDeploymentConfig(process.env);
+  const config = readAppConfig(deployment);
+  const keyring = readKeyring(deployment);
   if (config == null || keyring == null) return undefined;
   return { config, keyring };
 }
@@ -37,6 +39,22 @@ export function notConfigured(): Response {
       headers: { 'cache-control': 'no-store', 'content-type': 'text/plain' },
     }
   );
+}
+
+/**
+ * The URL this request arrived on from outside. Behind a TLS-terminating
+ * proxy the server hears plain http, so the scheme the browser used comes
+ * from the proxy's `X-Forwarded-Proto` — the one header every ingress sets.
+ * Only the scheme is taken: the `Host` header is already the one every
+ * absolute URL in this app is built from, and `X-Forwarded-Host` is not —
+ * a redirect URI is not a thing a forwarded header gets to name.
+ */
+export function externalRequestUrl(request: Request): string {
+  if (request.headers.get('x-forwarded-proto') !== 'https') return request.url;
+  const url = new URL(request.url);
+  if (url.protocol !== 'http:') return request.url;
+  url.protocol = 'https:';
+  return url.toString();
 }
 
 /**

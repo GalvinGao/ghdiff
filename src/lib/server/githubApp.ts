@@ -9,6 +9,7 @@
 // tab won a race, and every other value means the session is over.
 
 import { TOKEN_URL } from '../githubApp.ts';
+import type { DeploymentConfig } from './config.ts';
 import { USER_AGENT } from './github.ts';
 
 /** What the App is, as a deployment configures it. */
@@ -53,21 +54,18 @@ export class GitHubAuthError extends Error {
  * public diff, and `GITHUB_TOKEN` still covers a single-user one. What it cannot
  * do is sign anybody in, and the sign-in button is what disappears.
  */
-export function readAppConfig(): AppConfig | undefined {
-  const clientId = process.env.GITHUB_APP_CLIENT_ID?.trim();
-  const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET?.trim();
-  const slug = process.env.GITHUB_APP_SLUG?.trim();
-  if (
-    clientId == null ||
-    clientId.length === 0 ||
-    clientSecret == null ||
-    clientSecret.length === 0 ||
-    slug == null ||
-    slug.length === 0
-  ) {
+export function readAppConfig(
+  deployment: DeploymentConfig
+): AppConfig | undefined {
+  const app = deployment.github.app;
+  if (app?.slug == null) {
     return undefined;
   }
-  return { clientId, clientSecret, slug };
+  return {
+    clientId: app.clientId,
+    clientSecret: app.clientSecret,
+    slug: app.slug,
+  };
 }
 
 /** A code from the callback, for a session. */

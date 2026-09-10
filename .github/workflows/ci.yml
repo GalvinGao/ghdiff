@@ -66,6 +66,12 @@ jobs:
       - name: Wrangler dry run
         run: pnpm exec wrangler deploy --dry-run
 
+      # The self-hosted shape: the same server, built for Node instead of
+      # workerd, so a change that breaks that build fails the pull request
+      # instead of a self-hoster's image build.
+      - name: Build the Node server
+        run: pnpm build:node
+
   # Only after both jobs above are green, and only for a push to main. A pull
   # request gets the dry run and nothing else.
   deploy:
