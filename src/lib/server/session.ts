@@ -12,9 +12,8 @@
 // principle. `SESSION_SECRET` is a list rather than a value, so a rotation costs
 // nobody their session.
 //
-// It takes the keyring as an argument and imports nothing from
-// `cloudflare:workers`, which is what lets `node --test` reach it. The caller
-// reads the secret out of the environment.
+// It reads the keyring out of the deployment's configuration and imports
+// nothing from `cloudflare:workers`, which is what lets `node --test` reach it.
 
 import { fromBase64Url, toBase64Url } from '../base64url.ts';
 import {
@@ -28,6 +27,7 @@ import {
   sessionCookieMaxAge,
   setCookieHeader,
 } from '../session.ts';
+import type { DeploymentConfig } from './config.ts';
 
 /**
  * The first byte of every sealed value. It is not a version of the cipher — a
@@ -47,11 +47,12 @@ const TEXT = new TextEncoder();
 const INFO = TEXT.encode('ghdiff-session-v1');
 
 /**
- * The keys `SESSION_SECRET` names, newest first: a comma-separated list of
- * base64url values. The first seals every new cookie and every one of them is
- * tried on the way in, which is what makes a rotation invisible to a reviewer.
- * AES-GCM authenticates what it opens, so a wrong key simply fails and no key id
- * has to travel in the cookie.
+ * The keyring this deployment was given, if it was given one. `SESSION_SECRET`
+ * names the keys, newest first: a comma-separated list of base64url values,
+ * split out by `config.ts`. The first seals every new cookie and every one of
+ * them is tried on the way in, which is what makes a rotation invisible to a
+ * reviewer. AES-GCM authenticates what it opens, so a wrong key simply fails
+ * and no key id has to travel in the cookie.
  *
  * An unset secret answers with nothing, which is a deployment that cannot sign
  * anybody in and still serves every public diff. A secret that is set and is not
@@ -59,28 +60,20 @@ const INFO = TEXT.encode('ghdiff-session-v1');
  * a typo instead — and the loud failure is what tells somebody so, where a
  * silent drop would sign every reviewer out and say nothing about why.
  */
-export function parseKeyring(
-  raw: string | undefined
+export function readKeyring(
+  config: DeploymentConfig
 ): readonly string[] | undefined {
-  const parts = (raw ?? '')
-    .split(',')
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-  if (parts.length === 0) return undefined;
-  for (const part of parts) {
-    const bytes = fromBase64Url(part);
+  const keyring = config.sessionKeyring;
+  if (keyring.length === 0) return undefined;
+  for (const key of keyring) {
+    const bytes = fromBase64Url(key);
     if (bytes == null || bytes.length < MIN_SECRET_BYTES) {
       throw new Error(
         `SESSION_SECRET holds a value that is not ${MIN_SECRET_BYTES} or more base64url bytes.`
       );
     }
   }
-  return parts;
-}
-
-/** The keyring this deployment was given, if it was given one. */
-export function readKeyring(): readonly string[] | undefined {
-  return parseKeyring(process.env.SESSION_SECRET);
+  return keyring;
 }
 /**
  * One imported HKDF key per secret, for the life of the isolate. Importing is

@@ -13,14 +13,25 @@ export interface RequestFields extends Record<string, unknown> {}
 // context and evlog owns the request logger, the sampling, and the emit.
 const storage = new AsyncLocalStorage<RequestLogger>();
 
-// Cloudflare Workers logs an object per line, so `stringify: false` keeps the
-// fields queryable in the dashboard instead of collapsing them into a string.
+// Who reads the line decides its shape. On workerd the reader is the Workers
+// dashboard, which queries an event's fields, so the event always goes out as
+// the object itself — stringify would collapse those fields into one string.
+// A Node deployment's lines are read by a person on a terminal or by a log
+// collector at the end of a pipe: pretty-printed for the one, one JSON object
+// per line for the other, and a TTY is what tells the two apart — `NODE_ENV`
+// cannot, because the build folds it to "production" before the server ever
+// runs. `import.meta.env` exists only in the Vite build; `node --test`
+// imports this module too, and there the target is absent — which reads as
+// Cloudflare, the convention everywhere in this app, so tests log the object
+// form.
 initLogger({
   env: {
     service: 'ghdiff',
-    environment: import.meta.env.MODE,
+    environment: import.meta.env?.MODE ?? 'development',
   },
-  stringify: false,
+  ...(import.meta.env?.VITE_GHDIFF_TARGET === 'node'
+    ? { pretty: process.stdout.isTTY === true }
+    : { pretty: false, stringify: false }),
 });
 
 /** The shape every TanStack Start server handler receives. */

@@ -23,7 +23,7 @@ import {
   pullFilesFetch,
   synthesizePatch,
 } from '@/lib/server/githubPatch';
-import { recordServe } from '@/lib/server/servedCount';
+import { recordServe } from '@/lib/server/platform';
 
 // Returns the unified diff for one review target as text/plain.
 //

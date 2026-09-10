@@ -248,6 +248,14 @@ export function safeReturnTo(raw: string | null | undefined): string {
  * honours it; this is the check that does not depend on the browser. A request
  * with no `Origin` at all is turned away too, because every fetch this app makes
  * sends one.
+ *
+ * The comparison is the host, not the whole origin. Behind a TLS-terminating
+ * proxy the server cannot see the scheme the browser used — the pod hears plain
+ * http while the page is https — so a scheme that mismatches says nothing about
+ * who sent the request, and one that matches says nothing either: the `Secure`
+ * session cookie never travels over http, so an http page has no session to
+ * ride. The port stays in, because cookies ignore ports and a second service on
+ * the same host is not this site.
  */
 export function originAllowed(
   origin: string | null | undefined,
@@ -255,7 +263,7 @@ export function originAllowed(
 ): boolean {
   if (origin == null) return false;
   try {
-    return origin === new URL(requestUrl).origin;
+    return new URL(origin).host === new URL(requestUrl).host;
   } catch {
     return false;
   }
