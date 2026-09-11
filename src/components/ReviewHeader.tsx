@@ -41,6 +41,7 @@ import type { PullDetailsState } from '@/hooks/usePullDetails';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { cn } from '@/lib/cn';
 import { CODE_FONTS, type CodeFontId } from '@/lib/codeFonts';
+import { reviewTargetUrl } from '@/lib/githubUrls';
 import type { StatusTone } from '@/lib/pullStatus';
 import {
   describeSubmittedReview,
@@ -48,7 +49,16 @@ import {
   isOwnPullRequest,
   reviewVerdict,
 } from '@/lib/reviewDecision';
+import {
+  describeReviewTarget,
+  isGitHubTarget,
+  type ReviewTarget,
+} from '@/lib/reviewTarget';
 import type { ViewerControls } from '@/lib/viewerControls';
+
+/** The label wears this whether or not there is a page for it to link to. */
+const TARGET_LABEL_CLASS =
+  'text-ink-muted shrink-0 truncate text-xs font-medium';
 
 // The bar sits on the same surface as the sidebar and carries no boxes: a row of
 // bordered buttons across the top of a diff reads as a form to fill in, and the
@@ -89,11 +99,26 @@ interface ReviewHeaderProps {
   review?: SubmitReviewState;
   /** True when the left bar is not on screen and the way home has to be here. */
   showBrand?: boolean;
-  /** What is under review, in words. */
-  targetLabel: string;
-  /** The same thing on github.com. */
-  targetUrl: string;
+  /**
+   * What is under review. The row reads its name, its link and whether there is
+   * a GitHub account to offer off this one value, so a local diff draws none of
+   * the controls that are about github.com rather than drawing them broken.
+   */
+  target: ReviewTarget;
   session: GitHubSessionState;
+  /**
+   * The files in this diff that git is not tracking, when there are any.
+   *
+   * Absent everywhere else, and that is every diff GitHub serves: a commit
+   * holds no untracked file, so the switch is not drawn at all rather than
+   * drawn over nothing. The state itself is the screen's filter — this is the
+   * control, and it is told what to say and what to call when it is thrown.
+   */
+  untracked?: {
+    count: number;
+    shown: boolean;
+    onShownChange(shown: boolean): void;
+  };
 }
 
 export function ReviewHeader({
@@ -107,10 +132,12 @@ export function ReviewHeader({
   pull,
   review,
   showBrand = false,
-  targetLabel,
-  targetUrl,
+  target,
   session,
+  untracked,
 }: ReviewHeaderProps) {
+  const gitHubTarget = isGitHubTarget(target) ? target : undefined;
+  const targetLabel = describeReviewTarget(target);
   const split = controls.diffStyle === 'split';
   const [reviewing, setReviewing] = useState(false);
   // Only the phone layout scrolls this row, and the attributes it writes mean
@@ -154,14 +181,21 @@ export function ReviewHeader({
         </Link>
       )}
       {/* The one place the review names itself, so it is also the way to the
-          page it was taken from. */}
-      <GitHubTextLink
-        className="text-ink-muted shrink-0 truncate text-xs font-medium"
-        href={targetUrl}
-        title={`Open ${targetLabel} on GitHub`}
-      >
-        {targetLabel}
-      </GitHubTextLink>
+          page it was taken from — when there is one. A local diff has no page
+          anywhere, so it says its name and links nowhere. */}
+      {gitHubTarget == null ? (
+        <span className={TARGET_LABEL_CLASS} title={targetLabel}>
+          {targetLabel}
+        </span>
+      ) : (
+        <GitHubTextLink
+          className={TARGET_LABEL_CLASS}
+          href={reviewTargetUrl(gitHubTarget)}
+          title={`Open ${targetLabel} on GitHub`}
+        >
+          {targetLabel}
+        </GitHubTextLink>
+      )}
       {pull != null && <PullTitle pull={pull} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5">
@@ -216,7 +250,12 @@ export function ReviewHeader({
               <IconGearFill size={15} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-60">
+          {/* Every row here is one this menu always draws, so the whole of it
+              is as tall as it will ever be — 472px with the untracked switch,
+              which the shared 28rem cap cut by 24. The untracked switch is the
+              row that lands under that edge, and it is the one the command's
+              own startup line sends a developer here to find. */}
+          <DropdownMenuContent align="end" className="w-60" height="viewport">
             {/* First, because it is the setting that changes the most pixels.
                 Every row is drawn in the face it names: what a typeface looks
                 like is the whole of what the choice is about, and a list of
@@ -312,11 +351,42 @@ export function ReviewHeader({
             >
               Dim whitespace changes
             </DropdownMenuCheckboxItem>
+
+            {/* Last, and behind a separator, because it is the one switch here
+                that changes which files exist rather than how they are drawn.
+                The count is what makes the choice answerable without throwing
+                it first. */}
+            {untracked != null && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem
+                  checked={untracked.shown}
+                  indicator="switch"
+                  onSelect={(event) => event.preventDefault()}
+                  onCheckedChange={(checked) =>
+                    untracked.onShownChange(checked === true)
+                  }
+                >
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span className="truncate">Untracked files</span>
+                    <span className="text-ink-faint shrink-0 tabular-nums">
+                      {untracked.count}
+                    </span>
+                  </span>
+                </DropdownMenuCheckboxItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <span aria-hidden="true" className="bg-line mx-1 h-4 w-px" />
-        <GitHubAccountControl session={session} />
+        {/* Nothing on a local diff reaches GitHub, so there is no account for
+            this control to name and no access for it to set up. */}
+        {gitHubTarget != null && (
+          <>
+            <span aria-hidden="true" className="bg-line mx-1 h-4 w-px" />
+            <GitHubAccountControl session={session} />
+          </>
+        )}
       </div>
     </header>
   );

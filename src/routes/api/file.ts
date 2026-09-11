@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/diffHydration';
+import { isReadablePath } from '@/lib/filePath';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
-  type ReviewTarget,
+  type GitHubReviewTarget,
+  LOCAL_TARGET_NOT_SERVED,
   reviewTargetFromQuery,
   reviewTargetKey,
 } from '@/lib/reviewTarget';
@@ -56,7 +58,7 @@ function textResponse(body: string, status: number): Response {
  * `owner:branch` for a range typed across two forks — which neither source
  * below can read, so such a range gets no unmodified lines and says so.
  */
-function newSideRef(target: ReviewTarget): string {
+function newSideRef(target: GitHubReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
       return `refs/pull/${target.number}/head`;
@@ -65,21 +67,6 @@ function newSideRef(target: ReviewTarget): string {
     case 'github-compare':
       return target.head;
   }
-}
-
-/**
- * A path arrives from a browser and goes into the URL of whichever source
- * answers. `encodeRefForPath` escapes each segment but leaves a dot alone, so
- * a `..` segment would climb out of the endpoint: the segments are checked
- * here rather than trusted there.
- */
-function isReadablePath(path: string): boolean {
-  if (path.length === 0 || path.length > 1024) return false;
-  return path
-    .split('/')
-    .every(
-      (segment) => segment.length > 0 && segment !== '.' && segment !== '..'
-    );
 }
 
 /**
@@ -98,7 +85,7 @@ function statedSize(response: Response): number | undefined {
 }
 
 function gitHubFile(
-  target: ReviewTarget,
+  target: GitHubReviewTarget,
   ref: string,
   path: string,
   token: string | undefined
@@ -122,6 +109,12 @@ const getFile = withEvlog(
     if (target == null) {
       log.set({ outcome: 'invalid-target' });
       return textResponse('That review target is not valid.', 400);
+    }
+    // See the same guard in `/api/diff`: a local diff is the command's own to
+    // serve, and this host has no disk to read it from.
+    if (target.kind === 'local-diff') {
+      log.set({ outcome: 'local-target' });
+      return textResponse(LOCAL_TARGET_NOT_SERVED, 400);
     }
     const path = params.get('path');
     if (path == null || !isReadablePath(path)) {

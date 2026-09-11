@@ -4,12 +4,16 @@ import { describe, it } from 'node:test';
 import {
   describeReviewTarget,
   gitHubTargetFromSegments,
+  isGitHubTarget,
+  type LocalDiffTarget,
+  parseCompareRange,
   parseGitHubInput,
   reviewTargetFromQuery,
   reviewTargetKey,
   reviewTargetDisplayPath,
   reviewTargetQuery,
   reviewTargetSplat,
+  repoNameFromRoot,
   supportsGitHubComments,
 } from './reviewTarget.ts';
 
@@ -243,5 +247,151 @@ describe('supportsGitHubComments', () => {
       }),
       false
     );
+  });
+});
+
+describe('a local diff target', () => {
+  const worktree: LocalDiffTarget = {
+    kind: 'local-diff',
+    root: '/home/dev/projects/ghdiff',
+    range: { mode: 'worktree' },
+  };
+
+  it('is not a GitHub target, and the other three are', () => {
+    assert.equal(isGitHubTarget(worktree), false);
+    assert.equal(
+      isGitHubTarget({
+        kind: 'github-commit',
+        owner: 'a',
+        repo: 'b',
+        sha: 'deadbeef',
+      }),
+      true
+    );
+  });
+
+  it('keeps its comments in the browser, like a commit', () => {
+    assert.equal(supportsGitHubComments(worktree), false);
+  });
+
+  it('keys off the repository path and the range, and off nothing else', () => {
+    // The port and the token are new on every run of the command, so neither
+    // may reach this string: a reviewer's comments have to survive a Ctrl-C.
+    assert.equal(
+      reviewTargetKey(worktree),
+      'local:/home/dev/projects/ghdiff:working tree'
+    );
+    assert.equal(
+      reviewTargetKey({ ...worktree, range: { mode: 'staged' } }),
+      'local:/home/dev/projects/ghdiff:staged'
+    );
+    assert.equal(
+      reviewTargetKey({ ...worktree, range: { mode: 'branch', base: 'main' } }),
+      'local:/home/dev/projects/ghdiff:main...HEAD'
+    );
+    assert.equal(
+      reviewTargetKey({
+        ...worktree,
+        range: { mode: 'range', base: 'main', head: 'topic' },
+      }),
+      'local:/home/dev/projects/ghdiff:main...topic'
+    );
+  });
+
+  it('names the repository by its directory', () => {
+    assert.equal(describeReviewTarget(worktree), 'ghdiff \u00b7 working tree');
+    assert.equal(
+      describeReviewTarget({
+        ...worktree,
+        range: { mode: 'range', base: 'main', head: 'topic' },
+      }),
+      'ghdiff \u00b7 main...topic'
+    );
+  });
+
+  it('survives the trip through the query', () => {
+    for (const range of [
+      { mode: 'worktree' },
+      { mode: 'staged' },
+      { mode: 'branch', base: 'main' },
+      { mode: 'range', base: 'main', head: 'topic' },
+    ] as const) {
+      const target: LocalDiffTarget = { ...worktree, range };
+      assert.deepEqual(
+        reviewTargetFromQuery(reviewTargetQuery(target)),
+        target
+      );
+    }
+  });
+
+  it('refuses a query missing the part its mode needs', () => {
+    assert.equal(
+      reviewTargetFromQuery(
+        new URLSearchParams({ kind: 'local-diff', root: '/r', mode: 'branch' })
+      ),
+      undefined
+    );
+    assert.equal(
+      reviewTargetFromQuery(
+        new URLSearchParams({
+          kind: 'local-diff',
+          root: '/r',
+          mode: 'range',
+          base: 'main',
+        })
+      ),
+      undefined
+    );
+    assert.equal(
+      reviewTargetFromQuery(
+        new URLSearchParams({ kind: 'local-diff', mode: 'worktree' })
+      ),
+      undefined
+    );
+    assert.equal(
+      reviewTargetFromQuery(
+        new URLSearchParams({ kind: 'local-diff', root: '/r', mode: 'tree' })
+      ),
+      undefined
+    );
+  });
+
+  it('never comes out of a path on github.com', () => {
+    assert.equal(gitHubTargetFromSegments(['local-diff']), undefined);
+    assert.equal(parseGitHubInput('/home/dev/projects/ghdiff'), undefined);
+  });
+});
+
+describe('repoNameFromRoot', () => {
+  it('takes the last segment, on either separator', () => {
+    assert.equal(repoNameFromRoot('/home/dev/ghdiff'), 'ghdiff');
+    assert.equal(repoNameFromRoot('/home/dev/ghdiff/'), 'ghdiff');
+    assert.equal(repoNameFromRoot('C:\\Users\\dev\\ghdiff'), 'ghdiff');
+  });
+
+  it('answers with the root itself when there is no segment to take', () => {
+    assert.equal(repoNameFromRoot('/'), '/');
+  });
+});
+
+describe('parseCompareRange', () => {
+  // The `ghdiff` command reads its own `base..head` argument through this, so
+  // a range typed at a terminal and one pasted out of a compare URL are split
+  // by one function rather than by two that could come to disagree.
+  it('splits on the first separator, and prefers the three-dot one', () => {
+    assert.deepEqual(parseCompareRange('main...feature'), {
+      base: 'main',
+      head: 'feature',
+    });
+    assert.deepEqual(parseCompareRange('main..feature'), {
+      base: 'main',
+      head: 'feature',
+    });
+  });
+
+  it('is not a range when either side is missing', () => {
+    assert.equal(parseCompareRange('main'), undefined);
+    assert.equal(parseCompareRange('..feature'), undefined);
+    assert.equal(parseCompareRange('main..'), undefined);
   });
 });
