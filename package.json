@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:cli": "vite build --config vite.cli-web.config.ts && vite build --config vite.cli-bin.config.ts",
+    "cli": "pnpm build:cli && node dist/cli/bin/ghdiff.js",
     "preview": "vite preview",
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types",
@@ -14,7 +16,7 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "node --test --experimental-strip-types \"src/lib/**/*.test.ts\""
+    "test": "node --test --experimental-strip-types \"src/lib/**/*.test.ts\" \"cli/src/**/*.test.ts\""
   },
   "dependencies": {
     "@fontsource-variable/fira-code": "5.3.0",

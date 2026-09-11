@@ -62,6 +62,27 @@ export function gitStatusFromChangeType(type: ChangeTypes): GitStatus {
   }
 }
 
+/**
+ * The git status of one file of the patch.
+ *
+ * A file git is not tracking arrives as a new file like any other, because that
+ * is exactly what its patch says: `new file mode`, and an old side of
+ * `/dev/null`. Nothing in the text tells it apart from a file that was added
+ * and staged, and nothing should — only the host that read the working tree
+ * knows the difference, and this is where it says so.
+ *
+ * The test is on 'new' rather than on the path alone, so a path that is in both
+ * answers with what the patch says it is.
+ */
+export function reviewFileStatus(
+  type: ChangeTypes,
+  path: string,
+  untracked?: ReadonlySet<string>
+): GitStatus {
+  if (type === 'new' && untracked?.has(path) === true) return 'untracked';
+  return gitStatusFromChangeType(type);
+}
+
 const COMMIT_HASH_PATTERN = /^From\s+([a-f0-9]+)\s/im;
 
 /**
@@ -98,7 +119,12 @@ function countHunkLines(fileDiff: FileDiffMetadata): {
  */
 export function buildReviewData(
   patchContent: string,
-  cacheKey: string
+  cacheKey: string,
+  /**
+   * Paths the diff source says git is not tracking. Only the `ghdiff` command
+   * has any: a patch from GitHub is a patch of committed files.
+   */
+  untracked?: ReadonlySet<string>
 ): ReviewData {
   const patches = parsePatchFiles(patchContent, encodeURIComponent(cacheKey));
   const prefixPaths = patches.length > 1;
@@ -139,7 +165,7 @@ export function buildReviewData(
         treePath,
         fileOrder: entries.length,
         changeType: fileDiff.type,
-        status: gitStatusFromChangeType(fileDiff.type),
+        status: reviewFileStatus(fileDiff.type, path, untracked),
         addedLines: added,
         deletedLines: deleted,
       });

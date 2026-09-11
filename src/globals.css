@@ -1,5 +1,15 @@
 @import 'tailwindcss';
 
+/* Where the utilities are read from, stated rather than detected.
+   Two builds import this file — the Worker's, whose Vite root is the
+   repository, and the `ghdiff` command's client, whose root is `cli/web` —
+   and Tailwind's own automatic detection starts from that root. Left to
+   itself the second build scans `cli/web` alone and every utility in `src/`
+   is missing from the stylesheet it serves. These two lines are relative to
+   this file, so both builds scan the same two directories. */
+@source '../src';
+@source '../cli';
+
 /* The three faces the code font selector offers, self-hosted through
    fontsource. Each package's `index.css` is a handful of `@font-face` rules
    split by `unicode-range`, so all three cost a couple of kilobytes of CSS

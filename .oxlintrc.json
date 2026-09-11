@@ -32,7 +32,7 @@
     "no-underscore-dangle": [
       "warn",
       {
-        "allow": ["_splat"]
+        "allow": ["_splat", "__GHDIFF_VERSION__", "__GHDIFF_LOCAL__"]
       }
     ]
   },

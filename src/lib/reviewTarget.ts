@@ -1,9 +1,17 @@
 // What reviewer is looking at.
 //
-// Every target is a place on GitHub that resolves to one unified diff. A pull
-// request is the only one that can carry comments upstream, because it is the
-// only one GitHub has a review-comment thread for. A commit and a compare range
-// keep their comments in the browser.
+// Three of the four targets are a place on GitHub that resolves to one unified
+// diff. A pull request is the only one that can carry comments upstream,
+// because it is the only one GitHub has a review-comment thread for. A commit
+// and a compare range keep their comments in the browser.
+//
+// The fourth is a diff that is on a developer's own disk and nowhere else, and
+// it exists because the `ghdiff` command serves one. The Worker can never
+// answer for it — workerd spawns no process and reads no host path — so the
+// two `/api` routes turn it away and the command's own server is the only
+// thing that answers. Everything above those routes is target-agnostic: the
+// viewer, the filter, the fragment grammar and the browser-stored comments all
+// read the same shapes they already read for a commit.
 
 export interface GitHubRepoRef {
   owner: string;
@@ -26,13 +34,70 @@ export interface GitHubCompareTarget extends GitHubRepoRef {
   head: string;
 }
 
-export type ReviewTarget =
+/** Which diff of the repository the `ghdiff` command was asked for. */
+export type LocalDiffRange =
+  | { mode: 'worktree' }
+  | { mode: 'staged' }
+  | { mode: 'branch'; base: string }
+  | { mode: 'range'; base: string; head: string };
+
+export interface LocalDiffTarget {
+  kind: 'local-diff';
+  /** Absolute repository root, as the CLI resolved it at launch. */
+  root: string;
+  range: LocalDiffRange;
+}
+
+/**
+ * What the two hosted `/api` routes answer a local target with. A reviewer who
+ * reaches this pasted an address from a machine that was serving its own diff,
+ * so the sentence names the thing that can serve it again.
+ */
+export const LOCAL_TARGET_NOT_SERVED =
+  'That diff is on a machine, not on GitHub. Run the ghdiff command inside that repository to read it.';
+
+/** The three targets github.com has a page for. */
+export type GitHubReviewTarget =
   | GitHubPullTarget
   | GitHubCommitTarget
   | GitHubCompareTarget;
 
+export type ReviewTarget = GitHubReviewTarget | LocalDiffTarget;
+
 const OWNER_REPO_PATTERN = /^[A-Za-z0-9._-]+$/;
 const SHA_PATTERN = /^[0-9a-f]{7,40}$/i;
+
+/**
+ * True when this target is somewhere on github.com, which is what every
+ * address, every REST call and the whole account surface is about. The one
+ * target that answers false is served by the local command, from a repository
+ * GitHub has never been told about.
+ */
+export function isGitHubTarget(
+  target: ReviewTarget
+): target is GitHubReviewTarget {
+  return target.kind !== 'local-diff';
+}
+
+/** The last segment of a repository root, on either platform's separator. */
+export function repoNameFromRoot(root: string): string {
+  const segments = root.split(/[/\\]/).filter((segment) => segment.length > 0);
+  return segments[segments.length - 1] ?? root;
+}
+
+/** What a local range is, in words, for a key and for a label alike. */
+function describeLocalRange(range: LocalDiffRange): string {
+  switch (range.mode) {
+    case 'worktree':
+      return 'working tree';
+    case 'staged':
+      return 'staged';
+    case 'branch':
+      return `${range.base}...HEAD`;
+    case 'range':
+      return `${range.base}...${range.head}`;
+  }
+}
 
 /**
  * True when comments on this target belong to a GitHub review thread. Only a
@@ -45,7 +110,14 @@ export function supportsGitHubComments(
   return target.kind === 'github-pull';
 }
 
-/** Stable key for caches and for browser-side comment storage. */
+/**
+ * Stable key for caches and for browser-side comment storage.
+ *
+ * A local diff keys off the **absolute repository path** and the range, and off
+ * nothing the run itself decided: the port is free every time and the token is
+ * minted every time, so a key that carried either would lose a reviewer their
+ * comments the moment they pressed Ctrl-C.
+ */
 export function reviewTargetKey(target: ReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
@@ -54,6 +126,8 @@ export function reviewTargetKey(target: ReviewTarget): string {
       return `github:${target.owner}/${target.repo}@${target.sha}`;
     case 'github-compare':
       return `github:${target.owner}/${target.repo}:${target.base}...${target.head}`;
+    case 'local-diff':
+      return `local:${target.root}:${describeLocalRange(target.range)}`;
   }
 }
 
@@ -66,6 +140,10 @@ export function describeReviewTarget(target: ReviewTarget): string {
       return `${target.owner}/${target.repo} @ ${target.sha.slice(0, 7)}`;
     case 'github-compare':
       return `${target.owner}/${target.repo} ${target.base}...${target.head}`;
+    case 'local-diff':
+      return `${repoNameFromRoot(target.root)} · ${describeLocalRange(
+        target.range
+      )}`;
   }
 }
 
@@ -75,7 +153,7 @@ export function describeReviewTarget(target: ReviewTarget): string {
  * so this function writes the path plainly and `gitHubTargetFromSegments`
  * reads it back.
  */
-export function reviewTargetSplat(target: ReviewTarget): string {
+export function reviewTargetSplat(target: GitHubReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
       return `${target.owner}/${target.repo}/pull/${target.number}`;
@@ -92,7 +170,7 @@ export function reviewTargetSplat(target: ReviewTarget): string {
  * prints all forty spends its width on a hash nobody reads, and the link under
  * it still carries the whole one.
  */
-export function reviewTargetDisplayPath(target: ReviewTarget): string {
+export function reviewTargetDisplayPath(target: GitHubReviewTarget): string {
   if (target.kind === 'github-commit') {
     return `${target.owner}/${target.repo}/commit/${target.sha.slice(0, 7)}`;
   }
@@ -124,6 +202,12 @@ export function reviewTargetQuery(target: ReviewTarget): URLSearchParams {
         base: target.base,
         head: target.head,
       });
+    case 'local-diff':
+      return new URLSearchParams({
+        kind: target.kind,
+        root: target.root,
+        ...target.range,
+      });
   }
 }
 
@@ -132,6 +216,8 @@ export function reviewTargetFromQuery(
   params: URLSearchParams
 ): ReviewTarget | undefined {
   const kind = params.get('kind');
+  if (kind === 'local-diff') return localTargetFromQuery(params);
+
   const owner = params.get('owner');
   const repo = params.get('repo');
   if (
@@ -168,7 +254,7 @@ export function reviewTargetFromQuery(
  */
 export function gitHubTargetFromSegments(
   segments: readonly string[]
-): ReviewTarget | undefined {
+): GitHubReviewTarget | undefined {
   const [owner, repo, kind, ...rest] = segments;
   if (
     owner == null ||
@@ -198,6 +284,43 @@ export function gitHubTargetFromSegments(
 }
 
 /**
+ * The local arm of the query above.
+ *
+ * The command's own server does not trust a word of this: the repository and
+ * the range are pinned when the process starts, and the query is checked
+ * against them rather than read. What this parse is for is the client, which
+ * rebuilds its own target from the address, and the check that a tab left open
+ * from an earlier run is not pointed at a repository this one is not serving.
+ */
+function localTargetFromQuery(
+  params: URLSearchParams
+): LocalDiffTarget | undefined {
+  const root = params.get('root');
+  if (root == null || root.length === 0) return undefined;
+  const range = localRangeFromQuery(params);
+  if (range == null) return undefined;
+  return { kind: 'local-diff', root, range };
+}
+
+function localRangeFromQuery(
+  params: URLSearchParams
+): LocalDiffRange | undefined {
+  const mode = params.get('mode');
+  const base = params.get('base');
+  const head = params.get('head');
+  if (mode === 'worktree' || mode === 'staged') return { mode };
+  if (mode === 'branch') {
+    return base == null || base.length === 0 ? undefined : { mode, base };
+  }
+  if (mode === 'range') {
+    if (base == null || base.length === 0) return undefined;
+    if (head == null || head.length === 0) return undefined;
+    return { mode, base, head };
+  }
+  return undefined;
+}
+
+/**
  * A compare range reaches this function decoded, because the router decodes the
  * splat. A range typed straight into the address bar does not, so it is decoded
  * here. A literal `%` in a branch name makes `decodeURIComponent` throw, and
@@ -211,7 +334,13 @@ function decodeRange(range: string): string {
   }
 }
 
-function parseCompareRange(
+/**
+ * Splits `base..head` or `base...head`, the two spellings a range is written
+ * in — in a github.com compare path, and in the `ghdiff` command's own
+ * argument alike. Both mean the merge-base range here, which is what a branch
+ * review is and what github.com's compare page shows.
+ */
+export function parseCompareRange(
   range: string
 ): { base: string; head: string } | undefined {
   const separator = range.includes('...') ? '...' : '..';
@@ -227,7 +356,9 @@ function parseCompareRange(
  * Parses whatever the user pasted into the open-a-review box: a github.com
  * URL, or the `owner/repo#123` shorthand.
  */
-export function parseGitHubInput(input: string): ReviewTarget | undefined {
+export function parseGitHubInput(
+  input: string
+): GitHubReviewTarget | undefined {
   const trimmed = input.trim();
   if (trimmed.length === 0) return undefined;
 

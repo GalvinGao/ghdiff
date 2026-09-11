@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
@@ -50,8 +50,14 @@ const NOTICE_HEADER = 'x-ghdiff-notice';
  */
 export function useReviewPatch(options: {
   target: ReviewTarget;
+  /**
+   * Paths the diff source says git is not tracking, so their files can be
+   * marked as such. Only the `ghdiff` command has any, and it writes them into
+   * the document it serves: a patch from GitHub is a patch of committed files.
+   */
+  untracked?: readonly string[];
 }): ReviewPatchState {
-  const { target } = options;
+  const { target, untracked } = options;
   const [data, setData] = useState<ReviewData>(EMPTY_REVIEW_DATA);
   const [state, setState] = useState<PatchLoadState>('fetching');
   const [error, setError] = useState<string | undefined>(undefined);
@@ -62,6 +68,17 @@ export function useReviewPatch(options: {
 
   const query = reviewTargetQuery(target).toString();
   const cacheKey = reviewTargetKey(target);
+  // The array is the dependency: the sole caller reads it once at module scope,
+  // so its identity is stable, and joining it to a string first would allocate
+  // the whole list on every render to guard against a caller that does not
+  // exist.
+  const untrackedPaths = useMemo(
+    () =>
+      untracked == null || untracked.length === 0
+        ? undefined
+        : new Set(untracked),
+    [untracked]
+  );
 
   const load = useCallback(async () => {
     controllerRef.current?.abort();
@@ -111,7 +128,7 @@ export function useReviewPatch(options: {
       await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
       if (controller.signal.aborted) return;
 
-      setData(buildReviewData(body, cacheKey));
+      setData(buildReviewData(body, cacheKey, untrackedPaths));
       setState('ready');
     } catch (cause) {
       if (controller.signal.aborted) return;
@@ -120,7 +137,7 @@ export function useReviewPatch(options: {
       );
       setState('error');
     }
-  }, [cacheKey, query]);
+  }, [cacheKey, query, untrackedPaths]);
 
   useEffect(() => {
     void load();

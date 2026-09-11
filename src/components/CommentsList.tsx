@@ -79,7 +79,7 @@ export function CommentsList({
         <p className="text-ink-faint mt-1 text-xs">
           {store === 'github'
             ? 'Comments you leave here are posted to GitHub.'
-            : 'GitHub has no review thread for commits or compare ranges. Comments stay in this browser.'}
+            : 'Comments stay in this browser. Copy them as a prompt when you are done.'}
         </p>
       </div>
     );
