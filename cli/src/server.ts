@@ -1,14 +1,11 @@
+import { serve, type ServerType } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { Hono, type MiddlewareHandler } from 'hono';
 import { createReadStream } from 'node:fs';
 import { mkdir, mkdtemp, realpath, readFile, rm, stat } from 'node:fs/promises';
-import {
-  createServer,
-  type IncomingMessage,
-  type Server,
-  type ServerResponse,
-} from 'node:http';
 import { tmpdir } from 'node:os';
-import { extname, join, resolve as resolvePath, sep } from 'node:path';
-import { pipeline } from 'node:stream/promises';
+import { join, resolve as resolvePath, sep } from 'node:path';
+import { Readable } from 'node:stream';
 
 import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '../../src/lib/fileLimit.ts';
 import { isReadablePath } from '../../src/lib/filePath.ts';
@@ -21,13 +18,7 @@ import {
   reviewTargetFromQuery,
   reviewTargetQuery,
 } from '../../src/lib/reviewTarget.ts';
-import {
-  git,
-  GitFailure,
-  type GitStep,
-  streamGit,
-  streamGitSteps,
-} from './git.ts';
+import { git, GitFailure, type GitStep, gitStream } from './git.ts';
 import {
   diffArgs,
   newSideSource,
@@ -48,6 +39,12 @@ import { LaunchFailure, listUntracked } from './repo.ts';
 // the cron hints, the path filter and the fragment grammar all arrive here
 // working and unmodified.
 //
+// Hono is what answers those two routes, which makes the resemblance more than
+// a resemblance: the Worker is a `fetch` handler over web `Request` and
+// `Response`, and so is this. A patch is a `ReadableStream` on both hosts, and
+// `gitStream` is the only thing between `git diff` and the same body GitHub's
+// own answer arrives as.
+//
 // What this server does *not* have is the other half of the app. There is no
 // GitHub call in it, no session, no RPC — the client it serves knows that and
 // draws none of the controls that would need one. See `cli/web/main.tsx`.
@@ -59,20 +56,6 @@ const TEXT = {
 
 /** Assets are content-hashed by the build, so they can be held forever. */
 const IMMUTABLE = 'public, max-age=31536000, immutable';
-
-const CONTENT_TYPES: Record<string, string> = {
-  '.css': 'text/css; charset=utf-8',
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.map': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-  '.png': 'image/png',
-  '.ico': 'image/x-icon',
-};
 
 export interface LocalServerOptions {
   /** The repository, pinned. Nothing in a request may change it. */
@@ -90,6 +73,11 @@ export interface LocalServerOptions {
  */
 interface ServerContext extends LocalServerOptions {
   document: string;
+  /**
+   * The port actually bound, read off the socket rather than off the option:
+   * the `Host` check compares against it, and a fallback changes it.
+   */
+  port(): number;
 }
 
 export interface RunningServer {
@@ -110,39 +98,27 @@ export interface RunningServer {
 export async function startLocalServer(
   options: LocalServerOptions & { port: number; allowFallback: boolean }
 ): Promise<RunningServer> {
-  const context: ServerContext = {
+  let bound: ServerType | undefined;
+  const app = buildApp({
     ...options,
     document: await readDocument(options.webRoot),
-  };
-  const server = createServer();
-  // Read off the socket on every request, because the `Host` check compares
-  // against the port actually bound and a fallback changes it.
-  server.on('request', (request, response) => {
-    void handle(request, response, context, boundPort(server)).catch(
-      (error) => {
-        fail(response, error);
-      }
-    );
+    port: () => boundPort(bound),
   });
 
   try {
-    await listen(server, options.port);
-    return {
-      port: boundPort(server),
-      fellBack: false,
-      close: () => closeServer(server),
-    };
+    bound = await listen(app, options.port);
   } catch (error) {
     if (!options.allowFallback || !isAddressInUse(error)) {
       throw addressInUseFailure(error, options.port);
     }
+    bound = await listen(app, 0);
+    return {
+      port: boundPort(bound),
+      fellBack: true,
+      close: () => close(bound),
+    };
   }
-  await listen(server, 0);
-  return {
-    port: boundPort(server),
-    fellBack: true,
-    close: () => closeServer(server),
-  };
+  return { port: boundPort(bound), fellBack: false, close: () => close(bound) };
 }
 
 /** The document this server fills in and serves, read once, before the bind. */
@@ -161,24 +137,22 @@ async function readDocument(webRoot: string): Promise<string> {
  * it: this server reads a developer's source code, and a socket on every
  * interface would offer it to the network they are on.
  */
-function listen(server: Server, port: number): Promise<void> {
+function listen(app: Hono, port: number): Promise<ServerType> {
   return new Promise((resolve, reject) => {
-    const onError = (error: Error) => {
-      server.removeListener('listening', onListening);
-      reject(error);
-    };
-    const onListening = () => {
-      server.removeListener('error', onError);
-      resolve();
-    };
+    const onError = (error: Error) => reject(error);
+    const server = serve(
+      { fetch: app.fetch, hostname: '127.0.0.1', port },
+      () => {
+        server.removeListener('error', onError);
+        resolve(server);
+      }
+    );
     server.once('error', onError);
-    server.once('listening', onListening);
-    server.listen(port, '127.0.0.1');
   });
 }
 
-function boundPort(server: Server): number {
-  const address = server.address();
+function boundPort(server: ServerType | undefined): number {
+  const address = server?.address();
   return typeof address === 'object' && address != null ? address.port : 0;
 }
 
@@ -186,7 +160,7 @@ function isAddressInUse(error: unknown): boolean {
   return (error as NodeJS.ErrnoException | null)?.code === 'EADDRINUSE';
 }
 
-/** git's own sentence is not the one to print for a port somebody chose. */
+/** Node's own sentence is not the one to print for a port somebody chose. */
 function addressInUseFailure(error: unknown, port: number): unknown {
   if (!isAddressInUse(error)) return error;
   return new LaunchFailure(
@@ -194,63 +168,100 @@ function addressInUseFailure(error: unknown, port: number): unknown {
   );
 }
 
-function closeServer(server: Server): Promise<void> {
+function close(server: ServerType | undefined): Promise<void> {
   return new Promise((resolve) => {
-    server.closeAllConnections();
+    if (server == null) {
+      resolve();
+      return;
+    }
+    // Only `http.Server` has it, and that is what `serve` binds here; the
+    // type is the union with HTTP/2, which this command never asks for.
+    (server as { closeAllConnections?: () => void }).closeAllConnections?.();
     server.close(() => resolve());
   });
 }
 
-async function handle(
-  request: IncomingMessage,
-  response: ServerResponse,
-  options: ServerContext,
-  port: number
-): Promise<void> {
-  // No CORS header is sent anywhere in this file, so a preflight has nothing
-  // to approve and a cross-origin request with the token header never happens.
-  // Answering OPTIONS with a refusal is that rule said out loud.
-  if (request.method === 'OPTIONS') {
-    text(response, 405, 'This server answers its own page and nothing else.');
-    return;
-  }
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    text(response, 405, 'This server reads. It answers GET.');
-    return;
-  }
+/**
+ * Everything this server answers, in the order a request meets it.
+ *
+ * Reading down this function is the whole of what is reachable: one guard over
+ * every request, a second over `/api`, the two routes behind it, the built
+ * client, and the document for every path that is none of those.
+ */
+function buildApp(context: ServerContext): Hono {
+  const app = new Hono();
 
-  const url = new URL(request.url ?? '/', 'http://127.0.0.1');
+  app.use('*', methodGuard);
+  app.use('/api/*', apiGuard(context));
 
-  if (url.pathname === '/api/diff' || url.pathname === '/api/file') {
+  app.on(['GET', 'HEAD'], '/api/diff', () => serveDiff(context));
+  app.on(['GET', 'HEAD'], '/api/file', (c) =>
+    serveFile(c.req.query('path'), context)
+  );
+
+  app.use('*', assets(context.webRoot));
+  // Every path that is not an asset is the page: the client is a single
+  // document with a router in it, and a fragment or a stray path must not be a
+  // 404 in a tab the command itself opened.
+  app.all('*', () => serveDocument(context));
+
+  app.onError((error) =>
+    error instanceof GitFailure
+      ? plain(error.message, error.status)
+      : plain(
+          error instanceof Error ? error.message : 'Something went wrong.',
+          500
+        )
+  );
+
+  return app;
+}
+
+/**
+ * This server reads. No CORS header is sent anywhere in this file, so a
+ * preflight has nothing to approve and a cross-origin request carrying the
+ * token header never happens; answering OPTIONS with a refusal is that rule
+ * said out loud.
+ */
+const methodGuard: MiddlewareHandler = async (c, next) => {
+  if (c.req.method === 'OPTIONS') {
+    return plain('This server answers its own page and nothing else.', 405);
+  }
+  if (c.req.method !== 'GET' && c.req.method !== 'HEAD') {
+    return plain('This server reads. It answers GET.', 405);
+  }
+  await next();
+  return;
+};
+
+/**
+ * Everything that stands between `/api` and another page in another tab: the
+ * `Host`, the run's own token, and the repository this process was started for.
+ * `cli/src/guards.ts` states the first two and why each is there.
+ */
+function apiGuard(context: ServerContext): MiddlewareHandler {
+  return async (c, next) => {
     const refusal = checkApiRequest({
-      host: request.headers.host,
-      port,
-      token: headerValue(request, TOKEN_HEADER),
-      expectedToken: options.token,
+      host: c.req.header('host'),
+      port: context.port(),
+      token: c.req.header(TOKEN_HEADER),
+      expectedToken: context.token,
     });
-    if (!refusal.allowed) {
-      text(response, refusal.status, refusal.message);
-      return;
-    }
+    if (!refusal.allowed) return plain(refusal.message, refusal.status);
     // The query says which diff the client thinks it is reading. It is checked
     // against the one this process was started for and then thrown away: the
     // repository and the range come from the launch and from nowhere else, so
     // no request can widen what this server reads.
-    if (!describesPinnedTarget(url.searchParams, options.target)) {
-      text(
-        response,
-        400,
-        'This ghdiff is serving a different repository. Run the command in the one you want to read.'
+    const asked = new URL(c.req.url).searchParams;
+    if (!describesPinnedTarget(asked, context.target)) {
+      return plain(
+        'This ghdiff is serving a different repository. Run the command in the one you want to read.',
+        400
       );
-      return;
     }
-    await (url.pathname === '/api/diff'
-      ? serveDiff(response, options)
-      : serveFile(response, url, options));
+    await next();
     return;
-  }
-
-  await serveAsset(request, response, url, options);
+  };
 }
 
 /**
@@ -284,12 +295,13 @@ function describesPinnedTarget(
  *
  * The list is read here and not at launch, and nothing caps it: a cap would be
  * this command deciding which of a developer's own files are worth looking at.
+ *
+ * The temporary index is discarded by `gitStream` and not here, because this
+ * function returns at the first byte of the *first* step and the two untracked
+ * steps run after that.
  */
-async function serveDiff(
-  response: ServerResponse,
-  options: ServerContext
-): Promise<void> {
-  const { range, root } = options.target;
+async function serveDiff(context: ServerContext): Promise<Response> {
+  const { range, root } = context.target;
   const steps: GitStep[] = [{ args: diffArgs(range), required: true }];
   // Where the temporary index and the empty blob live, for this one response.
   const scratch = rangeShowsUntracked(range)
@@ -297,23 +309,19 @@ async function serveDiff(
     : undefined;
   if (scratch != null) steps.push(...scratch.steps);
 
-  try {
-    await streamGitSteps({
-      steps,
-      cwd: root,
-      response,
-      headers: { ...TEXT },
-      describeFailure: (stderr) => ({
-        status: 500,
-        message:
-          stderr.length > 0
-            ? stderr
-            : 'git could not produce that diff. Check the revision and try again.',
-      }),
-    });
-  } finally {
-    if (scratch != null) await scratch.discard();
-  }
+  const body = await gitStream({
+    steps,
+    cwd: root,
+    cleanup: scratch?.discard,
+    describeFailure: (stderr) => ({
+      status: 500,
+      message:
+        stderr.length > 0
+          ? stderr
+          : 'git could not produce that diff. Check the revision and try again.',
+    }),
+  });
+  return new Response(body, { headers: { ...TEXT } });
 }
 
 /**
@@ -354,113 +362,108 @@ async function untrackedScratch(
  * for an object and `stat` answers for the working tree, and both are cheap.
  */
 async function serveFile(
-  response: ServerResponse,
-  url: URL,
-  options: ServerContext
-): Promise<void> {
-  const path = url.searchParams.get('path');
+  path: string | undefined,
+  context: ServerContext
+): Promise<Response> {
   if (path == null || !isReadablePath(path)) {
-    text(response, 400, 'That file path is not valid.');
-    return;
+    return plain('That file path is not valid.', 400);
   }
 
-  const source = newSideSource(options.target.range);
+  const { range, root } = context.target;
+  const source = newSideSource(range);
   if (source.from === 'object') {
-    const size = await git(
-      ['cat-file', '-s', `${source.rev}:${path}`],
-      options.target.root
-    );
-    if (!size.ok) {
-      text(response, 404, `git has no ${path} at that revision.`);
-      return;
-    }
+    const size = await git(['cat-file', '-s', `${source.rev}:${path}`], root);
+    if (!size.ok) return plain(`git has no ${path} at that revision.`, 404);
     if (Number(size.stdout.trim()) > MAX_FILE_BYTES) {
-      text(response, 413, FILE_TOO_LARGE);
-      return;
+      return plain(FILE_TOO_LARGE, 413);
     }
-    await streamGit({
-      args: showArgs(source.rev, path),
-      cwd: options.target.root,
-      response,
-      headers: { ...TEXT },
+    const body = await gitStream({
+      steps: [{ args: showArgs(source.rev, path), required: true }],
+      cwd: root,
       describeFailure: () => ({
         status: 404,
         message: `git has no ${path} at that revision.`,
       }),
     });
-    return;
+    return new Response(body, { headers: { ...TEXT } });
   }
 
   // The working tree, which is the one source that is a path on a disk. Every
   // other range reads an object, where git resolves the name against the
   // repository's own database and nothing outside it can be addressed at all.
-  const full = await containedPath(options.target.root, path);
+  const full = await containedFile(root, path);
   if (full == null) {
-    text(response, 404, `There is no ${path} in the working tree.`);
-    return;
+    return plain(`There is no ${path} in the working tree.`, 404);
   }
-  const stats = await stat(full).catch(() => undefined);
-  if (stats == null || !stats.isFile()) {
-    text(response, 404, `There is no ${path} in the working tree.`);
-    return;
-  }
-  if (stats.size > MAX_FILE_BYTES) {
-    text(response, 413, FILE_TOO_LARGE);
-    return;
-  }
-  response.writeHead(200, TEXT);
-  await pipeline(createReadStream(full), response);
+  if (full.size > MAX_FILE_BYTES) return plain(FILE_TOO_LARGE, 413);
+  return new Response(webStream(createReadStream(full.path)), {
+    headers: { ...TEXT },
+  });
 }
 
 /**
- * The absolute path of a file inside the repository, or nothing.
+ * A file inside a directory, and its size, or nothing.
  *
- * `isReadablePath` has already refused a `..` segment, which is what a path
- * would climb out with. This is the other half: a symlink inside the
- * repository pointing outside it resolves to somewhere else entirely, and
- * `realpath` is the only thing that can see that. The root was realpathed at
- * launch, so the two sides of the comparison are both resolved.
+ * `resolvePath` normalizes away a `..` segment, which is what a path would
+ * climb out with, and `realpath` is the other half: a symlink inside the
+ * directory pointing outside it resolves somewhere else entirely, and nothing
+ * but `realpath` can see that. Both roots this is called with were realpathed
+ * at launch, so the two sides of the comparison are both resolved.
  */
-async function containedPath(
+async function containedFile(
   root: string,
   path: string
-): Promise<string | undefined> {
-  const candidate = resolvePath(root, path);
-  const real = await realpath(candidate).catch(() => undefined);
+): Promise<{ path: string; size: number } | undefined> {
+  const real = await realpath(resolvePath(root, path)).catch(() => undefined);
   if (real == null) return undefined;
-  return real === root || real.startsWith(root + sep) ? real : undefined;
+  if (real !== root && !real.startsWith(root + sep)) return undefined;
+  const stats = await stat(real).catch(() => undefined);
+  return stats?.isFile() === true
+    ? { path: real, size: stats.size }
+    : undefined;
 }
 
-async function serveAsset(
-  request: IncomingMessage,
-  response: ServerResponse,
-  url: URL,
-  options: ServerContext
-): Promise<void> {
-  // Every path that is not an asset is the page: the client is a single
-  // document with a router in it, and a fragment or a stray path must not be a
-  // 404 in a tab the command itself opened.
-  const requested =
-    url.pathname === '/' ? '/index.html' : decodePath(url.pathname);
-  const file =
-    requested == null
-      ? undefined
-      : await containedPath(options.webRoot, requested.slice(1));
+/**
+ * The built client, from the directory this command was installed into.
+ *
+ * The lookup is this command's, because the containment test is: `serveStatic`
+ * refuses a `..` segment before it touches the disk, but nothing in `vite build`
+ * being a symlink today is not a rule, and a rule that holds only while that
+ * stays true fails quietly. What the library is left with is everything after
+ * the path resolves — the type off the extension, `HEAD`, `Last-Modified`, a
+ * byte range — which is why it is handed a `path` rather than a `root`.
+ *
+ * A request that names no file falls through to the document, and so does `/`
+ * and any `index.html`: the file on disk is the same page with none of the
+ * three scripts `serveDocument` puts into its head.
+ *
+ * The cache header is free. Every other name under here is content-hashed by
+ * the build, so a file that exists at a name is the file that name will always
+ * mean.
+ */
+function assets(webRoot: string): MiddlewareHandler {
+  return async (c, next) => {
+    const path = c.req.path;
+    if (path === '/' || path.endsWith('/index.html')) return next();
+    const requested = decodePath(path);
+    const file =
+      requested == null
+        ? undefined
+        : await containedFile(webRoot, requested.replace(/^\/+/, ''));
+    if (file == null) return next();
+    c.header('cache-control', IMMUTABLE);
+    return serveStatic({ path: file.path })(c, next);
+  };
+}
 
-  if (file == null || !(await isFile(file)) || file.endsWith('index.html')) {
-    await serveDocument(response, options);
-    return;
+/** A percent-encoded asset path, or nothing when it is not one. */
+function decodePath(pathname: string): string | undefined {
+  try {
+    const decoded = decodeURIComponent(pathname);
+    return decoded.includes('\0') ? undefined : decoded;
+  } catch {
+    return undefined;
   }
-
-  response.writeHead(200, {
-    'cache-control': IMMUTABLE,
-    'content-type': CONTENT_TYPES[extname(file)] ?? 'application/octet-stream',
-  });
-  if (request.method === 'HEAD') {
-    response.end();
-    return;
-  }
-  await pipeline(createReadStream(file), response);
 }
 
 /**
@@ -487,26 +490,24 @@ async function serveAsset(
  * stops a stale one is `checkApiRequest`, which compares against the token this
  * process minted; `cli/src/guards.ts` states that rule and the three beside it.
  */
-async function serveDocument(
-  response: ServerResponse,
-  options: ServerContext
-): Promise<void> {
-  const { range, root } = options.target;
+async function serveDocument(context: ServerContext): Promise<Response> {
+  const { range, root } = context.target;
   const untracked = rangeShowsUntracked(range) ? await listUntracked(root) : [];
   const head = [
     `<script>${COLOR_MODE_SCRIPT}</script>`,
     `<script>${CODE_FONT_SCRIPT}</script>`,
-    `<script>window.__GHDIFF_LOCAL__=${embed({ target: options.target, untracked })};</script>`,
+    `<script>window.__GHDIFF_LOCAL__=${embed({ target: context.target, untracked })};</script>`,
   ].join('');
-  response.writeHead(200, {
-    'cache-control': 'no-store',
-    'content-type': 'text/html; charset=utf-8',
-    // This document is the whole app, and it embeds nothing from anywhere
-    // else. Saying so costs one header and closes the frame this page could
-    // otherwise be put in.
-    'x-frame-options': 'DENY',
+  return new Response(context.document.replace('</head>', `${head}</head>`), {
+    headers: {
+      'cache-control': 'no-store',
+      'content-type': 'text/html; charset=utf-8',
+      // This document is the whole app, and it embeds nothing from anywhere
+      // else. Saying so costs one header and closes the frame this page
+      // could otherwise be put in.
+      'x-frame-options': 'DENY',
+    },
   });
-  response.end(options.document.replace('</head>', `${head}</head>`));
 }
 
 /**
@@ -518,45 +519,17 @@ function embed(value: unknown): string {
   return JSON.stringify(JSON.stringify(value)).replace(/</g, '\\u003c');
 }
 
-/** A percent-encoded asset path, or nothing when it is not one. */
-function decodePath(pathname: string): string | undefined {
-  try {
-    return decodeURIComponent(pathname);
-  } catch {
-    return undefined;
-  }
+/**
+ * One whole file off the disk, as a body a `Response` takes.
+ *
+ * Nothing holds it: node-server reads this a chunk at a time and stops reading
+ * when the socket stops draining, which is the same backpressure `gitStream`
+ * gets for a patch.
+ */
+function webStream(stream: Readable): ReadableStream<Uint8Array> {
+  return Readable.toWeb(stream) as ReadableStream<Uint8Array>;
 }
 
-async function isFile(path: string): Promise<boolean> {
-  const stats = await stat(path).catch(() => undefined);
-  return stats?.isFile() === true;
-}
-
-function headerValue(
-  request: IncomingMessage,
-  name: string
-): string | undefined {
-  const value = request.headers[name];
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function text(response: ServerResponse, status: number, body: string): void {
-  response.writeHead(status, TEXT);
-  response.end(body);
-}
-
-function fail(response: ServerResponse, error: unknown): void {
-  if (response.headersSent) {
-    response.end();
-    return;
-  }
-  if (error instanceof GitFailure) {
-    text(response, error.status, error.message);
-    return;
-  }
-  text(
-    response,
-    500,
-    error instanceof Error ? error.message : 'Something went wrong.'
-  );
+function plain(body: string, status: number): Response {
+  return new Response(body, { status, headers: { ...TEXT } });
 }

@@ -52,6 +52,11 @@ export default defineConfig({
     // it came from once it is installed somewhere else.
     __GHDIFF_VERSION__: JSON.stringify(manifest.version),
   },
+  // Vite externalizes a dependency in an SSR build by default, which would
+  // leave `import { Hono } from 'hono'` in a file `npx` runs with nothing
+  // beside it. Everything goes in, which is what makes the output one file and
+  // an install unbreakable by a transitive dependency it never asked for.
+  ssr: { noExternal: true },
   // `public/` belongs to the Worker's build: it holds the userscript, which
   // Cloudflare serves as an asset. Nothing in it is the command's.
   publicDir: false,

@@ -90,12 +90,12 @@ public/
   ghdiff.user.js           the userscript, copied to dist/client as it is
 cli/
   package.json             the published manifest: name, bin, files
-  src/args.ts              process.argv, as a decision about text
+  src/args.ts              the command citty parses, and what it means
   src/gitRange.ts          the argument vectors handed to git
   src/guards.ts            the host check and the token check
-  src/git.ts               one spawn, one stream, no shell
+  src/git.ts               one spawn, one ReadableStream, no shell
   src/repo.ts              the three questions asked before the socket binds
-  src/server.ts            /api/diff, /api/file, and the document
+  src/server.ts            the Hono app: /api/diff, /api/file, the document
   src/main.ts              the bin: parse, resolve, listen, print, open
   web/index.html           the document the server fills in and serves
   web/main.tsx             ReviewScreen, its own router, and nothing else
@@ -1950,6 +1950,40 @@ against GitHub, not less: the working tree genuinely does move under the reader,
 so `patchFitsNewFile` refusing a mismatched rebuild is everyday work rather than
 an edge case.
 
+**Both hosts are a `fetch` handler, and that is Hono's whole job here.** The
+Worker answers web `Request`s with web `Response`s, and `cli/src/server.ts` now
+does the same over `@hono/node-server`: the guards are middleware, the two
+routes return a `Response`, and a patch is a `ReadableStream` on either side. So
+the resemblance the contract above describes is a resemblance in the code and
+not only in what comes down the wire — and `git.ts` knows nothing about HTTP at
+all, where it used to be handed a `ServerResponse` to write into.
+
+What the library is **not** asked to do is decide anything. `serveStatic` is
+given a `path` rather than a `root`, because the containment test is this
+command's: nothing a `vite build` writes is a symlink today, and a rule that
+holds only while that stays true fails quietly. What it is left with — the type
+off the extension, `HEAD`, `Last-Modified`, a byte range — is everything after
+the path has already been resolved and proved to be inside the web root.
+
+**The argument vector is citty's, and what it means is not.** `COMMAND_ARGS` in
+`cli/src/args.ts` declares every option once; citty's `parseArgs` reads an
+argument vector against it, and `renderUsage` renders the OPTIONS table from the
+same declaration, so an option cannot come to be accepted and undocumented or
+documented and refused. `--help` is that table and then four paragraphs citty
+cannot know: the invocation table — `ghdiff main` meaning `main...HEAD` is a
+decision this command made, not a shape of an option — and the three things a
+reviewer otherwise finds out too late.
+
+Two of its habits had to be answered rather than adopted. It parses loosely,
+with `strict: false`, so an unknown option arrives as a key rather than an error
+— `parseArgs` compares the parsed keys against the declaration and refuses the
+first one that is not in it, naming the token as it was typed. And its `runMain`
+owns exit codes, help dispatch and the position of `--version`; this command
+drives the parser itself instead, so a usage error still exits 2, `-V` still
+works, and `ghdiff main --version` still answers with a version. Adapting argv
+to suit `runMain` would have been a hand-rolled tokenizer by another name, which
+is the thing citty is here to remove.
+
 **A local diff is a fourth arm of `ReviewTarget`, and the two hosted routes turn
 it away.** `LocalDiffTarget` carries the absolute repository root and one of
 four ranges. `supportsGitHubComments` already answered false for everything but
@@ -2161,12 +2195,31 @@ sentence moved to, because a third end holds them now and the third has no
 business importing `@pierre/diffs` — `diffHydration.ts` re-exports both, so
 every existing reader is unchanged.
 
-**The status of a streamed answer is decided by the first chunk.** git writes
-its failures to stderr and exits before it has written a byte of stdout, so a
-run that produced output is a run that worked. A failure _after_ the first chunk
-cannot be reported — the status has gone — and the body ends early instead. A
-clean exit with no output is not a failure: an empty diff means nothing has
-changed yet, and the viewer draws its own empty state for it.
+**The status of a streamed answer is decided by the first chunk, and `gitStream`
+resolving is that rule said out loud.** git writes its failures to stderr and
+exits before it has written a byte of stdout, so a run that produced output is a
+run that worked. `gitStream` therefore answers at the first of three moments — a
+first chunk, with a `ReadableStream` that replays it and goes on; the whole
+sequence done having written nothing, with an empty one; or a `required` step
+failing having written nothing, by throwing. A failure _after_ that cannot be
+reported — the status has gone — and the body ends early instead. A clean exit
+with no output is not a failure: an empty diff means nothing has changed yet,
+and the viewer draws its own empty state for it.
+
+That inversion is what Hono needs and what `node:http` did not: a `Response`
+carries its status before its body, where a `ServerResponse` let the first
+`write` send one. It also moved two things off the socket and onto the stream.
+Backpressure is `desiredSize` and `pull` rather than `write` and `drain` —
+node-server reads one chunk at a time and stops while the socket is full, so a
+43 MB patch waits in the pipe and never in this process. And a reviewer who
+navigates away cancels the stream, which is what kills the child: node-server
+cancels the reader on `close`, so nothing in `server.ts` has to watch the
+request.
+
+`gitStream` takes its own `cleanup`, and that is not tidiness. It answers at the
+**first** byte and the two untracked steps run after that, so a caller that
+discarded the temporary index when the promise resolved would pull it out from
+under the steps still using it.
 
 **Two more builds, and neither one reaches the Worker.**
 `vite.cli-web.config.ts` builds the client — a plain single-page build with its
@@ -2174,9 +2227,12 @@ own `index.html`, because `pnpm build` produces a document TanStack Start's
 server entry renders and there is no server here to render it.
 `vite.cli-bin.config.ts` builds the command as one file with no runtime
 dependencies, so `npx` has nothing to resolve and an install cannot be broken by
-a transitive dependency. Both write under `dist/cli`, and the manifest plugin
-puts `cli/package.json` and `cli/README.md` beside them, so `dist/cli` is a
-directory `npm pack` and `npm install -g` both accept as it stands.
+a transitive dependency. `ssr: { noExternal: true }` is what makes that true:
+Vite externalizes a dependency in an SSR build by default, and without it the
+output would carry `import { Hono } from 'hono'` into a file installed with
+nothing beside it. Both write under `dist/cli`, and the manifest plugin puts
+`cli/package.json` and `cli/README.md` beside them, so `dist/cli` is a directory
+`npm pack` and `npm install -g` both accept as it stands.
 
 The client build carries no sourcemap and the command's does. The client's entry
 map is 7.4 MB against 1.9 MB of code, and `npx` downloads it before the command
@@ -2185,9 +2241,17 @@ one that gets read.
 
 The command imports three things out of `src/` and they are all pure — the
 target model, the two pre-paint scripts, and the file-size cap. None of them
-reaches for a browser API or for `@pierre/diffs`, which is what keeps the bundle
-at about 43 KB. Adding an import to `cli/src/` that pulls in the viewer would be
-the change to argue against.
+reaches for a browser API or for `@pierre/diffs`, and the three packages it does
+carry are small and have no dependencies of their own, so the bundle is about
+164 KB — roughly 48 KB gzipped, which is one `npx` download and then nothing.
+Adding an import to `cli/src/` that pulls in the viewer would be the change to
+argue against.
+
+Those three are `hono`, `@hono/node-server` and `citty`, and they are the
+command's alone: nothing in `src/` imports one, so the Worker's graph and its
+~52 KiB of headroom are untouched. They sit in the root `dependencies` beside
+everything else this repository bundles; `cli/package.json`, which is the
+manifest that actually gets published, still declares none.
 
 **The document is filled in when it is served, not when it is built.**
 `serveDocument` puts three scripts into the head. Two are the app's own
@@ -2262,6 +2326,13 @@ Four of its modules are pure and tested — the argument parser, the git argumen
 vectors, the host and token guards, and the path check. `git.ts`, `repo.ts`,
 `server.ts` and `main.ts` are not: they spawn processes and bind sockets, and
 they are checked by running the command.
+
+`args.test.ts` carries more than the decisions now, because citty parses
+loosely: it asks `node:util.parseArgs` for `strict: false`, so an option this
+command does not have arrives as a key on the parsed object rather than as an
+error. The set `parseArgs` compares against is built from the declaration, and
+the test that pins the declaration's own keys is what keeps the two from
+drifting apart.
 
 ## The GitHub App
 

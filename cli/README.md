@@ -37,10 +37,10 @@ unmodified lines around a hunk fetches a whole file, one per press, so the
 server has to still be there after the browser has taken the patch.
 
 Files you have not added yet are in the diff too, at the end of it, and the
-command says how many. `git diff HEAD` cannot see one, so each is read on its
-own with `git diff --no-index` — nothing is staged and nothing is written to
-your repository. The display menu in the top right has a switch that takes them
-back off.
+command says how many. `git diff HEAD` cannot see one, so they are staged into a
+temporary index of their own, outside your repository and removed when the
+request ends — nothing is written to `.git`. The display menu in the top right
+has a switch that takes them back off.
 
 ## What you get
 

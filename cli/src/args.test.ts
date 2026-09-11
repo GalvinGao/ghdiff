@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { DEFAULT_PORT, isUsableRevision, parseArgs } from './args.ts';
+import {
+  COMMAND_ARGS,
+  DEFAULT_PORT,
+  helpText,
+  isUsableRevision,
+  parseArgs,
+} from './args.ts';
 
 function run(...argv: string[]) {
   const parsed = parseArgs(argv);
@@ -73,6 +79,11 @@ describe('parseArgs', () => {
     assert.deepEqual(parseArgs(['-h']), { kind: 'help' });
     assert.deepEqual(parseArgs(['main', '--version']), { kind: 'version' });
     assert.deepEqual(parseArgs(['-v']), { kind: 'version' });
+    assert.deepEqual(parseArgs(['-V']), { kind: 'version' });
+    // Help outranks a version asked for in the same breath, and both outrank a
+    // revision that would otherwise be an error.
+    assert.deepEqual(parseArgs(['--version', '--help']), { kind: 'help' });
+    assert.deepEqual(parseArgs(['--frobnicate', '--help']), { kind: 'help' });
   });
 
   it('refuses the four things it cannot make sense of', () => {
@@ -80,6 +91,27 @@ describe('parseArgs', () => {
     assert.match(refuse('--staged', 'main'), /takes no revision/);
     assert.match(refuse('main', 'feature'), /one revision or one range/);
     assert.match(refuse('--port', 'soon'), /from 1 to 65535/);
+  });
+
+  it('refuses an unknown option in every spelling citty lets through', () => {
+    // citty asks `node:util.parseArgs` for `strict: false`, so an option this
+    // command does not have arrives as a key rather than as an error. Each of
+    // these is a different way into that object, and none of them may be
+    // swallowed: a typo that ran anyway would serve a diff nobody asked for.
+    assert.match(refuse('--frobnicate'), /^--frobnicate is not an option/);
+    // Named as it was typed, value and all, rather than as the key it parsed
+    // to: `--frobnicate=1` is what the developer has to go and find.
+    assert.match(refuse('--frobnicate=1'), /^--frobnicate=1 is not an option/);
+    assert.match(
+      refuse('--no-frobnicate'),
+      /^--no-frobnicate is not an option/
+    );
+    assert.match(refuse('-x'), /is not an option/);
+  });
+
+  it('reads --cached and --staged as the one range, together or apart', () => {
+    assert.deepEqual(run('--cached', '--staged')?.range, { mode: 'staged' });
+    assert.match(refuse('--cached', 'main'), /takes no revision/);
   });
 
   it('refuses a port outside the range, and one that is not a number', () => {
@@ -140,5 +172,37 @@ describe('isUsableRevision', () => {
     assert.equal(isUsableRevision(`main${String.fromCharCode(0)}x`), false);
     assert.equal(isUsableRevision(`main${String.fromCharCode(10)}`), false);
     assert.equal(isUsableRevision('a'.repeat(256)), false);
+  });
+});
+
+describe('the declaration', () => {
+  it('is the one statement of what this command takes', async () => {
+    // The parser reads `command.args` and so does the usage below it, so an
+    // option cannot come to be accepted and undocumented, or the other way
+    // round. Each of these is read by `parseArgs` above; this is the list it
+    // reads them from.
+    assert.deepEqual(Object.keys(COMMAND_ARGS), [
+      'revision',
+      'staged',
+      'cached',
+      'port',
+      'open',
+      'help',
+      'version',
+    ]);
+  });
+
+  it('renders the options from that declaration, and the notes under them', async () => {
+    const help = await helpText();
+    // citty's half: every option, with the port's own default in its sentence.
+    for (const flag of ['--staged', '--cached', '--port', '--no-open']) {
+      assert.ok(help.includes(flag), `${flag} is missing from --help`);
+    }
+    // The half citty cannot know. `ghdiff main` meaning `main...HEAD` is this
+    // command's decision, and the port paragraph is the one a reviewer finds
+    // out too late otherwise.
+    assert.ok(help.includes('git diff main...HEAD'), 'the table is missing');
+    assert.ok(help.includes(String(DEFAULT_PORT)), 'the port is missing');
+    assert.ok(help.includes('127.0.0.1'), 'what it does with the machine');
   });
 });

@@ -8,7 +8,7 @@ import {
   describeReviewTarget,
   type LocalDiffTarget,
 } from '../../src/lib/reviewTarget.ts';
-import { DEFAULT_PORT, HELP, parseArgs } from './args.ts';
+import { DEFAULT_PORT, helpText, parseArgs, VERSION } from './args.ts';
 import { TOKEN_PARAM } from './guards.ts';
 import { listUntracked, resolveRepositoryRoot, verifyRange } from './repo.ts';
 import { startLocalServer } from './server.ts';
@@ -20,20 +20,14 @@ import { startLocalServer } from './server.ts';
 // whole file per press, so a server that exited after handing over the patch
 // would break the expand control on every file in the diff.
 
-/** Written into the bundle by the build, so `--version` answers. */
-declare const __GHDIFF_VERSION__: string;
-
-const version =
-  typeof __GHDIFF_VERSION__ === 'string' ? __GHDIFF_VERSION__ : '0.0.0-dev';
-
 async function main(argv: readonly string[]): Promise<number> {
   const parsed = parseArgs(argv);
   if (parsed.kind === 'help') {
-    process.stdout.write(HELP);
+    process.stdout.write(`${await helpText()}\n`);
     return 0;
   }
   if (parsed.kind === 'version') {
-    process.stdout.write(`${version}\n`);
+    process.stdout.write(`${VERSION}\n`);
     return 0;
   }
   if (parsed.kind === 'error') {
