@@ -17,17 +17,42 @@ implementation. ghdiff differs from it in three ways that matter:
 
 ## The stack
 
-TanStack Start on Vite, served by Cloudflare Workers. `@cloudflare/vite-plugin`
-runs the server on workerd in development too, so `pnpm dev` and the deployed
-Worker are the same runtime and a Node-only API cannot pass locally and then
-fail after a deploy.
+TanStack Start on Vite, served by Cloudflare Workers in production at
+ghdiff.com, and by plain Node.js wherever it is self-hosted.
+`@cloudflare/vite-plugin` runs the server on workerd in development too, so
+`pnpm dev` and the deployed Worker are the same runtime and a Node-only API
+cannot pass locally and then fail after a deploy. `GHDIFF_TARGET=node` swaps
+that plugin for Nitro's (`nitro/vite`) — one plugin line, the canonical setup —
+which emits a directly runnable Node server at `.output/server/index.mjs` around
+the same fetch handler the Worker runs.
+
+Every environment variable the server reads is validated by one zod schema,
+`parseDeploymentConfig` in `src/lib/server/config.ts` — parsed at each request
+boundary and handed down as a plain parameter, so no process-wide singleton
+exists for a test to poke. The build reads exactly one of them, `GHDIFF_TARGET`,
+as one zod line — `cloudflare` when unset, a ZodError naming the two runtimes on
+a typo. Cloudflare is the default runtime everywhere; Node is the branch that
+gets named. The served counter's backend is the case in point: `servedBackend()`
+in `src/lib/server/servedBackend.ts` compares the target against `'cloudflare'`,
+and dead-code elimination drops the other half — the Cloudflare build never sees
+the in-memory backend, the Node build never sees `cloudflareBackend()` or its
+`cloudflare:workers` and unstorage driver imports. The imports are dynamic
+because a static one would fail at bundle resolution time on the Node build;
+here they sit in the branch DCE removes. The tests share the in-memory backend,
+since their runner writes no `import.meta.env`.
+
+The `Dockerfile` builds with `pnpm build:node` behind a BuildKit cache mount for
+the pnpm store; the bundle Nitro emits is self-contained, so the runtime stage
+copies only `.output/` and runs as `USER node`.
 
 ## Commands
 
 ```bash
 pnpm dev          # vite dev, on workerd
-pnpm build        # vite build: dist/client and dist/server
+pnpm build        # vite build for Cloudflare: dist/client and dist/server
+pnpm build:node   # vite build for Node (GHDIFF_TARGET=node)
 pnpm preview      # vite preview, the built Worker on workerd
+pnpm start        # node --env-file-if-exists=.dev.vars .output/server/index.mjs
 pnpm deploy       # wrangler deploy
 pnpm test         # node --test over src/lib/**/*.test.ts
 pnpm typecheck    # wrangler types, then tsc --noEmit
@@ -49,6 +74,7 @@ src/
     __root.tsx             the document, then AppShell: the left bar, then the page
     index.tsx              home: a box for any GitHub URL, and the watch list
     setup.tsx              why a private diff will not load, as three steps
+    healthz.ts             the liveness probe's one-word answer
     $.tsx                  mirrors github.com paths: /owner/repo/pull/123
     gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff, as text/plain
@@ -76,7 +102,8 @@ src/
   lib/rpc/client.ts        the browser's half of it
   lib/server/              server-only: the GitHub client, the App's own three
                            calls, the cipher half of the session, where the App
-                           is installed, the KV counter
+                           is installed, the runtime seam and the counter's two
+                           backends
 public/
   ghdiff.user.js           the userscript, copied to dist/client as it is
 ```
@@ -874,20 +901,33 @@ own `diff --git` boundaries would give both a figure and a responsive tab; the
 count of files is already known from `changed_files`.
 
 **A serve is counted where the serve happens, and the figure is an estimate on
-purpose.** The footer's **Served** line is one key in Workers KV,
-`served:total`, and `src/lib/server/servedCount.ts` is what stands between a
-counter and a store that is not one. KV takes one write per second per key and
-answers a second one with 429, and two writes that overlap overwrite each other
-rather than add up. Neither is an edge case here: a reviewer who opens three
-pull requests in three tabs is a burst of three serves in one second. So a serve
-writes nothing. It adds one to a number the isolate holds, and one flush later
-folds however many arrived into a single read-add-write, inside `waitUntil`,
-after the patch has already gone to the browser. `lastWritten` guards the read,
-because a read that came back stale would take the figure backwards. What is
-still lost is an isolate that dies with a flush outstanding, and two locations
-that write in the same moment. A footer figure is allowed to be an estimate. The
-exact one costs a Durable Object, which is a second runtime object in a Worker
-with about 140 KiB of headroom.
+purpose.** The footer's **Served** line is one key, `served:total`, and
+`src/lib/server/servedCount.ts` is what stands between a counter and a store
+that is not one. The store is a `ServedBackend` from
+`src/lib/server/servedBackend.ts`: Workers KV behind unstorage's binding driver
+on workerd, an in-memory unstorage everywhere else. KV takes one write per
+second per key and answers a second one with 429, and two writes that overlap
+overwrite each other rather than add up. Neither is an edge case here: a
+reviewer who opens three pull requests in three tabs is a burst of three serves
+in one second. So a serve writes nothing. It adds one to a number the process
+holds, and one flush later folds however many arrived into a single
+read-add-write, kept alive past the response by the backend's `keepAlive` —
+`waitUntil` on workerd, a floating promise in the fallback. `lastWritten` guards
+the read, because a read that came back stale would take the figure backwards.
+What is still lost is a process that dies with a flush outstanding, and two
+locations that write in the same moment. A footer figure is allowed to be an
+estimate. The exact one costs a strongly consistent store, which a footer line
+is not worth.
+
+Which backend a bundle gets is answered at build time, never sniffed at runtime,
+and dead-code elimination drops the other half: `servedBackend()` compares the
+target against `'cloudflare'` — KV exists only where the build says Cloudflare —
+so the Cloudflare build never sees the in-memory backend, and the Node build
+never sees `cloudflareBackend()` or its `cloudflare:workers` and unstorage
+driver imports. The imports are dynamic because a static one would fail at
+bundle resolution time on the Node build; here they sit in the branch DCE
+removes. The tests share the in-memory backend, since their runner writes no
+`import.meta.env`.
 
 `/api/diff` takes the count and no other route does, because that route **is**
 the serve: `gitHubResponse` returns only when a source answered, so a 404 and a
@@ -1860,10 +1900,12 @@ needs: `AsyncLocalStorage` for the request logger, and a populated
 store. It holds one key today, the one the footer's **Served** counter reads and
 writes, and it is named for the app rather than for that counter so the next
 thing that needs a key has a place to go. The Worker reaches it through
-`import { env } from 'cloudflare:workers'` rather than through a handler
-argument, because the counter is called from a route and from an RPC procedure
-and neither of them is handed a Cloudflare `env`. `waitUntil` comes from the
-same module for the same reason.
+`import('cloudflare:workers')` rather than through a handler argument, because
+the counter is called from a route and from an RPC procedure and neither of them
+is handed a Cloudflare `env`. The import is dynamic and sits in
+`src/lib/server/servedBackend.ts`'s Cloudflare branch — the one the Node build's
+dead-code elimination removes, so the specifier never enters a bundle that
+cannot resolve it.
 
 That import is typed by `worker-configuration.d.ts`, which `wrangler types`
 generates from `wrangler.jsonc` and which is **not** committed — `.gitignore`
@@ -1875,15 +1917,15 @@ separate step. Re-run it after any change to the bindings.
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
 the build reads a GitHub token.
 
-The Worker script is about 2.93 MiB gzipped, against a 3 MiB limit on the
-Workers free plan and 10 MiB on the paid one. Roughly 74 KiB of headroom is
-left, and `pnpm exec wrangler deploy --dry-run` prints the figure. Almost all of
-it is shiki: `@pierre/diffs`'s own entry imports the bare `shiki` specifier,
-which carries the lazy loader for all 300-odd grammars, so importing anything
-from that package pulls the whole registry into whichever bundle it lands in.
-The server never highlights, so none of those chunks is ever evaluated there.
-Headroom on the free plan is thin, and any new dependency in the server graph
-eats into it.
+The Worker script is about 3 MiB gzipped, and size is no longer the constraint
+it was: the platform limit is 64 MiB uncompressed on every plan, and Cloudflare
+sets no compressed-size limit. `pnpm exec wrangler deploy --dry-run` prints both
+figures. Almost all of it is shiki: `@pierre/diffs`'s own entry imports the bare
+`shiki` specifier, which carries the lazy loader for all 300-odd grammars, so
+importing anything from that package pulls the whole registry into whichever
+bundle it lands in. The server never highlights, so none of those chunks is ever
+evaluated there. Both forges ship in every build, because which hosts a
+deployment serves is a runtime answer, not a build-time one.
 
 A dependency that only a stylesheet imports is not in that graph. The three
 fontsource packages are reached from `globals.css`, which `__root.tsx` links as
@@ -1947,6 +1989,8 @@ whoever lifted it.
 | `GITHUB_APP_SLUG`          | The App's name in a URL, for the install link.              |
 | `SESSION_SECRET`           | Seals the session cookie. A comma-separated keyring.        |
 | `GITHUB_TOKEN`             | Fallback token when the request carries none.               |
+| `GHDIFF_TARGET`            | Build-time: `node` builds the self-hosted server.           |
+| `PORT` / `HOST`            | Node-only: where the self-hosted server listens.            |
 
 All five are absent-tolerant except one: `SESSION_SECRET` set to something that
 is not a key throws, while unset simply means no sign-in. Generate one with
@@ -1982,7 +2026,8 @@ Nothing loads the example, since nobody passes `--env example`.
   committed `src/routeTree.gen.ts`, then `wrangler deploy --dry-run`. The dry
   run packages the Worker exactly as a deploy would and needs no Cloudflare
   credentials, so a change workerd cannot run fails the pull request instead of
-  the deploy.
+  the deploy. Then `pnpm build:node`, so a change that breaks the self-hosted
+  build fails the same way.
 
 A third job, **deploy**, waits on both and runs only on a push to `main`. It
 builds again before it calls `cloudflare/wrangler-action`, because

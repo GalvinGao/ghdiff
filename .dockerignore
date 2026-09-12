@@ -1,0 +1,10 @@
+.git
+.github
+node_modules
+dist
+.output
+.wrangler
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+*.log
