@@ -1,5 +1,5 @@
 # No workspace packages: reviewer is a single application at the repo root.
-# This file exists only to hold pnpm settings, which pnpm 11 reads from
+# This file exists only to hold pnpm settings, which pnpm reads from
 # here instead of from package.json.
 
 # @pierre/trees pins @pierre/theming 1.0.0 and @pierre/diffs pins 1.0.1. Two
