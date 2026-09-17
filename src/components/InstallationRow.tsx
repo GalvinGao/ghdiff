@@ -1,5 +1,6 @@
 import { IconArrowUpRight } from '@pierre/icons';
 
+import { m } from '../paraglide/messages.js';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import { cn } from '@/lib/cn';
@@ -52,7 +53,9 @@ export function InstallationRow({
         <p className={NAME_CLASS}>
           {installation.account}
           {wanted === true && (
-            <span className="text-ink-faint ml-2 text-xs">current diff</span>
+            <span className="text-ink-faint ml-2 text-xs">
+              {m.installation_row_current_diff()}
+            </span>
           )}
         </p>
         <p className={REACH_CLASS}>{describeInstallationReach(installation)}</p>
@@ -70,7 +73,7 @@ export function InstallationRow({
         rel="noreferrer"
         target="_blank"
       >
-        Configure
+        {m.installation_row_configure()}
         <IconArrowUpRight aria-hidden="true" size={12} />
       </a>
     </div>

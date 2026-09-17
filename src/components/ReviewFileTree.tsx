@@ -18,6 +18,7 @@ import {
   useState,
 } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { ReviewTreeSource } from '@/lib/reviewFilter';
 import type { TreeStatIndex } from '@/lib/treeStats';
@@ -217,9 +218,11 @@ export const ReviewFileTree = memo(function ReviewFileTree({
         // row does not already show. A file's own numbers need no title.
         title:
           item.kind === 'directory'
-            ? `${String(stat.fileCount)} ${
-                stat.fileCount === 1 ? 'file' : 'files'
-              }, ${added} ${deleted}`
+            ? m.tree_directory_summary({
+                count: stat.fileCount,
+                added,
+                deleted,
+              })
             : undefined,
       };
     }
@@ -291,7 +294,7 @@ export const ReviewFileTree = memo(function ReviewFileTree({
 
   return (
     <FileTree
-      className="h-full min-h-0 overflow-auto overscroll-none"
+      className="h-full min-h-0 overflow-auto overscroll-none [direction:ltr]"
       model={model}
       style={style}
     />

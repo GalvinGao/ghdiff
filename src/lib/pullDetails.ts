@@ -1,10 +1,11 @@
+import { m } from '../paraglide/messages.js';
+import { getLocale } from '../paraglide/runtime.js';
 // One pull request's own facts, for the card behind its title in the header.
 //
 // The switcher's `PullSummary` is what a list row needs. This is what the card
 // needs: the description, the counts, and the two dates. It is a separate shape
 // because it costs a separate request, and only the pull request on screen pays
 // for it.
-
 import { type PullState, pullState } from './pulls.ts';
 
 export interface PullDetails {
@@ -91,15 +92,22 @@ export function describeAge(iso: string, now: number): string {
   const then = Date.parse(iso);
   if (Number.isNaN(then)) return '';
   const elapsed = now - then;
-  if (elapsed < MINUTE) return 'just now';
-  if (elapsed < HOUR) return plural(Math.floor(elapsed / MINUTE), 'minute');
-  if (elapsed < DAY) return plural(Math.floor(elapsed / HOUR), 'hour');
-  if (elapsed < WEEK) return plural(Math.floor(elapsed / DAY), 'day');
-  if (elapsed < MONTH) return plural(Math.floor(elapsed / WEEK), 'week');
-  if (elapsed < YEAR) return plural(Math.floor(elapsed / MONTH), 'month');
-  return plural(Math.floor(elapsed / YEAR), 'year');
+  if (elapsed < MINUTE) return m.pull_details_just_now();
+  if (elapsed < HOUR)
+    return relativeTime(Math.floor(elapsed / MINUTE), 'minute');
+  if (elapsed < DAY) return relativeTime(Math.floor(elapsed / HOUR), 'hour');
+  if (elapsed < WEEK) return relativeTime(Math.floor(elapsed / DAY), 'day');
+  if (elapsed < MONTH) return relativeTime(Math.floor(elapsed / WEEK), 'week');
+  if (elapsed < YEAR) return relativeTime(Math.floor(elapsed / MONTH), 'month');
+  return relativeTime(Math.floor(elapsed / YEAR), 'year');
 }
 
-function plural(count: number, unit: string): string {
-  return `${count} ${unit}${count === 1 ? '' : 's'} ago`;
+function relativeTime(
+  count: number,
+  unit: Intl.RelativeTimeFormatUnit
+): string {
+  return new Intl.RelativeTimeFormat(getLocale(), { numeric: 'always' }).format(
+    -count,
+    unit
+  );
 }

@@ -4,22 +4,26 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "pnpm i18n:compile && vite dev",
+    "build": "pnpm i18n:compile && vite build",
     "preview": "vite preview",
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types",
-    "typecheck": "wrangler types && tsc --noEmit",
-    "lint": "oxlint",
+    "typecheck": "pnpm i18n:compile && wrangler types && tsc --noEmit",
+    "lint": "pnpm i18n:check && oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "node --test --experimental-strip-types \"src/lib/**/*.test.ts\""
+    "test": "pnpm i18n:compile && node --test --experimental-strip-types \"src/lib/**/*.test.ts\"",
+    "i18n:compile": "node scripts/compile-i18n.mjs && node scripts/build-userscript.mjs",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fira-code": "5.3.0",
     "@fontsource-variable/geist-mono": "5.3.0",
     "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@inlang/paraglide-js": "^2.25.0",
+    "@inlang/paraglide-js-react": "^1.0.3",
     "@orpc/client": "^1.15.0",
     "@orpc/contract": "^1.15.0",
     "@orpc/server": "^1.15.0",
@@ -46,7 +50,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@babel/parser": "^8.0.4",
     "@cloudflare/vite-plugin": "^1.53.1",
+    "@inlang/plugin-message-format": "4.4.0",
     "@j178/prek": "^0.4.14",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.2.0",

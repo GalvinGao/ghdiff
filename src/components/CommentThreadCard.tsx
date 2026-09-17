@@ -1,6 +1,9 @@
 import { IconReply } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
+import { formatList } from '../lib/locale.ts';
+import { m } from '../paraglide/messages.js';
+import { getLocale } from '../paraglide/runtime.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { CommentBody } from '@/components/CommentBody';
 import { CommentExpansion } from '@/components/CommentExpansion';
@@ -15,6 +18,7 @@ import {
   type ThreadComment,
   threadParticipants,
 } from '@/lib/comments';
+import { textDirection } from '@/lib/locale';
 
 interface CommentThreadCardProps {
   itemId: string;
@@ -89,11 +93,12 @@ export function CommentThreadCard({
 
   return (
     <div
+      dir={textDirection(getLocale())}
       ref={cardRef}
       role="button"
       tabIndex={0}
       aria-expanded={anchor != null}
-      aria-label={`Open thread by ${root.author}`}
+      aria-label={m.comment_thread_card_open_thread_by({ author: root.author })}
       onClick={(event) => {
         if (!isOwnEvent(event.target)) return;
         // A link or a button inside the card keeps its own behaviour.
@@ -143,19 +148,21 @@ export function CommentThreadCard({
         </span>
         {replyCount > 0 && (
           <span className="bg-surface text-ink-muted shrink-0 rounded-full px-1.5 py-px text-[11px] tabular-nums">
-            {replyCount === 1 ? '1 reply' : `${replyCount} replies`}
+            {m.common_reply_count({ count: replyCount })}
           </span>
         )}
         {participants.length > 1 && (
           <span className="text-ink-faint truncate text-[11px]">
-            {participants.slice(1).join(', ')}
+            {formatList(participants.slice(1))}
           </span>
         )}
         {metadata.pending === true && (
-          <span className="text-ink-faint shrink-0 text-[11px]">Posting…</span>
+          <span className="text-ink-faint shrink-0 text-[11px]">
+            {m.comment_thread_card_posting()}
+          </span>
         )}
         <span className="text-ink-faint ml-auto shrink-0 text-[11px]">
-          Click to open
+          {m.comment_thread_card_click_to_open()}
         </span>
       </div>
 
@@ -194,24 +201,22 @@ export function CommentThreadCard({
             <span className="text-ink text-sm font-semibold">
               {comments.length === 1
                 ? root.author
-                : `${comments.length} comments`}
+                : m.common_comment_count({ count: comments.length })}
             </span>
             <ConfirmInline
               className="ml-auto"
-              label="Delete"
-              question={
-                comments.length === 1
-                  ? 'Delete this comment on GitHub? This cannot be undone.'
-                  : `Delete all ${comments.length} comments in this thread on GitHub? This cannot be undone.`
-              }
-              confirmLabel="Delete"
+              label={m.comment_thread_card_delete()}
+              question={m.thread_delete_confirmation({
+                count: comments.length,
+              })}
+              confirmLabel={m.comment_thread_card_delete()}
               onConfirm={() => {
                 close();
                 onDelete(itemId, metadata.key);
               }}
             />
             <Button variant="outline" size="sm" onClick={close}>
-              Close
+              {m.comment_thread_card_close()}
             </Button>
           </div>
 
@@ -250,7 +255,7 @@ export function CommentThreadCard({
                       rel="noreferrer noopener"
                       className="text-ink-faint hover:text-accent ml-auto text-[11px] underline"
                     >
-                      On GitHub
+                      {m.comment_thread_card_on_github()}
                     </a>
                   )}
                 </div>
@@ -267,8 +272,7 @@ export function CommentThreadCard({
             />
           ) : (
             <p className="border-line text-ink-faint mt-3 border-t pt-3 text-[11px]">
-              This comment has not reached GitHub yet, so it cannot take a
-              reply.
+              {m.comment_thread_card_this_comment_has_not_reached_github_yet_so()}
             </p>
           )}
         </CommentExpansion>
@@ -313,10 +317,13 @@ function ReplyForm({
       }}
     >
       <textarea
+        dir="auto"
         value={body}
         rows={2}
         placeholder={
-          store === 'github' ? 'Reply on GitHub' : 'Reply in this browser'
+          store === 'github'
+            ? m.comment_thread_card_reply_on_github()
+            : m.comment_thread_card_reply_in_this_browser()
         }
         className={cn(
           'border-line bg-canvas text-ink placeholder:text-ink-faint w-full resize-y rounded-md border p-2 text-sm',
@@ -335,10 +342,12 @@ function ReplyForm({
       <div className="mt-2 flex items-center gap-2">
         <Button disabled={!canSend} size="sm" type="submit" variant="solid">
           <IconReply size={13} />
-          {pending ? 'Sending…' : 'Reply'}
+          {pending
+            ? m.comment_thread_card_sending()
+            : m.comment_thread_card_reply()}
         </Button>
         <span className="text-ink-faint ml-auto text-[11px]">
-          Cmd or Ctrl with Enter
+          {m.comment_thread_card_cmd_or_ctrl_with_enter()}
         </span>
       </div>
     </form>

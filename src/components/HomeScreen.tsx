@@ -1,11 +1,15 @@
+import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import { IconArrow, IconBrandGithub, IconBrandTwitterX } from '@pierre/icons';
 import { Link, useNavigate } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
 import { type MouseEvent, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { ExampleTargets } from '@/components/ExampleTargets';
 import { GitHubAccountPanel } from '@/components/GitHubAccountPanel';
+import { LanguageMenu } from '@/components/LanguageMenu';
 import { PullListButton } from '@/components/PullListButton';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
@@ -18,7 +22,29 @@ import { useServedCount } from '@/hooks/useServedCount';
 import { cn } from '@/lib/cn';
 import { GHDIFF_REPO, repoUrl } from '@/lib/githubUrls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
-import { formatServedCount } from '@/lib/servedCount';
+
+const creditsMarkup = {
+  diffs: ({ children }: { children?: ReactNode }) => (
+    <a
+      className="hover:text-ink underline"
+      href="https://diffs.com"
+      rel="noreferrer"
+      target="_blank"
+    >
+      {children}
+    </a>
+  ),
+  trees: ({ children }: { children?: ReactNode }) => (
+    <a
+      className="hover:text-ink underline"
+      href="https://trees.software"
+      rel="noreferrer"
+      target="_blank"
+    >
+      {children}
+    </a>
+  ),
+};
 
 // The home page carries no chrome of its own. There is no diff on screen yet, so
 // a header with a token button and view settings would be a toolbar for
@@ -70,10 +96,10 @@ export function HomeScreen() {
           same list. Without it a phone would have no way to the list at all
           from here, which is the one screen a reviewer starts on. */}
       <PullListButton className="phone:hidden fixed top-3 left-3 z-10" />
-      <ColorModeToggle
-        className="fixed top-3 right-3 z-10"
-        colorMode={colorMode}
-      />
+      <div className="fixed top-3 right-3 z-10 flex items-center gap-1">
+        <LanguageMenu />
+        <ColorModeToggle colorMode={colorMode} />
+      </div>
 
       <div className="m-auto w-full max-w-2xl px-6 py-14">
         <h1 className="text-ink text-2xl font-semibold tracking-tight">
@@ -82,15 +108,20 @@ export function HomeScreen() {
         {/* One line per thing the app does. Three clauses in one paragraph read
             as a sentence to get through; three lines read as a list. */}
         <div className="text-ink-muted mt-1.5 space-y-0.5 text-sm">
-          <p>Open any GitHub pull request, commit, or compare range.</p>
-          <p>Narrow the file list with preset path rules.</p>
-          <p>Read and leave comments.</p>
+          <p>
+            {m.home_screen_open_any_github_pull_request_commit_or_compare()}
+          </p>
+          <p>{m.home_screen_narrow_the_file_list_with_preset_path_rules()}</p>
+          <p>{m.home_screen_read_and_leave_comments()}</p>
         </div>
 
         {/* The whole instruction is the host swap, which is worth showing
             rather than describing. Square corners, because these two lines are
             a diff and a diff has none. */}
-        <div className="text-ink-muted mt-6 flex flex-col gap-px font-mono text-xs leading-6">
+        <div
+          dir="ltr"
+          className="text-ink-muted mt-6 flex flex-col gap-px font-mono text-xs leading-6"
+        >
           <code className="border-removed truncate border-l-2 pl-2">
             <span className="text-removed">{'- '}</span>
             <span className="bg-removed/15 text-removed rounded-xs px-0.5 font-semibold">
@@ -116,7 +147,7 @@ export function HomeScreen() {
               const target = parseGitHubInput(input);
               if (target == null) {
                 setError(
-                  'Paste a GitHub pull request, commit, or compare URL, or type owner/repo#123.'
+                  m.home_screen_paste_a_github_pull_request_commit_or_compare()
                 );
                 return;
               }
@@ -128,9 +159,10 @@ export function HomeScreen() {
             }}
           >
             <label className="sr-only" htmlFor="github-target">
-              GitHub pull request, commit, or compare URL
+              {m.home_screen_github_pull_request_commit_or_compare_url()}
             </label>
             <input
+              dir="ltr"
               ref={targetField}
               id="github-target"
               value={input}
@@ -147,11 +179,11 @@ export function HomeScreen() {
             <Button
               disabled={input.trim().length === 0}
               size="md"
-              title="Open this diff"
+              title={m.home_screen_open_this_diff()}
               type="submit"
               variant="solid"
             >
-              Review
+              {m.home_screen_review()}
               <IconArrow className="rotate-180" size={15} />
             </Button>
           </form>
@@ -205,7 +237,7 @@ export function HomeScreen() {
                 }}
                 to="/setup"
               >
-                Set up access for private repositories
+                {m.home_screen_set_up_access_for_private_repositories()}
                 <IconArrow className="rotate-180" size={14} />
               </Link>
             )}
@@ -225,7 +257,7 @@ export function HomeScreen() {
             the reviewer who never leaves github.com. It follows the form
             because it is the same move, made by a button instead. */}
         <div className="mt-10">
-          <SectionLabel>Userscript</SectionLabel>
+          <SectionLabel>{m.home_screen_userscript()}</SectionLabel>
         </div>
         <div className={`${CARD} mt-2`}>
           <UserscriptInstall />
@@ -235,7 +267,7 @@ export function HomeScreen() {
             reviewer arriving with no pull request of their own to read has no
             way to find out what the surface does. These are that way in. */}
         <div className="mt-10">
-          <SectionLabel>Examples</SectionLabel>
+          <SectionLabel>{m.home_screen_examples()}</SectionLabel>
         </div>
         <div className={`${CARD} mt-2 p-1`}>
           <ExampleTargets />
@@ -248,7 +280,7 @@ export function HomeScreen() {
             and it has to be here in the open, because the bar is not drawn at
             all for a reviewer who watches nothing. */}
         <div className="mt-10">
-          <SectionLabel>Watched repos</SectionLabel>
+          <SectionLabel>{m.home_screen_watched_repos()}</SectionLabel>
         </div>
         <div className={`${CARD} mt-2 px-4 py-3`}>
           <WatchedReposEditor watched={watched} />
@@ -257,32 +289,14 @@ export function HomeScreen() {
         <Dialog
           className="p-4"
           open={editingAccount}
-          title="GitHub account"
+          title={m.home_screen_github_account()}
           onClose={() => setEditingAccount(false)}
         >
           <GitHubAccountPanel active={editingAccount} session={session} />
         </Dialog>
 
         <p className="text-ink-faint mt-10 text-xs">
-          Diffs via{' '}
-          <a
-            className="hover:text-ink underline"
-            href="https://diffs.com"
-            rel="noreferrer"
-            target="_blank"
-          >
-            CodeView
-          </a>{' '}
-          and file list via{' '}
-          <a
-            className="hover:text-ink underline"
-            href="https://trees.software"
-            rel="noreferrer"
-            target="_blank"
-          >
-            FileTree
-          </a>
-          .
+          <ParaglideMessage message={m.home_credits} markup={creditsMarkup} />
         </p>
         <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
           {/* The mark, not a word: this line names a repository, and the line
@@ -294,7 +308,9 @@ export function HomeScreen() {
             target="_blank"
           >
             <IconBrandGithub aria-hidden="true" size={13} />
-            <span className="underline">Source on GitHub</span>
+            <span className="underline">
+              {m.home_screen_source_on_github()}
+            </span>
           </a>
           {/* The person who writes it, beside the source of it. Both are
               addresses off this site, and the two figures after them are about
@@ -350,7 +366,9 @@ function BuildCommit() {
           sha,
         }),
       }}
-      title={`Review the commit this build was made from, ${sha}, in ghdiff`}
+      title={m.home_screen_review_the_commit_this_build_was_made_from({
+        sha: sha,
+      })}
       to="/$"
     >
       {sha.slice(0, 7)}
@@ -372,7 +390,7 @@ function ServedCount() {
   if (count == null || count === 0) return null;
   return (
     <span className="text-ink-faint text-xs">
-      Served {formatServedCount(count)} {count === 1 ? 'diff' : 'diffs'}
+      {m.home_served_count({ count })}
     </span>
   );
 }

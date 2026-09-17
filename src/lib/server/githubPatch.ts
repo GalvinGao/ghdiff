@@ -1,3 +1,4 @@
+import { m } from '../../paraglide/messages.js';
 // Fallback for a diff GitHub refuses to render.
 //
 // The unified-diff media type on the pull request, commit, and compare
@@ -105,15 +106,18 @@ export function describeSynthesisGaps(
   const notes: string[] = [];
   if (truncatedFileList) {
     notes.push(
-      `GitHub lists at most ${result.fileCount} files for this diff, so later files are absent.`
+      m.github_patch_github_lists_at_most_files_for_this_diff({
+        fileCount: result.fileCount,
+      })
     );
   }
   const missing = result.filesWithoutPatch.length;
   if (missing > 0) {
     notes.push(
-      missing === 1
-        ? `GitHub judged 1 file too large to diff, so it shows no lines: ${result.filesWithoutPatch[0]}.`
-        : `GitHub judged ${missing} files too large to diff, so they show no lines.`
+      m.github_patch_missing_files({
+        count: missing,
+        path: result.filesWithoutPatch[0] ?? '',
+      })
     );
   }
   return notes.length === 0 ? undefined : notes.join(' ');

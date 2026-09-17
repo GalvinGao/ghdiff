@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
+import { formatList, formatNumber } from '../lib/locale.ts';
+import { m } from '../paraglide/messages.js';
 import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
@@ -75,7 +77,7 @@ export function PullRequestList({
         <PullListSkeleton />
       ) : repos.length === 0 ? (
         <p className="text-ink-muted px-2 py-3 text-sm">
-          Watch a repository to see its open pull requests.
+          {m.pull_request_list_watch_a_repository_to_see_its_open_pull()}
         </p>
       ) : loading && groups.length === 0 ? (
         // Nothing to show and an answer on the way: the first load, and the
@@ -93,7 +95,9 @@ export function PullRequestList({
         // over the top of it would be a second, wrong answer.
         failures.length === 0 && (
           <p className="text-ink-muted px-2 py-3 text-sm">
-            No open pull requests in {repos.map(formatWatchedRepo).join(', ')}.
+            {m.pull_list_empty({
+              repositories: formatList(repos.map(formatWatchedRepo)),
+            })}
           </p>
         )
       ) : (
@@ -123,9 +127,12 @@ export function PullRequestList({
             <div className="flex items-baseline gap-2 px-2 pt-2 pb-1">
               <SectionLabel className="min-w-0">
                 <GitHubTextLink
-                  className="block truncate"
+                  className="block truncate [direction:ltr]"
                   href={repoUrl(group)}
-                  title={`Open ${group.owner}/${group.repo} on GitHub`}
+                  title={m.pull_request_list_open_on_github({
+                    owner: group.owner,
+                    repo: group.repo,
+                  })}
                 >
                   {group.owner}/{group.repo}
                 </GitHubTextLink>
@@ -133,9 +140,11 @@ export function PullRequestList({
               <GitHubTextLink
                 className="text-ink-faint ml-auto shrink-0 text-xs tabular-nums"
                 href={repoPullsUrl(group)}
-                title={`Open the ${String(group.count)} open pull requests on GitHub`}
+                title={m.pull_request_list_open_the_open_pull_requests_on_github(
+                  { count: group.count }
+                )}
               >
-                {group.count}
+                {formatNumber(group.count)}
               </GitHubTextLink>
             </div>
             {group.authors.map((author, authorIndex) => (
@@ -155,12 +164,18 @@ export function PullRequestList({
                   <span className="min-w-0 truncate">{author.author}</span>
                   {author.isViewer && (
                     <span className="border-line text-ink-faint shrink-0 rounded border px-1 text-[10px] leading-4">
-                      you
+                      {m.pull_request_list_you()}
                     </span>
                   )}
                   <GitHubIconLink
                     href={repoPullsUrl(group, { author: author.author })}
-                    label={`Open ${author.author}'s open pull requests in ${group.owner}/${group.repo} on GitHub`}
+                    label={m.pull_request_list_open_s_open_pull_requests_in_on_github(
+                      {
+                        author: author.author,
+                        owner: group.owner,
+                        repo: group.repo,
+                      }
+                    )}
                   />
                 </p>
                 <PullStack
@@ -203,7 +218,7 @@ export function PullRequestList({
               }}
               to="/setup"
             >
-              Set up private access
+              {m.pull_request_list_set_up_private_access()}
             </Link>
           )}
         </div>
@@ -218,8 +233,7 @@ export function PullRequestList({
           empty list it asks for a sign-in and promises nothing. */}
       {groups.length > 0 && data != null && data.viewer == null && (
         <p className="text-ink-faint border-line mt-1 border-t px-2 py-1.5 text-xs">
-          Signed out, no row shows a status square or a mark on your own pull
-          requests. Signing in supplies both.
+          {m.pull_request_list_signed_out_no_row_shows_a_status_square()}
         </p>
       )}
     </>
@@ -273,7 +287,7 @@ function PullStack({
                 it is the width of one square. */}
             <div className="flex items-center justify-between gap-2 px-2 pt-0.5">
               <span className="text-ink-faint text-[10px] leading-none font-medium">
-                Stack
+                {m.pull_request_list_stack()}
               </span>
               {/* The same badge the collapsed bar puts at the top of this
                   stack's block, marked with the same key, so a toggle flies
@@ -342,7 +356,9 @@ const SKELETON_GROUPS: readonly (readonly string[])[] = [
 export function PullListSkeleton() {
   return (
     <div className="animate-pulse motion-reduce:animate-none" role="status">
-      <span className="sr-only">Loading open pull requests…</span>
+      <span className="sr-only">
+        {m.pull_request_list_loading_open_pull_requests()}
+      </span>
       <div aria-hidden="true">
         {SKELETON_GROUPS.map((widths, groupIndex) => (
           <div key={groupIndex} className="pb-1">

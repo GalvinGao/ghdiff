@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import type { PullDetails } from '@/lib/pullDetails';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 
@@ -45,7 +46,12 @@ export function usePullDetails(options: {
       );
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(rpcErrorMessage(cause, 'Could not load this pull request.'));
+      setError(
+        rpcErrorMessage(
+          cause,
+          m.use_pull_details_could_not_load_this_pull_request()
+        )
+      );
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }

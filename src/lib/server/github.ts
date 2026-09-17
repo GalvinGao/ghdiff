@@ -1,3 +1,4 @@
+import { m } from '../../paraglide/messages.js';
 // Minimal GitHub REST client.
 //
 // The token never reaches the server's disk. A reviewer who signed in through
@@ -6,7 +7,6 @@
 // ahead of that, which is what keeps curl and a script working; and
 // GITHUB_TOKEN is the last fallback, so a single-user deployment can skip the
 // browser step. `resolveGitHubToken` is where those three meet.
-
 import { gitHubErrorMessage } from '../githubError.ts';
 import { rateLimitedStatus } from '../rateLimit.ts';
 import { accessTokenUsable, refreshDue, withinMaxAge } from '../session.ts';
@@ -45,8 +45,7 @@ export interface ResolvedToken {
  * reaches a screen only when the refresh itself failed — and then the session
  * behind it is gone, and the sentence is true.
  */
-export const SIGN_IN_EXPIRED =
-  'Your GitHub sign-in is no longer valid. Set up access again to continue.';
+export const SIGN_IN_EXPIRED = m.github_your_github_sign_in_is_no_longer_valid;
 
 export class GitHubError extends Error {
   readonly status: number;
@@ -226,11 +225,14 @@ export async function githubGraphQL<T>(
   if (body.errors != null && body.errors.length > 0) {
     throw new GitHubError(
       200,
-      body.errors[0]?.message ?? 'GitHub rejected that query.'
+      body.errors[0]?.message ?? m.github_github_rejected_that_query()
     );
   }
   if (body.data == null) {
-    throw new GitHubError(200, 'GitHub returned no data for that query.');
+    throw new GitHubError(
+      200,
+      m.github_github_returned_no_data_for_that_query()
+    );
   }
   return body.data;
 }
@@ -435,7 +437,7 @@ export async function githubWebRaw(
       // This host answers a missing file and an invisible repository alike with
       // a bare 404 and no sentence of its own, so the caller writes one.
       response.status === 404
-        ? 'GitHub has no such file on that commit. A private repository needs a token.'
+        ? m.github_github_has_no_such_file_on_that_commit()
         : await readErrorMessage(response)
     );
   }

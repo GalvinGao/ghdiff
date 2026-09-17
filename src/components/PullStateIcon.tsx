@@ -3,6 +3,7 @@ import { GitPullRequestClosedIcon } from '@primer/octicons-react/GitPullRequestC
 import { GitPullRequestDraftIcon } from '@primer/octicons-react/GitPullRequestDraftIcon';
 import { GitPullRequestIcon } from '@primer/octicons-react/GitPullRequestIcon';
 
+import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
 import type { PullState } from '@/lib/pulls';
 
@@ -25,10 +26,18 @@ const COLOR: Record<PullState, string> = {
 };
 
 const LABEL: Record<PullState, string> = {
-  open: 'Open',
-  draft: 'Draft',
-  merged: 'Merged',
-  closed: 'Closed',
+  get open() {
+    return m.pull_state_icon_open();
+  },
+  get draft() {
+    return m.pull_state_icon_draft();
+  },
+  get merged() {
+    return m.pull_state_icon_merged();
+  },
+  get closed() {
+    return m.pull_state_icon_closed();
+  },
 };
 
 export function PullStateIcon({

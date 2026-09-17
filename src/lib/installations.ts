@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // Where the App can actually reach, as the setup page reports it.
 //
 // A personal access token needed no such idea: it could see whatever its owner
@@ -37,10 +38,10 @@ export interface AppInstallation {
 export function describeInstallationReach(
   installation: AppInstallation
 ): string {
-  if (installation.allRepositories) return 'All repositories';
+  if (installation.allRepositories) return m.installations_all_repositories();
   const count = installation.repositoryCount ?? 0;
-  if (count === 0) return 'No repositories selected';
-  return count === 1 ? '1 repository' : `${count} repositories`;
+  if (count === 0) return m.installations_no_repositories_selected();
+  return m.common_repository_count({ count });
 }
 
 /**

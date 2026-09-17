@@ -1,3 +1,4 @@
+import { m } from '../../paraglide/messages.js';
 // What the four `/api/auth/*` routes have in common, stated once.
 //
 // Each of them is a few lines of its own logic wrapped in the same three
@@ -6,7 +7,6 @@
 // two to set. The last is the one worth a helper — a `Headers` object literal
 // with two `set-cookie` keys keeps one of them, and which one it keeps is not
 // something to find out in production.
-
 import { readAppConfig, type AppConfig } from './githubApp.ts';
 import { readKeyring } from './session.ts';
 
@@ -30,13 +30,10 @@ export function readAuthSetup(): AuthSetup | undefined {
 
 /** What a reviewer is told when this deployment has no App behind it. */
 export function notConfigured(): Response {
-  return new Response(
-    'This ghdiff has no GitHub App set up, so it cannot sign you in.',
-    {
-      status: 501,
-      headers: { 'cache-control': 'no-store', 'content-type': 'text/plain' },
-    }
-  );
+  return new Response(m.auth_route_this_ghdiff_has_no_github_app_set_up(), {
+    status: 501,
+    headers: { 'cache-control': 'no-store', 'content-type': 'text/plain' },
+  });
 }
 
 /**

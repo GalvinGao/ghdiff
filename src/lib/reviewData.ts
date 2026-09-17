@@ -6,6 +6,7 @@ import {
 } from '@pierre/diffs';
 import type { GitStatus, GitStatusEntry } from '@pierre/trees';
 
+import { m } from '../paraglide/messages.js';
 import type { CommentMetadata } from './comments.ts';
 import { diffLanguage } from './diffLanguage.ts';
 
@@ -75,7 +76,7 @@ function treePathPrefix(
   const commitHash = patchMetadata?.match(COMMIT_HASH_PATTERN)?.[1];
   return commitHash != null
     ? commitHash.slice(0, 7)
-    : `Commit ${patchIndex + 1}`;
+    : m.review_data_commit({ value: patchIndex + 1 });
 }
 
 function countHunkLines(fileDiff: FileDiffMetadata): {

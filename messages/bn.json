@@ -1,0 +1,624 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "স্বয়ংক্রিয়",
+  "color_mode_toggle_light": "হালকা",
+  "color_mode_toggle_dark": "গাঢ়",
+  "color_mode_toggle_color_mode_switch_to": "রঙের মোড: {value}। {value2}-এ বদলান।",
+  "color_mode_toggle_color_mode": "রঙের মোড: {value}",
+  "comment_author_filter_bar_comment_authors": "মন্তব্যের লেখক",
+  "comment_author_filter_bar_all": "সব",
+  "comment_author_filter_bar_comments_a_person_opened": "কোনো ব্যক্তির শুরু করা মন্তব্য",
+  "comment_author_filter_bar_people": "মানুষ",
+  "comment_author_filter_bar_comments_a_github_app_opened": "GitHub App-এর শুরু করা মন্তব্য",
+  "comment_author_filter_bar_bots": "বট",
+  "comment_body_done": "সম্পন্ন",
+  "comment_body_not_done": "সম্পন্ন হয়নি",
+  "comment_composer_leave_a_comment": "মন্তব্য লিখুন",
+  "comment_composer_comment": "মন্তব্য",
+  "comment_composer_cancel": "বাতিল",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd বা Ctrl-এর সঙ্গে Enter",
+  "comment_expansion_comment": "মন্তব্য",
+  "comment_thread_card_open_thread_by": "{author}-এর থ্রেড খুলুন",
+  "comment_thread_card_posting": "পোস্ট করা হচ্ছে…",
+  "comment_thread_card_click_to_open": "খুলতে ক্লিক করুন",
+  "comment_thread_card_delete": "মুছুন",
+  "comment_thread_card_close": "বন্ধ করুন",
+  "comment_thread_card_on_github": "GitHub-এ",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "এই মন্তব্যটি এখনো GitHub-এ পৌঁছায়নি, তাই এতে উত্তর দেওয়া যাবে না।",
+  "comment_thread_card_reply_on_github": "GitHub-এ উত্তর দিন",
+  "comment_thread_card_reply_in_this_browser": "এই ব্রাউজারে উত্তর দিন",
+  "comment_thread_card_sending": "পাঠানো হচ্ছে…",
+  "comment_thread_card_reply": "উত্তর দিন",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Enter-এর সঙ্গে Cmd বা Ctrl",
+  "comments_list_no_comments_here": "এখানে কোনো মন্তব্য নেই।",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "এখানে লেখা মন্তব্য GitHub-এ পোস্ট করা হয়।",
+  "comments_list_github_has_no_review_thread_for_commits_or": "কমিট বা compare range-এর জন্য GitHub-এ কোনো রিভিউ থ্রেড নেই। মন্তব্য এই ব্রাউজারেই থাকে।",
+  "comments_list_posting": "পোস্ট করা হচ্ছে",
+  "comments_list_failed": "ব্যর্থ",
+  "comments_list_go_to": "{path}-এ যান",
+  "confirm_inline_cancel": "বাতিল",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "যোগ করা হয়েছে",
+  "filter_menu_modified": "পরিবর্তিত",
+  "filter_menu_renamed": "নাম পরিবর্তন করা হয়েছে",
+  "filter_menu_deleted": "মুছে ফেলা হয়েছে",
+  "filter_menu_filter_files": "ফাইল ফিল্টার করুন",
+  "filter_menu_file_rules": "ফাইলের নিয়ম",
+  "filter_menu_git_status": "Git-এর অবস্থা",
+  "filter_menu_clear_filters": "ফিল্টার পরিষ্কার করুন",
+  "filter_menu_all_files": "সব ফাইল",
+  "git_hub_account_control_set_up_access": "অ্যাক্সেস সেট আপ করুন",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "আপনার লেখা মন্তব্য এই অ্যাকাউন্টের নামে GitHub-এ যায়।",
+  "git_hub_account_panel_install_on_another_account": "অন্য অ্যাকাউন্টে ইনস্টল করুন",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff কোনো অ্যাকাউন্টে ইনস্টল করা নেই। আপনার কোড পড়তে এটি সেট আপ করুন।",
+  "git_hub_account_panel_open_setup_guide": "সেটআপ নির্দেশিকা খুলুন",
+  "git_hub_account_panel_sign_out": "সাইন আউট করুন",
+  "git_hub_account_panel_accounts_with_access": "অ্যাক্সেস থাকা অ্যাকাউন্ট",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "রিপোজিটরি যোগ বা সরাতে github.com-এর সেটিংস খোলে।",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "ghdiff কোন GitHub অ্যাকাউন্ট পড়তে পারে, দেখা হচ্ছে…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "যেকোনো GitHub পুল রিকোয়েস্ট, কমিট বা compare range খুলুন।",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "প্রিসেট পাথ নিয়ম দিয়ে ফাইল তালিকা সীমিত করুন।",
+  "home_screen_read_and_leave_comments": "মন্তব্য পড়ুন ও লিখুন।",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "একটি GitHub পুল রিকোয়েস্ট, কমিট বা compare URL পেস্ট করুন, অথবা owner/repo#123 লিখুন।",
+  "home_screen_github_pull_request_commit_or_compare_url": "GitHub পুল রিকোয়েস্ট, কমিট বা compare URL",
+  "home_screen_open_this_diff": "এই পার্থক্য খুলুন",
+  "home_screen_review": "রিভিউ",
+  "home_screen_set_up_access_for_private_repositories": "ব্যক্তিগত রিপোজিটরির অ্যাক্সেস সেট আপ করুন",
+  "home_screen_userscript": "ইউজারস্ক্রিপ্ট",
+  "home_screen_examples": "উদাহরণ",
+  "home_screen_watched_repos": "তালিকাভুক্ত রিপোজিটরি",
+  "home_screen_github_account": "GitHub অ্যাকাউন্ট",
+  "home_screen_source_on_github": "GitHub-এ সোর্স",
+  "home_screen_review_the_commit_this_build_was_made_from": "এই বিল্ড যে কমিট থেকে তৈরি, সেটি {sha}; ghdiff-এ রিভিউ করুন",
+  "installation_row_current_diff": "বর্তমান পার্থক্য",
+  "installation_row_configure": "কনফিগার করুন",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff ওই URL পড়তে পারে না",
+  "not_found_a_review_needs_a_github_pull_request_a": "রিভিউ করতে একটি GitHub পুল রিকোয়েস্ট, কমিট বা compare range দরকার।",
+  "not_found_open_a_different_review": "অন্য রিভিউ খুলুন",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "আকার বদলাতে টানুন। রিসেট করতে দুইবার ক্লিক করুন।",
+  "pull_details_card_loading_pull_request": "পুল রিকোয়েস্ট লোড হচ্ছে…",
+  "pull_details_card_no_details_yet": "এখনো কোনো বিবরণ নেই।",
+  "pull_details_card_files": "ফাইল",
+  "pull_details_card_added_lines": "যোগ করা লাইন",
+  "pull_details_card_deleted_lines": "মুছে ফেলা লাইন",
+  "pull_details_card_commits": "কমিট",
+  "pull_details_card_description": "বিবরণ",
+  "pull_list_button_open_pull_requests": "খোলা পুল রিকোয়েস্ট",
+  "pull_list_button_watched_repos": "তালিকাভুক্ত রিপোজিটরি",
+  "pull_list_button_reload_the_pull_requests": "পুল রিকোয়েস্ট আবার লোড করুন",
+  "pull_list_button_loading_the_pull_requests": "পুল রিকোয়েস্ট লোড হচ্ছে",
+  "pull_rail_open_pull_requests": "খোলা পুল রিকোয়েস্ট",
+  "pull_rail_pull_request_bar_width": "পুল রিকোয়েস্ট বারের প্রস্থ",
+  "pull_rail_show_the_pull_requests": "পুল রিকোয়েস্ট দেখান",
+  "pull_rail_hide_the_pull_requests": "পুল রিকোয়েস্ট লুকান",
+  "pull_rail_watched_repos": "তালিকাভুক্ত রিপোজিটরি",
+  "pull_rail_reload_the_pull_requests": "পুল রিকোয়েস্ট আবার লোড করুন",
+  "pull_rail_loading_the_pull_requests": "পুল রিকোয়েস্ট লোড হচ্ছে",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "খোলা পুল রিকোয়েস্ট দেখতে একটি রিপোজিটরি তালিকায় যোগ করুন।",
+  "pull_request_list_open_on_github": "GitHub-এ {owner}/{repo} খুলুন",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=one": "GitHub-এ {formatted}টি খোলা পুল রিকোয়েস্ট খুলুন",
+        "category=*": "GitHub-এ {formatted}টি খোলা পুল রিকোয়েস্ট খুলুন"
+      }
+    }
+  ],
+  "pull_request_list_you": "আপনি",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "GitHub-এ {owner}/{repo}-তে {author}-এর খোলা পুল রিকোয়েস্ট খুলুন",
+  "pull_request_list_set_up_private_access": "ব্যক্তিগত অ্যাক্সেস সেট আপ করুন",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "সাইন আউট করা আছে; কোনো সারিতে স্ট্যাটাস বর্গক্ষেত্র বা আপনার নিজের পুল রিকোয়েস্টের চিহ্ন দেখা যাবে না। সাইন ইন করলে দুটিই দেখা যাবে।",
+  "pull_request_list_stack": "স্ট্যাক",
+  "pull_request_list_loading_open_pull_requests": "খোলা পুল রিকোয়েস্ট লোড হচ্ছে…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "খসড়া",
+  "pull_row_currently_viewing": "বর্তমানে দেখছেন",
+  "pull_state_icon_open": "খোলা",
+  "pull_state_icon_draft": "খসড়া",
+  "pull_state_icon_merged": "মার্জ হয়েছে",
+  "pull_state_icon_closed": "বন্ধ",
+  "review_header_bars": "বার",
+  "review_header_signs": "চিহ্ন",
+  "review_header_none": "কোনোটিই নয়",
+  "review_header_hide_the_file_list": "ফাইল তালিকা লুকান",
+  "review_header_show_the_file_list": "ফাইল তালিকা দেখান",
+  "review_header_open_on_github": "GitHub-এ {targetLabel} খুলুন",
+  "review_header_switch_to_unified_view": "একীভূত দৃশ্যে বদলান",
+  "review_header_switch_to_split_view": "বিভক্ত দৃশ্যে বদলান",
+  "review_header_split_view": "বিভক্ত দৃশ্য",
+  "review_header_unified_view": "একীভূত দৃশ্য",
+  "review_header_display_settings": "প্রদর্শনের সেটিংস",
+  "review_header_code_font": "কোড ফন্ট",
+  "review_header_change_markers": "পরিবর্তনের চিহ্ন",
+  "review_header_wrap_long_lines": "লম্বা লাইন ভাঁজ করুন",
+  "review_header_line_numbers": "লাইন নম্বর",
+  "review_header_change_backgrounds": "পরিবর্তনের পটভূমি",
+  "review_header_dim_whitespace_changes": "ফাঁকা স্থানের পরিবর্তন ম্লান করুন",
+  "review_header_approve_request_changes_or_comment": "অনুমোদন করুন, পরিবর্তনের অনুরোধ করুন বা মন্তব্য করুন",
+  "review_header_review": "রিভিউ",
+  "review_header_review_it_again": "{value} আবার রিভিউ করুন।",
+  "review_screen_sidebar_width": "সাইডবারের প্রস্থ",
+  "review_screen_dismiss": "বাতিল করুন",
+  "review_sidebar_sidebar_sections": "সাইডবারের বিভাগ",
+  "review_sidebar_files": "ফাইল",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=one, comments=one": "{threadNumber}টি থ্রেড, {commentNumber}টি মন্তব্য",
+        "threads=one, comments=*": "{threadNumber}টি থ্রেড, {commentNumber}টি মন্তব্য",
+        "threads=*, comments=one": "{threadNumber}টি থ্রেড, {commentNumber}টি মন্তব্য",
+        "threads=*, comments=*": "{threadNumber}টি থ্রেড, {commentNumber}টি মন্তব্য"
+      }
+    }
+  ],
+  "review_sidebar_comments": "মন্তব্য",
+  "review_sidebar_hide_the_path_search": "পথ অনুসন্ধান লুকান",
+  "review_sidebar_search_by_path": "পথ দিয়ে খুঁজুন",
+  "review_sidebar_the_current_filter_hides_all_files": "বর্তমান ফিল্টার সব ফাইল লুকিয়ে রেখেছে।",
+  "review_sidebar_clear_filters": "ফিল্টার পরিষ্কার করুন",
+  "review_sidebar_added_lines": "যোগ করা লাইন",
+  "review_sidebar_deleted_lines": "মুছে ফেলা লাইন",
+  "review_sidebar_search_files_by_path": "পথ দিয়ে ফাইল খুঁজুন",
+  "review_sidebar_path_contains": "পথে রয়েছে…",
+  "review_sidebar_clear_the_path_search": "পথ অনুসন্ধান পরিষ্কার করুন",
+  "review_status_panel_fetching_the_diff": "পার্থক্য আনা হচ্ছে",
+  "review_status_panel_reading_the_patch_for_this_review": "এই রিভিউয়ের প্যাচ পড়া হচ্ছে।",
+  "review_status_panel_preparing_the_diff": "পার্থক্য প্রস্তুত করা হচ্ছে",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "প্যাচ পার্স করে ফাইল তালিকা তৈরি হচ্ছে।",
+  "review_status_panel_starting_the_highlighters": "হাইলাইটার চালু হচ্ছে",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "ব্যাকগ্রাউন্ড ওয়ার্কার আপনার কোড রঙিন করতে প্রস্তুত হচ্ছে।",
+  "review_status_panel_set_up_repository_access": "রিপোজিটরি অ্যাক্সেস সেট আপ করুন",
+  "review_status_panel_try_again": "আবার চেষ্টা করুন",
+  "review_submit_dialog_add_a_note_github_needs_one": "একটি নোট যোগ করুন। GitHub-এর একটি দরকার।",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "নিজের পুল রিকোয়েস্টে অনুমোদন GitHub গ্রহণ করে না।",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "নিজের পুল রিকোয়েস্টে পরিবর্তনের অনুরোধ GitHub গ্রহণ করে না।",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "নিজের পুল রিকোয়েস্টে মন্তব্য করতে পারেন। GitHub আর কিছু অনুমতি দেয় না।",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "একটি নোট যোগ করুন। পরিবর্তনের অনুরোধ বা মন্তব্য করতে GitHub-এর একটি দরকার।",
+  "review_submit_dialog_submit_a_review": "রিভিউ জমা দিন",
+  "review_submit_dialog_review_body": "রিভিউয়ের মূল লেখা",
+  "review_submit_dialog_leave_a_note_with_your_review": "রিভিউয়ের সঙ্গে একটি নোট লিখুন",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "পার্থক্য দেখান",
+  "review_viewer_hide_the_diff": "পার্থক্য লুকান",
+  "review_viewer_show_the_whole_file": "সম্পূর্ণ ফাইল দেখান",
+  "review_viewer_viewed": "দেখা হয়েছে",
+  "setup_screen_set_up_private_repository_access": "ব্যক্তিগত রিপোজিটরি অ্যাক্সেস সেট আপ করুন",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "আপনি যে রিপোজিটরিগুলোতে অ্যাক্সেস দেন, GitHub শুধু সেগুলোই ghdiff-কে পড়তে দেয়। এই তিনটি ধাপ ক্রমানুসারে সম্পন্ন করুন।",
+  "setup_screen_sign_in_to_github": "GitHub-এ সাইন ইন করুন",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "এটি GitHub-কে আপনার অ্যাকাউন্ট শনাক্ত করতে দেয়। আপনার লেখা মন্তব্য এই অ্যাকাউন্টের নামে পোস্ট হবে।",
+  "setup_screen_sign_in_with_github": "GitHub দিয়ে সাইন ইন করুন",
+  "setup_screen_grant_repository_access": "রিপোজিটরি অ্যাক্সেস দিন",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "সাইন ইন শুধু আপনাকে শনাক্ত করে। ghdiff কোন অ্যাকাউন্ট ও রিপোজিটরি পড়তে পারবে তা বেছে নিন।",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "সাইন ইন শুধু আপনাকে শনাক্ত করে। {account}-এ ghdiff ইনস্টল করুন এবং নিশ্চিত করুন যে এই রিপোজিটরিটি তার অ্যাক্সেস তালিকায় আছে।",
+  "setup_screen_accounts_with_access": "অ্যাক্সেস থাকা অ্যাকাউন্ট",
+  "setup_screen_install_ghdiff": "ghdiff ইনস্টল করুন",
+  "setup_screen_install_on_another_account": "অন্য অ্যাকাউন্টে ইনস্টল করুন",
+  "setup_screen_checking": "পরীক্ষা করা হচ্ছে…",
+  "setup_screen_check_again": "আবার পরীক্ষা করুন",
+  "setup_screen_open_the_diff": "পার্থক্য খুলুন",
+  "setup_screen_go_to_the_home_page_to_paste_a": "পুল রিকোয়েস্ট, কমিট বা compare URL পেস্ট করতে হোম পেজে যান।",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "আপনার পার্থক্যে ফিরুন। আপডেট করা অনুমতি ব্যবহার করে ghdiff এটি আবার আনবে।",
+  "setup_screen_go_to_ghdiff_home": "ghdiff হোমে যান",
+  "setup_screen_return_to_the_diff": "পার্থক্যে ফিরুন",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "এই ghdiff ডিপ্লয়মেন্টে কোনো GitHub App সেট আপ করা নেই। তবু যেকোনো পাবলিক পার্থক্য দেখতে পারেন।",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff এখন একটি GitHub App ব্যবহার করে",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff এই ব্রাউজার থেকে আপনার পুরোনো personal access token সরিয়েছে এবং আর সেটি চায় না। GitHub সেটিংসে টোকেনটি না মোছা পর্যন্ত GitHub তা গ্রহণ করবে।",
+  "setup_screen_delete_the_token_on_github": "GitHub-এ টোকেন মুছুন",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "github.com-এ ghdiff বোতাম যোগ করুন",
+  "userscript_install_install": "ইনস্টল করুন",
+  "watch_offer_dialog_watch_this_repository": "এই রিপোজিটরিটি তালিকায় যোগ করবেন?",
+  "watch_offer_dialog_watch": "{subject} তালিকায় যোগ করবেন?",
+  "watch_offer_dialog_keep_reviewing": "রিভিউ চালিয়ে যান",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "আপনার তালিকাটি এই ব্রাউজারেই থাকে।",
+  "watch_offer_dialog_not_now": "এখন নয়",
+  "watched_repos_dialog_watched_repositories": "তালিকাভুক্ত রিপোজিটরি",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "এই রিপোজিটরিগুলোর খোলা পুল রিকোয়েস্ট ghdiff তালিকাভুক্ত করে। তালিকাটি এই ব্রাউজারেই থাকে।",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "owner/repo আকারে একটি রিপোজিটরি লিখুন।",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "তালিকায় যোগ করার রিপোজিটরি",
+  "watched_repos_editor_add": "যোগ করুন",
+  "watched_repos_editor_nothing_watched_yet": "এখনো কিছু তালিকাভুক্ত করা হয়নি।",
+  "watched_repos_editor_remove": "সরান",
+  "dialog_close": "বন্ধ করুন",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "GitHub থেকে ওই ফাইল পড়া যায়নি।",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "এই পার্থক্য তৈরির পর GitHub-এ ফাইলটি বদলেছে। অপরিবর্তিত লাইন দেখতে আবার লোড করুন।",
+  "use_diff_file_loader_request_failed": "অনুরোধ ব্যর্থ হয়েছে ({status})।",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "কোন অ্যাকাউন্টে সাইন ইন করা আছে তা দেখা যায়নি।",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "ghdiff কোথায় ইনস্টল করা আছে তা পড়া যায়নি।",
+  "use_open_pulls_could_not_load_pull_requests": "পুল রিকোয়েস্ট লোড করা যায়নি।",
+  "use_pull_details_could_not_load_this_pull_request": "এই পুল রিকোয়েস্ট লোড করা যায়নি।",
+  "use_review_comments_could_not_load_comments": "মন্তব্য লোড করা যায়নি।",
+  "use_review_comments_could_not_post_that_comment_to_github": "ওই মন্তব্য GitHub-এ পোস্ট করা যায়নি।",
+  "use_review_comments_could_not_post_this_reply_to_github": "এই উত্তর GitHub-এ পোস্ট করা যায়নি।",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "GitHub-এ ওই থ্রেড মোছা যায়নি। পরীক্ষা করতে আবার লোড করুন।",
+  "use_review_patch_request_failed": "অনুরোধ ব্যর্থ হয়েছে ({status})।",
+  "use_review_patch_could_not_load_that_diff": "ওই পার্থক্য লোড করা যায়নি।",
+  "use_submit_review_could_not_submit_this_review": "এই রিভিউ জমা দেওয়া যায়নি।",
+  "use_viewed_files_could_not_send_that_mark_to_github": "ওই চিহ্ন GitHub-এ পাঠানো যায়নি।",
+  "code_fonts_system": "সিস্টেম",
+  "diff_hydration_that_file_is_too_large_to_show_its": "অপরিবর্তিত লাইন দেখানোর জন্য ফাইলটি খুব বড়।",
+  "example_targets_rewrite_bun_in_rust": "Rust-এ Bun পুনর্লিখুন",
+  "example_targets_2_188_files_1_0m_lines": "2,188টি ফাইল · 1.0M লাইন",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "এগুলোর মধ্যে সবচেয়ে বড়। 6,755টি কমিটে 43 MB-এর একীভূত পার্থক্য।",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Maimai NET import PR-এর দ্বন্দ্ব মেটান",
+  "example_targets_25_files_494k_lines": "25টি ফাইল · 494k লাইন",
+  "example_targets_one_generated_json_file_holds_465_486_of": "একটি তৈরি করা JSON ফাইলে ওই লাইনগুলোর 465,486টি আছে।",
+  "example_targets_deps_update_v8_to_14_1": "deps: V8-কে 14.1-এ আপডেট করুন",
+  "example_targets_3_420_files_268k_lines": "3,420টি ফাইল · 268k লাইন",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "সবচেয়ে বিস্তৃত ফাইল ট্রি। এটি API diff-এর আকারসীমা ছাড়িয়ে গেছে, তাই ghdiff GitHub ওয়েবসাইট থেকে এটি লোড করে।",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: সব libc++ ও libc++ ABI নির্ভরতা সরান",
+  "example_targets_25_files_88k_lines": "25টি ফাইল · 88k লাইন",
+  "example_targets_large_and_still_a_diff_a_person_can": "বড়, তবু এমন পার্থক্য যা একজন মানুষ শেষ পর্যন্ত পড়তে পারে।",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 থেকে 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53টি ফাইল · 2.6k লাইন",
+  "example_targets_a_compare_range_of_one_release_100_commits": "একটি রিলিজের compare range। 100টি কমিট, আর মন্তব্য স্থানীয়ই থাকে।",
+  "filter_rules_all_files": "সব ফাইল",
+  "filter_rules_show_every_file_in_the_diff": "পার্থক্যের সব ফাইল দেখান।",
+  "filter_rules_hide_tests": "টেস্ট লুকান",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "টেস্ট ফাইল, ফিক্সচার ও স্ন্যাপশট লুকান।",
+  "filter_rules_tests_only": "শুধু টেস্ট",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "শুধু টেস্ট ফাইল, ফিক্সচার ও স্ন্যাপশট দেখান।",
+  "filter_rules_source_only": "শুধু সোর্স",
+  "filter_rules_show_only_code_files_that_are_not_tests": "শুধু এমন কোড ফাইল দেখান যা টেস্ট বা তৈরি করা ফাইল নয়।",
+  "filter_rules_docs_only": "শুধু ডকস",
+  "filter_rules_show_only_markdown_and_other_prose_files": "শুধু Markdown ও অন্যান্য গদ্য ফাইল দেখান।",
+  "filter_rules_config_only": "শুধু কনফিগ",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "শুধু manifest, lint config ও CI ফাইল দেখান।",
+  "filter_rules_hide_generated": "তৈরি করা ফাইল লুকান",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "lock file, snapshot ও build output লুকান।",
+  "filter_rules_generated_only": "শুধু তৈরি করা",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "শুধু lock file, snapshot ও build output দেখান।",
+  "github_app_sign_in_was_not_completed_on_github_try": "GitHub-এ সাইন-ইন সম্পন্ন হয়নি। প্রস্তুত হলে আবার চেষ্টা করুন।",
+  "github_app_the_sign_in_session_timed_out_on_github": "GitHub-এ সাইন-ইন সেশনের সময় শেষ হয়েছে। আবার সাইন-ইন প্রক্রিয়া শুরু করুন।",
+  "github_app_security_verification_failed_during_github_sign_in_start": "GitHub সাইন-ইনের সময় নিরাপত্তা যাচাই ব্যর্থ হয়েছে। ghdiff থেকে প্রক্রিয়াটি আবার শুরু করুন।",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub সাইন-ইন সম্পন্ন করতে পারেনি। একটু পরে আবার চেষ্টা করুন।",
+  "installations_all_repositories": "সব রিপোজিটরি",
+  "installations_no_repositories_selected": "কোনো রিপোজিটরি নির্বাচন করা হয়নি",
+  "pull_details_just_now": "এইমাত্র",
+  "pull_status_approved": "অনুমোদিত",
+  "pull_status_changes_requested": "পরিবর্তনের অনুরোধ করা হয়েছে",
+  "pull_status_no_review_yet": "এখনও কোনো রিভিউ নেই",
+  "pull_status_checks_passing": "স্বয়ংক্রিয় পরীক্ষা পাস করছে",
+  "pull_status_checks_running": "স্বয়ংক্রিয় পরীক্ষা চলছে",
+  "pull_status_a_check_failed": "একটি স্বয়ংক্রিয় পরীক্ষা ব্যর্থ হয়েছে",
+  "pull_status_no_checks": "কোনো স্বয়ংক্রিয় পরীক্ষা নেই",
+  "pull_status_changes_requested_new_commits_since": "পরিবর্তনের অনুরোধ করা হয়েছে, তারপর থেকে নতুন কমিট হয়েছে",
+  "review_data_commit": "কমিট {value}",
+  "review_decision_approve": "অনুমোদন করুন",
+  "review_decision_approving": "অনুমোদন করা হচ্ছে…",
+  "review_decision_request_changes": "পরিবর্তনের অনুরোধ করুন",
+  "review_decision_requesting": "পরিবর্তনের অনুরোধ করা হচ্ছে…",
+  "review_decision_comment": "মন্তব্য",
+  "review_decision_commenting": "মন্তব্য করা হচ্ছে…",
+  "review_decision_approved": "অনুমোদিত",
+  "review_decision_changes_requested": "পরিবর্তনের অনুরোধ করা হয়েছে",
+  "review_decision_commented": "মন্তব্য করা হয়েছে",
+  "review_decision_you_approved_this_pull_request": "আপনি এই পুল রিকোয়েস্ট অনুমোদন করেছেন।",
+  "review_decision_you_requested_changes_on_this_pull_request": "আপনি এই পুল রিকোয়েস্টে পরিবর্তনের অনুরোধ করেছেন।",
+  "review_decision_you_commented_on_this_pull_request": "আপনি এই পুল রিকোয়েস্টে মন্তব্য করেছেন।",
+  "review_decision_github_recorded_your_review": "GitHub আপনার রিভিউ নথিভুক্ত করেছে।",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "সার্ভার সাড়া দেয়নি। আপনার সংযোগ অফলাইনে থাকতে পারে, অথবা অনুরোধটির সময়সীমা শেষ হয়ে গেছে।",
+  "review_failure_you_used_all_5_000_github_requests_for": "আপনি এই ঘণ্টার জন্য GitHub-এর সব 5,000টি অনুরোধ ব্যবহার করেছেন। সীমা রিসেট হওয়া পর্যন্ত কয়েক মিনিট অপেক্ষা করুন, তারপর আবার চেষ্টা করুন।",
+  "review_failure_hourly_github_rate_limit_reached": "GitHub-এর ঘণ্টাপ্রতি অনুরোধসীমায় পৌঁছানো গেছে",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub সাইন ইন না করা অনুরোধ প্রতি ঘণ্টায় 60টিতে সীমিত করে। প্রতি ঘণ্টায় সঙ্গে সঙ্গে 5,000টি অনুরোধ পেতে অ্যাক্সেস সেট আপ করুন।",
+  "review_failure_github_rate_limit_reached": "GitHub-এর অনুরোধসীমায় পৌঁছানো গেছে",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "আপনার GitHub সাইন-ইন আর বৈধ নয় এবং ghdiff এটি রিফ্রেশ করতে পারেনি। এই পার্থক্য দেখতে আবার অ্যাক্সেস সেট আপ করুন।",
+  "review_failure_github_sign_in_expired": "GitHub সাইন-ইনের মেয়াদ শেষ হয়েছে",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "ghdiff এই রিপোজিটরিতে ইনস্টল করা নেই অথবা অ্যাক্সেস অনুপস্থিত বলে GitHub Not Found ফিরিয়েছে। অনুমতি দিতে অ্যাক্সেস সেট আপ করুন।",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff-এর এই রিপোজিটরিতে অ্যাক্সেস দরকার",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "আপনি সাইন আউট থাকলে GitHub ব্যক্তিগত রিপোজিটরির জন্য Not Found ফিরিয়ে দেয়। এই পার্থক্য দেখতে অ্যাক্সেস সেট আপ করুন।",
+  "review_failure_repository_not_found_or_private": "রিপোজিটরি পাওয়া যায়নি অথবা এটি ব্যক্তিগত",
+  "review_failure_could_not_load_the_diff": "পার্থক্য লোড করা যায়নি",
+  "contract_enter_a_valid_github_username_or_repository_name": "একটি বৈধ GitHub ব্যবহারকারীনাম অথবা রিপোজিটরির নাম লিখুন।",
+  "contract_comment_cannot_be_empty": "মন্তব্য খালি রাখা যাবে না।",
+  "router_could_not_check_who_you_are_signed_in": "আপনি কোন অ্যাকাউন্টে সাইন ইন করেছেন তা দেখা যায়নি।",
+  "router_could_not_read_where_ghdiff_is_installed": "ghdiff কোথায় ইনস্টল করা আছে তা পড়া যায়নি।",
+  "router_could_not_load_this_repository": "এই রিপোজিটরি লোড করা যায়নি।",
+  "router_could_not_load_this_pull_request": "এই পুল রিকোয়েস্ট লোড করা যায়নি।",
+  "router_could_not_load_your_review_of_this_pull": "এই পুল রিকোয়েস্টে আপনার রিভিউ লোড করা যায়নি।",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub রিভিউ গ্রহণ করেছে, কিন্তু কিছু ফেরত দেয়নি।",
+  "router_could_not_submit_this_review": "এই রিভিউ জমা দেওয়া যায়নি।",
+  "router_could_not_load_comments": "মন্তব্য লোড করা যায়নি।",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub উত্তর গ্রহণ করেছে, কিন্তু কিছু ফেরত দেয়নি।",
+  "router_this_comment_is_missing_a_file_or_line": "এই মন্তব্যে ফাইল অথবা লাইন নম্বর নেই।",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub মন্তব্য গ্রহণ করেছে, কিন্তু কিছু ফেরত দেয়নি।",
+  "router_could_not_post_this_comment": "এই মন্তব্য পোস্ট করা যায়নি।",
+  "router_could_not_delete_this_comment": "এই মন্তব্য মোছা যায়নি।",
+  "router_could_not_load_which_files_you_have_read": "আপনি কোন ফাইল পড়েছেন তা লোড করা যায়নি।",
+  "router_not_found": "পাওয়া যায়নি",
+  "router_could_not_send_that_mark_to_github": "ওই চিহ্নটি GitHub-এ পাঠানো যায়নি।",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "এই ghdiff-এ কোনো GitHub App সেট আপ করা নেই, তাই এতে সাইন ইন করা যাবে না।",
+  "github_your_github_sign_in_is_no_longer_valid": "আপনার GitHub সাইন-ইন আর বৈধ নয়। চালিয়ে যেতে আবার অ্যাক্সেস সেট আপ করুন।",
+  "github_github_rejected_that_query": "GitHub ওই query প্রত্যাখ্যান করেছে।",
+  "github_github_returned_no_data_for_that_query": "GitHub ওই query-এর জন্য কোনো তথ্য ফেরত দেয়নি।",
+  "github_github_has_no_such_file_on_that_commit": "ওই কমিটে GitHub-এর এমন কোনো ফাইল নেই। ব্যক্তিগত রিপোজিটরির জন্য একটি token দরকার।",
+  "github_app_github_would_not_revoke_that_token": "GitHub ওই token প্রত্যাহার করেনি।",
+  "github_app_github_answered_for_that_token_request": "ওই token অনুরোধের জন্য GitHub {status} ফিরিয়েছে।",
+  "github_app_github_refused_that": "GitHub এটি প্রত্যাখ্যান করেছে: {error}।",
+  "github_app_github_answered_with_no_access_token": "GitHub কোনো access token ছাড়া উত্তর দিয়েছে।",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub এই পার্থক্যের জন্য সর্বোচ্চ {fileCount}টি ফাইল তালিকাভুক্ত করে, তাই পরের ফাইলগুলো অনুপস্থিত।",
+  "installations_an_account": "একটি অ্যাকাউন্ট",
+  "stream_text_that_response_is_too_large_to_read": "ওই উত্তরটি পড়ার জন্য খুব বড়।",
+  "diff_that_review_target_is_not_valid": "ওই রিভিউ লক্ষ্যটি বৈধ নয়।",
+  "diff_could_not_load_that_diff": "ওই পার্থক্য লোড করা যায়নি।",
+  "diff_that_request_to_github_failed": "GitHub-এ ওই অনুরোধ ব্যর্থ হয়েছে।",
+  "file_that_review_target_is_not_valid": "ওই রিভিউ লক্ষ্যটি বৈধ নয়।",
+  "file_that_file_path_is_not_valid": "ওই ফাইল পাথটি বৈধ নয়।",
+  "file_could_not_load_that_file": "ওই ফাইল লোড করা যায়নি।",
+  "route_no_such_procedure": "এমন কোনো পদ্ধতি নেই।",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি ফাইল",
+        "countPlural=*": "{formatted}টি ফাইল"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি কমিট",
+        "countPlural=*": "{formatted}টি কমিট"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি মন্তব্য",
+        "countPlural=*": "{formatted}টি মন্তব্য"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি উত্তর",
+        "countPlural=*": "{formatted}টি উত্তর"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি রিপোজিটরি",
+        "countPlural=*": "{formatted}টি রিপোজিটরি"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি পার্থক্য পরিবেশন করা হয়েছে",
+        "countPlural=*": "{formatted}টি পার্থক্য পরিবেশন করা হয়েছে"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি লুকানো",
+        "countPlural=*": "{formatted}টি লুকানো"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{base} · {formatted}টি অবস্থা",
+        "countPlural=*": "{base} · {formatted}টি অবস্থা"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি পুল রিকোয়েস্টের স্ট্যাক",
+        "countPlural=*": "{formatted}টি পুল রিকোয়েস্টের স্ট্যাক"
+      }
+    }
+  ],
+  "comment_line": "লাইন {line}-এ মন্তব্য",
+  "comment_line_range": "লাইন {start} থেকে {end}-এ মন্তব্য করুন",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি ফাইল{#total} / {total}{/total}",
+        "countPlural=*": "{formatted}টি ফাইল{#total} / {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "পার্থক্যের জন্য {#diffs}CodeView{/diffs} এবং ফাইল তালিকার জন্য {#trees}FileTree{/trees}।",
+  "watch_offer_added_phone": "এটির খোলা পুল রিকোয়েস্ট এখন ওপরের বাঁ দিকের পুল রিকোয়েস্ট তালিকায় আছে।",
+  "watch_offer_added_wide": "এটির খোলা পুল রিকোয়েস্ট এখন বাঁ পাশের বারে আছে।",
+  "watch_offer_more_phone": "আরও রিপোজিটরি তালিকায় যোগ করতে ওই তালিকা খুলে {#strong}{label}{/strong} ব্যবহার করুন, অথবা ghdiff হোম পেজে যান।",
+  "watch_offer_more_wide": "আরও রিপোজিটরি তালিকায় যোগ করতে বারের নিচে {#strong}{label}{/strong} ব্যবহার করুন, অথবা ghdiff হোম পেজে যান।",
+  "watch_offer_preview_phone": "ওপরের বাঁ দিকের পুল রিকোয়েস্ট তালিকায় এটির খোলা পুল রিকোয়েস্ট দেখুন; প্রতিটির রিভিউ ও স্বয়ংক্রিয় পরীক্ষা আছে। GitHub-এ না ফিরেই এগুলোর মধ্যে যান।",
+  "watch_offer_preview_wide": "বাঁ পাশের বারে এটির খোলা পুল রিকোয়েস্ট দেখুন; প্রতিটির রিভিউ ও স্বয়ংক্রিয় পরীক্ষা আছে। GitHub-এ না ফিরেই এগুলোর মধ্যে যান।",
+  "watch_offer_action": "{subject} তালিকায় যোগ করুন",
+  "watch_offer_added_title": "{subject} এখন তালিকাভুক্ত",
+  "pull_opened_age": "খোলা হয়েছে: {age}",
+  "pull_updated_age": "আপডেট হয়েছে: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি ফাইল, {added} {deleted}",
+        "countPlural=*": "{formatted}টি ফাইল, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "{repositories}-এ কোনো খোলা পুল রিকোয়েস্ট নেই।",
+  "review_submit_scope": "এটি {#strong}{target}{/strong}-এর সম্পূর্ণ পুল রিকোয়েস্টের রিভিউ। লাইন মন্তব্য যেখানে লেখেন সেখানেই পোস্ট হয়।",
+  "review_previous_verdict": "{verdict} একটি নতুন রিভিউ এর স্থান নেবে।",
+  "setup_not_installed": "{#strong}{account}{/strong}-এ এখনো ghdiff ইনস্টল করা নেই। এটি কোনো সংস্থা হলে, একজন মালিককে ইনস্টলেশন অনুমোদন করতে হতে পারে।",
+  "setup_no_repositories": "ghdiff {#strong}{account}{/strong}-এ ইনস্টল করা আছে, কিন্তু এখনো কোনো রিপোজিটরি কভার করে না। আপনি যে রিপোজিটরিগুলো রিভিউ করেন সেগুলো বাছতে এর সেটিংস খুলুন।",
+  "userscript_manager_description": "এটি পুল রিকোয়েস্টে Files changed-এর পাশে এবং কমিটে Browse files-এর পাশে একটি বোতাম যোগ করে। এর জন্য {#manager}Tampermonkey{/manager}-এর মতো একটি userscript manager দরকার।",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} থেকে {base}-এ",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "রিভিউ জমা দেওয়ার আগে GitHub অ্যাক্সেস সেট আপ করুন।",
+  "auth_required_delete": "মন্তব্য মোছার আগে GitHub অ্যাক্সেস সেট আপ করুন।",
+  "auth_required_viewed": "ফাইলকে দেখা হয়েছে হিসেবে চিহ্নিত করার আগে GitHub অ্যাক্সেস সেট আপ করুন।",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} বাইট",
+        "countPlural=*": "{formatted} বাইট"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "github.com-এর বদলে ghdiff.com লিখে যেকোনো GitHub পুল রিকোয়েস্ট, কমিট বা compare range খুলুন। প্রিসেট পাথ নিয়ম দিয়ে ফাইল তালিকা সীমিত করুন এবং লাইন মন্তব্য GitHub-এ পোস্ট করুন।",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub-এ এই মন্তব্যটি মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।",
+        "count=*, countPlural=one": "GitHub-এ এই থ্রেডের সব {formatted}টি মন্তব্য মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।",
+        "count=*, countPlural=other": "GitHub-এ এই থ্রেডের সব {formatted}টি মন্তব্য মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।",
+        "count=*, countPlural=*": "GitHub-এ এই থ্রেডের সব {formatted}টি মন্তব্য মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।"
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub {formatted}টি ফাইলকে পার্থক্যের জন্য খুব বড় মনে করেছে, তাই কোনো লাইন দেখায় না: {path}।",
+        "count=*, countPlural=one": "GitHub {formatted}টি ফাইলকে পার্থক্যের জন্য খুব বড় মনে করেছে, তাই কোনো লাইন দেখায় না।",
+        "count=*, countPlural=*": "GitHub {formatted}টি ফাইলকে পার্থক্যের জন্য খুব বড় মনে করেছে, তাই কোনো লাইন দেখায় না।"
+      }
+    }
+  ],
+  "userscript_open_pull": "এই পুল রিকোয়েস্ট ghdiff-এ খুলুন",
+  "userscript_open_commit": "এই কমিট ghdiff-এ খুলুন",
+  "userscript_description": "প্রতিটি GitHub পুল রিকোয়েস্টের ট্যাব সারিতে এবং প্রতিটি কমিটের Browse files-এর পাশে একটি ghdiff বোতাম যোগ করে।",
+  "diff_expand_all": "সব প্রসারিত করুন",
+  "diff_no_newline": "ফাইলের শেষে নতুন লাইন নেই",
+  "tree_git_contains_changes": "Git status-এর আইটেম আছে",
+  "review_bytes_read": "{amount} পড়া হয়েছে",
+  "tree_git_added": "Git status: যোগ করা",
+  "tree_git_deleted": "Git status: মুছে ফেলা",
+  "tree_git_ignored": "Git status: উপেক্ষা করা",
+  "tree_git_modified": "Git status: পরিবর্তিত",
+  "tree_git_renamed": "Git status: নাম বদলানো",
+  "tree_git_untracked": "Git status: ট্র্যাক করা হয়নি",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted}টি অপরিবর্তিত লাইন",
+        "countPlural=*": "{formatted}টি অপরিবর্তিত লাইন"
+      }
+    }
+  ],
+  "locale_language": "ভাষা নির্বাচন করুন",
+  "app_render_error": "ghdiff এই পৃষ্ঠাটি দেখাতে পারেনি। আবার চেষ্টা করতে পৃষ্ঠাটি পুনরায় লোড করুন।"
+}

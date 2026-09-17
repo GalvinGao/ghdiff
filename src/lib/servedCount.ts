@@ -1,3 +1,4 @@
+import { formatNumber } from './locale.ts';
 // The "Served" figure in the home page's footer. The store's half of it lives
 // in `@/lib/server/servedCount`, which is a Workers module and cannot be
 // imported here: this file is read by the browser and by the test runner.
@@ -17,5 +18,5 @@ export function parseServedCount(raw: string | null): number {
 
 /** The figure as the footer prints it, grouped in thousands. */
 export function formatServedCount(count: number): string {
-  return count.toLocaleString('en-US');
+  return formatNumber(count);
 }

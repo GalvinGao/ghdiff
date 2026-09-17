@@ -1,3 +1,4 @@
+import { m } from '../../paraglide/messages.js';
 // The three calls the App makes about its own credentials: spend a code, spend a
 // refresh token, and revoke an access token. Nothing else here talks to GitHub.
 //
@@ -7,7 +8,6 @@
 // alone says nothing, and `GitHubAuthError` carries GitHub's own error code up to
 // the route. `/api/auth/refresh` reads that code: one value of it means another
 // tab won a race, and every other value means the session is over.
-
 import { TOKEN_URL } from '../githubApp.ts';
 import { USER_AGENT } from './github.ts';
 
@@ -135,7 +135,7 @@ export async function revokeToken(input: {
   if (!response.ok && response.status !== 404) {
     throw new GitHubAuthError(
       `http_${response.status}`,
-      'GitHub would not revoke that token.'
+      m.github_app_github_would_not_revoke_that_token()
     );
   }
 }
@@ -179,7 +179,9 @@ async function spendGrant(
   if (!response.ok) {
     throw new GitHubAuthError(
       `http_${response.status}`,
-      `GitHub answered ${response.status} for that token request.`
+      m.github_app_github_answered_for_that_token_request({
+        status: response.status,
+      })
     );
   }
 
@@ -187,13 +189,14 @@ async function spendGrant(
   if (answer.error != null) {
     throw new GitHubAuthError(
       answer.error,
-      answer.error_description ?? `GitHub refused that: ${answer.error}.`
+      answer.error_description ??
+        m.github_app_github_refused_that({ error: answer.error })
     );
   }
   if (answer.access_token == null || answer.access_token.length === 0) {
     throw new GitHubAuthError(
       'no_access_token',
-      'GitHub answered with no access token.'
+      m.github_app_github_answered_with_no_access_token()
     );
   }
 

@@ -1,5 +1,8 @@
+import { ParaglideMessage } from '@inlang/paraglide-js-react';
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -12,6 +15,12 @@ import {
   REVIEW_EVENTS,
   type ReviewEvent,
 } from '@/lib/reviewDecision';
+
+const reviewMarkup = {
+  strong: ({ children }: { children?: ReactNode }) => (
+    <span className="text-ink font-medium">{children}</span>
+  ),
+};
 
 // The verdict on the pull request as a whole.
 //
@@ -40,10 +49,11 @@ const VARIANT: Record<ReviewEvent, 'danger' | 'outline' | 'solid'> = {
  * should not have to work out which of the two they pressed.
  */
 function blockTip(event: ReviewEvent, block: ReviewBlock): string {
-  if (block === 'needs-note') return 'Add a note. GitHub needs one.';
+  if (block === 'needs-note')
+    return m.review_submit_dialog_add_a_note_github_needs_one();
   return event === 'APPROVE'
-    ? 'GitHub refuses an approval on your own pull request.'
-    : 'GitHub refuses requested changes on your own pull request.';
+    ? m.review_submit_dialog_github_refuses_an_approval_on_your_own_pull()
+    : m.review_submit_dialog_github_refuses_requested_changes_on_your_own_pull();
 }
 
 export function ReviewSubmitDialog({
@@ -89,17 +99,23 @@ export function ReviewSubmitDialog({
       reviewBlock({ body, event: spec.event, ownPullRequest }) === 'needs-note'
   );
   const standingLine = ownPullRequest
-    ? 'You can comment on your own pull request. GitHub allows nothing else.'
+    ? m.review_submit_dialog_you_can_comment_on_your_own_pull_request()
     : needsNote
-      ? 'Add a note. GitHub needs one to request changes or comment.'
+      ? m.review_submit_dialog_add_a_note_github_needs_one_to_request()
       : undefined;
 
   return (
-    <Dialog onClose={onClose} open={open} title="Submit a review">
+    <Dialog
+      onClose={onClose}
+      open={open}
+      title={m.review_submit_dialog_submit_a_review()}
+    >
       <p className="text-ink-muted text-xs">
-        This is a review of the whole pull request for{' '}
-        <span className="text-ink font-medium">{targetLabel}</span>. Line
-        comments are posted where you write them.
+        <ParaglideMessage
+          message={m.review_submit_scope}
+          inputs={{ target: targetLabel }}
+          markup={reviewMarkup}
+        />
       </p>
 
       {/* Why the button that opened this says `Approved` rather than `Review`.
@@ -107,18 +123,20 @@ export function ReviewSubmitDialog({
           the way to change a decision rather than a duplicate of it. */}
       {latest != null && (
         <p className="text-ink-muted mt-2 text-xs">
-          {describeSubmittedReview(latest)} A new one takes its place.
+          {m.review_previous_verdict({
+            verdict: describeSubmittedReview(latest),
+          })}
         </p>
       )}
 
       <textarea
-        aria-label="Review body"
+        aria-label={m.review_submit_dialog_review_body()}
         className={cn(
           'border-line bg-canvas text-ink placeholder:text-ink-faint focus-visible:border-accent',
           'mt-2 w-full resize-y rounded-md border p-2 text-sm focus-visible:outline-none'
         )}
         disabled={busy}
-        placeholder="Leave a note with your review"
+        placeholder={m.review_submit_dialog_leave_a_note_with_your_review()}
         rows={5}
         value={body}
         onChange={(event) => setBody(event.target.value)}
@@ -160,7 +178,14 @@ export function ReviewSubmitDialog({
                 // The reason joins the label rather than replacing it. The
                 // tooltip's own text is `aria-hidden`, so without this a screen
                 // reader is told the button is unavailable and never why.
-                aria-label={tip == null ? undefined : `${spec.label} — ${tip}`}
+                aria-label={
+                  tip == null
+                    ? undefined
+                    : m.review_submit_dialog_label({
+                        label: spec.label,
+                        tip: tip,
+                      })
+                }
                 disabled={busy || block != null}
                 size="sm"
                 variant={VARIANT[spec.event]}

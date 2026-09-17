@@ -1,6 +1,7 @@
 import type { DiffLineAnnotation, SelectedLineRange } from '@pierre/diffs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
 import {
   commentPayloadRangeFields,
@@ -267,7 +268,9 @@ export function useReviewComments(options: {
       );
     } catch (cause) {
       if (controller.signal.aborted) return;
-      setError(rpcErrorMessage(cause, 'Could not load comments.'));
+      setError(
+        rpcErrorMessage(cause, m.use_review_comments_could_not_load_comments())
+      );
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
@@ -345,7 +348,7 @@ export function useReviewComments(options: {
           pending: false,
           error: rpcErrorMessage(
             cause,
-            'Could not post that comment to GitHub.'
+            m.use_review_comments_could_not_post_that_comment_to_github()
           ),
         }));
       }
@@ -398,7 +401,10 @@ export function useReviewComments(options: {
         replace(itemId, key, (metadata) => ({
           ...metadata,
           pending: false,
-          error: rpcErrorMessage(cause, 'Could not post this reply to GitHub.'),
+          error: rpcErrorMessage(
+            cause,
+            m.use_review_comments_could_not_post_this_reply_to_github()
+          ),
         }));
       }
     },
@@ -530,7 +536,9 @@ export function useReviewComments(options: {
             });
           }
         } catch {
-          setError('Could not delete that thread on GitHub. Reload to check.');
+          setError(
+            m.use_review_comments_could_not_delete_that_thread_on_github_reload()
+          );
         }
       };
       void remove();

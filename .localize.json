@@ -1,0 +1,6 @@
+{
+  "project": "project.inlang",
+  "regen": "pnpm i18n:compile",
+  "fmt": "pnpm exec oxfmt messages",
+  "qa": "pnpm i18n:check"
+}

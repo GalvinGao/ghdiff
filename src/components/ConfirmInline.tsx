@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 
@@ -103,7 +104,7 @@ export function ConfirmInline({
               {confirmLabel}
             </Button>
             <Button variant="quiet" size="sm" onClick={() => setArmed(false)}>
-              Cancel
+              {m.confirm_inline_cancel()}
             </Button>
           </span>
         </span>

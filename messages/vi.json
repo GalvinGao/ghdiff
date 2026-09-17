@@ -1,0 +1,614 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "Tự động",
+  "color_mode_toggle_light": "Sáng",
+  "color_mode_toggle_dark": "Tối",
+  "color_mode_toggle_color_mode_switch_to": "Chế độ màu: {value}. Chuyển sang {value2}.",
+  "color_mode_toggle_color_mode": "Chế độ màu: {value}",
+  "comment_author_filter_bar_comment_authors": "Tác giả bình luận",
+  "comment_author_filter_bar_all": "Tất cả",
+  "comment_author_filter_bar_comments_a_person_opened": "Bình luận do người dùng tạo",
+  "comment_author_filter_bar_people": "Người dùng",
+  "comment_author_filter_bar_comments_a_github_app_opened": "Bình luận do GitHub App tạo",
+  "comment_author_filter_bar_bots": "Bot",
+  "comment_body_done": "Xong",
+  "comment_body_not_done": "Chưa xong",
+  "comment_composer_leave_a_comment": "Để lại bình luận",
+  "comment_composer_comment": "Bình luận",
+  "comment_composer_cancel": "Hủy",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd hoặc Ctrl + Enter",
+  "comment_expansion_comment": "Bình luận",
+  "comment_thread_card_open_thread_by": "Chuỗi thảo luận đang mở của {author}",
+  "comment_thread_card_posting": "Đang đăng…",
+  "comment_thread_card_click_to_open": "Nhấp để mở",
+  "comment_thread_card_delete": "Xóa",
+  "comment_thread_card_close": "Đóng",
+  "comment_thread_card_on_github": "Trên GitHub",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Bình luận này chưa được gửi đến GitHub nên chưa thể nhận phản hồi.",
+  "comment_thread_card_reply_on_github": "Trả lời trên GitHub",
+  "comment_thread_card_reply_in_this_browser": "Trả lời trong trình duyệt này",
+  "comment_thread_card_sending": "Đang gửi…",
+  "comment_thread_card_reply": "Trả lời",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd hoặc Ctrl + Enter",
+  "comments_list_no_comments_here": "Không có bình luận ở đây.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "Các bình luận bạn để lại ở đây sẽ được đăng lên GitHub.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub không có chuỗi đánh giá cho commit hoặc phạm vi so sánh. Bình luận chỉ ở trong trình duyệt này.",
+  "comments_list_posting": "đang đăng",
+  "comments_list_failed": "thất bại",
+  "comments_list_go_to": "Đi đến {path}",
+  "confirm_inline_cancel": "Hủy",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "Đã thêm",
+  "filter_menu_modified": "Đã sửa",
+  "filter_menu_renamed": "Đã đổi tên",
+  "filter_menu_deleted": "Đã xóa",
+  "filter_menu_filter_files": "Lọc tệp",
+  "filter_menu_file_rules": "Quy tắc tệp",
+  "filter_menu_git_status": "Trạng thái Git",
+  "filter_menu_clear_filters": "Xóa bộ lọc",
+  "filter_menu_all_files": "Tất cả tệp",
+  "git_hub_account_control_set_up_access": "Thiết lập quyền truy cập",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Các bình luận bạn để lại sẽ được đăng lên GitHub dưới tài khoản này.",
+  "git_hub_account_panel_install_on_another_account": "Cài đặt trên tài khoản khác",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff chưa được cài đặt trên tài khoản nào. Hãy thiết lập để ghdiff đọc mã của bạn.",
+  "git_hub_account_panel_open_setup_guide": "Mở hướng dẫn thiết lập",
+  "git_hub_account_panel_sign_out": "Đăng xuất",
+  "git_hub_account_panel_accounts_with_access": "Tài khoản có quyền truy cập",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "Mở phần cài đặt trên github.com để thêm hoặc xóa kho mã.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "Đang kiểm tra các tài khoản GitHub mà ghdiff có thể đọc…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "Mở bất kỳ pull request, commit hoặc phạm vi so sánh nào trên GitHub.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "Thu hẹp danh sách tệp bằng các quy tắc đường dẫn có sẵn.",
+  "home_screen_read_and_leave_comments": "Đọc và để lại bình luận.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "Dán URL pull request, commit hoặc phạm vi so sánh trên GitHub, hoặc nhập owner/repo#123.",
+  "home_screen_github_pull_request_commit_or_compare_url": "URL pull request, commit hoặc phạm vi so sánh trên GitHub",
+  "home_screen_open_this_diff": "Mở phần khác biệt này",
+  "home_screen_review": "Xem xét",
+  "home_screen_set_up_access_for_private_repositories": "Thiết lập quyền truy cập cho kho mã riêng tư",
+  "home_screen_userscript": "Userscript",
+  "home_screen_examples": "Ví dụ",
+  "home_screen_watched_repos": "Kho mã đang theo dõi",
+  "home_screen_github_account": "Tài khoản GitHub",
+  "home_screen_source_on_github": "Mã nguồn trên GitHub",
+  "home_screen_review_the_commit_this_build_was_made_from": "Xem xét commit dùng để tạo bản dựng này, {sha}, trong ghdiff",
+  "installation_row_current_diff": "phần khác biệt hiện tại",
+  "installation_row_configure": "Cấu hình",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff không thể đọc URL đó",
+  "not_found_a_review_needs_a_github_pull_request_a": "Một lần đánh giá cần pull request, commit hoặc phạm vi so sánh trên GitHub.",
+  "not_found_open_a_different_review": "Mở một lần đánh giá khác",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "Kéo để đổi kích thước. Nhấp đúp để đặt lại.",
+  "pull_details_card_loading_pull_request": "Đang tải pull request…",
+  "pull_details_card_no_details_yet": "Chưa có chi tiết.",
+  "pull_details_card_files": "Tệp",
+  "pull_details_card_added_lines": "Dòng được thêm",
+  "pull_details_card_deleted_lines": "Dòng bị xóa",
+  "pull_details_card_commits": "Commit",
+  "pull_details_card_description": "Mô tả",
+  "pull_list_button_open_pull_requests": "Pull request đang mở",
+  "pull_list_button_watched_repos": "Kho mã đang theo dõi",
+  "pull_list_button_reload_the_pull_requests": "Tải lại pull request",
+  "pull_list_button_loading_the_pull_requests": "Đang tải pull request",
+  "pull_rail_open_pull_requests": "Pull request đang mở",
+  "pull_rail_pull_request_bar_width": "Độ rộng thanh pull request",
+  "pull_rail_show_the_pull_requests": "Hiện pull request",
+  "pull_rail_hide_the_pull_requests": "Ẩn pull request",
+  "pull_rail_watched_repos": "Kho mã đang theo dõi",
+  "pull_rail_reload_the_pull_requests": "Tải lại pull request",
+  "pull_rail_loading_the_pull_requests": "Đang tải pull request",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "Theo dõi một kho mã để xem các pull request đang mở.",
+  "pull_request_list_open_on_github": "Mở {owner}/{repo} trên GitHub",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=*": "Mở {formatted} pull request đang mở trên GitHub"
+      }
+    }
+  ],
+  "pull_request_list_you": "bạn",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "Mở các pull request đang mở của {author} trong {owner}/{repo} trên GitHub",
+  "pull_request_list_set_up_private_access": "Thiết lập quyền truy cập riêng tư",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "Đã đăng xuất nên không có hàng nào hiển thị ô trạng thái hoặc dấu hiệu trên pull request của bạn. Đăng nhập sẽ hiển thị cả hai.",
+  "pull_request_list_stack": "Ngăn xếp",
+  "pull_request_list_loading_open_pull_requests": "Đang tải các pull request đang mở…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "Bản nháp",
+  "pull_row_currently_viewing": "Đang xem",
+  "pull_state_icon_open": "Đang mở",
+  "pull_state_icon_draft": "Bản nháp",
+  "pull_state_icon_merged": "Đã hợp nhất",
+  "pull_state_icon_closed": "Đã đóng",
+  "review_header_bars": "Thanh",
+  "review_header_signs": "Dấu hiệu",
+  "review_header_none": "Không có",
+  "review_header_hide_the_file_list": "Ẩn danh sách tệp",
+  "review_header_show_the_file_list": "Hiện danh sách tệp",
+  "review_header_open_on_github": "Mở {targetLabel} trên GitHub",
+  "review_header_switch_to_unified_view": "Chuyển sang chế độ xem hợp nhất",
+  "review_header_switch_to_split_view": "Chuyển sang chế độ xem tách",
+  "review_header_split_view": "Chế độ xem tách",
+  "review_header_unified_view": "Chế độ xem hợp nhất",
+  "review_header_display_settings": "Cài đặt hiển thị",
+  "review_header_code_font": "Phông chữ mã",
+  "review_header_change_markers": "Dấu đánh dấu thay đổi",
+  "review_header_wrap_long_lines": "Ngắt dòng dài",
+  "review_header_line_numbers": "Số dòng",
+  "review_header_change_backgrounds": "Nền thay đổi",
+  "review_header_dim_whitespace_changes": "Làm mờ các thay đổi khoảng trắng",
+  "review_header_approve_request_changes_or_comment": "Chấp thuận, yêu cầu thay đổi hoặc bình luận",
+  "review_header_review": "Đánh giá",
+  "review_header_review_it_again": "{value} Đánh giá lại.",
+  "review_screen_sidebar_width": "Độ rộng thanh bên",
+  "review_screen_dismiss": "Bỏ qua",
+  "review_sidebar_sidebar_sections": "Các phần của thanh bên",
+  "review_sidebar_files": "Tệp",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=other, comments=other": "{threadNumber} chuỗi thảo luận, {commentNumber} bình luận",
+        "threads=*, comments=*": "{threadNumber} chuỗi thảo luận, {commentNumber} bình luận"
+      }
+    }
+  ],
+  "review_sidebar_comments": "Bình luận",
+  "review_sidebar_hide_the_path_search": "Ẩn tìm kiếm đường dẫn",
+  "review_sidebar_search_by_path": "Tìm theo đường dẫn",
+  "review_sidebar_the_current_filter_hides_all_files": "Bộ lọc hiện tại ẩn tất cả tệp.",
+  "review_sidebar_clear_filters": "Xóa bộ lọc",
+  "review_sidebar_added_lines": "Dòng được thêm",
+  "review_sidebar_deleted_lines": "Dòng bị xóa",
+  "review_sidebar_search_files_by_path": "Tìm tệp theo đường dẫn",
+  "review_sidebar_path_contains": "Đường dẫn chứa…",
+  "review_sidebar_clear_the_path_search": "Xóa tìm kiếm đường dẫn",
+  "review_status_panel_fetching_the_diff": "Đang lấy diff",
+  "review_status_panel_reading_the_patch_for_this_review": "Đang đọc bản vá cho lần đánh giá này.",
+  "review_status_panel_preparing_the_diff": "Đang chuẩn bị diff",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "Đang phân tích bản vá và tạo danh sách tệp.",
+  "review_status_panel_starting_the_highlighters": "Đang khởi động các trình tô sáng",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "Các worker nền đang chuẩn bị tô màu mã của bạn.",
+  "review_status_panel_set_up_repository_access": "Thiết lập quyền truy cập kho mã",
+  "review_status_panel_try_again": "Thử lại",
+  "review_submit_dialog_add_a_note_github_needs_one": "Thêm ghi chú. GitHub cần một ghi chú.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub không cho phép chấp thuận pull request của chính bạn.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub không cho phép yêu cầu thay đổi đối với pull request của chính bạn.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Bạn có thể bình luận trên pull request của chính mình. GitHub không cho phép làm gì khác.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "Thêm ghi chú. GitHub cần một ghi chú để yêu cầu thay đổi hoặc bình luận.",
+  "review_submit_dialog_submit_a_review": "Gửi đánh giá",
+  "review_submit_dialog_review_body": "Nội dung đánh giá",
+  "review_submit_dialog_leave_a_note_with_your_review": "Để lại ghi chú kèm đánh giá",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "Hiện diff",
+  "review_viewer_hide_the_diff": "Ẩn diff",
+  "review_viewer_show_the_whole_file": "Hiện toàn bộ tệp",
+  "review_viewer_viewed": "Đã xem",
+  "setup_screen_set_up_private_repository_access": "Thiết lập quyền truy cập kho mã riêng tư",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub chỉ cho phép ghdiff đọc các kho mã mà bạn cấp quyền truy cập. Hoàn thành ba bước này theo thứ tự.",
+  "setup_screen_sign_in_to_github": "Đăng nhập vào GitHub",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "Thao tác này xác định tài khoản của bạn với GitHub. Mọi bình luận bạn để lại sẽ được đăng bằng tài khoản này.",
+  "setup_screen_sign_in_with_github": "Đăng nhập bằng GitHub",
+  "setup_screen_grant_repository_access": "Cấp quyền truy cập kho mã",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Đăng nhập chỉ xác định bạn. Chọn các tài khoản và kho mã mà ghdiff có thể đọc.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "Đăng nhập chỉ xác định bạn. Cài đặt ghdiff trên {account} và bảo đảm kho mã này có trong danh sách quyền truy cập của nó.",
+  "setup_screen_accounts_with_access": "Tài khoản có quyền truy cập",
+  "setup_screen_install_ghdiff": "Cài đặt ghdiff",
+  "setup_screen_install_on_another_account": "Cài đặt trên tài khoản khác",
+  "setup_screen_checking": "Đang kiểm tra…",
+  "setup_screen_check_again": "Kiểm tra lại",
+  "setup_screen_open_the_diff": "Mở diff",
+  "setup_screen_go_to_the_home_page_to_paste_a": "Về trang chủ để dán URL pull request, commit hoặc phạm vi so sánh.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Quay lại khác biệt của bạn. ghdiff sẽ tải lại bằng quyền đã cập nhật của bạn.",
+  "setup_screen_go_to_ghdiff_home": "Đến trang chủ ghdiff",
+  "setup_screen_return_to_the_diff": "Quay lại khác biệt",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Bản triển khai ghdiff này chưa thiết lập GitHub App. Bạn vẫn có thể xem mọi khác biệt công khai.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff hiện dùng GitHub App",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff đã xóa personal access token cũ của bạn khỏi trình duyệt này và không còn yêu cầu token đó. GitHub vẫn chấp nhận token đó cho đến khi bạn xóa nó trong phần cài đặt GitHub.",
+  "setup_screen_delete_the_token_on_github": "Xóa token trên GitHub",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "Thêm nút ghdiff vào github.com",
+  "userscript_install_install": "Cài đặt",
+  "watch_offer_dialog_watch_this_repository": "Theo dõi kho mã này?",
+  "watch_offer_dialog_watch": "Theo dõi {subject}?",
+  "watch_offer_dialog_keep_reviewing": "Tiếp tục đánh giá",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Danh sách theo dõi của bạn chỉ lưu trong trình duyệt này.",
+  "watch_offer_dialog_not_now": "Không phải bây giờ",
+  "watched_repos_dialog_watched_repositories": "Kho mã đang theo dõi",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff liệt kê các pull request đang mở của những kho mã này. Danh sách chỉ lưu trong trình duyệt này.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "Nhập kho mã theo dạng owner/repo.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "Kho mã cần theo dõi",
+  "watched_repos_editor_add": "Thêm",
+  "watched_repos_editor_nothing_watched_yet": "Chưa theo dõi kho mã nào.",
+  "watched_repos_editor_remove": "Xóa",
+  "dialog_close": "Đóng",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "Không thể đọc tệp đó từ GitHub.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "Tệp đó đã thay đổi trên GitHub kể từ khi khác biệt này được tạo. Tải lại để xem các dòng chưa sửa đổi.",
+  "use_diff_file_loader_request_failed": "Yêu cầu thất bại ({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "Không thể kiểm tra tài khoản bạn đã đăng nhập.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "Không thể xác định nơi ghdiff được cài đặt.",
+  "use_open_pulls_could_not_load_pull_requests": "Không thể tải pull request.",
+  "use_pull_details_could_not_load_this_pull_request": "Không thể tải pull request này.",
+  "use_review_comments_could_not_load_comments": "Không thể tải bình luận.",
+  "use_review_comments_could_not_post_that_comment_to_github": "Không thể đăng bình luận đó lên GitHub.",
+  "use_review_comments_could_not_post_this_reply_to_github": "Không thể đăng phản hồi này lên GitHub.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "Không thể xóa chuỗi thảo luận đó trên GitHub. Hãy tải lại để kiểm tra.",
+  "use_review_patch_request_failed": "Yêu cầu thất bại ({status}).",
+  "use_review_patch_could_not_load_that_diff": "Không thể tải khác biệt đó.",
+  "use_submit_review_could_not_submit_this_review": "Không thể gửi lần đánh giá này.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "Không thể gửi trạng thái đánh dấu đó tới GitHub.",
+  "code_fonts_system": "Hệ thống",
+  "diff_hydration_that_file_is_too_large_to_show_its": "Tệp đó quá lớn để hiển thị các dòng chưa sửa đổi.",
+  "example_targets_rewrite_bun_in_rust": "Viết lại Bun bằng Rust",
+  "example_targets_2_188_files_1_0m_lines": "2.188 tệp · 1,0 triệu dòng",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "Lớn nhất trong số đó. Bản diff hợp nhất 43 MB trải trên 6.755 commit.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Giải quyết xung đột pull request nhập Maimai NET",
+  "example_targets_25_files_494k_lines": "25 tệp · 494 nghìn dòng",
+  "example_targets_one_generated_json_file_holds_465_486_of": "Một tệp JSON được tạo chứa 465.486 trong số các dòng đó.",
+  "example_targets_deps_update_v8_to_14_1": "deps: cập nhật V8 lên 14.1",
+  "example_targets_3_420_files_268k_lines": "3.420 tệp · 268 nghìn dòng",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "Cây tệp rộng nhất. Vì vượt quá giới hạn kích thước khác biệt của API, ghdiff tải từ trang web GitHub.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: Xóa mọi phụ thuộc libc++ và libc++ ABI",
+  "example_targets_25_files_88k_lines": "25 tệp · 88 nghìn dòng",
+  "example_targets_large_and_still_a_diff_a_person_can": "Lớn, nhưng vẫn là khác biệt mà một người có thể đọc đến hết.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 đến 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53 tệp · 2,6 nghìn dòng",
+  "example_targets_a_compare_range_of_one_release_100_commits": "Phạm vi so sánh của một bản phát hành. 100 commit, và bình luận chỉ lưu cục bộ.",
+  "filter_rules_all_files": "Tất cả tệp",
+  "filter_rules_show_every_file_in_the_diff": "Hiện mọi tệp trong khác biệt.",
+  "filter_rules_hide_tests": "Ẩn kiểm thử",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "Ẩn tệp kiểm thử, fixture và snapshot.",
+  "filter_rules_tests_only": "Chỉ kiểm thử",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "Chỉ hiện tệp kiểm thử, fixture và snapshot.",
+  "filter_rules_source_only": "Chỉ mã nguồn",
+  "filter_rules_show_only_code_files_that_are_not_tests": "Chỉ hiện tệp mã không phải kiểm thử và không được tạo.",
+  "filter_rules_docs_only": "Chỉ tài liệu",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Chỉ hiện tệp Markdown và các tệp văn bản khác.",
+  "filter_rules_config_only": "Chỉ cấu hình",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "Chỉ hiện manifest, cấu hình lint và tệp CI.",
+  "filter_rules_hide_generated": "Ẩn tệp được tạo",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "Ẩn lock file, snapshot và đầu ra bản dựng.",
+  "filter_rules_generated_only": "Chỉ tệp được tạo",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "Chỉ hiện lock file, snapshot và đầu ra bản dựng.",
+  "github_app_sign_in_was_not_completed_on_github_try": "Đăng nhập chưa hoàn tất trên GitHub. Hãy thử lại khi bạn sẵn sàng.",
+  "github_app_the_sign_in_session_timed_out_on_github": "Phiên đăng nhập trên GitHub đã hết hạn. Hãy bắt đầu lại quy trình đăng nhập.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "Xác minh bảo mật thất bại khi đăng nhập GitHub. Hãy bắt đầu lại từ ghdiff.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub không thể hoàn tất đăng nhập. Hãy thử lại sau ít phút.",
+  "installations_all_repositories": "Tất cả kho mã",
+  "installations_no_repositories_selected": "Chưa chọn kho mã nào",
+  "pull_details_just_now": "vừa xong",
+  "pull_status_approved": "Đã chấp thuận",
+  "pull_status_changes_requested": "Đã yêu cầu thay đổi",
+  "pull_status_no_review_yet": "Chưa có đánh giá",
+  "pull_status_checks_passing": "các kiểm tra đều đạt",
+  "pull_status_checks_running": "các kiểm tra đang chạy",
+  "pull_status_a_check_failed": "một kiểm tra thất bại",
+  "pull_status_no_checks": "không có kiểm tra nào",
+  "pull_status_changes_requested_new_commits_since": "Đã yêu cầu thay đổi, có commit mới kể từ đó",
+  "review_data_commit": "Commit {value}",
+  "review_decision_approve": "Chấp thuận",
+  "review_decision_approving": "Đang chấp thuận…",
+  "review_decision_request_changes": "Yêu cầu thay đổi",
+  "review_decision_requesting": "Đang yêu cầu thay đổi…",
+  "review_decision_comment": "Bình luận",
+  "review_decision_commenting": "Đang bình luận…",
+  "review_decision_approved": "Đã chấp thuận",
+  "review_decision_changes_requested": "Đã yêu cầu thay đổi",
+  "review_decision_commented": "Đã bình luận",
+  "review_decision_you_approved_this_pull_request": "Bạn đã chấp thuận pull request này.",
+  "review_decision_you_requested_changes_on_this_pull_request": "Bạn đã yêu cầu thay đổi đối với pull request này.",
+  "review_decision_you_commented_on_this_pull_request": "Bạn đã bình luận về pull request này.",
+  "review_decision_github_recorded_your_review": "GitHub đã ghi nhận đánh giá của bạn.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "Máy chủ không phản hồi. Kết nối của bạn có thể ngoại tuyến hoặc yêu cầu đã hết thời gian chờ.",
+  "review_failure_you_used_all_5_000_github_requests_for": "Bạn đã dùng hết 5.000 yêu cầu GitHub trong giờ này. Đợi vài phút để giới hạn đặt lại, rồi thử lại.",
+  "review_failure_hourly_github_rate_limit_reached": "Đã đạt giới hạn yêu cầu GitHub theo giờ",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub giới hạn yêu cầu chưa xác thực ở 60 mỗi giờ. Thiết lập quyền truy cập để có ngay 5.000 yêu cầu mỗi giờ.",
+  "review_failure_github_rate_limit_reached": "Đã đạt giới hạn yêu cầu GitHub",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "Đăng nhập GitHub của bạn không còn hợp lệ và ghdiff không thể làm mới. Hãy thiết lập lại quyền truy cập để xem khác biệt này.",
+  "review_failure_github_sign_in_expired": "Đăng nhập GitHub đã hết hạn",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "GitHub trả về Không tìm thấy vì ghdiff chưa được cài đặt trên kho mã này hoặc thiếu quyền truy cập. Hãy thiết lập quyền truy cập để cấp quyền.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff cần quyền truy cập kho mã này",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "GitHub trả về Không tìm thấy cho kho mã riêng tư khi bạn đã đăng xuất. Hãy thiết lập quyền truy cập để xem khác biệt này.",
+  "review_failure_repository_not_found_or_private": "Không tìm thấy kho mã hoặc kho mã riêng tư",
+  "review_failure_could_not_load_the_diff": "Không thể tải khác biệt",
+  "contract_enter_a_valid_github_username_or_repository_name": "Nhập tên người dùng GitHub hoặc tên kho mã hợp lệ.",
+  "contract_comment_cannot_be_empty": "Bình luận không được để trống.",
+  "router_could_not_check_who_you_are_signed_in": "Không thể xác định tài khoản bạn đang đăng nhập.",
+  "router_could_not_read_where_ghdiff_is_installed": "Không thể đọc nơi ghdiff được cài đặt.",
+  "router_could_not_load_this_repository": "Không thể tải kho mã này.",
+  "router_could_not_load_this_pull_request": "Không thể tải pull request này.",
+  "router_could_not_load_your_review_of_this_pull": "Không thể tải đánh giá của bạn về pull request này.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub đã chấp nhận đánh giá nhưng không trả về gì.",
+  "router_could_not_submit_this_review": "Không thể gửi lần đánh giá này.",
+  "router_could_not_load_comments": "Không thể tải bình luận.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub đã chấp nhận phản hồi nhưng không trả về gì.",
+  "router_this_comment_is_missing_a_file_or_line": "Bình luận này thiếu tệp hoặc số dòng.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub đã chấp nhận bình luận nhưng không trả về gì.",
+  "router_could_not_post_this_comment": "Không thể đăng bình luận này.",
+  "router_could_not_delete_this_comment": "Không thể xóa bình luận này.",
+  "router_could_not_load_which_files_you_have_read": "Không thể tải các tệp bạn đã đọc.",
+  "router_not_found": "Không tìm thấy",
+  "router_could_not_send_that_mark_to_github": "Không thể gửi dấu đó đến GitHub.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "ghdiff này chưa thiết lập GitHub App nên không thể đăng nhập cho bạn.",
+  "github_your_github_sign_in_is_no_longer_valid": "Đăng nhập GitHub của bạn không còn hợp lệ. Hãy thiết lập lại quyền truy cập để tiếp tục.",
+  "github_github_rejected_that_query": "GitHub từ chối truy vấn đó.",
+  "github_github_returned_no_data_for_that_query": "GitHub không trả về dữ liệu cho truy vấn đó.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub không có tệp đó tại commit này. Kho mã riêng tư cần token.",
+  "github_app_github_would_not_revoke_that_token": "GitHub từ chối thu hồi token đó.",
+  "github_app_github_answered_for_that_token_request": "GitHub trả về {status} cho yêu cầu token đó.",
+  "github_app_github_refused_that": "GitHub từ chối việc đó: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub phản hồi mà không có access token.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub chỉ liệt kê tối đa {fileCount} tệp cho khác biệt này, nên các tệp sau không xuất hiện.",
+  "installations_an_account": "một tài khoản",
+  "stream_text_that_response_is_too_large_to_read": "Phản hồi đó quá lớn để đọc.",
+  "diff_that_review_target_is_not_valid": "Mục tiêu đánh giá đó không hợp lệ.",
+  "diff_could_not_load_that_diff": "Không thể tải khác biệt đó.",
+  "diff_that_request_to_github_failed": "Yêu cầu đến GitHub thất bại.",
+  "file_that_review_target_is_not_valid": "Mục tiêu đánh giá đó không hợp lệ.",
+  "file_that_file_path_is_not_valid": "Đường dẫn tệp đó không hợp lệ.",
+  "file_could_not_load_that_file": "Không thể tải tệp đó.",
+  "route_no_such_procedure": "Không có thủ tục đó.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} tệp",
+        "countPlural=*": "{formatted} tệp"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} commit",
+        "countPlural=*": "{formatted} commit"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} bình luận",
+        "countPlural=*": "{formatted} bình luận"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} phản hồi",
+        "countPlural=*": "{formatted} phản hồi"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} kho mã",
+        "countPlural=*": "{formatted} kho mã"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Đã phục vụ {formatted} khác biệt",
+        "countPlural=*": "Đã phục vụ {formatted} khác biệt"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} đã ẩn",
+        "countPlural=*": "{formatted} đã ẩn"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{base} · {formatted} trạng thái",
+        "countPlural=*": "{base} · {formatted} trạng thái"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Ngăn xếp gồm {formatted} pull request",
+        "countPlural=*": "Ngăn xếp gồm {formatted} pull request"
+      }
+    }
+  ],
+  "comment_line": "Bình luận ở dòng {line}",
+  "comment_line_range": "Bình luận ở các dòng từ {start} đến {end}",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} tệp{#total} trên {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "Phần khác biệt qua {#diffs}CodeView{/diffs} và danh sách tệp qua {#trees}FileTree{/trees}.",
+  "watch_offer_added_phone": "Các pull request đang mở của kho mã này hiện có trong danh sách pull request ở góc trên bên trái.",
+  "watch_offer_added_wide": "Các pull request đang mở của kho mã này hiện có trong thanh bên trái.",
+  "watch_offer_more_phone": "Để theo dõi thêm kho mã, hãy mở danh sách đó và dùng {#strong}{label}{/strong}, hoặc đến trang chủ ghdiff.",
+  "watch_offer_more_wide": "Để theo dõi thêm kho mã, hãy dùng {#strong}{label}{/strong} ở cuối thanh hoặc đến trang chủ ghdiff.",
+  "watch_offer_preview_phone": "Xem các pull request đang mở trong danh sách pull request ở góc trên bên trái, mỗi mục có trạng thái đánh giá và các kiểm tra. Chuyển giữa chúng mà không cần quay lại GitHub.",
+  "watch_offer_preview_wide": "Xem các pull request đang mở trong thanh bên trái, mỗi mục có trạng thái đánh giá và các kiểm tra. Chuyển giữa chúng mà không cần quay lại GitHub.",
+  "watch_offer_action": "Theo dõi {subject}",
+  "watch_offer_added_title": "{subject} hiện đang được theo dõi",
+  "pull_opened_age": "Đã mở: {age}",
+  "pull_updated_age": "Đã cập nhật: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} tệp, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "Không có pull request đang mở trong {repositories}.",
+  "review_submit_scope": "Đây là đánh giá cho toàn bộ pull request của {#strong}{target}{/strong}. Bình luận dòng sẽ được đăng tại nơi bạn viết.",
+  "review_previous_verdict": "{verdict} Một đánh giá mới sẽ thay thế nó.",
+  "setup_not_installed": "ghdiff chưa được cài đặt trên {#strong}{account}{/strong}. Nếu đây là tổ chức, chủ sở hữu có thể cần phê duyệt việc cài đặt.",
+  "setup_no_repositories": "ghdiff đã được cài đặt trên {#strong}{account}{/strong}, nhưng chưa bao gồm kho mã nào. Mở phần cài đặt để chọn các kho mã bạn đánh giá.",
+  "userscript_manager_description": "Thao tác này thêm nút bên cạnh Files changed trên pull request và bên cạnh Browse files trên commit. Cần có trình quản lý userscript như {#manager}Tampermonkey{/manager}.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} vào {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "Thiết lập quyền truy cập GitHub trước khi gửi đánh giá.",
+  "auth_required_delete": "Thiết lập quyền truy cập GitHub trước khi xóa bình luận.",
+  "auth_required_viewed": "Thiết lập quyền truy cập GitHub trước khi đánh dấu tệp là đã xem.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} byte"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "Mở bất kỳ pull request, commit hoặc phạm vi so sánh nào trên GitHub bằng cách thay github.com bằng ghdiff.com. Thu hẹp danh sách tệp bằng các quy tắc đường dẫn có sẵn và đăng bình luận dòng trở lại GitHub.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "Xóa bình luận này trên GitHub? Không thể hoàn tác.",
+        "count=*, countPlural=*": "Xóa tất cả {formatted} bình luận trong chuỗi thảo luận này trên GitHub? Không thể hoàn tác."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub cho rằng {formatted} tệp quá lớn để tạo khác biệt nên không hiển thị dòng nào: {path}.",
+        "count=*, countPlural=*": "GitHub cho rằng {formatted} tệp quá lớn để tạo khác biệt nên không hiển thị dòng nào."
+      }
+    }
+  ],
+  "userscript_open_pull": "Mở pull request này trong ghdiff",
+  "userscript_open_commit": "Mở commit này trong ghdiff",
+  "userscript_description": "Thêm nút ghdiff vào hàng tab của mọi pull request trên GitHub và bên cạnh Browse files trên mọi commit.",
+  "diff_expand_all": "Mở rộng tất cả",
+  "diff_no_newline": "Không có dòng mới ở cuối tệp",
+  "tree_git_contains_changes": "Chứa mục trạng thái git",
+  "review_bytes_read": "Đã đọc {amount}",
+  "tree_git_added": "Trạng thái git: đã thêm",
+  "tree_git_deleted": "Trạng thái git: đã xóa",
+  "tree_git_ignored": "Trạng thái git: đã bỏ qua",
+  "tree_git_modified": "Trạng thái git: đã sửa",
+  "tree_git_renamed": "Trạng thái git: đã đổi tên",
+  "tree_git_untracked": "Trạng thái git: chưa theo dõi",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted} dòng chưa sửa đổi"
+      }
+    }
+  ],
+  "locale_language": "Ngôn ngữ",
+  "app_render_error": "ghdiff không thể hiển thị trang này. Tải lại trang để thử lại."
+}

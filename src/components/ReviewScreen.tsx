@@ -8,6 +8,7 @@ import type { CodeViewHandle } from '@pierre/diffs/react';
 import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import { ReviewHeader } from '@/components/ReviewHeader';
@@ -498,6 +499,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           className="bg-canvas relative grid min-h-0 flex-1 overflow-hidden"
           style={{
             ...sidebarStyle,
+            direction: 'ltr',
             // One column on a phone. The file list is not beside the diff
             // there, it is over it, so it takes no track of its own.
             gridTemplateColumns: isPhone
@@ -548,7 +550,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
               and there is no width to drag. */}
           {!isPhone && (
             <PaneResizeHandle
-              label="Sidebar width"
+              label={m.review_screen_sidebar_width()}
               max={SIDEBAR_MAX_WIDTH}
               min={SIDEBAR_MIN_WIDTH}
               onKeyDown={onSidebarHandleKeyDown}
@@ -695,9 +697,9 @@ function ReviewNotice({
       </p>
       {onDismiss != null && (
         <Button
-          aria-label="Dismiss"
+          aria-label={m.review_screen_dismiss()}
           size="icon-sm"
-          title="Dismiss"
+          title={m.review_screen_dismiss()}
           variant="quiet"
           onClick={onDismiss}
         >

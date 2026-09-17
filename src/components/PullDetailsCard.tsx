@@ -1,8 +1,10 @@
 import { IconShare } from '@pierre/icons';
 
+import { m } from '../paraglide/messages.js';
 import { CommentBody } from '@/components/CommentBody';
 import { PullStateIcon, pullStateLabel } from '@/components/PullStateIcon';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { formatNumber } from '@/lib/locale';
 import { describeAge, type PullDetails } from '@/lib/pullDetails';
 
 // What the pull request is for, which the diff cannot say. It is a card behind
@@ -34,7 +36,10 @@ export function PullDetailsCard({
             : 'text-ink-muted p-3 text-sm'
         }
       >
-        {error ?? (loading ? 'Loading pull request…' : 'No details yet.')}
+        {error ??
+          (loading
+            ? m.pull_details_card_loading_pull_request()
+            : m.pull_details_card_no_details_yet())}
       </p>
     );
   }
@@ -48,7 +53,7 @@ export function PullDetailsCard({
         </span>
         {now != null && (
           <span className="text-ink-faint text-xs">
-            opened {describeAge(details.createdAt, now)}
+            {m.pull_opened_age({ age: describeAge(details.createdAt, now) })}
           </span>
         )}
         <a
@@ -79,7 +84,7 @@ export function PullDetailsCard({
         )}
         <span className="text-ink">{details.author}</span>
         <span className="text-ink-faint">·</span>
-        <span className="min-w-0 truncate font-mono text-[11px]">
+        <span className="min-w-0 truncate font-mono text-[11px]" dir="ltr">
           {details.headRef} → {details.baseRef}
         </span>
       </div>
@@ -87,33 +92,35 @@ export function PullDetailsCard({
       <dl className="text-ink-muted mt-2 flex flex-wrap items-baseline gap-x-3 text-xs tabular-nums">
         {details.changedFiles != null && (
           <div className="flex gap-1">
-            <dt className="sr-only">Files</dt>
-            <dd>{details.changedFiles} files</dd>
+            <dt className="sr-only">{m.pull_details_card_files()}</dt>
+            <dd>{m.common_file_count({ count: details.changedFiles })}</dd>
           </div>
         )}
         {details.additions != null && (
           <div className="flex gap-1">
-            <dt className="sr-only">Added lines</dt>
-            <dd className="text-added">+{details.additions}</dd>
+            <dt className="sr-only">{m.pull_details_card_added_lines()}</dt>
+            <dd className="text-added" dir="ltr">
+              +{formatNumber(details.additions)}
+            </dd>
           </div>
         )}
         {details.deletions != null && (
           <div className="flex gap-1">
-            <dt className="sr-only">Deleted lines</dt>
-            <dd className="text-removed">-{details.deletions}</dd>
+            <dt className="sr-only">{m.pull_details_card_deleted_lines()}</dt>
+            <dd className="text-removed" dir="ltr">
+              -{formatNumber(details.deletions)}
+            </dd>
           </div>
         )}
         {details.commits != null && (
           <div className="flex gap-1">
-            <dt className="sr-only">Commits</dt>
-            <dd>
-              {details.commits} {details.commits === 1 ? 'commit' : 'commits'}
-            </dd>
+            <dt className="sr-only">{m.pull_details_card_commits()}</dt>
+            <dd>{m.common_commit_count({ count: details.commits })}</dd>
           </div>
         )}
         {now != null && (
           <span className="text-ink-faint ml-auto">
-            updated {describeAge(details.updatedAt, now)}
+            {m.pull_updated_age({ age: describeAge(details.updatedAt, now) })}
           </span>
         )}
       </dl>
@@ -121,7 +128,7 @@ export function PullDetailsCard({
       {details.body != null && (
         <>
           <div className="border-line mt-3 border-t pt-2">
-            <SectionLabel>Description</SectionLabel>
+            <SectionLabel>{m.pull_details_card_description()}</SectionLabel>
           </div>
           {/* A description can be a whole essay. It scrolls inside the card so
               the card keeps the size the header can afford. */}

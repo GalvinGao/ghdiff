@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // Preset path filters for the review surface.
 //
 // The file tree and the diff list are both driven by one selected preset, so
@@ -225,50 +226,82 @@ export function isSourcePath(path: string): boolean {
 export const FILTER_PRESETS: readonly FilterPreset[] = [
   {
     id: 'all',
-    label: 'All files',
-    description: 'Show every file in the diff.',
+    get label() {
+      return m.filter_rules_all_files();
+    },
+    get description() {
+      return m.filter_rules_show_every_file_in_the_diff();
+    },
     matches: () => true,
   },
   {
     id: 'without-tests',
-    label: 'Hide tests',
-    description: 'Hide test files, fixtures, and snapshots.',
+    get label() {
+      return m.filter_rules_hide_tests();
+    },
+    get description() {
+      return m.filter_rules_hide_test_files_fixtures_and_snapshots();
+    },
     matches: (path) => !isTestPath(path),
   },
   {
     id: 'tests',
-    label: 'Tests only',
-    description: 'Show only test files, fixtures, and snapshots.',
+    get label() {
+      return m.filter_rules_tests_only();
+    },
+    get description() {
+      return m.filter_rules_show_only_test_files_fixtures_and_snapshots();
+    },
     matches: isTestPath,
   },
   {
     id: 'source',
-    label: 'Source only',
-    description: 'Show only code files that are not tests and not generated.',
+    get label() {
+      return m.filter_rules_source_only();
+    },
+    get description() {
+      return m.filter_rules_show_only_code_files_that_are_not_tests();
+    },
     matches: isSourcePath,
   },
   {
     id: 'docs',
-    label: 'Docs only',
-    description: 'Show only Markdown and other prose files.',
+    get label() {
+      return m.filter_rules_docs_only();
+    },
+    get description() {
+      return m.filter_rules_show_only_markdown_and_other_prose_files();
+    },
     matches: isDocsPath,
   },
   {
     id: 'config',
-    label: 'Config only',
-    description: 'Show only manifests, lint configs, and CI files.',
+    get label() {
+      return m.filter_rules_config_only();
+    },
+    get description() {
+      return m.filter_rules_show_only_manifests_lint_configs_and_ci_files();
+    },
     matches: isConfigPath,
   },
   {
     id: 'without-generated',
-    label: 'Hide generated',
-    description: 'Hide lock files, snapshots, and build output.',
+    get label() {
+      return m.filter_rules_hide_generated();
+    },
+    get description() {
+      return m.filter_rules_hide_lock_files_snapshots_and_build_output();
+    },
     matches: (path) => !isGeneratedPath(path),
   },
   {
     id: 'generated',
-    label: 'Generated only',
-    description: 'Show only lock files, snapshots, and build output.',
+    get label() {
+      return m.filter_rules_generated_only();
+    },
+    get description() {
+      return m.filter_rules_show_only_lock_files_snapshots_and_build_output();
+    },
     matches: isGeneratedPath,
   },
 ];

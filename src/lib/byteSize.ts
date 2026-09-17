@@ -1,3 +1,5 @@
+import { m } from '../paraglide/messages.js';
+import { formatNumber } from './locale.ts';
 // How much has arrived, in words a reviewer reads at a glance.
 //
 // Decimal and not binary — kB and MB, a thousand each — because that is what a
@@ -10,8 +12,14 @@ const MB = 1000 * KB;
 
 /** Bytes as a short label. Never a percentage: nothing states the total. */
 export function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) return '0 bytes';
-  if (bytes < KB) return `${String(Math.round(bytes))} bytes`;
-  if (bytes < MB) return `${String(Math.round(bytes / KB))} kB`;
-  return `${(bytes / MB).toFixed(1)} MB`;
+  if (!Number.isFinite(bytes) || bytes < 0) return m.bytes_count({ count: 0 });
+  if (bytes < KB) return m.bytes_count({ count: Math.round(bytes) });
+  if (bytes < MB)
+    return m.bytes_kilobytes({ value: formatNumber(Math.round(bytes / KB)) });
+  return m.bytes_megabytes({
+    value: formatNumber(bytes / MB, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }),
+  });
 }

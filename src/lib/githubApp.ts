@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // Every address the ghdiff GitHub App has on github.com, built in one place.
 //
 // This is the same rule `githubUrls.ts` holds for the addresses of a repository:
@@ -70,12 +71,18 @@ export const AUTH_ERROR_PARAM = 'ghdiff_auth';
 export type AuthFailure = 'denied' | 'expired' | 'mismatch' | 'github';
 
 const AUTH_FAILURE_MESSAGE: Record<AuthFailure, string> = {
-  denied: 'Sign-in was not completed on GitHub. Try again when you are ready.',
-  expired:
-    'The sign-in session timed out on GitHub. Start the sign-in process again.',
-  mismatch:
-    'Security verification failed during GitHub sign-in. Start the process again from ghdiff.',
-  github: 'GitHub could not complete the sign-in. Try again in a moment.',
+  get denied() {
+    return m.github_app_sign_in_was_not_completed_on_github_try();
+  },
+  get expired() {
+    return m.github_app_the_sign_in_session_timed_out_on_github();
+  },
+  get mismatch() {
+    return m.github_app_security_verification_failed_during_github_sign_in_start();
+  },
+  get github() {
+    return m.github_app_github_could_not_complete_the_sign_in_try();
+  },
 };
 
 /**

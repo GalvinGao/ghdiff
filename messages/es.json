@@ -1,0 +1,624 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "Automático",
+  "color_mode_toggle_light": "Claro",
+  "color_mode_toggle_dark": "Oscuro",
+  "color_mode_toggle_color_mode_switch_to": "Modo de color: {value}. Cambiar a {value2}.",
+  "color_mode_toggle_color_mode": "Modo de color: {value}",
+  "comment_author_filter_bar_comment_authors": "Autores de comentarios",
+  "comment_author_filter_bar_all": "Todos",
+  "comment_author_filter_bar_comments_a_person_opened": "Comentarios abiertos por una persona",
+  "comment_author_filter_bar_people": "Personas",
+  "comment_author_filter_bar_comments_a_github_app_opened": "Comentarios abiertos por una aplicación de GitHub",
+  "comment_author_filter_bar_bots": "Bots",
+  "comment_body_done": "Listo",
+  "comment_body_not_done": "Pendiente",
+  "comment_composer_leave_a_comment": "Dejar un comentario",
+  "comment_composer_comment": "Comentar",
+  "comment_composer_cancel": "Cancelar",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd o Ctrl + Intro",
+  "comment_expansion_comment": "Comentario",
+  "comment_thread_card_open_thread_by": "Abrir hilo iniciado por {author}",
+  "comment_thread_card_posting": "Publicando…",
+  "comment_thread_card_click_to_open": "Haz clic para abrir",
+  "comment_thread_card_delete": "Eliminar",
+  "comment_thread_card_close": "Cerrar",
+  "comment_thread_card_on_github": "En GitHub",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "Este comentario aún no ha llegado a GitHub, por lo que no puede recibir respuestas.",
+  "comment_thread_card_reply_on_github": "Responder en GitHub",
+  "comment_thread_card_reply_in_this_browser": "Responder en este navegador",
+  "comment_thread_card_sending": "Enviando…",
+  "comment_thread_card_reply": "Responder",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd o Ctrl + Intro",
+  "comments_list_no_comments_here": "No hay comentarios aquí.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "Los comentarios que dejes aquí se publican en GitHub.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub no tiene hilos de revisión para commits ni rangos de comparación. Los comentarios permanecen en este navegador.",
+  "comments_list_posting": "publicando",
+  "comments_list_failed": "fallido",
+  "comments_list_go_to": "Ir a {path}",
+  "confirm_inline_cancel": "Cancelar",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "Añadidos",
+  "filter_menu_modified": "Modificados",
+  "filter_menu_renamed": "Renombrados",
+  "filter_menu_deleted": "Eliminados",
+  "filter_menu_filter_files": "Filtrar archivos",
+  "filter_menu_file_rules": "Reglas de archivos",
+  "filter_menu_git_status": "Estado de Git",
+  "filter_menu_clear_filters": "Borrar filtros",
+  "filter_menu_all_files": "Todos los archivos",
+  "git_hub_account_control_set_up_access": "Configurar acceso",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "Los comentarios que dejes se publican en GitHub con esta cuenta.",
+  "git_hub_account_panel_install_on_another_account": "Instalar en otra cuenta",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff no está instalado en ninguna cuenta. Configúralo para leer tu código.",
+  "git_hub_account_panel_open_setup_guide": "Abrir guía de configuración",
+  "git_hub_account_panel_sign_out": "Cerrar sesión",
+  "git_hub_account_panel_accounts_with_access": "Cuentas con acceso",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "Abre la configuración en github.com para añadir o quitar repositorios.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "Comprobando a qué cuentas de GitHub puede acceder ghdiff…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "Abre cualquier pull request, commit o rango de comparación de GitHub.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "Reduce la lista de archivos con reglas de ruta predefinidas.",
+  "home_screen_read_and_leave_comments": "Lee y deja comentarios.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "Pega una URL de pull request, commit o comparación de GitHub, o escribe owner/repo#123.",
+  "home_screen_github_pull_request_commit_or_compare_url": "URL de pull request, commit o comparación de GitHub",
+  "home_screen_open_this_diff": "Abrir estas diferencias",
+  "home_screen_review": "Revisar",
+  "home_screen_set_up_access_for_private_repositories": "Configurar acceso a repositorios privados",
+  "home_screen_userscript": "Userscript",
+  "home_screen_examples": "Ejemplos",
+  "home_screen_watched_repos": "Repositorios seguidos",
+  "home_screen_github_account": "Cuenta de GitHub",
+  "home_screen_source_on_github": "Código fuente en GitHub",
+  "home_screen_review_the_commit_this_build_was_made_from": "Revisa en ghdiff el commit con el que se creó esta compilación, {sha}",
+  "installation_row_current_diff": "diferencias actuales",
+  "installation_row_configure": "Configurar",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff no puede leer esa URL",
+  "not_found_a_review_needs_a_github_pull_request_a": "Una revisión necesita un pull request, un commit o un rango de comparación de GitHub.",
+  "not_found_open_a_different_review": "Abrir otra revisión",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "Arrastra para cambiar el tamaño. Haz doble clic para restablecerlo.",
+  "pull_details_card_loading_pull_request": "Cargando pull request…",
+  "pull_details_card_no_details_yet": "Aún no hay detalles.",
+  "pull_details_card_files": "Archivos",
+  "pull_details_card_added_lines": "Líneas añadidas",
+  "pull_details_card_deleted_lines": "Líneas eliminadas",
+  "pull_details_card_commits": "Commits",
+  "pull_details_card_description": "Descripción",
+  "pull_list_button_open_pull_requests": "Pull requests abiertos",
+  "pull_list_button_watched_repos": "Repositorios seguidos",
+  "pull_list_button_reload_the_pull_requests": "Recargar los pull requests",
+  "pull_list_button_loading_the_pull_requests": "Cargando los pull requests",
+  "pull_rail_open_pull_requests": "Pull requests abiertos",
+  "pull_rail_pull_request_bar_width": "Ancho de la barra de pull requests",
+  "pull_rail_show_the_pull_requests": "Mostrar los pull requests",
+  "pull_rail_hide_the_pull_requests": "Ocultar los pull requests",
+  "pull_rail_watched_repos": "Repositorios seguidos",
+  "pull_rail_reload_the_pull_requests": "Recargar los pull requests",
+  "pull_rail_loading_the_pull_requests": "Cargando los pull requests",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "Sigue un repositorio para ver sus pull requests abiertos.",
+  "pull_request_list_open_on_github": "Abrir {owner}/{repo} en GitHub",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=one": "Abrir {formatted} pull request abierto en GitHub",
+        "category=many": "Abrir los {formatted} pull requests abiertos en GitHub",
+        "category=*": "Abrir los {formatted} pull requests abiertos en GitHub"
+      }
+    }
+  ],
+  "pull_request_list_you": "tú",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "Abrir los pull requests abiertos de {author} en {owner}/{repo} en GitHub",
+  "pull_request_list_set_up_private_access": "Configurar acceso privado",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "Sesión cerrada: ninguna fila muestra un indicador de estado ni una marca en tus pull requests. Al iniciar sesión se mostrarán ambos.",
+  "pull_request_list_stack": "Pila de pull requests",
+  "pull_request_list_loading_open_pull_requests": "Cargando pull requests abiertos…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "Borrador",
+  "pull_row_currently_viewing": "Viendo ahora",
+  "pull_state_icon_open": "Abierto",
+  "pull_state_icon_draft": "Borrador",
+  "pull_state_icon_merged": "Fusionado",
+  "pull_state_icon_closed": "Cerrado",
+  "review_header_bars": "Barras",
+  "review_header_signs": "Indicadores",
+  "review_header_none": "Ninguno",
+  "review_header_hide_the_file_list": "Ocultar la lista de archivos",
+  "review_header_show_the_file_list": "Mostrar la lista de archivos",
+  "review_header_open_on_github": "Abrir {targetLabel} en GitHub",
+  "review_header_switch_to_unified_view": "Cambiar a vista unificada",
+  "review_header_switch_to_split_view": "Cambiar a vista dividida",
+  "review_header_split_view": "Vista dividida",
+  "review_header_unified_view": "Vista unificada",
+  "review_header_display_settings": "Ajustes de visualización",
+  "review_header_code_font": "Fuente de código",
+  "review_header_change_markers": "Marcadores de cambios",
+  "review_header_wrap_long_lines": "Ajustar líneas largas",
+  "review_header_line_numbers": "Números de línea",
+  "review_header_change_backgrounds": "Fondos de cambios",
+  "review_header_dim_whitespace_changes": "Atenuar cambios de espacios",
+  "review_header_approve_request_changes_or_comment": "Aprobar, solicitar cambios o comentar",
+  "review_header_review": "Revisar",
+  "review_header_review_it_again": "{value} Revísalo de nuevo.",
+  "review_screen_sidebar_width": "Ancho de la barra lateral",
+  "review_screen_dismiss": "Descartar",
+  "review_sidebar_sidebar_sections": "Secciones de la barra lateral",
+  "review_sidebar_files": "Archivos",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=one, comments=one": "{threadNumber} hilo, {commentNumber} comentario",
+        "threads=one, comments=other": "{threadNumber} hilo, {commentNumber} comentarios",
+        "threads=other, comments=one": "{threadNumber} hilos, {commentNumber} comentario",
+        "threads=*, comments=*": "{threadNumber} hilos, {commentNumber} comentarios"
+      }
+    }
+  ],
+  "review_sidebar_comments": "Comentarios",
+  "review_sidebar_hide_the_path_search": "Ocultar la búsqueda por ruta",
+  "review_sidebar_search_by_path": "Buscar por ruta",
+  "review_sidebar_the_current_filter_hides_all_files": "El filtro actual oculta todos los archivos.",
+  "review_sidebar_clear_filters": "Borrar filtros",
+  "review_sidebar_added_lines": "Líneas añadidas",
+  "review_sidebar_deleted_lines": "Líneas eliminadas",
+  "review_sidebar_search_files_by_path": "Buscar archivos por ruta",
+  "review_sidebar_path_contains": "La ruta contiene…",
+  "review_sidebar_clear_the_path_search": "Borrar la búsqueda por ruta",
+  "review_status_panel_fetching_the_diff": "Obteniendo las diferencias",
+  "review_status_panel_reading_the_patch_for_this_review": "Leyendo el parche de esta revisión.",
+  "review_status_panel_preparing_the_diff": "Preparando las diferencias",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "Analizando el parche y creando la lista de archivos.",
+  "review_status_panel_starting_the_highlighters": "Iniciando los resaltadores",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "Los procesos en segundo plano se están preparando para colorear tu código.",
+  "review_status_panel_set_up_repository_access": "Configurar acceso al repositorio",
+  "review_status_panel_try_again": "Intentar de nuevo",
+  "review_submit_dialog_add_a_note_github_needs_one": "Añade una nota. GitHub necesita una.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub no permite aprobar tu propio pull request.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub no permite solicitar cambios en tu propio pull request.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "Puedes comentar en tu propio pull request. GitHub no permite nada más.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "Añade una nota. GitHub necesita una para solicitar cambios o comentar.",
+  "review_submit_dialog_submit_a_review": "Enviar revisión",
+  "review_submit_dialog_review_body": "Texto de la revisión",
+  "review_submit_dialog_leave_a_note_with_your_review": "Deja una nota con tu revisión",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "Mostrar las diferencias",
+  "review_viewer_hide_the_diff": "Ocultar las diferencias",
+  "review_viewer_show_the_whole_file": "Mostrar el archivo completo",
+  "review_viewer_viewed": "Visto",
+  "setup_screen_set_up_private_repository_access": "Configurar acceso a repositorios privados",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub solo permite que ghdiff lea los repositorios a los que le concedes acceso. Completa estos tres pasos en orden.",
+  "setup_screen_sign_in_to_github": "Iniciar sesión en GitHub",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "Esto identifica tu cuenta ante GitHub. Los comentarios que dejes se publicarán con esta cuenta.",
+  "setup_screen_sign_in_with_github": "Iniciar sesión con GitHub",
+  "setup_screen_grant_repository_access": "Conceder acceso al repositorio",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "Iniciar sesión solo te identifica. Elige las cuentas y los repositorios que puede leer ghdiff.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "Iniciar sesión solo te identifica. Instala ghdiff en {account} y asegúrate de que este repositorio esté incluido en su lista de acceso.",
+  "setup_screen_accounts_with_access": "Cuentas con acceso",
+  "setup_screen_install_ghdiff": "Instalar ghdiff",
+  "setup_screen_install_on_another_account": "Instalar en otra cuenta",
+  "setup_screen_checking": "Comprobando…",
+  "setup_screen_check_again": "Comprobar de nuevo",
+  "setup_screen_open_the_diff": "Abrir las diferencias",
+  "setup_screen_go_to_the_home_page_to_paste_a": "Ve a la página principal para pegar una URL de pull request, commit o comparación.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "Vuelve a tu diff. ghdiff lo volverá a obtener con tus permisos actualizados.",
+  "setup_screen_go_to_ghdiff_home": "Ir a la página principal de ghdiff",
+  "setup_screen_return_to_the_diff": "Volver al diff",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "Esta instancia de ghdiff no tiene configurada una GitHub App. Aun así, puedes ver cualquier diff público.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff ahora usa una GitHub App",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff eliminó de este navegador tu antiguo token de acceso personal y ya no solicita ninguno. GitHub seguirá aceptando ese token hasta que lo elimines en la configuración de GitHub.",
+  "setup_screen_delete_the_token_on_github": "Eliminar el token en GitHub",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "Añadir un botón de ghdiff a github.com",
+  "userscript_install_install": "Instalar",
+  "watch_offer_dialog_watch_this_repository": "¿Seguir este repositorio?",
+  "watch_offer_dialog_watch": "¿Seguir {subject}?",
+  "watch_offer_dialog_keep_reviewing": "Seguir revisando",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "Tu lista de seguimiento permanece en este navegador.",
+  "watch_offer_dialog_not_now": "Ahora no",
+  "watched_repos_dialog_watched_repositories": "Repositorios seguidos",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff muestra los pull requests abiertos de estos repositorios. La lista permanece en este navegador.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "Introduce un repositorio como owner/repo.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "Repositorio que seguir",
+  "watched_repos_editor_add": "Añadir",
+  "watched_repos_editor_nothing_watched_yet": "Aún no se sigue ningún repositorio.",
+  "watched_repos_editor_remove": "Quitar",
+  "dialog_close": "Cerrar",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "No se pudo leer ese archivo desde GitHub.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "Ese archivo ha cambiado en GitHub desde que se creó este diff. Recarga para ver sus líneas sin modificar.",
+  "use_diff_file_loader_request_failed": "La solicitud falló ({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "No se pudo comprobar con qué cuenta has iniciado sesión.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "No se pudo leer dónde está instalado ghdiff.",
+  "use_open_pulls_could_not_load_pull_requests": "No se pudieron cargar los pull requests.",
+  "use_pull_details_could_not_load_this_pull_request": "No se pudo cargar este pull request.",
+  "use_review_comments_could_not_load_comments": "No se pudieron cargar los comentarios.",
+  "use_review_comments_could_not_post_that_comment_to_github": "No se pudo publicar ese comentario en GitHub.",
+  "use_review_comments_could_not_post_this_reply_to_github": "No se pudo publicar esta respuesta en GitHub.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "No se pudo eliminar ese hilo en GitHub. Recarga para comprobarlo.",
+  "use_review_patch_request_failed": "La solicitud falló ({status}).",
+  "use_review_patch_could_not_load_that_diff": "No se pudo cargar ese diff.",
+  "use_submit_review_could_not_submit_this_review": "No se pudo enviar esta revisión.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "No se pudo enviar esa marca a GitHub.",
+  "code_fonts_system": "Sistema",
+  "diff_hydration_that_file_is_too_large_to_show_its": "Ese archivo es demasiado grande para mostrar sus líneas sin modificar.",
+  "example_targets_rewrite_bun_in_rust": "Reescribir Bun en Rust",
+  "example_targets_2_188_files_1_0m_lines": "2188 archivos · 1,0 M de líneas",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "El mayor de todos. 43 MB de diff unificado en 6755 commits.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Resolver conflictos de importación de PR de Maimai NET",
+  "example_targets_25_files_494k_lines": "25 archivos · 494 mil líneas",
+  "example_targets_one_generated_json_file_holds_465_486_of": "Un archivo JSON generado contiene 465486 de esas líneas.",
+  "example_targets_deps_update_v8_to_14_1": "deps: actualizar V8 a 14.1",
+  "example_targets_3_420_files_268k_lines": "3420 archivos · 268 mil líneas",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "El árbol de archivos más amplio. Como supera el límite de tamaño de diferencias de la API, ghdiff lo carga desde el sitio web de GitHub.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: eliminar todas las dependencias de libc++ y de la ABI de libc++",
+  "example_targets_25_files_88k_lines": "25 archivos · 88 mil líneas",
+  "example_targets_large_and_still_a_diff_a_person_can": "Grande y aun así un diff que una persona puede leer hasta el final.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0 a 1.3.1",
+  "example_targets_53_files_2_6k_lines": "53 archivos · 2,6 mil líneas",
+  "example_targets_a_compare_range_of_one_release_100_commits": "Un rango de comparación de una versión. 100 commits y los comentarios permanecen locales.",
+  "filter_rules_all_files": "Todos los archivos",
+  "filter_rules_show_every_file_in_the_diff": "Mostrar todos los archivos del diff.",
+  "filter_rules_hide_tests": "Ocultar pruebas",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "Ocultar archivos de prueba, fixtures y snapshots.",
+  "filter_rules_tests_only": "Solo pruebas",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "Mostrar solo archivos de prueba, fixtures y snapshots.",
+  "filter_rules_source_only": "Solo código fuente",
+  "filter_rules_show_only_code_files_that_are_not_tests": "Mostrar solo archivos de código que no sean pruebas ni generados.",
+  "filter_rules_docs_only": "Solo documentación",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Mostrar solo archivos Markdown y otros archivos de texto.",
+  "filter_rules_config_only": "Solo configuración",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "Mostrar solo manifiestos, configuraciones de lint y archivos de CI.",
+  "filter_rules_hide_generated": "Ocultar generados",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "Ocultar archivos lock, snapshots y salida de compilación.",
+  "filter_rules_generated_only": "Solo generados",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "Mostrar solo archivos lock, snapshots y salida de compilación.",
+  "github_app_sign_in_was_not_completed_on_github_try": "El inicio de sesión no se completó en GitHub. Inténtalo de nuevo cuando estés listo.",
+  "github_app_the_sign_in_session_timed_out_on_github": "La sesión de inicio de sesión caducó en GitHub. Inicia el proceso de nuevo.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "La verificación de seguridad falló durante el inicio de sesión en GitHub. Inicia el proceso de nuevo desde ghdiff.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub no pudo completar el inicio de sesión. Inténtalo de nuevo en un momento.",
+  "installations_all_repositories": "Todos los repositorios",
+  "installations_no_repositories_selected": "No hay repositorios seleccionados",
+  "pull_details_just_now": "ahora mismo",
+  "pull_status_approved": "Aprobado",
+  "pull_status_changes_requested": "Cambios solicitados",
+  "pull_status_no_review_yet": "Aún no hay revisión",
+  "pull_status_checks_passing": "comprobaciones correctas",
+  "pull_status_checks_running": "comprobaciones en curso",
+  "pull_status_a_check_failed": "falló una comprobación",
+  "pull_status_no_checks": "sin comprobaciones",
+  "pull_status_changes_requested_new_commits_since": "Cambios solicitados; hay commits nuevos desde entonces",
+  "review_data_commit": "Commit {value}",
+  "review_decision_approve": "Aprobar",
+  "review_decision_approving": "Aprobando…",
+  "review_decision_request_changes": "Solicitar cambios",
+  "review_decision_requesting": "Solicitando…",
+  "review_decision_comment": "Comentar",
+  "review_decision_commenting": "Comentando…",
+  "review_decision_approved": "Aprobado",
+  "review_decision_changes_requested": "Cambios solicitados",
+  "review_decision_commented": "Comentado",
+  "review_decision_you_approved_this_pull_request": "Aprobaste este pull request.",
+  "review_decision_you_requested_changes_on_this_pull_request": "Solicitaste cambios en este pull request.",
+  "review_decision_you_commented_on_this_pull_request": "Comentaste en este pull request.",
+  "review_decision_github_recorded_your_review": "GitHub registró tu revisión.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "El servidor no respondió. Puede que tu conexión esté fuera de línea o que la solicitud haya agotado el tiempo de espera.",
+  "review_failure_you_used_all_5_000_github_requests_for": "Usaste las 5.000 solicitudes de GitHub disponibles para esta hora. Espera unos minutos a que se restablezca el límite e inténtalo de nuevo.",
+  "review_failure_hourly_github_rate_limit_reached": "Se alcanzó el límite horario de GitHub",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub limita las solicitudes sin autenticación a 60 por hora. Configura el acceso para obtener 5.000 solicitudes por hora de inmediato.",
+  "review_failure_github_rate_limit_reached": "Se alcanzó el límite de GitHub",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "Tu inicio de sesión de GitHub ya no es válido y ghdiff no pudo renovarlo. Configura el acceso otra vez para ver estas diferencias.",
+  "review_failure_github_sign_in_expired": "El inicio de sesión de GitHub caducó",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "GitHub devolvió «No encontrado» porque ghdiff no está instalado en este repositorio o falta acceso. Configura el acceso para conceder permiso.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff necesita acceso a este repositorio",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "GitHub devuelve «No encontrado» para repositorios privados cuando no has iniciado sesión. Configura el acceso para ver estas diferencias.",
+  "review_failure_repository_not_found_or_private": "Repositorio no encontrado o privado",
+  "review_failure_could_not_load_the_diff": "No se pudieron cargar las diferencias",
+  "contract_enter_a_valid_github_username_or_repository_name": "Introduce un nombre de usuario o de repositorio de GitHub válido.",
+  "contract_comment_cannot_be_empty": "El comentario no puede estar vacío.",
+  "router_could_not_check_who_you_are_signed_in": "No se pudo comprobar con qué cuenta has iniciado sesión.",
+  "router_could_not_read_where_ghdiff_is_installed": "No se pudo leer dónde está instalado ghdiff.",
+  "router_could_not_load_this_repository": "No se pudo cargar este repositorio.",
+  "router_could_not_load_this_pull_request": "No se pudo cargar este pull request.",
+  "router_could_not_load_your_review_of_this_pull": "No se pudo cargar tu revisión de este pull request.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub aceptó la revisión, pero no devolvió nada.",
+  "router_could_not_submit_this_review": "No se pudo enviar esta revisión.",
+  "router_could_not_load_comments": "No se pudieron cargar los comentarios.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub aceptó la respuesta, pero no devolvió nada.",
+  "router_this_comment_is_missing_a_file_or_line": "A este comentario le falta un archivo o un número de línea.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub aceptó el comentario, pero no devolvió nada.",
+  "router_could_not_post_this_comment": "No se pudo publicar este comentario.",
+  "router_could_not_delete_this_comment": "No se pudo eliminar este comentario.",
+  "router_could_not_load_which_files_you_have_read": "No se pudo cargar qué archivos has leído.",
+  "router_not_found": "No encontrado",
+  "router_could_not_send_that_mark_to_github": "No se pudo enviar esa marca a GitHub.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "Este ghdiff no tiene configurada una GitHub App, así que no puede iniciar sesión.",
+  "github_your_github_sign_in_is_no_longer_valid": "Tu inicio de sesión de GitHub ya no es válido. Configura el acceso otra vez para continuar.",
+  "github_github_rejected_that_query": "GitHub rechazó esa consulta.",
+  "github_github_returned_no_data_for_that_query": "GitHub no devolvió datos para esa consulta.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub no tiene ese archivo en ese commit. Un repositorio privado necesita un token.",
+  "github_app_github_would_not_revoke_that_token": "GitHub no revocó ese token.",
+  "github_app_github_answered_for_that_token_request": "GitHub respondió {status} a esa solicitud de token.",
+  "github_app_github_refused_that": "GitHub rechazó eso: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub respondió sin token de acceso.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub muestra como máximo {fileCount} archivos para estas diferencias, por lo que faltan los posteriores.",
+  "installations_an_account": "una cuenta",
+  "stream_text_that_response_is_too_large_to_read": "Esa respuesta es demasiado grande para leerla.",
+  "diff_that_review_target_is_not_valid": "Ese destino de revisión no es válido.",
+  "diff_could_not_load_that_diff": "No se pudieron cargar esas diferencias.",
+  "diff_that_request_to_github_failed": "Falló esa solicitud a GitHub.",
+  "file_that_review_target_is_not_valid": "Ese destino de revisión no es válido.",
+  "file_that_file_path_is_not_valid": "Esa ruta de archivo no es válida.",
+  "file_could_not_load_that_file": "No se pudo cargar ese archivo.",
+  "route_no_such_procedure": "No existe ese procedimiento.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} archivo",
+        "countPlural=*": "{formatted} archivos"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} commit",
+        "countPlural=*": "{formatted} commits"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} comentario",
+        "countPlural=*": "{formatted} comentarios"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} respuesta",
+        "countPlural=*": "{formatted} respuestas"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} repositorio",
+        "countPlural=*": "{formatted} repositorios"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Se sirvió {formatted} diferencia",
+        "countPlural=*": "Se sirvieron {formatted} diferencias"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} oculto",
+        "countPlural=*": "{formatted} ocultos"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{base} · {formatted} estado",
+        "countPlural=*": "{base} · {formatted} estados"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Una pila de {formatted} pull request",
+        "countPlural=*": "Una pila de {formatted} pull requests"
+      }
+    }
+  ],
+  "comment_line": "Comentario en la línea {line}",
+  "comment_line_range": "Comentario en las líneas {start} a {end}",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} archivo{#total} de {total}{/total}",
+        "countPlural=*": "{formatted} archivos{#total} de {total}{/total}"
+      }
+    }
+  ],
+  "home_credits": "Diferencias con {#diffs}CodeView{/diffs} y lista de archivos con {#trees}FileTree{/trees}.",
+  "watch_offer_added_phone": "Los pull requests abiertos ahora están en la lista de pull requests de la parte superior izquierda.",
+  "watch_offer_added_wide": "Los pull requests abiertos ahora están en la barra de la izquierda.",
+  "watch_offer_more_phone": "Para añadir más repositorios a la lista, abre esa lista y usa {#strong}{label}{/strong}, o ve a la página principal de ghdiff.",
+  "watch_offer_more_wide": "Para añadir más repositorios a la lista, usa {#strong}{label}{/strong} al final de la barra o ve a la página principal de ghdiff.",
+  "watch_offer_preview_phone": "Consulta sus pull requests abiertos en la lista de pull requests de la parte superior izquierda, cada uno con su revisión y sus verificaciones. Muévete entre ellos sin volver a GitHub.",
+  "watch_offer_preview_wide": "Consulta sus pull requests abiertos en la barra de la izquierda, cada uno con su revisión y sus verificaciones. Muévete entre ellos sin volver a GitHub.",
+  "watch_offer_action": "Añadir {subject} a la lista",
+  "watch_offer_added_title": "{subject} se ha añadido a la lista",
+  "pull_opened_age": "Abierto: {age}",
+  "pull_updated_age": "Actualizado: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} archivo, {added} {deleted}",
+        "countPlural=*": "{formatted} archivos, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "No hay pull requests abiertos en {repositories}.",
+  "review_submit_scope": "Esta es una revisión de todo el pull request de {#strong}{target}{/strong}. Los comentarios de línea se publican donde los escribas.",
+  "review_previous_verdict": "{verdict} Una nueva revisión ocupará su lugar.",
+  "setup_not_installed": "ghdiff aún no está instalado en {#strong}{account}{/strong}. Si es una organización, puede que una persona propietaria deba aprobar la instalación.",
+  "setup_no_repositories": "ghdiff está instalado en {#strong}{account}{/strong}, pero aún no cubre ningún repositorio. Abre su configuración para seleccionar los repositorios que revisas.",
+  "userscript_manager_description": "Esto añade un botón junto a Files changed en un pull request y junto a Browse files en un commit. Requiere un gestor de userscripts como {#manager}Tampermonkey{/manager}.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} a {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "Configura el acceso a GitHub antes de enviar una revisión.",
+  "auth_required_delete": "Configura el acceso a GitHub antes de eliminar un comentario.",
+  "auth_required_viewed": "Configura el acceso a GitHub antes de marcar un archivo como visto.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} byte",
+        "countPlural=*": "{formatted} bytes"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value} kB",
+  "bytes_megabytes": "{value} MB",
+  "app_description": "Abre cualquier pull request, commit o rango de comparación de GitHub sustituyendo github.com por ghdiff.com. Filtra la lista de archivos con reglas de ruta predefinidas y publica comentarios de línea en GitHub.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "¿Eliminar este comentario en GitHub? Esta acción no se puede deshacer.",
+        "count=*, countPlural=one": "¿Eliminar todos los {formatted} comentarios de este hilo en GitHub? Esta acción no se puede deshacer.",
+        "count=*, countPlural=*": "¿Eliminar todos los {formatted} comentarios de este hilo en GitHub? Esta acción no se puede deshacer."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub consideró que {formatted} archivo era demasiado grande para mostrar diferencias, por lo que no muestra líneas: {path}.",
+        "count=*, countPlural=one": "GitHub consideró que {formatted} archivo era demasiado grande para mostrar diferencias, por lo que no muestra líneas.",
+        "count=*, countPlural=*": "GitHub consideró que {formatted} archivos eran demasiado grandes para mostrar diferencias, por lo que no muestran líneas."
+      }
+    }
+  ],
+  "userscript_open_pull": "Abrir este pull request en ghdiff",
+  "userscript_open_commit": "Abrir este commit en ghdiff",
+  "userscript_description": "Añade un botón de ghdiff a la fila de pestañas de cada pull request de GitHub y junto a Browse files en cada commit.",
+  "diff_expand_all": "Expandir todo",
+  "diff_no_newline": "No hay salto de línea al final del archivo",
+  "tree_git_contains_changes": "Contiene elementos del estado de Git",
+  "review_bytes_read": "{amount} leídos",
+  "tree_git_added": "Estado de Git: añadido",
+  "tree_git_deleted": "Estado de Git: eliminado",
+  "tree_git_ignored": "Estado de Git: ignorado",
+  "tree_git_modified": "Estado de Git: modificado",
+  "tree_git_renamed": "Estado de Git: renombrado",
+  "tree_git_untracked": "Estado de Git: sin seguimiento",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} línea sin modificar",
+        "countPlural=*": "{formatted} líneas sin modificar"
+      }
+    }
+  ],
+  "locale_language": "Idioma",
+  "app_render_error": "ghdiff no pudo mostrar esta página. Vuelve a cargar la página para intentarlo de nuevo."
+}

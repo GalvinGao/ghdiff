@@ -1,7 +1,11 @@
+import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import { IconComment, IconFileTree, IconSearch, IconX } from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
+import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
+import { getLocale } from '../paraglide/runtime.js';
 import { CommentAuthorFilterBar } from '@/components/CommentAuthorFilterBar';
 import { CommentsList } from '@/components/CommentsList';
 import { FilterMenu } from '@/components/FilterMenu';
@@ -22,6 +26,7 @@ import type {
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import { countComments, countThreads } from '@/lib/commentSections';
+import { textDirection } from '@/lib/locale';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
 import {
   EMPTY_FILTER_STATE,
@@ -29,6 +34,12 @@ import {
   type ReviewTreeSource,
 } from '@/lib/reviewFilter';
 import type { TreeStatIndex } from '@/lib/treeStats';
+
+const fileSummaryMarkup = {
+  total: ({ children }: { children?: ReactNode }) => (
+    <span className="text-ink-faint">{children}</span>
+  ),
+};
 
 type Tab = 'files' | 'comments';
 
@@ -97,6 +108,7 @@ export function ReviewSidebar({
 
   return (
     <aside
+      dir={textDirection(getLocale())}
       className={cn(
         'border-line bg-surface flex h-full min-h-0 flex-col border-r',
         className
@@ -104,32 +116,39 @@ export function ReviewSidebar({
     >
       <div className="flex items-center gap-1 px-2 pt-2 pb-1">
         <Segmented
-          aria-label="Sidebar sections"
+          aria-label={m.review_sidebar_sidebar_sections()}
           onValueChange={(value) => setTab(value as Tab)}
           value={tab}
         >
           <SegmentedItem value="files">
             <IconFileTree size={13} />
-            Files
+            {m.review_sidebar_files()}
             <SegmentedCount>{stats.fileCount}</SegmentedCount>
           </SegmentedItem>
           <SegmentedItem
             value="comments"
             // Threads are what the list shows; the message total is the title.
-            title={`${threadCount} threads, ${commentCount} comments`}
+            title={m.review_sidebar_threads_comments({
+              threadCount: threadCount,
+              commentCount: commentCount,
+            })}
           >
             <IconComment size={13} />
-            Comments
+            {m.review_sidebar_comments()}
             <SegmentedCount>{threadCount}</SegmentedCount>
           </SegmentedItem>
         </Segmented>
         {tab === 'files' && (
           <Button
-            aria-label={searching ? 'Hide the path search' : 'Search by path'}
+            aria-label={
+              searching
+                ? m.review_sidebar_hide_the_path_search()
+                : m.review_sidebar_search_by_path()
+            }
             aria-pressed={searching}
             className="ml-auto"
             size="icon-sm"
-            title="Search by path"
+            title={m.review_sidebar_search_by_path()}
             variant="chrome"
             onClick={() => (searching ? closeSearch() : setSearching(true))}
           >
@@ -164,14 +183,14 @@ export function ReviewSidebar({
       <div className="min-h-0 flex-1 pt-2">
         <div
           role="region"
-          aria-label="Files"
+          aria-label={m.review_sidebar_files()}
           hidden={tab !== 'files'}
           className="h-full min-h-0"
         >
           {treeSource.paths.length === 0 ? (
             <div className="px-3 py-3">
               <p className="text-ink-muted text-sm">
-                The current filter hides all files.
+                {m.review_sidebar_the_current_filter_hides_all_files()}
               </p>
               <Button
                 className="mt-2"
@@ -179,7 +198,7 @@ export function ReviewSidebar({
                 variant="outline"
                 onClick={() => onFilterChange(EMPTY_FILTER_STATE)}
               >
-                Clear filters
+                {m.review_sidebar_clear_filters()}
               </Button>
             </div>
           ) : (
@@ -194,7 +213,7 @@ export function ReviewSidebar({
         </div>
         <div
           role="region"
-          aria-label="Comments"
+          aria-label={m.review_sidebar_comments()}
           hidden={tab !== 'comments'}
           className="h-full min-h-0"
         >
@@ -275,11 +294,16 @@ function FileTotals({
       style={{ paddingRight: treeStatLaneInset(gitLaneActive) }}
     >
       <div className="flex min-w-0 gap-1 truncate">
-        <dt className="sr-only">Files</dt>
+        <dt className="sr-only">{m.review_sidebar_files()}</dt>
         <dd>
-          {stats.fileCount} {stats.fileCount === 1 ? 'file' : 'files'}
-          {hiddenCount > 0 && (
-            <span className="text-ink-faint"> of {totalFileCount}</span>
+          {hiddenCount > 0 ? (
+            <ParaglideMessage
+              message={m.sidebar_file_summary}
+              inputs={{ count: stats.fileCount, total: totalFileCount }}
+              markup={fileSummaryMarkup}
+            />
+          ) : (
+            m.common_file_count({ count: stats.fileCount })
           )}
         </dd>
       </div>
@@ -290,13 +314,13 @@ function FileTotals({
           totals. */}
       <div className="ml-auto flex shrink-0 gap-[5px]">
         <div className="flex">
-          <dt className="sr-only">Added lines</dt>
+          <dt className="sr-only">{m.review_sidebar_added_lines()}</dt>
           <dd className="text-added text-right" style={addColumn}>
             +{stats.addedLines}
           </dd>
         </div>
         <div className="flex">
-          <dt className="sr-only">Deleted lines</dt>
+          <dt className="sr-only">{m.review_sidebar_deleted_lines()}</dt>
           <dd className="text-removed text-right" style={deleteColumn}>
             -{stats.deletedLines}
           </dd>
@@ -336,10 +360,10 @@ function PathSearchField({
       />
       <Input
         ref={inputRef}
-        aria-label="Search files by path"
+        aria-label={m.review_sidebar_search_files_by_path()}
         autoComplete="off"
         className="h-7 pr-7 pl-7 text-xs"
-        placeholder="Path contains…"
+        placeholder={m.review_sidebar_path_contains()}
         spellCheck={false}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -349,7 +373,7 @@ function PathSearchField({
       />
       {value.length > 0 && (
         <button
-          aria-label="Clear the path search"
+          aria-label={m.review_sidebar_clear_the_path_search()}
           className="text-ink-faint hover:text-ink absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 cursor-pointer items-center justify-center"
           type="button"
           onClick={() => {

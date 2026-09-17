@@ -1,0 +1,605 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "color_mode_toggle_auto": "자동",
+  "color_mode_toggle_light": "밝은 모드",
+  "color_mode_toggle_dark": "어두운 모드",
+  "color_mode_toggle_color_mode_switch_to": "색상 모드: {value}. {value2}(으)로 전환합니다.",
+  "color_mode_toggle_color_mode": "색상 모드: {value}",
+  "comment_author_filter_bar_comment_authors": "댓글 작성자",
+  "comment_author_filter_bar_all": "모두",
+  "comment_author_filter_bar_comments_a_person_opened": "사람이 작성한 댓글",
+  "comment_author_filter_bar_people": "사용자",
+  "comment_author_filter_bar_comments_a_github_app_opened": "GitHub App이 작성한 댓글",
+  "comment_author_filter_bar_bots": "봇",
+  "comment_body_done": "완료",
+  "comment_body_not_done": "미완료",
+  "comment_composer_leave_a_comment": "댓글 남기기",
+  "comment_composer_comment": "댓글",
+  "comment_composer_cancel": "취소",
+  "comment_composer_cmd_or_ctrl_with_enter": "Cmd 또는 Ctrl + Enter",
+  "comment_expansion_comment": "댓글",
+  "comment_thread_card_open_thread_by": "{author}의 스레드 열기",
+  "comment_thread_card_posting": "게시하는 중…",
+  "comment_thread_card_click_to_open": "클릭하여 열기",
+  "comment_thread_card_delete": "삭제",
+  "comment_thread_card_close": "닫기",
+  "comment_thread_card_on_github": "GitHub에서",
+  "comment_thread_card_this_comment_has_not_reached_github_yet_so": "이 댓글은 아직 GitHub에 게시되지 않아 답글을 받을 수 없어요.",
+  "comment_thread_card_reply_on_github": "GitHub에서 답글 달기",
+  "comment_thread_card_reply_in_this_browser": "이 브라우저에서 답글 달기",
+  "comment_thread_card_sending": "보내는 중…",
+  "comment_thread_card_reply": "답글",
+  "comment_thread_card_cmd_or_ctrl_with_enter": "Cmd 또는 Ctrl + Enter",
+  "comments_list_no_comments_here": "여기에는 댓글이 없어요.",
+  "comments_list_comments_you_leave_here_are_posted_to_github": "여기에 남긴 댓글은 GitHub에 게시돼요.",
+  "comments_list_github_has_no_review_thread_for_commits_or": "GitHub에는 커밋이나 비교 범위용 검토 스레드가 없어요. 댓글은 이 브라우저에만 남아요.",
+  "comments_list_posting": "게시 중",
+  "comments_list_failed": "실패",
+  "comments_list_go_to": "{path}(으)로 이동",
+  "confirm_inline_cancel": "취소",
+  "example_targets_label": "{title} — {note}",
+  "filter_menu_added": "추가됨",
+  "filter_menu_modified": "수정됨",
+  "filter_menu_renamed": "이름 변경됨",
+  "filter_menu_deleted": "삭제됨",
+  "filter_menu_filter_files": "파일 필터",
+  "filter_menu_file_rules": "파일 규칙",
+  "filter_menu_git_status": "Git 상태",
+  "filter_menu_clear_filters": "필터 지우기",
+  "filter_menu_all_files": "모든 파일",
+  "git_hub_account_control_set_up_access": "접근 권한 설정",
+  "git_hub_account_panel_comments_you_leave_go_to_github_under_this": "남긴 댓글은 이 계정으로 GitHub에 게시돼요.",
+  "git_hub_account_panel_install_on_another_account": "다른 계정에 설치",
+  "git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set": "ghdiff가 어떤 계정에도 설치되어 있지 않아요. 코드를 읽으려면 설정하세요.",
+  "git_hub_account_panel_open_setup_guide": "설정 안내 열기",
+  "git_hub_account_panel_sign_out": "로그아웃",
+  "git_hub_account_panel_accounts_with_access": "접근 권한이 있는 계정",
+  "git_hub_account_panel_opens_settings_on_github_com_to_add_or": "github.com의 설정을 열어 저장소를 추가하거나 제거해요.",
+  "git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read": "ghdiff가 읽을 수 있는 GitHub 계정을 확인하는 중…",
+  "home_screen_open_any_github_pull_request_commit_or_compare": "GitHub 풀 리퀘스트, 커밋 또는 비교 범위를 여세요.",
+  "home_screen_narrow_the_file_list_with_preset_path_rules": "미리 설정한 경로 규칙으로 파일 목록을 좁히세요.",
+  "home_screen_read_and_leave_comments": "댓글을 읽고 남기세요.",
+  "home_screen_paste_a_github_pull_request_commit_or_compare": "GitHub 풀 리퀘스트, 커밋 또는 비교 URL을 붙여넣거나 owner/repo#123을 입력하세요.",
+  "home_screen_github_pull_request_commit_or_compare_url": "GitHub 풀 리퀘스트, 커밋 또는 비교 URL",
+  "home_screen_open_this_diff": "이 변경 사항 열기",
+  "home_screen_review": "검토",
+  "home_screen_set_up_access_for_private_repositories": "비공개 저장소 접근 권한 설정",
+  "home_screen_userscript": "사용자 스크립트",
+  "home_screen_examples": "예시",
+  "home_screen_watched_repos": "관심 저장소",
+  "home_screen_github_account": "GitHub 계정",
+  "home_screen_source_on_github": "GitHub의 소스",
+  "home_screen_review_the_commit_this_build_was_made_from": "ghdiff에서 이 빌드를 만든 커밋 {sha} 검토",
+  "installation_row_current_diff": "현재 변경 사항",
+  "installation_row_configure": "구성",
+  "not_found_ghdiff_cannot_read_that_url": "ghdiff에서 이 URL을 읽을 수 없어요",
+  "not_found_a_review_needs_a_github_pull_request_a": "검토하려면 GitHub 풀 리퀘스트, 커밋 또는 비교 범위가 필요해요.",
+  "not_found_open_a_different_review": "다른 검토 열기",
+  "pane_resize_handle_drag_to_resize_double_click_to_reset": "드래그하여 크기를 조절하세요. 두 번 클릭하면 재설정돼요.",
+  "pull_details_card_loading_pull_request": "풀 리퀘스트를 불러오는 중…",
+  "pull_details_card_no_details_yet": "아직 세부 정보가 없어요.",
+  "pull_details_card_files": "파일",
+  "pull_details_card_added_lines": "추가된 줄",
+  "pull_details_card_deleted_lines": "삭제된 줄",
+  "pull_details_card_commits": "커밋",
+  "pull_details_card_description": "설명",
+  "pull_list_button_open_pull_requests": "열린 풀 리퀘스트",
+  "pull_list_button_watched_repos": "관심 저장소",
+  "pull_list_button_reload_the_pull_requests": "풀 리퀘스트 새로고침",
+  "pull_list_button_loading_the_pull_requests": "풀 리퀘스트를 불러오는 중",
+  "pull_rail_open_pull_requests": "열린 풀 리퀘스트",
+  "pull_rail_pull_request_bar_width": "풀 리퀘스트 막대 너비",
+  "pull_rail_show_the_pull_requests": "풀 리퀘스트 표시",
+  "pull_rail_hide_the_pull_requests": "풀 리퀘스트 숨기기",
+  "pull_rail_watched_repos": "관심 저장소",
+  "pull_rail_reload_the_pull_requests": "풀 리퀘스트 새로고침",
+  "pull_rail_loading_the_pull_requests": "풀 리퀘스트를 불러오는 중",
+  "pull_request_list_watch_a_repository_to_see_its_open_pull": "저장소를 관심 목록에 추가하면 열린 풀 리퀘스트를 볼 수 있어요.",
+  "pull_request_list_open_on_github": "GitHub에서 {owner}/{repo} 열기",
+  "pull_request_list_open_the_open_pull_requests_on_github": [
+    {
+      "declarations": [
+        "input count",
+        "local category = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["category"],
+      "match": {
+        "category=*": "GitHub에서 열린 풀 리퀘스트 {formatted}개 열기"
+      }
+    }
+  ],
+  "pull_request_list_you": "나",
+  "pull_request_list_open_s_open_pull_requests_in_on_github": "GitHub에서 {owner}/{repo}의 {author}가 연 풀 리퀘스트 열기",
+  "pull_request_list_set_up_private_access": "비공개 접근 권한 설정",
+  "pull_request_list_signed_out_no_row_shows_a_status_square": "로그아웃하면 어떤 행에도 상태 사각형이나 내 풀 리퀘스트임을 나타내는 표시가 나타나지 않아요. 로그인하면 둘 다 표시돼요.",
+  "pull_request_list_stack": "스택",
+  "pull_request_list_loading_open_pull_requests": "열린 풀 리퀘스트를 불러오는 중…",
+  "pull_row_label": " · {value}",
+  "pull_row_draft": "초안",
+  "pull_row_currently_viewing": "현재 보는 중",
+  "pull_state_icon_open": "열림",
+  "pull_state_icon_draft": "초안",
+  "pull_state_icon_merged": "병합됨",
+  "pull_state_icon_closed": "닫힘",
+  "review_header_bars": "막대",
+  "review_header_signs": "기호",
+  "review_header_none": "없음",
+  "review_header_hide_the_file_list": "파일 목록 숨기기",
+  "review_header_show_the_file_list": "파일 목록 표시",
+  "review_header_open_on_github": "GitHub에서 {targetLabel} 열기",
+  "review_header_switch_to_unified_view": "통합 보기로 전환",
+  "review_header_switch_to_split_view": "분할 보기로 전환",
+  "review_header_split_view": "분할 보기",
+  "review_header_unified_view": "통합 보기",
+  "review_header_display_settings": "표시 설정",
+  "review_header_code_font": "코드 글꼴",
+  "review_header_change_markers": "변경 표시",
+  "review_header_wrap_long_lines": "긴 줄 줄바꿈",
+  "review_header_line_numbers": "줄 번호",
+  "review_header_change_backgrounds": "변경 배경",
+  "review_header_dim_whitespace_changes": "공백 변경 흐리게 표시",
+  "review_header_approve_request_changes_or_comment": "승인, 변경 요청 또는 댓글",
+  "review_header_review": "검토",
+  "review_header_review_it_again": "{value} 다시 검토하세요.",
+  "review_screen_sidebar_width": "사이드바 너비",
+  "review_screen_dismiss": "닫기",
+  "review_sidebar_sidebar_sections": "사이드바 섹션",
+  "review_sidebar_files": "파일",
+  "review_sidebar_threads_comments": [
+    {
+      "declarations": [
+        "input threadCount",
+        "input commentCount",
+        "local threads = threadCount: plural",
+        "local comments = commentCount: plural",
+        "local threadNumber = threadCount: number",
+        "local commentNumber = commentCount: number"
+      ],
+      "selectors": ["threads", "comments"],
+      "match": {
+        "threads=*, comments=*": "스레드 {threadNumber}개, 댓글 {commentNumber}개"
+      }
+    }
+  ],
+  "review_sidebar_comments": "댓글",
+  "review_sidebar_hide_the_path_search": "경로 검색 숨기기",
+  "review_sidebar_search_by_path": "경로로 검색",
+  "review_sidebar_the_current_filter_hides_all_files": "현재 필터가 모든 파일을 숨겨요.",
+  "review_sidebar_clear_filters": "필터 지우기",
+  "review_sidebar_added_lines": "추가된 줄",
+  "review_sidebar_deleted_lines": "삭제된 줄",
+  "review_sidebar_search_files_by_path": "경로로 파일 검색",
+  "review_sidebar_path_contains": "경로에 포함…",
+  "review_sidebar_clear_the_path_search": "경로 검색 지우기",
+  "review_status_panel_fetching_the_diff": "변경 사항 가져오는 중",
+  "review_status_panel_reading_the_patch_for_this_review": "이 검토의 패치를 읽는 중이에요.",
+  "review_status_panel_preparing_the_diff": "변경 사항 준비 중",
+  "review_status_panel_parsing_the_patch_and_building_the_file_list": "패치를 분석하고 파일 목록을 만드는 중이에요.",
+  "review_status_panel_starting_the_highlighters": "구문 강조 기능 시작 중",
+  "review_status_panel_background_workers_are_getting_ready_to_color_your": "백그라운드 워커가 코드에 색을 입힐 준비를 하고 있어요.",
+  "review_status_panel_set_up_repository_access": "저장소 접근 권한 설정",
+  "review_status_panel_try_again": "다시 시도",
+  "review_submit_dialog_add_a_note_github_needs_one": "메모를 추가하세요. GitHub에서 메모가 필요해요.",
+  "review_submit_dialog_github_refuses_an_approval_on_your_own_pull": "GitHub에서는 자신의 풀 리퀘스트를 승인할 수 없어요.",
+  "review_submit_dialog_github_refuses_requested_changes_on_your_own_pull": "GitHub에서는 자신의 풀 리퀘스트에 변경을 요청할 수 없어요.",
+  "review_submit_dialog_you_can_comment_on_your_own_pull_request": "자신의 풀 리퀘스트에는 댓글을 남길 수 있어요. GitHub에서는 그 외의 작업을 허용하지 않아요.",
+  "review_submit_dialog_add_a_note_github_needs_one_to_request": "메모를 추가하세요. GitHub에서 변경을 요청하거나 댓글을 남기려면 메모가 필요해요.",
+  "review_submit_dialog_submit_a_review": "검토 제출",
+  "review_submit_dialog_review_body": "검토 내용",
+  "review_submit_dialog_leave_a_note_with_your_review": "검토와 함께 메모 남기기",
+  "review_submit_dialog_label": "{label} — {tip}",
+  "review_viewer_show_the_diff": "변경 사항 표시",
+  "review_viewer_hide_the_diff": "변경 사항 숨기기",
+  "review_viewer_show_the_whole_file": "전체 파일 표시",
+  "review_viewer_viewed": "확인함",
+  "setup_screen_set_up_private_repository_access": "비공개 저장소 접근 권한 설정",
+  "setup_screen_github_only_lets_ghdiff_read_repositories_you_grant": "GitHub는 ghdiff가 접근 권한을 부여받은 저장소만 읽을 수 있도록 해요. 다음 세 단계를 순서대로 완료하세요.",
+  "setup_screen_sign_in_to_github": "GitHub 로그인",
+  "setup_screen_this_identifies_your_account_to_github_any_comments": "이 단계에서 GitHub가 계정을 식별해요. 남기는 모든 댓글은 이 계정으로 게시돼요.",
+  "setup_screen_sign_in_with_github": "GitHub로 로그인",
+  "setup_screen_grant_repository_access": "저장소 접근 권한 부여",
+  "setup_screen_signing_in_only_identifies_you_choose_the_accounts": "로그인은 계정을 식별할 뿐이에요. ghdiff가 읽을 수 있는 계정과 저장소를 선택하세요.",
+  "setup_screen_signing_in_only_identifies_you_install_ghdiff_on": "로그인은 계정을 식별할 뿐이에요. {account}에 ghdiff를 설치하고 이 저장소가 접근 목록에 포함되어 있는지 확인하세요.",
+  "setup_screen_accounts_with_access": "접근 가능한 계정",
+  "setup_screen_install_ghdiff": "ghdiff 설치",
+  "setup_screen_install_on_another_account": "다른 계정에 설치",
+  "setup_screen_checking": "확인 중…",
+  "setup_screen_check_again": "다시 확인",
+  "setup_screen_open_the_diff": "변경 사항 열기",
+  "setup_screen_go_to_the_home_page_to_paste_a": "홈 페이지로 가서 풀 리퀘스트, 커밋 또는 비교 URL을 붙여넣으세요.",
+  "setup_screen_return_to_your_diff_ghdiff_will_fetch_it": "변경 사항으로 돌아가세요. ghdiff가 업데이트된 권한으로 다시 가져와요.",
+  "setup_screen_go_to_ghdiff_home": "ghdiff 홈으로 이동",
+  "setup_screen_return_to_the_diff": "변경 사항으로 돌아가기",
+  "setup_screen_this_ghdiff_deployment_has_no_github_app_set": "이 ghdiff 배포에는 GitHub App이 설정되어 있지 않아요. 공개 변경 사항은 계속 볼 수 있어요.",
+  "setup_screen_ghdiff_now_uses_a_github_app": "ghdiff는 이제 GitHub App을 사용해요",
+  "setup_screen_ghdiff_removed_your_old_personal_access_token_from": "ghdiff가 이 브라우저에서 이전 개인 액세스 토큰을 제거했으며 더 이상 요청하지 않아요. GitHub 설정에서 삭제하기 전까지 GitHub는 해당 토큰을 계속 허용해요.",
+  "setup_screen_delete_the_token_on_github": "GitHub에서 토큰 삭제",
+  "userscript_install_add_a_ghdiff_button_to_github_com": "github.com에 ghdiff 버튼 추가",
+  "userscript_install_install": "설치",
+  "watch_offer_dialog_watch_this_repository": "이 저장소를 관심 목록에 추가할까요?",
+  "watch_offer_dialog_watch": "{subject}을(를) 관심 목록에 추가할까요?",
+  "watch_offer_dialog_keep_reviewing": "계속 검토",
+  "watch_offer_dialog_your_watch_list_stays_in_this_browser": "관심 목록은 이 브라우저에만 남아요.",
+  "watch_offer_dialog_not_now": "나중에",
+  "watched_repos_dialog_watched_repositories": "관심 저장소",
+  "watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories": "ghdiff가 이 저장소들의 열린 풀 리퀘스트를 표시해요. 목록은 이 브라우저에만 남아요.",
+  "watched_repos_editor_enter_a_repository_as_owner_repo": "저장소를 owner/repo 형식으로 입력하세요.",
+  "watched_repos_editor_owner_repo": "owner/repo",
+  "watched_repos_editor_repository_to_watch": "관심 목록에 추가할 저장소",
+  "watched_repos_editor_add": "추가",
+  "watched_repos_editor_nothing_watched_yet": "아직 관심 목록에 추가한 저장소가 없어요.",
+  "watched_repos_editor_remove": "제거",
+  "dialog_close": "닫기",
+  "use_diff_file_loader_could_not_read_that_file_from_github": "GitHub에서 해당 파일을 읽을 수 없어요.",
+  "use_diff_file_loader_that_file_has_changed_on_github_since_this": "이 변경 사항이 만들어진 뒤 GitHub에서 해당 파일이 변경됐어요. 수정되지 않은 줄을 보려면 새로고침하세요.",
+  "use_diff_file_loader_request_failed": "요청에 실패했어요({status}).",
+  "use_git_hub_session_could_not_check_who_you_are_signed_in": "로그인한 계정을 확인할 수 없어요.",
+  "use_installations_could_not_read_where_ghdiff_is_installed": "ghdiff가 설치된 위치를 읽을 수 없어요.",
+  "use_open_pulls_could_not_load_pull_requests": "풀 리퀘스트를 불러올 수 없어요.",
+  "use_pull_details_could_not_load_this_pull_request": "이 풀 리퀘스트를 불러올 수 없어요.",
+  "use_review_comments_could_not_load_comments": "댓글을 불러올 수 없어요.",
+  "use_review_comments_could_not_post_that_comment_to_github": "해당 댓글을 GitHub에 게시할 수 없어요.",
+  "use_review_comments_could_not_post_this_reply_to_github": "이 답글을 GitHub에 게시할 수 없어요.",
+  "use_review_comments_could_not_delete_that_thread_on_github_reload": "GitHub에서 해당 스레드를 삭제할 수 없어요. 확인하려면 새로고침하세요.",
+  "use_review_patch_request_failed": "요청에 실패했어요({status}).",
+  "use_review_patch_could_not_load_that_diff": "변경 사항을 불러올 수 없어요.",
+  "use_submit_review_could_not_submit_this_review": "이 검토를 제출할 수 없어요.",
+  "use_viewed_files_could_not_send_that_mark_to_github": "해당 표시를 GitHub로 보낼 수 없어요.",
+  "code_fonts_system": "시스템",
+  "diff_hydration_that_file_is_too_large_to_show_its": "해당 파일은 수정되지 않은 줄을 표시하기에 너무 커요.",
+  "example_targets_rewrite_bun_in_rust": "Bun을 Rust로 재작성",
+  "example_targets_2_188_files_1_0m_lines": "파일 2,188개 · 줄 1.0M개",
+  "example_targets_the_largest_of_them_43_mb_of_unified": "가장 큰 항목이에요. 6,755개 커밋에 걸친 통합 변경 사항은 43MB예요.",
+  "example_targets_resolve_maimai_net_import_pr_conflicts": "Maimai NET 가져오기 PR 충돌 해결",
+  "example_targets_25_files_494k_lines": "파일 25개 · 줄 494k개",
+  "example_targets_one_generated_json_file_holds_465_486_of": "생성된 JSON 파일 하나에 그중 465,486줄이 들어 있어요.",
+  "example_targets_deps_update_v8_to_14_1": "deps: V8을 14.1로 업데이트",
+  "example_targets_3_420_files_268k_lines": "파일 3,420개 · 줄 268k개",
+  "example_targets_the_widest_file_tree_past_the_api_diff": "가장 광범위한 파일 트리입니다. API diff 크기 제한을 초과하므로 ghdiff가 GitHub 웹사이트에서 불러옵니다.",
+  "example_targets_libghostty_remove_all_libc_and_libc_abi_dependencies": "libghostty: 모든 libc++ 및 libc++ ABI 종속성 제거",
+  "example_targets_25_files_88k_lines": "파일 25개 · 줄 88k개",
+  "example_targets_large_and_still_a_diff_a_person_can": "크지만 사람이 끝까지 읽을 수 있는 변경 사항이에요.",
+  "example_targets_ghostty_1_3_0_to_1_3_1": "Ghostty 1.3.0에서 1.3.1로",
+  "example_targets_53_files_2_6k_lines": "파일 53개 · 줄 2.6k개",
+  "example_targets_a_compare_range_of_one_release_100_commits": "하나의 릴리스 비교 범위예요. 커밋은 100개이며 댓글은 로컬에만 남아요.",
+  "filter_rules_all_files": "모든 파일",
+  "filter_rules_show_every_file_in_the_diff": "변경 사항의 모든 파일을 표시해요.",
+  "filter_rules_hide_tests": "테스트 숨기기",
+  "filter_rules_hide_test_files_fixtures_and_snapshots": "테스트 파일, 픽스처 및 스냅샷을 숨겨요.",
+  "filter_rules_tests_only": "테스트만",
+  "filter_rules_show_only_test_files_fixtures_and_snapshots": "테스트 파일, 픽스처 및 스냅샷만 표시해요.",
+  "filter_rules_source_only": "소스만",
+  "filter_rules_show_only_code_files_that_are_not_tests": "테스트 파일이나 생성된 파일이 아닌 코드 파일만 표시해요.",
+  "filter_rules_docs_only": "문서만",
+  "filter_rules_show_only_markdown_and_other_prose_files": "Markdown 및 다른 일반 텍스트 파일만 표시해요.",
+  "filter_rules_config_only": "구성만",
+  "filter_rules_show_only_manifests_lint_configs_and_ci_files": "매니페스트, 린트 구성 및 CI 파일만 표시해요.",
+  "filter_rules_hide_generated": "생성된 파일 숨기기",
+  "filter_rules_hide_lock_files_snapshots_and_build_output": "잠금 파일, 스냅샷 및 빌드 출력을 숨겨요.",
+  "filter_rules_generated_only": "생성된 파일만",
+  "filter_rules_show_only_lock_files_snapshots_and_build_output": "잠금 파일, 스냅샷 및 빌드 출력만 표시해요.",
+  "github_app_sign_in_was_not_completed_on_github_try": "GitHub에서 로그인이 완료되지 않았어요. 준비되면 다시 시도하세요.",
+  "github_app_the_sign_in_session_timed_out_on_github": "GitHub에서 로그인 세션 시간이 만료됐어요. 로그인 과정을 다시 시작하세요.",
+  "github_app_security_verification_failed_during_github_sign_in_start": "GitHub 로그인 중 보안 확인에 실패했어요. ghdiff에서 과정을 다시 시작하세요.",
+  "github_app_github_could_not_complete_the_sign_in_try": "GitHub에서 로그인을 완료할 수 없어요. 잠시 후 다시 시도하세요.",
+  "installations_all_repositories": "모든 저장소",
+  "installations_no_repositories_selected": "선택한 저장소 없음",
+  "pull_details_just_now": "방금",
+  "pull_status_approved": "승인됨",
+  "pull_status_changes_requested": "변경 요청됨",
+  "pull_status_no_review_yet": "아직 검토 없음",
+  "pull_status_checks_passing": "검사 통과",
+  "pull_status_checks_running": "검사 실행 중",
+  "pull_status_a_check_failed": "검사 하나 실패",
+  "pull_status_no_checks": "검사 없음",
+  "pull_status_changes_requested_new_commits_since": "변경 요청됨, 이후 새 커밋 있음",
+  "review_data_commit": "커밋 {value}",
+  "review_decision_approve": "승인",
+  "review_decision_approving": "승인하는 중…",
+  "review_decision_request_changes": "변경 요청",
+  "review_decision_requesting": "변경 요청 중…",
+  "review_decision_comment": "댓글",
+  "review_decision_commenting": "댓글 작성 중…",
+  "review_decision_approved": "승인됨",
+  "review_decision_changes_requested": "변경 요청됨",
+  "review_decision_commented": "댓글 작성됨",
+  "review_decision_you_approved_this_pull_request": "이 풀 리퀘스트를 승인했어요.",
+  "review_decision_you_requested_changes_on_this_pull_request": "이 풀 리퀘스트에 변경을 요청했어요.",
+  "review_decision_you_commented_on_this_pull_request": "이 풀 리퀘스트에 댓글을 남겼어요.",
+  "review_decision_github_recorded_your_review": "GitHub에서 검토를 기록했어요.",
+  "review_failure_the_server_didn_t_respond_your_connection_might": "서버가 응답하지 않았어요. 연결이 오프라인이거나 요청 시간이 초과됐을 수 있어요.",
+  "review_failure_you_used_all_5_000_github_requests_for": "이 시간에 사용할 수 있는 GitHub 요청 5,000회를 모두 사용했어요. 제한이 재설정된 뒤 몇 분 후 다시 시도하세요.",
+  "review_failure_hourly_github_rate_limit_reached": "시간당 GitHub 요청 한도에 도달했어요",
+  "review_failure_github_limits_unauthenticated_requests_to_60_per_hour": "GitHub는 인증되지 않은 요청을 시간당 60회로 제한해요. 접근 권한을 설정하면 즉시 시간당 5,000회를 사용할 수 있어요.",
+  "review_failure_github_rate_limit_reached": "GitHub 요청 한도에 도달했어요",
+  "review_failure_your_github_sign_in_is_no_longer_valid": "GitHub 로그인이 더 이상 유효하지 않고 ghdiff에서 갱신할 수 없어요. 이 변경 사항을 보려면 접근 권한을 다시 설정하세요.",
+  "review_failure_github_sign_in_expired": "GitHub 로그인 만료",
+  "review_failure_github_returned_not_found_because_ghdiff_is_not": "ghdiff가 이 저장소에 설치되지 않았거나 접근 권한이 없어서 GitHub가 찾을 수 없음을 반환했어요. 권한을 부여하려면 접근 권한을 설정하세요.",
+  "review_failure_ghdiff_needs_access_to_this_repository": "ghdiff에 이 저장소 접근 권한이 필요해요",
+  "review_failure_github_returns_not_found_for_private_repositories_when": "로그아웃 상태에서 비공개 저장소를 요청하면 GitHub가 찾을 수 없음을 반환해요. 이 변경 사항을 보려면 접근 권한을 설정하세요.",
+  "review_failure_repository_not_found_or_private": "저장소를 찾을 수 없거나 비공개예요",
+  "review_failure_could_not_load_the_diff": "변경 사항을 불러올 수 없어요",
+  "contract_enter_a_valid_github_username_or_repository_name": "유효한 GitHub 사용자 이름 또는 저장소 이름을 입력하세요.",
+  "contract_comment_cannot_be_empty": "댓글은 비워 둘 수 없어요.",
+  "router_could_not_check_who_you_are_signed_in": "로그인한 계정을 확인할 수 없어요.",
+  "router_could_not_read_where_ghdiff_is_installed": "ghdiff가 설치된 위치를 읽을 수 없어요.",
+  "router_could_not_load_this_repository": "이 저장소를 불러올 수 없어요.",
+  "router_could_not_load_this_pull_request": "이 풀 리퀘스트를 불러올 수 없어요.",
+  "router_could_not_load_your_review_of_this_pull": "이 풀 리퀘스트의 검토를 불러올 수 없어요.",
+  "router_github_accepted_the_review_but_returned_nothing": "GitHub에서 검토를 수락했지만 아무것도 반환하지 않았어요.",
+  "router_could_not_submit_this_review": "이 검토를 제출할 수 없어요.",
+  "router_could_not_load_comments": "댓글을 불러올 수 없어요.",
+  "router_github_accepted_the_reply_but_returned_nothing": "GitHub에서 답글을 수락했지만 아무것도 반환하지 않았어요.",
+  "router_this_comment_is_missing_a_file_or_line": "이 댓글에 파일 또는 줄 번호가 없어요.",
+  "router_github_accepted_the_comment_but_returned_nothing": "GitHub에서 댓글을 수락했지만 아무것도 반환하지 않았어요.",
+  "router_could_not_post_this_comment": "이 댓글을 게시할 수 없어요.",
+  "router_could_not_delete_this_comment": "이 댓글을 삭제할 수 없어요.",
+  "router_could_not_load_which_files_you_have_read": "확인한 파일 목록을 불러올 수 없어요.",
+  "router_not_found": "찾을 수 없음",
+  "router_could_not_send_that_mark_to_github": "해당 표시를 GitHub로 보낼 수 없어요.",
+  "auth_route_this_ghdiff_has_no_github_app_set_up": "이 ghdiff에는 GitHub App이 설정되어 있지 않아 로그인할 수 없어요.",
+  "github_your_github_sign_in_is_no_longer_valid": "GitHub 로그인이 더 이상 유효하지 않아요. 계속하려면 접근 권한을 다시 설정하세요.",
+  "github_github_rejected_that_query": "GitHub에서 해당 쿼리를 거부했어요.",
+  "github_github_returned_no_data_for_that_query": "GitHub에서 해당 쿼리의 데이터를 반환하지 않았어요.",
+  "github_github_has_no_such_file_on_that_commit": "GitHub에 해당 커밋의 파일이 없어요. 비공개 저장소에는 토큰이 필요해요.",
+  "github_app_github_would_not_revoke_that_token": "GitHub에서 해당 토큰을 해지하지 않았어요.",
+  "github_app_github_answered_for_that_token_request": "GitHub에서 해당 토큰 요청에 {status}을(를) 반환했어요.",
+  "github_app_github_refused_that": "GitHub에서 거부했어요: {error}.",
+  "github_app_github_answered_with_no_access_token": "GitHub에서 액세스 토큰 없이 응답했어요.",
+  "github_patch_github_lists_at_most_files_for_this_diff": "GitHub는 이 변경 사항에서 파일을 최대 {fileCount}개까지만 표시하므로 이후 파일은 없어요.",
+  "installations_an_account": "계정",
+  "stream_text_that_response_is_too_large_to_read": "응답이 너무 커서 읽을 수 없어요.",
+  "diff_that_review_target_is_not_valid": "검토 대상이 유효하지 않아요.",
+  "diff_could_not_load_that_diff": "변경 사항을 불러올 수 없어요.",
+  "diff_that_request_to_github_failed": "GitHub 요청에 실패했어요.",
+  "file_that_review_target_is_not_valid": "검토 대상이 유효하지 않아요.",
+  "file_that_file_path_is_not_valid": "파일 경로가 유효하지 않아요.",
+  "file_could_not_load_that_file": "파일을 불러올 수 없어요.",
+  "route_no_such_procedure": "해당 절차가 없어요.",
+  "common_file_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "파일 {formatted}개"
+      }
+    }
+  ],
+  "common_commit_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "커밋 {formatted}개"
+      }
+    }
+  ],
+  "common_comment_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "댓글 {formatted}개"
+      }
+    }
+  ],
+  "common_reply_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "답글 {formatted}개"
+      }
+    }
+  ],
+  "common_repository_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "저장소 {formatted}개"
+      }
+    }
+  ],
+  "home_served_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "변경 사항 {formatted}개 제공"
+      }
+    }
+  ],
+  "filter_hidden_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted}개 숨김"
+      }
+    }
+  ],
+  "filter_status_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input base",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{base} · 상태 {formatted}개"
+      }
+    }
+  ],
+  "stack_pull_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "풀 리퀘스트 {formatted}개의 스택"
+      }
+    }
+  ],
+  "comment_line": "줄 {line}에 댓글",
+  "comment_line_range": "{start}번 줄부터 {end}번 줄에 댓글 달기",
+  "sidebar_file_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input total",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "파일 {formatted}개{#total} / {total}개{/total}"
+      }
+    }
+  ],
+  "home_credits": "변경 사항은 {#diffs}CodeView{/diffs}로, 파일 목록은 {#trees}FileTree{/trees}로 제공돼요.",
+  "watch_offer_added_phone": "이제 열린 풀 리퀘스트가 왼쪽 상단의 풀 리퀘스트 목록에 표시돼요.",
+  "watch_offer_added_wide": "이제 열린 풀 리퀘스트가 왼쪽 막대에 표시돼요.",
+  "watch_offer_more_phone": "더 많은 저장소를 관심 목록에 추가하려면 해당 목록을 열고 {#strong}{label}{/strong}를 사용하거나 ghdiff 홈 페이지로 가세요.",
+  "watch_offer_more_wide": "더 많은 저장소를 관심 목록에 추가하려면 막대 하단의 {#strong}{label}{/strong}를 사용하거나 ghdiff 홈 페이지로 가세요.",
+  "watch_offer_preview_phone": "왼쪽 상단의 풀 리퀘스트 목록에서 열린 풀 리퀘스트와 각각의 검토 및 자동 검사를 확인하세요. GitHub로 돌아가지 않고 이동할 수 있어요.",
+  "watch_offer_preview_wide": "왼쪽 막대에서 열린 풀 리퀘스트와 각각의 검토 및 자동 검사를 확인하세요. GitHub로 돌아가지 않고 이동할 수 있어요.",
+  "watch_offer_action": "{subject} 관심 목록에 추가",
+  "watch_offer_added_title": "{subject}을(를) 관심 목록에 추가했어요",
+  "pull_opened_age": "생성됨: {age}",
+  "pull_updated_age": "업데이트됨: {age}",
+  "tree_directory_summary": [
+    {
+      "declarations": [
+        "input count",
+        "input added",
+        "input deleted",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "파일 {formatted}개, {added} {deleted}"
+      }
+    }
+  ],
+  "pull_list_empty": "{repositories}에 열린 풀 리퀘스트가 없어요.",
+  "review_submit_scope": "이는 {#strong}{target}{/strong} 전체에 대한 검토예요. 줄 댓글은 작성한 위치에 게시돼요.",
+  "review_previous_verdict": "{verdict} 새 검토가 이를 대체해요.",
+  "setup_not_installed": "ghdiff가 아직 {#strong}{account}{/strong}에 설치되어 있지 않아요. 조직인 경우 소유자의 설치 승인이 필요할 수 있어요.",
+  "setup_no_repositories": "ghdiff가 {#strong}{account}{/strong}에 설치되어 있지만 아직 어떤 저장소도 포함하지 않아요. 설정을 열어 검토할 저장소를 선택하세요.",
+  "userscript_manager_description": "풀 리퀘스트에서는 Files changed 옆에, 커밋에서는 Browse files 옆에 버튼을 추가해요. {#manager}Tampermonkey{/manager} 같은 사용자 스크립트 관리자가 필요해요.",
+  "pull_row_tooltip": "{title}\n{state}{status}\n{head} → {base}",
+  "pull_status_description": "{review} · {checks}",
+  "auth_required_review": "검토를 제출하기 전에 GitHub 접근 권한을 설정하세요.",
+  "auth_required_delete": "댓글을 삭제하기 전에 GitHub 접근 권한을 설정하세요.",
+  "auth_required_viewed": "파일을 확인함으로 표시하기 전에 GitHub 접근 권한을 설정하세요.",
+  "bytes_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{formatted}바이트"
+      }
+    }
+  ],
+  "bytes_kilobytes": "{value}kB",
+  "bytes_megabytes": "{value}MB",
+  "app_description": "github.com을 ghdiff.com으로 바꾸어 GitHub 풀 리퀘스트, 커밋 또는 비교 범위를 여세요. 미리 설정한 경로 규칙으로 파일 목록을 좁히고 줄 댓글을 GitHub에 게시할 수 있어요.",
+  "thread_delete_confirmation": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "이 댓글을 GitHub에서 삭제할까요? 되돌릴 수 없어요.",
+        "count=*, countPlural=other": "이 스레드의 댓글 {formatted}개를 모두 GitHub에서 삭제할까요? 되돌릴 수 없어요.",
+        "count=*, countPlural=*": "이 스레드의 댓글 {formatted}개를 모두 GitHub에서 삭제할까요? 되돌릴 수 없어요."
+      }
+    }
+  ],
+  "github_patch_missing_files": [
+    {
+      "declarations": [
+        "input count",
+        "input path",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=1, countPlural=*": "GitHub에서 {formatted}개 파일이 변경 사항을 표시하기에 너무 크다고 판단해 줄을 표시하지 않아요: {path}.",
+        "count=*, countPlural=*": "GitHub에서 {formatted}개 파일이 변경 사항을 표시하기에 너무 크다고 판단해 줄을 표시하지 않아요."
+      }
+    }
+  ],
+  "userscript_open_pull": "ghdiff에서 이 풀 리퀘스트 열기",
+  "userscript_open_commit": "ghdiff에서 이 커밋 열기",
+  "userscript_description": "모든 GitHub 풀 리퀘스트의 탭 행과 모든 커밋의 Browse files 옆에 ghdiff 버튼을 추가해요.",
+  "diff_expand_all": "모두 펼치기",
+  "diff_no_newline": "파일 끝에 줄 바꿈 없음",
+  "tree_git_contains_changes": "Git 상태 항목 포함",
+  "review_bytes_read": "{amount} 읽음",
+  "tree_git_added": "Git 상태: 추가됨",
+  "tree_git_deleted": "Git 상태: 삭제됨",
+  "tree_git_ignored": "Git 상태: 무시됨",
+  "tree_git_modified": "Git 상태: 수정됨",
+  "tree_git_renamed": "Git 상태: 이름 변경됨",
+  "tree_git_untracked": "Git 상태: 추적되지 않음",
+  "diff_unmodified_lines": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local formatted = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "수정되지 않은 줄 {formatted}개"
+      }
+    }
+  ],
+  "locale_language": "언어 선택",
+  "app_render_error": "ghdiff에서 이 페이지를 표시할 수 없었어요. 페이지를 새로고침한 후 다시 시도해 주세요."
+}

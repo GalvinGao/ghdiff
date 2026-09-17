@@ -9,7 +9,7 @@
   // AsyncLocalStorage backs the request-scoped logger, and `process.env`
   // carries GITHUB_TOKEN. Both come from nodejs_compat.
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "./src/server.ts",
   // This app's own key-value store. It holds one key today, the "Served"
   // counter in the home page's footer, and it is named for the app rather than
   // for that counter so the next thing that needs a key has a place to go. KV

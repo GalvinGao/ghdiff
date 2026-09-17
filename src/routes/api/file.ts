@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { m } from '../../paraglide/messages.js';
 import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/diffHydration';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
@@ -121,12 +122,12 @@ const getFile = withEvlog(
     const target = reviewTargetFromQuery(params);
     if (target == null) {
       log.set({ outcome: 'invalid-target' });
-      return textResponse('That review target is not valid.', 400);
+      return textResponse(m.file_that_review_target_is_not_valid(), 400);
     }
     const path = params.get('path');
     if (path == null || !isReadablePath(path)) {
       log.set({ outcome: 'invalid-path' });
-      return textResponse('That file path is not valid.', 400);
+      return textResponse(m.file_that_file_path_is_not_valid(), 400);
     }
     const ref = newSideRef(target);
     log.set({
@@ -142,7 +143,7 @@ const getFile = withEvlog(
     // arrives again with a live one.
     if (refreshDue) {
       log.set({ outcome: 'refresh-due' });
-      return textResponse(SIGN_IN_EXPIRED, 401);
+      return textResponse(SIGN_IN_EXPIRED(), 401);
     }
     log.set({
       authenticated: token != null,
@@ -156,7 +157,7 @@ const getFile = withEvlog(
         // the runtime to hold open behind a response nobody wanted.
         void response.body?.cancel();
         log.set({ outcome: 'too-large', size });
-        return textResponse(FILE_TOO_LARGE, 413);
+        return textResponse(FILE_TOO_LARGE(), 413);
       }
       log.set({ outcome: 'ok', size });
       return new Response(response.body, {
@@ -169,7 +170,7 @@ const getFile = withEvlog(
         return textResponse(error.message, error.status);
       }
       log.error(toLoggable(error), { step: 'load-file' });
-      return textResponse('Could not load that file.', 500);
+      return textResponse(m.file_could_not_load_that_file(), 500);
     }
   }
 );

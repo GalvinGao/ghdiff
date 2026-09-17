@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 import { isRateLimited } from './rateLimit.ts';
 
 // What the review panel says, and which button it offers, when the diff does
@@ -41,7 +42,7 @@ export interface ReviewFailure {
 }
 
 const FALLBACK_MESSAGE =
-  "The server didn't respond. Your connection might be offline, or the request timed out.";
+  m.review_failure_the_server_didn_t_respond_your_connection_might;
 
 const UNAUTHORIZED = 401;
 const NOT_FOUND = 404;
@@ -63,15 +64,21 @@ export function describeReviewFailure(input: {
     return signedIn
       ? {
           action: 'retry',
-          message:
-            'You used all 5,000 GitHub requests for this hour. Wait a few minutes for your limit to reset, then try again.',
-          title: 'Hourly GitHub rate limit reached',
+          get message() {
+            return m.review_failure_you_used_all_5_000_github_requests_for();
+          },
+          get title() {
+            return m.review_failure_hourly_github_rate_limit_reached();
+          },
         }
       : {
           action: 'setup',
-          message:
-            'GitHub limits unauthenticated requests to 60 per hour. Set up access to get 5,000 requests per hour immediately.',
-          title: 'GitHub rate limit reached',
+          get message() {
+            return m.review_failure_github_limits_unauthenticated_requests_to_60_per_hour();
+          },
+          get title() {
+            return m.review_failure_github_rate_limit_reached();
+          },
         };
   }
 
@@ -83,9 +90,12 @@ export function describeReviewFailure(input: {
     // The next step is the sign-in, and `/setup` is where that happens.
     return {
       action: 'setup',
-      message:
-        'Your GitHub sign-in is no longer valid, and ghdiff could not refresh it. Set up access again to view this diff.',
-      title: 'GitHub sign-in expired',
+      get message() {
+        return m.review_failure_your_github_sign_in_is_no_longer_valid();
+      },
+      get title() {
+        return m.review_failure_github_sign_in_expired();
+      },
     };
   }
 
@@ -96,21 +106,29 @@ export function describeReviewFailure(input: {
     return signedIn
       ? {
           action: 'setup',
-          message:
-            'GitHub returned Not Found because ghdiff is not installed on this repository or access is missing. Set up access to grant permission.',
-          title: 'ghdiff needs access to this repository',
+          get message() {
+            return m.review_failure_github_returned_not_found_because_ghdiff_is_not();
+          },
+          get title() {
+            return m.review_failure_ghdiff_needs_access_to_this_repository();
+          },
         }
       : {
           action: 'setup',
-          message:
-            'GitHub returns Not Found for private repositories when you are signed out. Set up access to view this diff.',
-          title: 'Repository not found or private',
+          get message() {
+            return m.review_failure_github_returns_not_found_for_private_repositories_when();
+          },
+          get title() {
+            return m.review_failure_repository_not_found_or_private();
+          },
         };
   }
 
   return {
     action: 'retry',
-    message: message ?? FALLBACK_MESSAGE,
-    title: 'Could not load the diff',
+    message: message ?? FALLBACK_MESSAGE(),
+    get title() {
+      return m.review_failure_could_not_load_the_diff();
+    },
   };
 }

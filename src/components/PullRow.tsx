@@ -1,6 +1,7 @@
 import { IconCheck } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
+import { m } from '../paraglide/messages.js';
 import { pullStateLabel } from '@/components/PullStateIcon';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { railPullFlipKey } from '@/hooks/useRailFlip';
@@ -74,9 +75,16 @@ export function PullRow({
         'hover:bg-raised focus-visible:bg-raised block select-none rounded-md px-2 py-1.5 text-sm outline-none',
         isCurrent && 'bg-raised'
       )}
-      title={`${pull.title}\n${pullStateLabel(pull.state)}${
-        pull.status == null ? '' : ` · ${describePullStatus(pull.status)}`
-      }\n${pull.headRef} into ${pull.baseRef}`}
+      title={m.pull_row_tooltip({
+        title: pull.title,
+        state: pullStateLabel(pull.state),
+        status:
+          pull.status == null
+            ? ''
+            : m.pull_row_label({ value: describePullStatus(pull.status) }),
+        head: pull.headRef,
+        base: pull.baseRef,
+      })}
     >
       <span className="flex min-w-0 items-center gap-1.5">
         {/* The flip mark pairs this lane with the same pull request's square
@@ -94,7 +102,10 @@ export function PullRow({
             <PullStatusMark size={MARK_SIZE} status={pull.status} />
           )}
         </span>
-        <span className="text-ink-faint shrink-0 font-mono text-xs tabular-nums">
+        <span
+          className="text-ink-faint shrink-0 font-mono text-xs tabular-nums"
+          dir="ltr"
+        >
           #{pull.number}
         </span>
         {/* The one piece of lifecycle the square cannot carry. It rides a chip
@@ -102,10 +113,11 @@ export function PullRow({
             almost every row — pays nothing for it. */}
         {pull.state === 'draft' && (
           <span className="border-line text-ink-faint shrink-0 rounded border px-1 text-[10px] leading-4">
-            Draft
+            {m.pull_row_draft()}
           </span>
         )}
         <span
+          dir="auto"
           className={cn(
             'text-ink min-w-0 flex-1 truncate',
             isCurrent && 'font-medium'
@@ -114,12 +126,16 @@ export function PullRow({
           {pull.title}
         </span>
         {isCurrent && (
-          <span className="text-accent shrink-0" title="Currently viewing">
+          <span
+            className="text-accent shrink-0"
+            title={m.pull_row_currently_viewing()}
+          >
             <IconCheck size={14} />
           </span>
         )}
       </span>
       <span
+        dir="ltr"
         className="text-ink-faint block truncate font-mono text-[11px]"
         style={{ paddingLeft: TEXT_INSET }}
       >

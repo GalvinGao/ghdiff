@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 import { Dialog } from '@/components/ui/Dialog';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
@@ -19,7 +20,11 @@ export function WatchedReposDialog({
   watched: WatchedReposState;
 }) {
   return (
-    <Dialog onClose={onClose} open={open} title="Watched repositories">
+    <Dialog
+      onClose={onClose}
+      open={open}
+      title={m.watched_repos_dialog_watched_repositories()}
+    >
       <WatchedReposEditor watched={watched} />
     </Dialog>
   );

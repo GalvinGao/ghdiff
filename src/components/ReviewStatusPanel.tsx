@@ -1,6 +1,7 @@
 import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import type { GitHubSessionState } from '@/hooks/useGitHubSession';
@@ -15,16 +16,28 @@ const COPY: Record<
   { title: string; message: string }
 > = {
   fetching: {
-    title: 'Fetching the diff',
-    message: 'Reading the patch for this review.',
+    get title() {
+      return m.review_status_panel_fetching_the_diff();
+    },
+    get message() {
+      return m.review_status_panel_reading_the_patch_for_this_review();
+    },
   },
   parsing: {
-    title: 'Preparing the diff',
-    message: 'Parsing the patch and building the file list.',
+    get title() {
+      return m.review_status_panel_preparing_the_diff();
+    },
+    get message() {
+      return m.review_status_panel_parsing_the_patch_and_building_the_file_list();
+    },
   },
   starting: {
-    title: 'Starting the highlighters',
-    message: 'Background workers are getting ready to color your code.',
+    get title() {
+      return m.review_status_panel_starting_the_highlighters();
+    },
+    get message() {
+      return m.review_status_panel_background_workers_are_getting_ready_to_color_your();
+    },
   },
 };
 
@@ -103,10 +116,10 @@ export function ReviewStatusPanel({
             the download moving. */}
         {!isError && bytes != null && (
           <p className="text-ink-muted mt-1 text-sm tabular-nums">
-            {formatBytes(bytes)} read
+            {m.review_bytes_read({ amount: formatBytes(bytes) })}
           </p>
         )}
-        <p className="text-ink-faint mt-3 truncate font-mono text-xs">
+        <p className="text-ink-faint mt-3 truncate font-mono text-xs" dir="ltr">
           {describeReviewTarget(target)}
         </p>
         {isError && (
@@ -126,11 +139,11 @@ export function ReviewStatusPanel({
                 }}
                 to="/setup"
               >
-                Set up repository access
+                {m.review_status_panel_set_up_repository_access()}
               </Link>
             )}
             <Button variant="outline" onClick={onRetry}>
-              Try again
+              {m.review_status_panel_try_again()}
             </Button>
           </div>
         )}
