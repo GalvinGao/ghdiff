@@ -178,9 +178,10 @@ export function ReviewSubmitDialog({
           </p>
         )}
 
-        {/* Leave focus on the trigger when opening. Touch fields use 16px
-            text to avoid Safari focus zoom, including landscape iPhones. */}
+        {/* Touch fields use 16px text to avoid Safari focus zoom, including
+            landscape iPhones. Native popover autofocus runs on each opening. */}
         <textarea
+          autoFocus
           aria-label="Review body"
           className={cn(
             'border-line bg-canvas text-ink placeholder:text-ink-faint focus-visible:border-accent',
