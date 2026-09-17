@@ -15,7 +15,7 @@ import {
 import { GitMergeIcon } from '@primer/octicons-react/GitMergeIcon';
 import { GitPullRequestClosedIcon } from '@primer/octicons-react/GitPullRequestClosedIcon';
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { GitHubAccountControl } from '@/components/GitHubAccountControl';
@@ -117,6 +117,7 @@ export function ReviewHeader({
 }: ReviewHeaderProps) {
   const split = controls.diffStyle === 'split';
   const [reviewing, setReviewing] = useState(false);
+  const reviewPopoverId = useId();
   // Only the phone layout scrolls this row, and the attributes it writes mean
   // nothing to any other width, so this costs a wider screen two no-op writes.
   const fadeRef = useEdgeFade<HTMLElement>();
@@ -176,10 +177,12 @@ export function ReviewHeader({
             <ReviewButton
               review={review}
               state={pull?.data?.state}
-              onOpen={() => setReviewing(true)}
+              popoverId={reviewPopoverId}
             />
             <ReviewSubmitDialog
               open={reviewing}
+              id={reviewPopoverId}
+              onOpenChange={setReviewing}
               // Both halves are already in scope: the author arrives with the
               // details the title card reads, and the viewer with the session.
               // GitHub refuses an approval from whoever opened the pull
@@ -377,11 +380,11 @@ const SETTLED: Partial<
  * the newest one is the one that counts.
  */
 function ReviewButton({
-  onOpen,
+  popoverId,
   review,
   state,
 }: {
-  onOpen(): void;
+  popoverId: string;
   review: SubmitReviewState;
   state?: PullState;
 }) {
@@ -391,7 +394,14 @@ function ReviewButton({
   const settled = state == null ? undefined : SETTLED[state];
   if (state != null && settled != null) {
     return (
-      <Button size="sm" title={settled.title} variant="chrome" onClick={onOpen}>
+      <Button
+        size="sm"
+        title={settled.title}
+        variant="chrome"
+        id={`${popoverId}-trigger`}
+        popoverTarget={popoverId}
+        aria-haspopup="dialog"
+      >
         <settled.icon className={cn('shrink-0', settled.color)} size={14} />
         {pullStateLabel(state)}
       </Button>
@@ -407,7 +417,9 @@ function ReviewButton({
         size="sm"
         title="Approve, request changes, or comment"
         variant="chrome"
-        onClick={onOpen}
+        id={`${popoverId}-trigger`}
+        popoverTarget={popoverId}
+        aria-haspopup="dialog"
       >
         <IconInReview size={14} />
         Review
@@ -421,7 +433,9 @@ function ReviewButton({
       size="sm"
       title={`${describeSubmittedReview(latest)} Review it again.`}
       variant="chrome"
-      onClick={onOpen}
+      id={`${popoverId}-trigger`}
+      popoverTarget={popoverId}
+      aria-haspopup="dialog"
     >
       <Icon className={cn('shrink-0', VERDICT_COLOR[verdict.tone])} size={14} />
       {verdict.label}
