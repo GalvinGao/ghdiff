@@ -9,13 +9,14 @@ import {
   SESSION_MAX_AGE_MS,
   type SessionPayload,
 } from '../session.ts';
+import { parseDeploymentConfig } from './config.ts';
 import {
   clearSession,
   codeChallenge,
   open,
-  parseKeyring,
   randomToken,
   readHandoff,
+  readKeyring,
   readSession,
   seal,
   writeHandoff,
@@ -33,9 +34,9 @@ const KEY = secret();
 const OTHER = secret();
 
 const PAYLOAD: SessionPayload = {
-  accessToken: 'ghu_16C7e42F292c6912E7710c838347Ae178B4a',
+  accessToken: 'ghu_example-access-token',
   accessExpiresAt: NOW + 8 * HOUR,
-  refreshToken: 'ghr_1B4a2e77838347a7E420ce178F2E7c6912E169',
+  refreshToken: 'ghr_example-refresh-token',
   refreshExpiresAt: NOW + 180 * 24 * HOUR,
   issuedAt: NOW,
 };
@@ -61,25 +62,37 @@ function cookieValue(line: string): string {
   return line.slice(line.indexOf('=') + 1, line.indexOf(';'));
 }
 
-describe('parseKeyring', () => {
+describe('readKeyring', () => {
   it('reads a comma-separated list, newest first', () => {
-    assert.deepEqual(parseKeyring(`${KEY}, ${OTHER}`), [KEY, OTHER]);
+    assert.deepEqual(
+      readKeyring(
+        parseDeploymentConfig({ SESSION_SECRET: `${KEY}, ${OTHER}` })
+      ),
+      [KEY, OTHER]
+    );
   });
 
   it('answers with nothing for a deployment that set no secret', () => {
     // Not an error. A ghdiff with no App and no secret serves every public
     // diff; what it cannot do is sign anybody in.
-    assert.equal(parseKeyring(undefined), undefined);
-    assert.equal(parseKeyring('  '), undefined);
+    assert.equal(readKeyring(parseDeploymentConfig({})), undefined);
+    assert.equal(
+      readKeyring(parseDeploymentConfig({ SESSION_SECRET: '  ' })),
+      undefined
+    );
   });
 
   it('throws on a value that is not enough base64url bytes', () => {
-    assert.throws(() => parseKeyring('not base64url!'), /base64url/);
-    assert.throws(
-      () => parseKeyring(toBase64Url(new Uint8Array(16))),
-      /base64url/
-    );
-    assert.throws(() => parseKeyring(`${KEY},short`), /base64url/);
+    for (const value of [
+      'not base64url!',
+      toBase64Url(new Uint8Array(16)),
+      `${KEY},short`,
+    ]) {
+      assert.throws(
+        () => readKeyring(parseDeploymentConfig({ SESSION_SECRET: value })),
+        /base64url/
+      );
+    }
   });
 });
 

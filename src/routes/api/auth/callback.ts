@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { type AuthFailure, authFailureUrl, callbackUrl } from '@/lib/githubApp';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
+  externalRequestUrl,
   notConfigured,
   readAuthSetup,
   redirectTo,
@@ -63,7 +64,7 @@ const callback = withEvlog(async ({ request }: { request: Request }) => {
       code,
       config: setup.config,
       now,
-      redirectUri: callbackUrl(request.url),
+      redirectUri: callbackUrl(externalRequestUrl(request)),
       verifier: handoff.verifier,
     });
     log.set({

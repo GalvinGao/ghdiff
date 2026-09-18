@@ -280,9 +280,20 @@ describe('originAllowed', () => {
     const url = 'https://ghdiff.com/api/auth/refresh';
     assert.equal(originAllowed('https://ghdiff.com', url), true);
     assert.equal(originAllowed('https://evil.example', url), false);
-    // A different scheme and a different port are different origins.
-    assert.equal(originAllowed('http://ghdiff.com', url), false);
+    assert.equal(originAllowed('https://app.ghdiff.com', url), false);
+    // The scheme says nothing behind a TLS-terminating proxy; the port still
+    // does, because cookies ignore it.
+    assert.equal(originAllowed('http://ghdiff.com', url), true);
     assert.equal(originAllowed('https://ghdiff.com:8443', url), false);
+  });
+
+  it('passes the TLS-terminating proxy shape this check exists for', () => {
+    // The pod hears plain http while the page is https: the host is the
+    // answer either way.
+    assert.equal(
+      originAllowed('https://ghdiff.com', 'http://ghdiff.com/api/auth/refresh'),
+      true
+    );
   });
 
   it('turns away a request that names no origin', () => {

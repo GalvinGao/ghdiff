@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { authorizeUrl, callbackUrl } from '@/lib/githubApp';
 import { requestLog, withEvlog } from '@/lib/logger';
 import {
+  externalRequestUrl,
   notConfigured,
   readAuthSetup,
   redirectTo,
@@ -43,7 +44,7 @@ const start = withEvlog(async ({ request }: { request: Request }) => {
     authorizeUrl({
       challenge: await codeChallenge(verifier),
       clientId: setup.config.clientId,
-      redirectUri: callbackUrl(request.url),
+      redirectUri: callbackUrl(externalRequestUrl(request)),
       state,
     }),
     [await writeHandoff({ state, verifier, returnTo }, setup.keyring)]

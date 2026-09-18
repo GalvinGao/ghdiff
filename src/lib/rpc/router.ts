@@ -16,6 +16,7 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { normalizePullStatus, type PullStatusSource } from '@/lib/pullStatus';
+import { parseDeploymentConfig } from '@/lib/server/config';
 import {
   GitHubError,
   type GitHubPullRequest,
@@ -29,7 +30,7 @@ import {
 } from '@/lib/server/github';
 import { readAppConfig } from '@/lib/server/githubApp';
 import { readInstallations } from '@/lib/server/installations';
-import { readServedCount } from '@/lib/server/servedCount';
+import { readServedCount } from '@/lib/server/platform';
 import { isFileViewed } from '@/lib/viewedFiles';
 
 // The Worker's half of the contract. Nothing here is imported by the browser:
@@ -161,7 +162,7 @@ const getViewer = os.viewer.get.handler(async ({ context }) => {
 
 const listInstallations = os.installations.list.handler(async ({ context }) => {
   const log = requestLog();
-  const app = readAppConfig();
+  const app = readAppConfig(parseDeploymentConfig(process.env));
   const installUrl = app == null ? undefined : buildInstallUrl(app.slug);
   if (context.token == null) {
     log.set({ outcome: 'anonymous' });

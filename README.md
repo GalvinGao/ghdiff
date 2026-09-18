@@ -85,11 +85,35 @@ a repository secret under another name and map it in the job's `env`.
 
 For local development the same variable goes in `.dev.vars`, which git ignores.
 
+## Self-host on Node or Docker
+
+The same server the Worker runs also builds for plain Node:
+
+```bash
+pnpm build:node
+node --env-file-if-exists=.dev.vars .output/server/index.mjs
+```
+
+`GHDIFF_TARGET=node` swaps the Cloudflare Vite plugin for Nitro's, which emits a
+directly runnable server at `.output/server/index.mjs` — no launcher in between.
+It listens on `PORT` (default 3000) and `HOST` (default 0.0.0.0), and `/healthz`
+answers `ok` for a liveness probe. The `Dockerfile` builds the same shape:
+
+```bash
+docker build -t ghdiff .
+docker run -p 3000:3000 --env-file .dev.vars ghdiff
+```
+
+One caveat: `GITHUB_TOKEN` is a deployment-wide identity — every request without
+a session acts as that account. Leave it unset when more than one person is
+served.
+
 ## Environment
 
-| Variable       | Effect                                    |
-| -------------- | ----------------------------------------- |
-| `GITHUB_TOKEN` | Fallback token when the browser has none. |
+| Variable        | Effect                                           |
+| --------------- | ------------------------------------------------ |
+| `GITHUB_TOKEN`  | Fallback token when the browser has none.        |
+| `PORT` / `HOST` | Node-only: where the self-hosted server listens. |
 
 ## Commands
 
