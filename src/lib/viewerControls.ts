@@ -12,8 +12,10 @@ import type { DiffIndicators } from '@pierre/diffs';
 // can be tested without a component around it. Every field is checked on the
 // way in, because storage holds whatever an older build wrote there.
 
+export type DiffStyle = 'split' | 'unified';
+
 export interface ViewerControls {
-  diffStyle: 'split' | 'unified';
+  diffStyle: DiffStyle;
   diffIndicators: DiffIndicators;
   overflow: 'wrap' | 'scroll';
   lineNumbers: boolean;

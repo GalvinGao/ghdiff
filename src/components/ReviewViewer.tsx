@@ -12,7 +12,14 @@ import {
 } from '@pierre/diffs';
 import { CodeView, type CodeViewHandle } from '@pierre/diffs/react';
 import { IconChevron, IconExpandRow } from '@pierre/icons';
-import { memo, type RefObject, useCallback, useMemo } from 'react';
+import {
+  memo,
+  type RefObject,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
@@ -21,11 +28,17 @@ import {
   CRON_SCHEDULES_CSS,
 } from '@/components/diffCronSchedules';
 import { applyLineMarks, LINE_MARKS_CSS } from '@/components/diffLineMarks';
+import {
+  applySearchMarks,
+  clearSearchMarks,
+  SEARCH_MARKS_CSS,
+} from '@/components/diffSearchMarks';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
+import type { SearchMarks } from '@/lib/diffSearch';
 import type { ViewerControls } from '@/lib/viewerControls';
 
 /** The one method the scroll handler needs from the viewer it is handed. */
@@ -60,12 +73,24 @@ interface ReviewViewerProps {
   /** Sets, or takes back, this file's own "I have read this" mark. */
   onToggleViewed(itemId: string, viewed: boolean): void;
   scrollRef: RefObject<HTMLDivElement | null>;
+  /**
+   * The find-in-diff matches to paint on the rows, and which of them is the
+   * current one. Null while the search bar is closed.
+   */
+  searchMarks: SearchMarks | null;
   selectedLines: CodeViewLineSelection | null;
   themeType: ThemeTypes;
   /** The files already marked read, by item id. */
   viewedItemIds: ReadonlySet<string>;
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }
+
+/**
+ * One string, because the viewer compares `unsafeCSS` by identity and clears
+ * its element pool when it changes. Both halves are constants, so this is
+ * made once.
+ */
+const VIEWER_CSS = LINE_MARKS_CSS + CRON_SCHEDULES_CSS + SEARCH_MARKS_CSS;
 
 // The gutter utility is the small button that appears in the line gutter on
 // hover. It is what opens a comment composer on the hovered line.
@@ -86,11 +111,27 @@ export const ReviewViewer = memo(function ReviewViewer({
   onToggleCollapsed,
   onToggleViewed,
   scrollRef,
+  searchMarks,
   selectedLines,
   themeType,
   viewedItemIds,
   viewerRef,
 }: ReviewViewerProps) {
+  // Read by `onPostRender` below through a ref rather than closed over, so a
+  // change of query or of current match does not rebuild the options — which
+  // would hand the viewer a new options object and have it re-render every
+  // item. The files already on screen are walked here instead, once per
+  // change, and every later render pass reads the ref.
+  const searchMarksRef = useRef(searchMarks);
+  useLayoutEffect(() => {
+    searchMarksRef.current = searchMarks;
+    const rendered = viewerRef.current?.getInstance()?.getRenderedItems();
+    if (rendered == null) return;
+    for (const entry of rendered) {
+      applySearchMarks(entry.element, entry.id, searchMarks);
+    }
+  }, [searchMarks, viewerRef]);
+
   // First in the header, before the change-type icon, where github.com puts
   // its own. This slot is the one thing drawn to the left of that icon.
   const renderHeaderPrefix = useCallback(
@@ -155,13 +196,21 @@ export const ReviewViewer = memo(function ReviewViewer({
         if (context.item.type !== 'diff') return;
         onCreateDraft(context.item.id, range);
       },
-      // The stylesheet for the marks below, installed by the library inside
-      // each file's shadow root, where no outside selector can reach.
-      unsafeCSS: LINE_MARKS_CSS + CRON_SCHEDULES_CSS,
+      // The stylesheet for the three kinds of marks below, installed by the
+      // library inside each file's shadow root, where no outside selector can
+      // reach.
+      unsafeCSS: VIEWER_CSS,
       onPostRender(node, _instance, phase, { item }) {
-        if (phase === 'unmount' || item.type !== 'diff') return;
+        if (phase === 'unmount') {
+          // The rows are about to go, and so must the ranges painted over
+          // them, or the registry keeps a window's worth per pass.
+          clearSearchMarks(node);
+          return;
+        }
+        if (item.type !== 'diff') return;
         applyLineMarks(node, item.fileDiff);
         applyCronSchedules(node, item.fileDiff);
+        applySearchMarks(node, item.id, searchMarksRef.current);
       },
     }),
     [
