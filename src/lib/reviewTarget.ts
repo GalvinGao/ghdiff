@@ -13,6 +13,8 @@ export interface GitHubRepoRef {
 export interface GitHubPullTarget extends GitHubRepoRef {
   kind: 'github-pull';
   number: number;
+  /** A single commit within the PR; absent for All changes. */
+  commitSha?: string;
 }
 
 export interface GitHubCommitTarget extends GitHubRepoRef {
@@ -49,7 +51,7 @@ export function supportsGitHubComments(
 export function reviewTargetKey(target: ReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
-      return `github:${target.owner}/${target.repo}#${target.number}`;
+      return `github:${target.owner}/${target.repo}#${target.number}${target.commitSha == null ? '' : `@${target.commitSha}`}`;
     case 'github-commit':
       return `github:${target.owner}/${target.repo}@${target.sha}`;
     case 'github-compare':
@@ -78,7 +80,7 @@ export function describeReviewTarget(target: ReviewTarget): string {
 export function reviewTargetSplat(target: ReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
-      return `${target.owner}/${target.repo}/pull/${target.number}`;
+      return `${target.owner}/${target.repo}/pull/${target.number}${target.commitSha == null ? '' : `/commits/${target.commitSha}`}`;
     case 'github-commit':
       return `${target.owner}/${target.repo}/commit/${target.sha}`;
     case 'github-compare':
@@ -93,6 +95,9 @@ export function reviewTargetSplat(target: ReviewTarget): string {
  * it still carries the whole one.
  */
 export function reviewTargetDisplayPath(target: ReviewTarget): string {
+  if (target.kind === 'github-pull' && target.commitSha != null) {
+    return `${target.owner}/${target.repo}/pull/${target.number}/commits/${target.commitSha.slice(0, 7)}`;
+  }
   if (target.kind === 'github-commit') {
     return `${target.owner}/${target.repo}/commit/${target.sha.slice(0, 7)}`;
   }
@@ -108,6 +113,7 @@ export function reviewTargetQuery(target: ReviewTarget): URLSearchParams {
         owner: target.owner,
         repo: target.repo,
         number: String(target.number),
+        ...(target.commitSha == null ? {} : { commitSha: target.commitSha }),
       });
     case 'github-commit':
       return new URLSearchParams({
@@ -146,7 +152,16 @@ export function reviewTargetFromQuery(
   if (kind === 'github-pull') {
     const number = Number(params.get('number'));
     if (!Number.isInteger(number) || number <= 0) return undefined;
-    return { kind, owner, repo, number };
+    const commitSha = params.get('commitSha');
+    if (commitSha != null && !/^[0-9a-f]{40}$/i.test(commitSha))
+      return undefined;
+    return {
+      kind,
+      owner,
+      repo,
+      number,
+      ...(commitSha == null ? {} : { commitSha: commitSha.toLowerCase() }),
+    };
   }
   if (kind === 'github-commit') {
     const sha = params.get('sha');
@@ -182,6 +197,17 @@ export function gitHubTargetFromSegments(
   if (kind === 'pull' || kind === 'pulls') {
     const number = Number(rest[0]);
     if (!Number.isInteger(number) || number <= 0) return undefined;
+    if ((rest[1] === 'commits' || rest[1] === 'changes') && rest[2] != null) {
+      if (!/^[0-9a-f]{40}$/i.test(rest[2]) || rest.length !== 3)
+        return undefined;
+      return {
+        kind: 'github-pull',
+        owner,
+        repo,
+        number,
+        commitSha: rest[2].toLowerCase(),
+      };
+    }
     return { kind: 'github-pull', owner, repo, number };
   }
   if (kind === 'commit' || kind === 'commits') {
@@ -255,12 +281,7 @@ export function parseGitHubInput(input: string): ReviewTarget | undefined {
 
   const segments = url.pathname
     .split('/')
-    .filter((segment) => segment.length > 0)
-    // github.com/o/r/pull/1/files and /commits both point at the same diff.
-    .filter(
-      (segment, index) =>
-        !(index >= 4 && (segment === 'files' || segment === 'changes'))
-    );
+    .filter((segment) => segment.length > 0);
 
   // A trailing `.diff` or `.patch` on a pull URL still names the pull.
   const last = segments[segments.length - 1];

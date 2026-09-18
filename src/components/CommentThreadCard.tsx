@@ -6,6 +6,7 @@ import { CommentBody } from '@/components/CommentBody';
 import { CommentExpansion } from '@/components/CommentExpansion';
 import { ConfirmInline } from '@/components/ConfirmInline';
 import { Button } from '@/components/ui/Button';
+import { useCommentDraft } from '@/hooks/useCommentDraft';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { measureThread } from '@/lib/commentHeight';
@@ -261,6 +262,7 @@ export function CommentThreadCard({
 
           {canReply ? (
             <ReplyForm
+              draftKey={`reply:${itemId}:${metadata.key}`}
               onSubmit={(body) => onReply(itemId, metadata.key, body)}
               pending={metadata.pending === true}
               store={store}
@@ -287,15 +289,17 @@ export function CommentThreadCard({
  * the list above it.
  */
 function ReplyForm({
+  draftKey,
   onSubmit,
   pending,
   store,
 }: {
+  draftKey: string;
   onSubmit(body: string): void;
   pending: boolean;
   store: CommentStore;
 }) {
-  const [body, setBody] = useState('');
+  const [body, setBody] = useCommentDraft(draftKey);
   const canSend = body.trim().length > 0 && !pending;
 
   const send = () => {

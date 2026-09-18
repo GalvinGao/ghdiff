@@ -204,6 +204,7 @@ export const ReviewViewer = memo(function ReviewViewer({
         if (isDraftComment(diffAnnotation.metadata)) {
           return (
             <CommentComposer
+              key={diffAnnotation.metadata.key}
               itemId={item.id}
               metadata={diffAnnotation.metadata}
               onCancel={onCancelDraft}
@@ -213,6 +214,7 @@ export const ReviewViewer = memo(function ReviewViewer({
         }
         return (
           <CommentThreadCard
+            key={diffAnnotation.metadata.key}
             itemId={item.id}
             metadata={diffAnnotation.metadata}
             onDelete={onDeleteComment}

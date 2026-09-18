@@ -1,7 +1,15 @@
 import type { DiffLineAnnotation, SelectedLineRange } from '@pierre/diffs';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { readStoredJson, writeStoredString } from './useLocalStorage';
+import { projectCommentThreads } from '@/lib/commentProjection';
 import {
   commentPayloadRangeFields,
   type CommentMetadata,
@@ -10,7 +18,14 @@ import {
   rangeFromCommentPayload,
 } from '@/lib/comments';
 import { groupCommentThreads, threadComments } from '@/lib/commentThreads';
-import type { ReviewFileEntry } from '@/lib/reviewData';
+import type { RawThread } from '@/lib/commentThreads';
+import {
+  EMPTY_COMMENT_STATE,
+  reconcileCommentRead,
+  type CommentState,
+  type ReviewCommentSession,
+} from '@/lib/reviewCommentSession';
+import type { ReviewFileEntry, ReviewData } from '@/lib/reviewData';
 import {
   type ReviewTarget,
   reviewTargetKey,
@@ -34,15 +49,9 @@ export type AnnotationsByItemId = ReadonlyMap<string, readonly Annotation[]>;
  * off id and version, so a changed annotation set is meaningless without a new
  * revision. One state object makes that impossible to get wrong.
  */
-interface CommentState {
-  byItemId: Map<string, Annotation[]>;
-  revision: number;
-}
-
-const EMPTY_STATE: CommentState = { byItemId: new Map(), revision: 0 };
-
 export interface ReviewCommentsState {
   store: CommentStore;
+  unplaced: RawThread[];
   annotationsByItemId: AnnotationsByItemId;
   /** Increases whenever any annotation changes, so items bump their version. */
   revision: number;
@@ -72,7 +81,7 @@ function annotationFromThread(
   const root = payloads[0];
   return {
     side: root.side,
-    lineNumber: root.line,
+    lineNumber: rangeFromCommentPayload(root).end,
     metadata: {
       kind: 'thread',
       key,
@@ -116,6 +125,8 @@ function toStoredRows(
 
 export function useReviewComments(options: {
   target: ReviewTarget;
+  session: ReviewCommentSession;
+  items: ReviewData['items'];
   entries: readonly ReviewFileEntry[];
   viewerLogin?: string;
   /**
@@ -127,7 +138,17 @@ export function useReviewComments(options: {
   /** True once the diff is parsed. Comments only map onto known files. */
   ready: boolean;
 }): ReviewCommentsState {
-  const { entries, ready, target, viewerAvatarUrl, viewerLogin } = options;
+  const {
+    entries,
+    ready,
+    target,
+    viewerAvatarUrl,
+    viewerLogin,
+    session,
+    items,
+  } = options;
+  const commitSha =
+    target.kind === 'github-pull' ? target.commitSha : undefined;
   const store: CommentStore = supportsGitHubComments(target)
     ? 'github'
     : 'local';
@@ -140,7 +161,12 @@ export function useReviewComments(options: {
   const pullRepo = target.kind === 'github-pull' ? target.repo : undefined;
   const pullNumber = target.kind === 'github-pull' ? target.number : undefined;
 
-  const [state, setState] = useState<CommentState>(EMPTY_STATE);
+  const state = useSyncExternalStore(
+    session.subscribe,
+    session.getSnapshot,
+    () => EMPTY_COMMENT_STATE
+  );
+  const setState = session.update;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const nextKeyRef = useRef(0);
@@ -170,7 +196,11 @@ export function useReviewComments(options: {
       setState((current) => {
         const byItemId = new Map(current.byItemId);
         mutate(byItemId);
-        const next: CommentState = { byItemId, revision: current.revision + 1 };
+        const next: CommentState = {
+          ...current,
+          byItemId,
+          revision: current.revision + 1,
+        };
         if (store === 'local') {
           writeStoredString(
             storageKey,
@@ -180,7 +210,7 @@ export function useReviewComments(options: {
         return next;
       });
     },
-    [pathByItemId, storageKey, store]
+    [pathByItemId, setState, storageKey, store]
   );
 
   const replace = useCallback(
@@ -212,34 +242,31 @@ export function useReviewComments(options: {
     if (!ready) return;
 
     const place = (rows: readonly StoredLocalComment[]) => {
-      // Group first, so a reply lands in its root's card instead of stacking
-      // as a separate annotation on the same line.
       const byItemId = new Map<string, Annotation[]>();
-      const byPath = new Map<string, CommentPayload[]>();
-      for (const row of rows) {
-        const list = byPath.get(row.path) ?? [];
-        list.push(row);
-        byPath.set(row.path, list);
+      const { located, unplaced } =
+        store === 'local'
+          ? {
+              located: groupCommentThreads(rows).flatMap((thread) => {
+                const itemId = itemIdByPath.get(thread.comments[0].path);
+                return itemId == null ? [] : [{ itemId, thread }];
+              }),
+              unplaced: [],
+            }
+          : projectCommentThreads(rows, items, commitSha);
+      for (const { itemId, thread } of located) {
+        const list = byItemId.get(itemId) ?? [];
+        list.push(
+          annotationFromThread(
+            thread.key,
+            thread.comments,
+            threadComments(thread)
+          )
+        );
+        byItemId.set(itemId, list);
       }
-
-      for (const [path, payloads] of byPath) {
-        const itemId = itemIdByPath.get(path);
-        // A comment on a path absent from this diff is dropped. That happens
-        // after a force push rewrites the branch under the comment.
-        if (itemId == null) continue;
-        const annotations = byItemId.get(itemId) ?? [];
-        for (const thread of groupCommentThreads(payloads)) {
-          annotations.push(
-            annotationFromThread(
-              thread.key,
-              thread.comments,
-              threadComments(thread)
-            )
-          );
-        }
-        byItemId.set(itemId, annotations);
-      }
-      setState((current) => ({ byItemId, revision: current.revision + 1 }));
+      setState((current) =>
+        reconcileCommentRead(current, { byItemId, unplaced })
+      );
     };
 
     if (store === 'local') {
@@ -255,10 +282,17 @@ export function useReviewComments(options: {
     setError(undefined);
 
     try {
-      const comments = await rpc.comments.list(
-        { number: pullNumber, owner: pullOwner, repo: pullRepo },
-        { signal: controller.signal }
-      );
+      const comments: CommentPayload[] = [];
+      let page: number | undefined = 1;
+      while (page != null) {
+        const answer = await rpc.comments.list(
+          { number: pullNumber, owner: pullOwner, repo: pullRepo, page },
+          { signal: controller.signal }
+        );
+        if (controller.signal.aborted) return;
+        comments.push(...answer.comments);
+        page = answer.nextPage;
+      }
       place(
         comments.map((payload) => ({
           ...payload,
@@ -271,7 +305,18 @@ export function useReviewComments(options: {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [itemIdByPath, pullNumber, pullOwner, pullRepo, ready, storageKey, store]);
+  }, [
+    commitSha,
+    itemIdByPath,
+    items,
+    pullNumber,
+    pullOwner,
+    pullRepo,
+    ready,
+    setState,
+    storageKey,
+    store,
+  ]);
 
   useEffect(() => {
     void load();
@@ -282,7 +327,7 @@ export function useReviewComments(options: {
     (itemId: string, range: SelectedLineRange) => {
       const side = range.endSide ?? range.side;
       if (side == null) return;
-      const key = `draft-${nextKeyRef.current++}`;
+      const key = `draft-${crypto.randomUUID()}`;
       update((draft) => {
         // One composer at a time: a second gutter click replaces the open one.
         for (const [id, list] of draft) {
@@ -309,7 +354,7 @@ export function useReviewComments(options: {
       input: {
         body: string;
         path: string;
-      } & Pick<CommentPayload, 'line' | 'side' | 'startLine' | 'startSide'>
+      } & ReturnType<typeof commentPayloadRangeFields>
     ) => {
       if (pullOwner == null || pullRepo == null || pullNumber == null) return;
       try {
@@ -318,11 +363,12 @@ export function useReviewComments(options: {
           owner: pullOwner,
           repo: pullRepo,
           ...input,
+          commitSha,
         });
         replace(itemId, key, (metadata) => ({
           ...metadata,
           kind: 'thread',
-          range: rangeFromCommentPayload(comment),
+          range: metadata.range,
           comments: [
             {
               key: `gh-${comment.githubId ?? key}`,
@@ -350,7 +396,7 @@ export function useReviewComments(options: {
         }));
       }
     },
-    [pullNumber, pullOwner, pullRepo, replace]
+    [commitSha, pullNumber, pullOwner, pullRepo, replace]
   );
 
   const postReply = useCallback(
@@ -432,6 +478,7 @@ export function useReviewComments(options: {
           },
         ],
         pending: store === 'github',
+        localWrite: store === 'github',
       }));
 
       if (store !== 'github') return;
@@ -471,7 +518,7 @@ export function useReviewComments(options: {
       const replyToId = metadata.comments[0].githubId;
       if (store === 'github' && replyToId == null) return;
 
-      const pendingKey = `reply-${nextKeyRef.current++}`;
+      const pendingKey = `reply-${crypto.randomUUID()}`;
       replace(itemId, key, (current) => ({
         ...current,
         comments: [
@@ -485,6 +532,7 @@ export function useReviewComments(options: {
           },
         ],
         pending: store === 'github',
+        localWrite: store === 'github',
         error: undefined,
       }));
 
@@ -544,6 +592,7 @@ export function useReviewComments(options: {
 
   return {
     store,
+    unplaced: state.unplaced,
     annotationsByItemId: state.byItemId,
     revision: state.revision,
     loading,

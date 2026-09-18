@@ -8,11 +8,9 @@ import { localViewedFilesStorageKey } from '@/lib/storageKeys';
 
 // Which files the reviewer has already read, and where that fact is kept.
 //
-// A pull request is the one target GitHub holds this for, so a mark made on
-// one goes to github.com and comes back on the reviewer's next visit, from
-// this app or from GitHub's own screen. A commit and a compare range have no
-// such state upstream, so their marks stay in this browser — the same split
-// `useReviewComments` already makes, for the same reason.
+// GitHub holds marks for the whole PR. A single commit's marks, including a
+// commit opened inside a PR, stay in this browser so reviewing a historical
+// version cannot mark the latest PR file as read.
 
 export type ViewedFilesStore = 'github' | 'local';
 
@@ -50,7 +48,11 @@ export function useViewedFiles(options: {
   const pullOwner = target.kind === 'github-pull' ? target.owner : undefined;
   const pullRepo = target.kind === 'github-pull' ? target.repo : undefined;
   const pullNumber = target.kind === 'github-pull' ? target.number : undefined;
-  const store: ViewedFilesStore = pullNumber == null ? 'local' : 'github';
+  const store: ViewedFilesStore =
+    pullNumber == null ||
+    (target.kind === 'github-pull' && target.commitSha != null)
+      ? 'local'
+      : 'github';
 
   const [viewed, setViewedFiles] = useState<ReadonlySet<string>>(NO_FILES);
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(NO_FILES);
@@ -80,7 +82,15 @@ export function useViewedFiles(options: {
     if (!ready) return;
 
     if (store === 'local') {
-      const stored = new Set(readStoredJson<string[]>(storageKey, []));
+      const raw = readStoredJson<unknown>(storageKey, []);
+      const stored = new Set<string>(
+        Array.isArray(raw)
+          ? raw.filter(
+              (id): id is string =>
+                typeof id === 'string' && pathByItemId.has(id)
+            )
+          : []
+      );
       setViewedFiles(stored);
       setLoaded(stored);
       return;
@@ -117,7 +127,16 @@ export function useViewedFiles(options: {
       // the boxes would have said for a reviewer who has read nothing — and a
       // press still reaches GitHub, because a press names only a path.
     }
-  }, [itemIdByPath, pullNumber, pullOwner, pullRepo, ready, storageKey, store]);
+  }, [
+    itemIdByPath,
+    pathByItemId,
+    pullNumber,
+    pullOwner,
+    pullRepo,
+    ready,
+    storageKey,
+    store,
+  ]);
 
   useEffect(() => {
     void load();

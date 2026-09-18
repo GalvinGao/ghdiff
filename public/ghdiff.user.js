@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ghdiff
 // @namespace    https://ghdiff.com/
-// @version      1.2.0
+// @version      1.3.0
 // @description  Adds a ghdiff button to the tab row of every GitHub pull request, and beside Browse files on every commit.
 // @author       GalvinGao
 // @homepageURL  https://github.com/GalvinGao/ghdiff
@@ -152,7 +152,17 @@
   function currentTarget() {
     const pull = PULL_PATH.exec(location.pathname);
     if (pull != null) {
-      return { kind: 'pull', owner: pull[1], repo: pull[2], number: pull[3] };
+      const selected =
+        /\/pull\/\d+\/(?:commits|changes)\/([0-9a-f]{40})\/?$/i.exec(
+          location.pathname
+        );
+      return {
+        kind: 'pull',
+        owner: pull[1],
+        repo: pull[2],
+        number: pull[3],
+        commitSha: selected?.[1].toLowerCase(),
+      };
     }
     const commit = COMMIT_PATH.exec(location.pathname);
     if (commit != null) {
@@ -169,7 +179,7 @@
   /** github.com's own path for this target, which is ghdiff's path as well. */
   function targetPath(target) {
     return target.kind === 'pull'
-      ? `/${target.owner}/${target.repo}/pull/${target.number}`
+      ? `/${target.owner}/${target.repo}/pull/${target.number}${target.commitSha == null ? '' : `/commits/${target.commitSha}`}`
       : `/${target.owner}/${target.repo}/commit/${target.sha}`;
   }
 
@@ -203,7 +213,9 @@
       const found = document.querySelector(selector);
       if (found != null) return found;
     }
-    return findRowByLinkTo(`${targetPath(target)}/files`);
+    return findRowByLinkTo(
+      `/${target.owner}/${target.repo}/pull/${target.number}/files`
+    );
   }
 
   /** Browse files, which is this commit's own tree page. */

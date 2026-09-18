@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { useCommentDraft } from '@/hooks/useCommentDraft';
 import type { DraftComment } from '@/lib/comments';
 
 interface CommentComposerProps {
@@ -16,7 +17,10 @@ export function CommentComposer({
   onCancel,
   onSave,
 }: CommentComposerProps) {
-  const [body, setBody] = useState(metadata.draftBody);
+  const [body, setBody] = useCommentDraft(
+    `draft:${itemId}:${metadata.key}`,
+    metadata.draftBody
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {

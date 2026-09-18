@@ -40,6 +40,8 @@ export interface CommentMetadata {
   comments?: ThreadComment[];
   /** True while the thread's newest message is on its way to GitHub. */
   pending?: boolean;
+  /** A write this session made that a subsequent list response must confirm. */
+  localWrite?: boolean;
   /** Set when the upstream write failed, so the UI can say so. */
   error?: string;
 }
@@ -135,7 +137,12 @@ export interface CommentPayload {
   authorIsBot?: boolean;
   body: string;
   /** 1-based line on `side`. */
-  line: number;
+  line: number | null;
+  commitSha?: string;
+  originalCommitSha?: string;
+  originalLine?: number | null;
+  originalStartLine?: number | null;
+  diffHunk?: string;
   /** First line of a multi-line comment, when GitHub reported one. */
   startLine?: number;
   side: AnnotationSide;
@@ -166,6 +173,8 @@ export function gitHubSideFromAnnotation(
 export function rangeFromCommentPayload(
   payload: CommentPayload
 ): SelectedLineRange {
+  if (payload.line == null)
+    throw new Error('This comment has no line in this version.');
   const start = payload.startLine ?? payload.line;
   return {
     start,
@@ -177,7 +186,7 @@ export function rangeFromCommentPayload(
 
 export function commentPayloadRangeFields(
   range: SelectedLineRange
-): Pick<CommentPayload, 'line' | 'side' | 'startLine' | 'startSide'> {
+): Pick<CommentPayload, 'side' | 'startLine' | 'startSide'> & { line: number } {
   const endSide = range.endSide ?? range.side ?? 'additions';
   const startSide = range.side ?? endSide;
   // GitHub rejects a multi-line comment whose two ends sit on different sides,
