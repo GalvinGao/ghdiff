@@ -109,6 +109,13 @@ export interface CommentListEntry {
   /** The root message, for the preview line. */
   body: string;
   replyCount: number;
+  /**
+   * Every message in the thread, root first. `body` and `replyCount` are read
+   * off this same array where the row is built, so the three cannot disagree;
+   * they stay because the list draws a preview and a count and has no use for
+   * the rest.
+   */
+  messages: readonly ThreadComment[];
   participants: string[];
   lineNumber: number;
   lineType: CommentLineType;

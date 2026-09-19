@@ -22,23 +22,12 @@ import { type FileDiffMetadata, SPLIT_WITH_NEWLINES } from '@pierre/diffs';
 // arrays as well — a wrong file corrupts the changes on screen, not just the
 // context around them.
 
-/**
- * The largest file ghdiff will read for its unmodified lines. Around this size
- * a source file runs to the hundred thousand lines at which the viewer gives up
- * highlighting it, so little above the line improves what is on screen.
- *
- * Both ends hold it, and they have to. The route knows only what GitHub's
- * headers say, and `content-length` states the **compressed** size whenever
- * GitHub compressed the answer — 4.8 MB of word list arrives declaring 1.4 MB —
- * and some answers carry no length at all. So the route rejects what it can
- * prove is too big, and the browser counts the bytes it actually decodes, which
- * is where the file becomes a string and where the string is the cost.
- */
-export const MAX_FILE_BYTES = 4 * 1024 * 1024;
-
-/** What both ends say when a file runs past it. */
-export const FILE_TOO_LARGE =
-  'That file is too large to show its unmodified lines.';
+// The cap on a whole file, and the sentence for one that runs past it, both
+// re-exported so that every existing reader of this module goes on reading it
+// from here. `src/lib/fileLimit.ts` is where they are stated, because the
+// `ghdiff` command's own server needs the same two figures and must not import
+// a diff library to get them.
+export { FILE_TOO_LARGE, MAX_FILE_BYTES } from './fileLimit.ts';
 
 /**
  * Splits file text into lines, each keeping its own line break. The library

@@ -1,4 +1,4 @@
-import { type ReviewTarget } from './reviewTarget.ts';
+import { type GitHubReviewTarget } from './reviewTarget.ts';
 
 // Diffs worth opening before there is one of your own to read.
 //
@@ -14,7 +14,7 @@ import { type ReviewTarget } from './reviewTarget.ts';
 export interface ExampleTarget {
   /** What the diff is, in the words its own author used. */
   title: string;
-  target: ReviewTarget;
+  target: GitHubReviewTarget;
   /** How big it is. Short enough for the right edge of a row. */
   scale: string;
   /** Why this one is on the list, for the row's hover text. */

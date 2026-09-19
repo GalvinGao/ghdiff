@@ -214,6 +214,12 @@ describe('isFilterActive', () => {
       true
     );
     assert.equal(isFilterActive({ ...EMPTY_FILTER_STATE, query: 'x' }), true);
+    // It hides files, so the control that opens the menu has to say so — and
+    // Clear filters has to be able to put it back.
+    assert.equal(
+      isFilterActive({ ...EMPTY_FILTER_STATE, hideUntracked: true }),
+      true
+    );
   });
 
   it('ignores a query of only spaces', () => {
@@ -230,6 +236,87 @@ describe('availableStatuses', () => {
       'added',
       'deleted',
       'modified',
+    ]);
+  });
+});
+
+describe('applyReviewFilter and untracked files', () => {
+  // A patch from the `ghdiff` command, where two of the new files are ones git
+  // has never been told about. Their change type is 'new' like any other added
+  // file, which is the whole reason the status has to be told to this from
+  // outside rather than read off the patch.
+  const localEntries = [
+    entry('src/index.ts', 'modified', 0),
+    entry('src/added.ts', 'added', 1),
+    { ...entry('src/scratch.ts', 'untracked', 2), changeType: 'new' as const },
+    { ...entry('notes.md', 'untracked', 3), changeType: 'new' as const },
+  ];
+  const localData: ReviewData = {
+    entries: localEntries,
+    items: localEntries.map((item) => ({
+      id: item.itemId,
+      type: 'diff' as const,
+      fileDiff: { name: item.path, unifiedLineCount: 1 } as never,
+      version: 0,
+    })),
+    stats: { addedLines: 4, deletedLines: 0, fileCount: 4, totalLines: 4 },
+  };
+
+  function localPaths(state: ReviewFilterState): string[] {
+    return applyReviewFilter(localData, state).entries.map((item) => item.path);
+  }
+
+  it('shows them by default', () => {
+    assert.deepEqual(localPaths(EMPTY_FILTER_STATE), [
+      'src/index.ts',
+      'src/added.ts',
+      'src/scratch.ts',
+      'notes.md',
+    ]);
+  });
+
+  it('hides them, and only them, when the switch is thrown', () => {
+    assert.deepEqual(
+      localPaths({ ...EMPTY_FILTER_STATE, hideUntracked: true }),
+      ['src/index.ts', 'src/added.ts']
+    );
+  });
+
+  it('counts them as hidden, so the filter chip says so', () => {
+    const result = applyReviewFilter(localData, {
+      ...EMPTY_FILTER_STATE,
+      hideUntracked: true,
+    });
+    assert.equal(result.hiddenCount, 2);
+  });
+
+  it('keeps them through a status filter that does not name them', () => {
+    // The status menu offers the four statuses a patch can describe and never
+    // this one, so picking Added must not take the untracked files away with
+    // nothing left to bring them back. One switch owns them.
+    assert.deepEqual(
+      localPaths({ ...EMPTY_FILTER_STATE, statuses: new Set(['added']) }),
+      ['src/added.ts', 'src/scratch.ts', 'notes.md']
+    );
+  });
+
+  it('lets the two controls hide them together', () => {
+    assert.deepEqual(
+      localPaths({
+        ...EMPTY_FILTER_STATE,
+        statuses: new Set(['added']),
+        hideUntracked: true,
+      }),
+      ['src/added.ts']
+    );
+  });
+
+  it('still answers to the preset and the query', () => {
+    assert.deepEqual(localPaths({ ...EMPTY_FILTER_STATE, query: 'scratch' }), [
+      'src/scratch.ts',
+    ]);
+    assert.deepEqual(localPaths({ ...EMPTY_FILTER_STATE, presetId: 'docs' }), [
+      'notes.md',
     ]);
   });
 });

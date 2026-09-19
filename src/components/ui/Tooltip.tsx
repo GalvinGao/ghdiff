@@ -34,6 +34,11 @@ const SIDE = {
   // `overflow-x` of `auto` whether it asked for one or not, so what hangs out
   // becomes a horizontal scrollbar across the whole thing.
   'top-end': 'bottom-full right-0 mb-1.5',
+  // For a control at the trailing end of a panel's own top row. Below it, for
+  // the same reason `bottom` is the default, and right-aligned for the same
+  // reason `top-end` is: a centred label on the last control in a row hangs out
+  // past the panel it belongs to.
+  'bottom-end': 'top-full right-0 mt-1.5',
 } as const;
 
 export function Tooltip({

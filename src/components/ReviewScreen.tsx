@@ -37,6 +37,7 @@ import {
 import { useSubmitReview } from '@/hooks/useSubmitReview';
 import { useViewedFiles } from '@/hooks/useViewedFiles';
 import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
+import { buildAgentPrompt } from '@/lib/agentPrompt';
 import { cn } from '@/lib/cn';
 import {
   countCommentAuthors,
@@ -44,7 +45,6 @@ import {
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
-import { reviewTargetUrl } from '@/lib/githubUrls';
 import {
   applyReviewFilter,
   availableStatuses,
@@ -53,8 +53,8 @@ import {
 } from '@/lib/reviewFilter';
 import {
   describeReviewTarget,
+  isGitHubTarget,
   type ReviewTarget,
-  reviewTargetSplat,
 } from '@/lib/reviewTarget';
 import { buildTreeStatIndex } from '@/lib/treeStats';
 import { defaultViewerControls } from '@/lib/viewerControls';
@@ -67,7 +67,18 @@ const ANCHOR_RANGE_ATTEMPTS = 4;
 
 const NO_ITEMS: ReadonlySet<string> = new Set<string>();
 
-export function ReviewScreen({ target }: { target: ReviewTarget }) {
+export function ReviewScreen({
+  target,
+  untrackedPaths,
+}: {
+  target: ReviewTarget;
+  /**
+   * The files git is not tracking, from the host that read the working tree.
+   * Only the `ghdiff` command passes any; on the hosted side there is no such
+   * file to name.
+   */
+  untrackedPaths?: readonly string[];
+}) {
   // The left bar owns these, so the diff and the bar cannot disagree about who
   // the reviewer is signed in as or which repositories are watched.
   const {
@@ -124,7 +135,11 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
     commentAuthorFilterPreference
   );
 
-  const patch = useReviewPatch({ target });
+  const patch = useReviewPatch({ target, untracked: untrackedPaths });
+  // The watch-list offer names a repository on github.com, and a local diff has
+  // none. The header and the status panel ask the target this themselves rather
+  // than be told, so the three cannot come to disagree.
+  const gitHubTarget = isGitHubTarget(target) ? target : undefined;
   // Depends on the three parts, not on the target: a server component hands the
   // target down, so its identity changes on every read of the RSC payload.
   const pullTarget = target.kind === 'github-pull' ? target : undefined;
@@ -284,6 +299,46 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
 
   const statuses = useMemo(
     () => availableStatuses(patch.data.entries),
+    [patch.data.entries]
+  );
+
+  /**
+   * The whole review as text for a coding agent.
+   *
+   * Built on the press and not before: it walks every thread's hunks for the
+   * lines it quotes, and a reviewer who never presses this should pay nothing
+   * for it. It reads `commentSections` rather than `listedSections`, because
+   * the author filter is about what is comfortable to read in the panel and
+   * says nothing about which notes are worth acting on.
+   */
+  const copyPrompt = useCallback(async () => {
+    const fileDiffById = new Map(
+      patch.data.items.map((item) => [item.id, item.fileDiff] as const)
+    );
+    const prompt = buildAgentPrompt({
+      sections: commentSections,
+      fileDiffById,
+      targetLabel: describeReviewTarget(target),
+      named: comments.store === 'github',
+    });
+    if (prompt == null) return false;
+    try {
+      await navigator.clipboard.writeText(prompt);
+      return true;
+    } catch {
+      // The clipboard is one of the few browser APIs that can simply refuse.
+      // The button says so; there is nothing to do about it here.
+      return false;
+    }
+  }, [comments.store, commentSections, patch.data.items, target]);
+
+  // Counted off the patch and not off `untrackedPaths`: the list is what the
+  // working tree held a moment before the diff was taken, and this is how many
+  // of those files the patch actually carries. The switch is drawn from it, so
+  // a diff with none never offers one.
+  const untrackedCount = useMemo(
+    () =>
+      patch.data.entries.filter((entry) => entry.status === 'untracked').length,
     [patch.data.entries]
   );
 
@@ -481,12 +536,21 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
         // is away, so a review always has a route out of itself.
         showBrand={watched.hydrated && watched.repos.length === 0}
         review={pullTarget == null ? undefined : review}
-        targetLabel={describeReviewTarget(target)}
-        targetUrl={reviewTargetUrl(target)}
+        target={target}
         // A verdict changes the review half of the square the left bar draws on
         // every row, so the list it came from is asked again.
         onReviewSubmitted={openPulls.reload}
         session={session}
+        untracked={
+          untrackedCount === 0
+            ? undefined
+            : {
+                count: untrackedCount,
+                shown: !filter.hideUntracked,
+                onShownChange: (shown) =>
+                  setFilter((state) => ({ ...state, hideUntracked: !shown })),
+              }
+        }
       />
 
       {patch.state === 'ready' && workersReady ? (
@@ -536,6 +600,7 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
             filter={filter}
             hiddenCount={filtered.hiddenCount}
             onAuthorFilterChange={setAuthorMode}
+            onCopyPrompt={commentSections.length === 0 ? undefined : copyPrompt}
             onFilterChange={setFilter}
             onSelectComment={handleSelectComment}
             onSelectItem={handleSelectItem}
@@ -591,7 +656,6 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
           state={patch.state === 'ready' ? 'starting' : patch.state}
           status={patch.status}
           target={target}
-          targetPath={`/${reviewTargetSplat(target)}`}
           session={session}
         />
       )}
@@ -633,11 +697,13 @@ export function ReviewScreen({ target }: { target: ReviewTarget }) {
       {/* The offer of a watch list, for a reviewer who has none. It asks
           nothing until the diff is up: a modal over `ReviewStatusPanel` would
           be a question stacked on a failure. See WatchOfferDialog. */}
-      <WatchOfferDialog
-        owner={target.owner}
-        ready={patch.state === 'ready'}
-        repo={target.repo}
-      />
+      {gitHubTarget != null && (
+        <WatchOfferDialog
+          owner={gitHubTarget.owner}
+          ready={patch.state === 'ready'}
+          repo={gitHubTarget.repo}
+        />
+      )}
     </>
   );
 }

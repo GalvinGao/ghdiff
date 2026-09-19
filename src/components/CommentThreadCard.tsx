@@ -199,11 +199,15 @@ export function CommentThreadCard({
             <ConfirmInline
               className="ml-auto"
               label="Delete"
-              question={
+              // Named only where the comment is actually there. A browser
+              // store holds this one, and asking a reviewer to confirm deleting
+              // something on GitHub that was never on GitHub is the wrong
+              // sentence in the one place it matters most.
+              question={`Delete ${
                 comments.length === 1
-                  ? 'Delete this comment on GitHub? This cannot be undone.'
-                  : `Delete all ${comments.length} comments in this thread on GitHub? This cannot be undone.`
-              }
+                  ? 'this comment'
+                  : `all ${comments.length} comments in this thread`
+              }${store === 'github' ? ' on GitHub' : ''}? This cannot be undone.`}
               confirmLabel="Delete"
               onConfirm={() => {
                 close();

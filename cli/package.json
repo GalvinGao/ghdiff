@@ -1,0 +1,23 @@
+{
+  "name": "ghdiff",
+  "version": "0.1.0",
+  "description": "Read a local git diff in the ghdiff review surface.",
+  "keywords": [
+    "cli",
+    "diff",
+    "git",
+    "review"
+  ],
+  "bin": {
+    "ghdiff": "bin/ghdiff.js"
+  },
+  "files": [
+    "bin",
+    "web",
+    "README.md"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  }
+}
