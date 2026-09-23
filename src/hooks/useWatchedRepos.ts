@@ -1,3 +1,4 @@
+import { arrayMove } from '@dnd-kit/sortable';
 import { useCallback } from 'react';
 
 import { usePreference, watchedReposPreference } from './preferences';
@@ -5,6 +6,7 @@ import {
   dedupeWatchedRepos,
   isSameWatchedRepo,
   parseWatchedRepo,
+  watchedRepoKey,
   type WatchedRepo,
 } from '@/lib/pulls';
 
@@ -14,6 +16,7 @@ export interface WatchedReposState {
   /** Accepts `owner/repo` or a github.com URL. Returns false if unparseable. */
   add(input: string): boolean;
   remove(repo: WatchedRepo): void;
+  move(activeKey: string, overKey: string): void;
 }
 
 /**
@@ -42,5 +45,17 @@ export function useWatchedRepos(): WatchedReposState {
     [setValue, value]
   );
 
-  return { repos: value, hydrated, add, remove };
+  const move = useCallback(
+    (activeKey: string, overKey: string) => {
+      const from = value.findIndex(
+        (repo) => watchedRepoKey(repo) === activeKey
+      );
+      const to = value.findIndex((repo) => watchedRepoKey(repo) === overKey);
+      if (from < 0 || to < 0 || from === to) return;
+      setValue(arrayMove(value, from, to));
+    },
+    [setValue, value]
+  );
+
+  return { repos: value, hydrated, add, remove, move };
 }
