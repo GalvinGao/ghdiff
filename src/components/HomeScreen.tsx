@@ -250,7 +250,7 @@ export function HomeScreen() {
         <div className="mt-10">
           <SectionLabel>Watched repos</SectionLabel>
         </div>
-        <div className={`${CARD} mt-2 px-4 py-3`}>
+        <div className={`${CARD} mt-2 p-1`}>
           <WatchedReposEditor watched={watched} />
         </div>
 

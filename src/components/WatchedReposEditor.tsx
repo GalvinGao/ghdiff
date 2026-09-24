@@ -18,6 +18,7 @@ import { GrabberIcon } from '@primer/octicons-react';
 import { useId, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { buttonClass } from '@/components/ui/buttonClass';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
@@ -44,39 +45,46 @@ export function WatchedReposEditor({
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
 
+  // The rows below are the examples list's own rows, so a card around this
+  // takes the examples card's `p-1`. The copy and the form above them take the
+  // rows' own `px-2`, which puts every left edge in the card on one line.
   return (
     <div>
-      <p className="text-ink-faint mb-2 text-xs">
-        ghdiff lists open pull requests for these repositories. The list stays
-        in this browser.
-      </p>
+      <div className="px-2 pt-2 pb-2">
+        <p className="text-ink-faint mb-2 text-xs">
+          ghdiff lists open pull requests for these repositories. The list stays
+          in this browser.
+        </p>
 
-      <form
-        className="flex gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (watched.add(input)) {
-            setInput('');
-            setError(undefined);
-          } else {
-            setError('Enter a repository as owner/repo.');
-          }
-        }}
-      >
-        <Input
-          value={input}
-          placeholder="owner/repo"
-          aria-label="Repository to watch"
-          onChange={(event) => setInput(event.target.value)}
-        />
-        <Button type="submit" variant="solid" size="md">
-          Add
-        </Button>
-      </form>
-      {error != null && <p className="text-removed mt-2 text-xs">{error}</p>}
+        <form
+          className="flex gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (watched.add(input)) {
+              setInput('');
+              setError(undefined);
+            } else {
+              setError('Enter a repository as owner/repo.');
+            }
+          }}
+        >
+          <Input
+            value={input}
+            placeholder="owner/repo"
+            aria-label="Repository to watch"
+            onChange={(event) => setInput(event.target.value)}
+          />
+          <Button type="submit" variant="solid" size="md">
+            Add
+          </Button>
+        </form>
+        {error != null && <p className="text-removed mt-2 text-xs">{error}</p>}
+      </div>
 
       {watched.repos.length === 0 ? (
-        <p className="text-ink-muted mt-3 text-sm">Nothing watched yet.</p>
+        <p className="text-ink-muted px-2 py-1.5 text-sm">
+          Nothing watched yet.
+        </p>
       ) : (
         <DndContext
           id={id}
@@ -91,10 +99,7 @@ export function WatchedReposEditor({
             items={watched.repos.map(watchedRepoKey)}
             strategy={verticalListSortingStrategy}
           >
-            <ul
-              aria-label="Watched repositories"
-              className="mt-3 font-mono text-xs"
-            >
+            <ul aria-label="Watched repositories" className="font-mono text-xs">
               {watched.repos.map((repo) => (
                 <SortableRepo
                   key={watchedRepoKey(repo)}
@@ -132,7 +137,7 @@ function SortableRepo({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`group hover:bg-surface focus-within:bg-surface relative flex items-center gap-3 rounded-md px-2 py-1.5 ${isDragging ? 'bg-surface z-10 shadow-sm' : ''}`}
+      className={`group hover:bg-surface focus-within:bg-surface relative flex items-center gap-2 rounded-md px-2 py-1.5 ${isDragging ? 'bg-surface z-10 shadow-sm' : ''}`}
     >
       <Tooltip label="Drag to reorder" side="right">
         <button
@@ -141,9 +146,9 @@ function SortableRepo({
           {...attributes}
           {...listeners}
           aria-label={`Drag to reorder ${name}`}
-          className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:outline-accent flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded active:cursor-grabbing"
+          className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:outline-accent -my-1 flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded active:cursor-grabbing"
         >
-          <GrabberIcon size={16} />
+          <GrabberIcon size={14} />
         </button>
       </Tooltip>
       <span className="text-ink min-w-0 flex-1 truncate" title={name}>
@@ -154,7 +159,14 @@ function SortableRepo({
         type="button"
         aria-label={`Remove ${name}`}
         onClick={onRemove}
-        className="text-ink-faint group-hover:text-ink-muted hover:text-removed focus-visible:text-removed focus-visible:outline-accent shrink-0 rounded px-1 py-1 text-[11px] transition-colors"
+        // `-my-1` keeps the button from making the row taller than an
+        // example row: the row's own line is 16px and the button is 24.
+        className={buttonClass({
+          size: 'sm',
+          variant: 'outline',
+          className:
+            '-my-1 h-6 px-2 font-sans text-[11px] text-ink-muted hover:text-removed',
+        })}
       >
         Remove
       </button>
