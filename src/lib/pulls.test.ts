@@ -125,6 +125,32 @@ describe('groupPullsByRepo', () => {
     assert.equal(countRepoPulls(groups[0]), 5);
   });
 
+  it('orders repositories as the watch list does, then the rest by name', () => {
+    const more = [
+      ...pulls,
+      pull('ada', 7, '2026-08-21T00:00:00Z', { owner: 'mid', repo: 'x' }),
+    ];
+    const groups = groupPullsByRepo(more, 'galvin', {
+      order: [
+        { owner: 'Zeta', repo: 'Tools' },
+        { owner: 'acme', repo: 'app' },
+      ],
+    });
+    assert.deepEqual(
+      groups.map((group) => group.key),
+      ['zeta/tools', 'acme/app', 'mid/x']
+    );
+  });
+
+  it("leaves out the viewer's own pull requests when asked", () => {
+    const groups = groupPullsByRepo(pulls, 'GALVIN', { hideViewer: true });
+    assert.deepEqual(
+      groups[0].authors.map((author) => author.author),
+      ['grace', 'ada']
+    );
+    assert.equal(groups[0].count, 3);
+  });
+
   it('puts the viewer first among the authors', () => {
     const groups = groupPullsByRepo(pulls, 'galvin');
     assert.deepEqual(

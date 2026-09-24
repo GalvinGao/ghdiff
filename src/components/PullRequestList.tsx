@@ -5,7 +5,9 @@ import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { Segmented, SegmentedItem } from '@/components/ui/Segmented';
 import { SkeletonBar } from '@/components/ui/SkeletonBar';
+import { showOwnPullsPreference, usePreference } from '@/hooks/preferences';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
@@ -13,6 +15,7 @@ import { repoPullsUrl, repoUrl } from '@/lib/githubUrls';
 import {
   formatWatchedRepo,
   groupPullsByRepo,
+  isViewerPull,
   type PullStackNode,
   type WatchedRepo,
 } from '@/lib/pulls';
@@ -46,10 +49,23 @@ export function PullRequestList({
 }: PullRequestListProps) {
   const { data, error, loading } = state;
 
+  const { value: showOwn, setValue: setShowOwn } = usePreference(
+    showOwnPullsPreference
+  );
   const groups = useMemo(() => {
     if (data == null) return [];
-    return groupPullsByRepo(data.pulls, data.viewer);
-  }, [data]);
+    return groupPullsByRepo(data.pulls, data.viewer, {
+      order: repos,
+      hideViewer: !showOwn,
+    });
+  }, [data, repos, showOwn]);
+  // How many rows the switch below is holding back. With none there is still a
+  // switch, but "no open pull requests" is then a true sentence.
+  const hiddenOwn = useMemo(() => {
+    if (showOwn || data?.viewer == null) return 0;
+    const viewerLogin = data.viewer.toLowerCase();
+    return data.pulls.filter((pull) => isViewerPull(pull, viewerLogin)).length;
+  }, [data, showOwn]);
 
   const failures = data?.failures ?? [];
   // The account to name on the setup page, when every failure shares one. Two
@@ -67,6 +83,27 @@ export function PullRequestList({
 
   return (
     <>
+      {/* Only with a viewer: signed out, nothing on the list is "mine". */}
+      {hydrated && repos.length > 0 && data?.viewer != null && (
+        <div className="flex items-center gap-2 px-2 pt-2 pb-1">
+          <span className="text-ink-muted min-w-0 truncate text-xs">
+            My pull requests
+          </span>
+          <Segmented
+            aria-label="My pull requests"
+            className="border-line bg-surface ml-auto shrink-0 rounded-lg border p-0.5"
+            value={showOwn ? 'show' : 'hide'}
+            onValueChange={(next) => setShowOwn(next === 'show')}
+          >
+            <SegmentedItem className="h-5 px-2" value="show">
+              Show
+            </SegmentedItem>
+            <SegmentedItem className="h-5 px-2" value="hide">
+              Hide
+            </SegmentedItem>
+          </Segmented>
+        </div>
+      )}
       {!hydrated ? (
         // The watch list is read from browser storage after mount, so until it
         // arrives an empty `repos` is the default and not an answer. Saying
@@ -87,6 +124,10 @@ export function PullRequestList({
         <PullListSkeleton />
       ) : error != null ? (
         <p className="text-removed px-2 py-3 text-sm">{error}</p>
+      ) : groups.length === 0 && hiddenOwn > 0 ? (
+        <p className="text-ink-muted px-2 py-3 text-sm">
+          Only your own pull requests are open, and they are hidden.
+        </p>
       ) : groups.length === 0 ? (
         // Every repository failing is not the same as every repository being
         // empty, and the reason is right below. Saying "no open pull requests"

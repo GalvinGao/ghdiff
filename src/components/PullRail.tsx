@@ -20,7 +20,11 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
-import { railCollapsedPreference, usePreference } from '@/hooks/preferences';
+import {
+  railCollapsedPreference,
+  showOwnPullsPreference,
+  usePreference,
+} from '@/hooks/preferences';
 import { useCurrentPull } from '@/hooks/useCurrentPull';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import {
@@ -327,10 +331,10 @@ function RailContent({
         >
           {collapsed && ghost == null ? (
             <PullHoverCardProvider>
-              <CollapsedMarks current={current} state={pulls} />
+              <CollapsedMarks current={current} repos={repos} state={pulls} />
             </PullHoverCardProvider>
           ) : collapsed ? (
-            <CollapsedMarks current={current} state={pulls} />
+            <CollapsedMarks current={current} repos={repos} state={pulls} />
           ) : (
             <div className="px-1 pb-2">
               <PullRequestList
@@ -407,25 +411,30 @@ interface CollapsedGroup {
  */
 function CollapsedMarks({
   current,
+  repos,
   state,
 }: {
   current?: GitHubPullTarget;
+  repos: readonly WatchedRepo[];
   state: OpenPullsState;
 }) {
+  const { value: showOwn } = usePreference(showOwnPullsPreference);
   const groups = useMemo<CollapsedGroup[]>(() => {
     if (state.data == null) return [];
-    return groupPullsByRepo(state.data.pulls, state.data.viewer).flatMap(
-      (group) =>
-        group.authors.map((author) => ({
-          key: `${group.key}/${author.author}`,
-          stacks: author.stacks.map((root) => ({
-            key: `${group.key}#${String(root.pull.number)}`,
-            root: root.pull,
-            pulls: flattenStacks([root]).map((node) => node.pull),
-          })),
-        }))
+    return groupPullsByRepo(state.data.pulls, state.data.viewer, {
+      order: repos,
+      hideViewer: !showOwn,
+    }).flatMap((group) =>
+      group.authors.map((author) => ({
+        key: `${group.key}/${author.author}`,
+        stacks: author.stacks.map((root) => ({
+          key: `${group.key}#${String(root.pull.number)}`,
+          root: root.pull,
+          pulls: flattenStacks([root]).map((node) => node.pull),
+        })),
+      }))
     );
-  }, [state.data]);
+  }, [repos, showOwn, state.data]);
 
   return (
     <div className="py-1">

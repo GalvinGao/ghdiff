@@ -7,6 +7,7 @@ import {
   COMMENT_AUTHOR_FILTER_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
+  SHOW_OWN_PULLS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   type PreferenceCodec,
   VIEWER_CONTROLS_PREFERENCE,
@@ -24,6 +25,7 @@ const ALL: PreferenceCodec<unknown>[] = [
   COMMENT_AUTHOR_FILTER_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
+  SHOW_OWN_PULLS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
   WATCH_OFFER_PREFERENCE,
@@ -164,6 +166,12 @@ describe('the left bar and the comment filter', () => {
     assert.equal(RAIL_COLLAPSED_PREFERENCE.decode('true'), true);
     assert.equal(RAIL_COLLAPSED_PREFERENCE.decode('false'), false);
     assert.equal(RAIL_COLLAPSED_PREFERENCE.decode('1'), undefined);
+  });
+
+  it('shows the viewer their own pull requests until told not to', () => {
+    assert.equal(SHOW_OWN_PULLS_PREFERENCE.fallback, true);
+    assert.equal(SHOW_OWN_PULLS_PREFERENCE.decode('false'), false);
+    assert.equal(SHOW_OWN_PULLS_PREFERENCE.decode('"hide"'), undefined);
   });
 
   it('reads the three author filters, as the JSON they were written as', () => {

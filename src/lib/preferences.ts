@@ -11,6 +11,7 @@ import {
   COMMENT_AUTHOR_FILTER_STORAGE_KEY,
   RAIL_COLLAPSED_STORAGE_KEY,
   RAIL_WIDTH_STORAGE_KEY,
+  SHOW_OWN_PULLS_STORAGE_KEY,
   SIDEBAR_WIDTH_STORAGE_KEY,
   VIEWER_CONTROLS_STORAGE_KEY,
   WATCH_OFFER_STORAGE_KEY,
@@ -190,6 +191,13 @@ export const WATCH_OFFER_PREFERENCE = repoListPreference(
 export const RAIL_COLLAPSED_PREFERENCE = jsonPreference<boolean>(
   RAIL_COLLAPSED_STORAGE_KEY,
   false,
+  (value) => (typeof value === 'boolean' ? value : undefined)
+);
+
+/** Whether the pull request list draws the viewer's own. On until turned off. */
+export const SHOW_OWN_PULLS_PREFERENCE = jsonPreference<boolean>(
+  SHOW_OWN_PULLS_STORAGE_KEY,
+  true,
   (value) => (typeof value === 'boolean' ? value : undefined)
 );
 

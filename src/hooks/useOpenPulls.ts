@@ -49,8 +49,10 @@ export function useOpenPulls(options: {
   // The watch list travels as one comma-joined string and the request is built
   // back out of it. The array's identity changes on every render of whatever
   // owns it, and a `useCallback` that depended on the array would rebuild, and
-  // re-request, each time. The string compares by value.
-  const repoKey = repos.map(formatWatchedRepo).join(',');
+  // re-request, each time. The string compares by value. It is sorted, because
+  // the order is the list's to draw and not GitHub's to answer: a drag in the
+  // watch list reorders the rows on screen and asks GitHub nothing.
+  const repoKey = repos.map(formatWatchedRepo).toSorted().join(',');
 
   const load = useCallback(async () => {
     controllerRef.current?.abort();

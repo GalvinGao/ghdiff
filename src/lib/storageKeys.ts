@@ -16,6 +16,7 @@ export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'ghdiff-sidebar-width';
 export const RAIL_WIDTH_STORAGE_KEY = 'ghdiff-rail-width';
 export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
+export const SHOW_OWN_PULLS_STORAGE_KEY = 'ghdiff-show-own-pulls';
 /**
  * Whether this browser has been offered the watch list. The offer is made once
  * and never again, so the key records that it happened rather than what the

@@ -161,18 +161,28 @@ export interface PullRepoGroup {
   authors: PullAuthorGroup[];
 }
 
+export interface GroupPullsOptions {
+  /** The watch list, in the order the reviewer arranged it. */
+  order?: readonly WatchedRepo[];
+  /** Leave out the viewer's own pull requests. */
+  hideViewer?: boolean;
+}
+
 /**
- * Repository, then author, then stack. Repositories and owners read
- * alphabetically, the viewer's own pull requests lead the authors, and every
+ * Repository, then author, then stack. Repositories follow `order`, the watch
+ * list the reviewer arranged by hand; one the list does not name goes after it,
+ * alphabetically. The viewer's own pull requests lead the authors, and every
  * remaining tie is broken by the newest update.
  */
 export function groupPullsByRepo(
   pulls: readonly PullSummary[],
-  viewer: string | undefined
+  viewer: string | undefined,
+  { order = [], hideViewer = false }: GroupPullsOptions = {}
 ): PullRepoGroup[] {
   const viewerLogin = viewer?.toLowerCase();
   const byRepo = new Map<string, PullSummary[]>();
   for (const pull of pulls) {
+    if (hideViewer && isViewerPull(pull, viewerLogin)) continue;
     const key = formatWatchedRepo(pull).toLowerCase();
     const existing = byRepo.get(key);
     if (existing == null) byRepo.set(key, [pull]);
@@ -190,10 +200,26 @@ export function groupPullsByRepo(
       authors: groupByAuthor(repoPulls, viewerLogin),
     });
   }
+  const rank = new Map(
+    order.map((repo, index) => [watchedRepoKey(repo), index])
+  );
+  const rankOf = (group: PullRepoGroup) =>
+    rank.get(group.key.toLowerCase()) ?? Number.POSITIVE_INFINITY;
   groups.sort(
-    (a, b) => compareText(a.owner, b.owner) || compareText(a.repo, b.repo)
+    (a, b) =>
+      rankOf(a) - rankOf(b) ||
+      compareText(a.owner, b.owner) ||
+      compareText(a.repo, b.repo)
   );
   return groups;
+}
+
+/** True when the signed-in reviewer opened this pull request. */
+export function isViewerPull(
+  pull: PullSummary,
+  viewerLogin: string | undefined
+): boolean {
+  return viewerLogin != null && pull.author.toLowerCase() === viewerLogin;
 }
 
 function groupByAuthor(
