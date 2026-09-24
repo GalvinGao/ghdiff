@@ -9,7 +9,7 @@
 // reviewer stays, and a link that replaced the diff with github.com would cost
 // them the scroll position, the filter and the fragment they had built up.
 
-import type { ReviewTarget } from './reviewTarget.ts';
+import type { GitHubReviewTarget } from './reviewTarget.ts';
 
 const GITHUB = 'https://github.com';
 
@@ -62,7 +62,7 @@ export function repoPullsUrl(
 }
 
 /** The page the review on screen was taken from. */
-export function reviewTargetUrl(target: ReviewTarget): string {
+export function reviewTargetUrl(target: GitHubReviewTarget): string {
   const root = repoUrl(target);
   switch (target.kind) {
     case 'github-pull':

@@ -15,6 +15,25 @@ whole instruction:
 + ghdiff.com/owner/repo/pull/123
 ```
 
+## A diff that is still on your machine
+
+Work that is uncommitted, unpushed, or in a repository with no GitHub remote is
+invisible to the site. The `ghdiff` command is the same review surface over
+`git diff`, served from `127.0.0.1` by a process you start and stop:
+
+```bash
+npx ghdiff              # uncommitted work, in a browser
+ghdiff --staged         # what is about to be committed
+ghdiff main             # this branch against its base
+ghdiff main..feature    # any two revisions
+ghdiff --commit         # the last commit
+ghdiff --commit abc123  # one commit
+```
+
+It reads the repository you run it in and nothing else, never writes to it, and
+uploads nothing anywhere. `cli/README.md` is its own documentation, and
+`pnpm build:cli` is what builds it from this repository.
+
 ## What it adds over diffs-hub
 
 `diffs-hub` in the `pierrecomputer/pierre` monorepo is the reference
@@ -121,6 +140,7 @@ served.
 pnpm dev          pnpm build        pnpm preview      pnpm deploy
 pnpm test         pnpm typecheck    pnpm cf-typegen
 pnpm lint         pnpm fmt          pnpm fmt:check
+pnpm build:cli    # the ghdiff command, into dist/cli
 ```
 
 `AGENTS.md` holds the project conventions.

@@ -44,7 +44,14 @@ export interface AppData {
   watched: WatchedReposState;
 }
 
-const AppDataContext = createContext<AppData | null>(null);
+/**
+ * Exported for one caller that is not a screen: the `ghdiff` command's own
+ * client, which serves a diff off a disk and talks to GitHub not at all. It
+ * mounts the two settings hooks and supplies the three GitHub-shaped fields
+ * inert, so nothing under it ever issues a request this app's local server has
+ * no answer for. Every screen goes on reading `useAppData()`.
+ */
+export const AppDataContext = createContext<AppData | null>(null);
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const codeFont = useCodeFont();

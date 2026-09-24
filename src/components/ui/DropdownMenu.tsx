@@ -11,15 +11,31 @@ export const DropdownMenuPortal = Primitive.Portal;
 
 export function DropdownMenuContent({
   className,
+  height = 'capped',
   sideOffset = 6,
   ...props
-}: ComponentProps<typeof Primitive.Content>) {
+}: ComponentProps<typeof Primitive.Content> & {
+  /**
+   * `viewport` for a menu whose rows are a fixed set: the screen is then the
+   * only thing allowed to cut it, because a menu that fits has no reason to
+   * scroll and a row below the fold announces itself with nothing.
+   *
+   * The default is for a menu that can be long — the filter menu's eight
+   * two-line presets run past 600px, and the account menu lists an
+   * installation per account the reviewer has — where scrolling is the right
+   * answer and 28rem is where it starts.
+   */
+  height?: 'capped' | 'viewport';
+}) {
   return (
     <Primitive.Portal>
       <Primitive.Content
         sideOffset={sideOffset}
         className={cn(
-          'border-line bg-raised text-ink z-50 max-h-[min(28rem,var(--radix-dropdown-menu-content-available-height))] min-w-56 overflow-y-auto rounded-lg border p-1 shadow-lg',
+          'border-line bg-raised text-ink z-50 min-w-56 overflow-y-auto rounded-lg border p-1 shadow-lg',
+          height === 'viewport'
+            ? 'max-h-[var(--radix-dropdown-menu-content-available-height)]'
+            : 'max-h-[min(28rem,var(--radix-dropdown-menu-content-available-height))]',
           // A menu that scrolls must keep its scroll: without this, reaching
           // the end of the list hands the gesture to the page behind it, and
           // the whole app rubber-bands away from under the open menu.

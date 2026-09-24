@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 
 import {
   type GitHubPullTarget,
+  type GitHubReviewTarget,
   gitHubTargetFromSegments,
-  type ReviewTarget,
 } from '@/lib/reviewTarget';
 
 /**
@@ -16,7 +16,7 @@ import {
  * review and a 404 alike. `useLocation` re-renders the caller on each
  * navigation.
  */
-function useCurrentTarget(): ReviewTarget | undefined {
+function useCurrentTarget(): GitHubReviewTarget | undefined {
   const pathname = useLocation({ select: (location) => location.pathname });
   return useMemo(() => {
     const segments = pathname.split('/').filter((part) => part.length > 0);

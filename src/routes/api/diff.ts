@@ -2,7 +2,8 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
-  type ReviewTarget,
+  type GitHubReviewTarget,
+  LOCAL_TARGET_NOT_SERVED,
   reviewTargetFromQuery,
   reviewTargetKey,
 } from '@/lib/reviewTarget';
@@ -40,7 +41,7 @@ function textResponse(body: string, status: number): Response {
   });
 }
 
-function webPath(target: ReviewTarget): string {
+function webPath(target: GitHubReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
       return `/${target.owner}/${target.repo}/pull/${target.number}`;
@@ -53,7 +54,7 @@ function webPath(target: ReviewTarget): string {
   }
 }
 
-function apiPath(target: ReviewTarget): string {
+function apiPath(target: GitHubReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
       return `/repos/${target.owner}/${target.repo}/pulls/${target.number}`;
@@ -66,7 +67,7 @@ function apiPath(target: ReviewTarget): string {
   }
 }
 
-function filesFetch(target: ReviewTarget) {
+function filesFetch(target: GitHubReviewTarget) {
   switch (target.kind) {
     case 'github-pull':
       return pullFilesFetch(target.owner, target.repo, target.number);
@@ -109,6 +110,13 @@ const getDiff = withEvlog(
       return textResponse('That review target is not valid.', 400);
     }
     log.set({ target: reviewTargetKey(target), targetKind: target.kind });
+    // The one target this host cannot answer for, and the one it must not try
+    // to: workerd spawns no process and reads no path on anybody's disk. It
+    // reaches here only from a link pasted out of a local run.
+    if (target.kind === 'local-diff') {
+      log.set({ outcome: 'local-target' });
+      return textResponse(LOCAL_TARGET_NOT_SERVED, 400);
+    }
 
     // A cookie whose token has died is answered before GitHub is asked: the 401
     // is what sends the browser to refresh it, and the same request arrives
@@ -142,7 +150,7 @@ export const Route = createFileRoute('/api/diff')({
 });
 
 async function gitHubResponse(
-  target: ReviewTarget,
+  target: GitHubReviewTarget,
   token: string | undefined,
   log: ReturnType<typeof requestLog>
 ): Promise<Response> {

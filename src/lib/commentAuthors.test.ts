@@ -7,35 +7,7 @@ import {
   isBotLogin,
   isCommentAuthorFilter,
 } from './commentAuthors.ts';
-import type { CommentListEntry, CommentListSection } from './comments.ts';
-
-function thread(
-  key: string,
-  author: string,
-  authorIsBot: boolean
-): CommentListEntry {
-  return {
-    itemId: 'a.ts',
-    path: 'a.ts',
-    key,
-    author,
-    authorIsBot,
-    body: 'hello',
-    replyCount: 0,
-    participants: [author],
-    lineNumber: 1,
-    lineType: 'change',
-    side: 'additions',
-    range: { start: 1, end: 1, side: 'additions', endSide: 'additions' },
-  };
-}
-
-function section(
-  path: string,
-  threads: CommentListEntry[]
-): CommentListSection {
-  return { itemId: path, path, fileOrder: 0, threads };
-}
+import { commentSection, commentThread } from './commentFixtures.ts';
 
 describe('isBotLogin', () => {
   it('accepts the suffix GitHub reserves for an app', () => {
@@ -65,11 +37,21 @@ describe('isCommentAuthorFilter', () => {
 describe('countCommentAuthors', () => {
   it('counts threads across every file', () => {
     const counts = countCommentAuthors([
-      section('a.ts', [
-        thread('1', 'GalvinGao', false),
-        thread('2', 'dependabot[bot]', true),
+      commentSection('a.ts', [
+        commentThread({ key: '1', author: 'GalvinGao' }),
+        commentThread({
+          key: '2',
+          author: 'dependabot[bot]',
+          authorIsBot: true,
+        }),
       ]),
-      section('b.ts', [thread('3', 'coderabbitai[bot]', true)]),
+      commentSection('b.ts', [
+        commentThread({
+          key: '3',
+          author: 'coderabbitai[bot]',
+          authorIsBot: true,
+        }),
+      ]),
     ]);
     assert.deepEqual(counts, { people: 1, bots: 2 });
   });
@@ -77,11 +59,17 @@ describe('countCommentAuthors', () => {
 
 describe('filterCommentSections', () => {
   const sections = [
-    section('a.ts', [
-      thread('1', 'GalvinGao', false),
-      thread('2', 'dependabot[bot]', true),
+    commentSection('a.ts', [
+      commentThread({ key: '1', author: 'GalvinGao' }),
+      commentThread({ key: '2', author: 'dependabot[bot]', authorIsBot: true }),
     ]),
-    section('b.ts', [thread('3', 'coderabbitai[bot]', true)]),
+    commentSection('b.ts', [
+      commentThread({
+        key: '3',
+        author: 'coderabbitai[bot]',
+        authorIsBot: true,
+      }),
+    ]),
   ];
 
   it('keeps every thread under all', () => {

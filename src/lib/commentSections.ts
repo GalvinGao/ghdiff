@@ -49,6 +49,7 @@ export function buildCommentSections(
             authorIsBot: root.authorIsBot ?? isBotLogin(root.author),
             body: root.body,
             replyCount: metadata.comments.length - 1,
+            messages: metadata.comments,
             participants: threadParticipants(metadata),
             lineNumber: annotation.lineNumber,
             lineType: classifyCommentLineType(

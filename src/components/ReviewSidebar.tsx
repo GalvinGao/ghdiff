@@ -1,4 +1,11 @@
-import { IconComment, IconFileTree, IconSearch, IconX } from '@pierre/icons';
+import {
+  IconCheck,
+  IconComment,
+  IconCopy,
+  IconFileTree,
+  IconSearch,
+  IconX,
+} from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
 import { useEffect, useRef, useState } from 'react';
 
@@ -13,6 +20,7 @@ import {
   SegmentedCount,
   SegmentedItem,
 } from '@/components/ui/Segmented';
+import { Tooltip } from '@/components/ui/Tooltip';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
@@ -51,6 +59,12 @@ interface ReviewSidebarProps {
   hiddenCount: number;
   onAuthorFilterChange(next: CommentAuthorFilter): void;
   onFilterChange(next: ReviewFilterState): void;
+  /**
+   * Puts the whole review on the clipboard as text for a coding agent. Absent
+   * when there is nothing to copy, which is what keeps the control off an empty
+   * comment list.
+   */
+  onCopyPrompt?(): Promise<boolean>;
   onSelectComment(comment: CommentListEntry): void;
   onSelectItem(itemId: string): void;
   /** The files on screen, not the whole patch. */
@@ -75,6 +89,7 @@ export function ReviewSidebar({
   filter,
   hiddenCount,
   onAuthorFilterChange,
+  onCopyPrompt,
   onFilterChange,
   onSelectComment,
   onSelectItem,
@@ -135,6 +150,14 @@ export function ReviewSidebar({
           >
             <IconSearch size={14} />
           </Button>
+        )}
+        {/* The comments tab's counterpart to that button, in the same slot: one
+            control per tab, at the end of the row the two tabs share. It is
+            here rather than in the footer strip because the strip already holds
+            the author filter on a pull request, and two controls fighting for
+            it at a narrow sidebar is a row that fits neither. */}
+        {tab === 'comments' && onCopyPrompt != null && (
+          <CopyPromptButton onCopy={onCopyPrompt} />
         )}
       </div>
 
@@ -223,16 +246,82 @@ export function ReviewSidebar({
             treeStats={treeStats}
           />
         ) : (
-          <div className="flex min-w-0 flex-1 pr-2">
-            <CommentAuthorFilterBar
-              counts={authorCounts}
-              onChange={onAuthorFilterChange}
-              value={authorFilter}
-            />
-          </div>
+          // A browser store holds one reviewer's own notes and can never hold a
+          // bot's, so on a local diff, a commit or a compare range this control
+          // has two segments that can never do anything. The strip stays: its
+          // height is stated, and it is what keeps this foot level with the
+          // left bar's.
+          commentStore === 'github' && (
+            <div className="flex min-w-0 flex-1 pr-2">
+              <CommentAuthorFilterBar
+                counts={authorCounts}
+                onChange={onAuthorFilterChange}
+                value={authorFilter}
+              />
+            </div>
+          )
         )}
       </div>
     </aside>
+  );
+}
+
+/** How long the button says it worked before it offers to do it again. */
+const COPIED_FOR_MS = 1500;
+
+/**
+ * Puts the review on the clipboard, and says that it did.
+ *
+ * A press that copies looks exactly like a press that did nothing, so the glyph
+ * is what reports it: the control becomes a tick for a second and a half and
+ * then goes back to offering the copy. A refusal — the clipboard is one of the
+ * few browser APIs that can simply say no — says so in the same place rather
+ * than leaving the reviewer to paste and find out.
+ */
+function CopyPromptButton({ onCopy }: { onCopy(): Promise<boolean> }) {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
+
+  useEffect(() => {
+    if (state === 'idle') return undefined;
+    const timer = window.setTimeout(() => setState('idle'), COPIED_FOR_MS);
+    return () => window.clearTimeout(timer);
+  }, [state]);
+
+  const label =
+    state === 'copied'
+      ? 'Copied'
+      : state === 'failed'
+        ? 'This browser would not let ghdiff reach the clipboard'
+        : 'Copy as prompt';
+
+  return (
+    <Tooltip
+      className="ml-auto"
+      label={label}
+      side="bottom-end"
+      // Two or three words at rest, and a sentence when it has to say why
+      // nothing happened.
+      wide={state === 'failed'}
+    >
+      <Button
+        aria-label={
+          state === 'copied'
+            ? 'Copied'
+            : 'Copy every comment, with the code it is about, for a coding agent'
+        }
+        size="icon-sm"
+        variant="chrome"
+        onClick={() => {
+          void onCopy().then((ok) => setState(ok ? 'copied' : 'failed'));
+        }}
+      >
+        {state === 'copied' ? (
+          <IconCheck className="text-accent" size={14} />
+        ) : (
+          <IconCopy size={14} />
+        )}
+      </Button>
+    </Tooltip>
   );
 }
 

@@ -21,12 +21,22 @@ export interface ReviewFilterState {
   statuses: ReadonlySet<GitStatus>;
   /** Case-insensitive substring match on the path. Empty means no match test. */
   query: string;
+  /**
+   * True while the files git is not tracking are off both panes.
+   *
+   * Only a local diff has any, so this is false and stays false on every diff
+   * that came from GitHub. It lives here and not in browser storage because it
+   * is a filter: it belongs to the diff on screen the way the preset and the
+   * query do, and **Clear filters** puts it back.
+   */
+  hideUntracked: boolean;
 }
 
 export const EMPTY_FILTER_STATE: ReviewFilterState = {
   presetId: DEFAULT_FILTER_PRESET_ID,
   statuses: new Set(),
   query: '',
+  hideUntracked: false,
 };
 
 /** The tree consumes paths, not items, so it gets its own projection. */
@@ -54,7 +64,8 @@ export function isFilterActive(state: ReviewFilterState): boolean {
   return (
     state.presetId !== DEFAULT_FILTER_PRESET_ID ||
     state.statuses.size > 0 ||
-    state.query.trim().length > 0
+    state.query.trim().length > 0 ||
+    state.hideUntracked
   );
 }
 
@@ -124,8 +135,21 @@ export function applyReviewFilter(
   };
 
   for (const entry of data.entries) {
+    const untracked = entry.status === 'untracked';
     if (!preset.matches(entry.path)) continue;
-    if (state.statuses.size > 0 && !state.statuses.has(entry.status)) continue;
+    if (untracked && state.hideUntracked) continue;
+    // Untracked is exempt from the status list, which is the one place these
+    // two controls could contradict each other. The status menu offers the four
+    // statuses a patch can describe and never this one, so picking Added would
+    // otherwise take the untracked files away with nothing left to bring them
+    // back. One switch owns them, and it is the only thing that hides them.
+    if (
+      !untracked &&
+      state.statuses.size > 0 &&
+      !state.statuses.has(entry.status)
+    ) {
+      continue;
+    }
     if (query.length > 0 && !entry.path.toLowerCase().includes(query)) continue;
 
     const item = itemById.get(entry.itemId);

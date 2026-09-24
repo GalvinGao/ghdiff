@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" suppressHydrationWarning>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ghdiff</title>
+    <meta name="robots" content="noindex" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏃‍♀️</text></svg>"
+    />
+    <!-- The server puts three more scripts here before it answers: the colour
+         mode, the code font, and the repository this run is serving. The first
+         two are `src/lib/prePaintScripts.ts`, the same text the hosted document
+         renders, so the first paint settles identically on both hosts. -->
+  </head>
+  <body class="flex h-dvh flex-col">
+    <!-- `contents`, so this element is not a box between the body's flex column
+         and the app's own first child. -->
+    <div id="root" class="contents"></div>
+    <script type="module" src="/main.tsx"></script>
+  </body>
+</html>
