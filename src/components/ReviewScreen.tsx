@@ -719,6 +719,7 @@ export function ReviewScreen({
               controls={controls}
               items={items}
               loadDiffFiles={files.loadDiffFiles}
+              loadingFiles={files.loadingFiles}
               onCancelDraft={comments.removeComment}
               onCreateDraft={handleCreateDraft}
               onDeleteComment={comments.removeComment}

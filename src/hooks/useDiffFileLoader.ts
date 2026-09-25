@@ -30,6 +30,8 @@ const STALE_FAILURE =
 export interface DiffFileLoader {
   /** Passed straight to the viewer as its `loadDiffFiles` option. */
   loadDiffFiles: FileDiffContentsLoader;
+  /** Metadata identity keeps pending loads scoped to their original diff. */
+  loadingFiles: readonly FileDiffMetadata[];
   /** The last failure, for the strip along the foot of the screen. */
   error?: string;
   dismissError(): void;
@@ -40,12 +42,16 @@ export function useDiffFileLoader(options: {
 }): DiffFileLoader {
   const { target } = options;
   const [error, setError] = useState<string | undefined>(undefined);
+  const [loadingFiles, setLoadingFiles] = useState<readonly FileDiffMetadata[]>(
+    []
+  );
   // A string, not the target: the route's loader re-runs and hands down a new
   // object for the same review.
   const query = reviewTargetQuery(target).toString();
 
   const loadDiffFiles = useCallback<FileDiffContentsLoader>(
     async (fileDiff: FileDiffMetadata) => {
+      setLoadingFiles((files) => [...files, fileDiff]);
       try {
         const contents = await fetchFile(query, fileDiff.name);
         setError(undefined);
@@ -71,6 +77,13 @@ export function useDiffFileLoader(options: {
         // Rethrown: the viewer must not hydrate a file it cannot trust, and
         // leaving the diff partial is what lets the reviewer press again.
         throw cause;
+      } finally {
+        // A virtualized file can remount while an earlier request is pending.
+        // Remove just this load so the newer one keeps its indicator.
+        setLoadingFiles((files) => {
+          const index = files.indexOf(fileDiff);
+          return index === -1 ? files : files.toSpliced(index, 1);
+        });
       }
     },
     [query]
@@ -78,7 +91,7 @@ export function useDiffFileLoader(options: {
 
   const dismissError = useCallback(() => setError(undefined), []);
 
-  return { loadDiffFiles, error, dismissError };
+  return { loadDiffFiles, loadingFiles, error, dismissError };
 }
 
 async function fetchFile(query: string, path: string): Promise<string> {

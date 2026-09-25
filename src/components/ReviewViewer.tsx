@@ -27,6 +27,10 @@ import {
   applyCronSchedules,
   CRON_SCHEDULES_CSS,
 } from '@/components/diffCronSchedules';
+import {
+  applyExpansionLoading,
+  EXPANSION_LOADING_CSS,
+} from '@/components/diffExpansionLoading';
 import { applyLineMarks, LINE_MARKS_CSS } from '@/components/diffLineMarks';
 import {
   applySearchMarks,
@@ -60,6 +64,7 @@ interface ReviewViewerProps {
    * separator, so it is passed from the first render and not on demand.
    */
   loadDiffFiles: FileDiffContentsLoader;
+  loadingFiles: readonly FileDiffMetadata[];
   onCancelDraft(itemId: string, key: string): void;
   onCreateDraft(itemId: string, range: SelectedLineRange): void;
   onDeleteComment(itemId: string, key: string): void;
@@ -87,10 +92,14 @@ interface ReviewViewerProps {
 
 /**
  * One string, because the viewer compares `unsafeCSS` by identity and clears
- * its element pool when it changes. Both halves are constants, so this is
+ * its element pool when it changes. All parts are constants, so this is
  * made once.
  */
-const VIEWER_CSS = LINE_MARKS_CSS + CRON_SCHEDULES_CSS + SEARCH_MARKS_CSS;
+const VIEWER_CSS =
+  LINE_MARKS_CSS +
+  CRON_SCHEDULES_CSS +
+  SEARCH_MARKS_CSS +
+  EXPANSION_LOADING_CSS;
 
 // The gutter utility is the small button that appears in the line gutter on
 // hover. It is what opens a comment composer on the hovered line.
@@ -101,6 +110,7 @@ export const ReviewViewer = memo(function ReviewViewer({
   controls,
   items,
   loadDiffFiles,
+  loadingFiles,
   onCancelDraft,
   onCreateDraft,
   onDeleteComment,
@@ -117,6 +127,22 @@ export const ReviewViewer = memo(function ReviewViewer({
   viewedItemIds,
   viewerRef,
 }: ReviewViewerProps) {
+  // Update only the rendered controls; changing the viewer's options for a
+  // pending request would re-render every file in the review.
+  const loadingFilesRef = useRef(loadingFiles);
+  useLayoutEffect(() => {
+    loadingFilesRef.current = loadingFiles;
+    for (const entry of viewerRef.current?.getInstance()?.getRenderedItems() ??
+      []) {
+      if (entry.type === 'diff') {
+        applyExpansionLoading(
+          entry.element,
+          loadingFiles.includes(entry.item.fileDiff)
+        );
+      }
+    }
+  }, [loadingFiles, viewerRef]);
+
   // Read by `onPostRender` below through a ref rather than closed over, so a
   // change of query or of current match does not rebuild the options — which
   // would hand the viewer a new options object and have it re-render every
@@ -159,9 +185,15 @@ export const ReviewViewer = memo(function ReviewViewer({
       ) {
         return null;
       }
-      return <ExpandFileButton itemId={item.id} viewerRef={viewerRef} />;
+      return (
+        <ExpandFileButton
+          itemId={item.id}
+          loading={loadingFiles.includes(item.fileDiff)}
+          viewerRef={viewerRef}
+        />
+      );
     },
-    [collapsedItemIds, viewerRef]
+    [collapsedItemIds, loadingFiles, viewerRef]
   );
 
   // After the file's own `-N +N`, which is where github.com puts the same
@@ -196,7 +228,7 @@ export const ReviewViewer = memo(function ReviewViewer({
         if (context.item.type !== 'diff') return;
         onCreateDraft(context.item.id, range);
       },
-      // The stylesheet for the three kinds of marks below, installed by the
+      // Styles for the marks and loading controls below, installed by the
       // library inside each file's shadow root, where no outside selector can
       // reach.
       unsafeCSS: VIEWER_CSS,
@@ -208,6 +240,10 @@ export const ReviewViewer = memo(function ReviewViewer({
           return;
         }
         if (item.type !== 'diff') return;
+        applyExpansionLoading(
+          node,
+          loadingFilesRef.current.includes(item.fileDiff)
+        );
         applyLineMarks(node, item.fileDiff);
         applyCronSchedules(node, item.fileDiff);
         applySearchMarks(node, item.id, searchMarksRef.current);
@@ -373,15 +409,19 @@ const EXPAND_WHOLE_FILE_LABEL = 'Show the whole file';
  */
 function ExpandFileButton({
   itemId,
+  loading,
   viewerRef,
 }: {
   itemId: string;
+  loading: boolean;
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }) {
+  const label = loading ? 'Loading unmodified lines' : EXPAND_WHOLE_FILE_LABEL;
   return (
-    <Tooltip label={EXPAND_WHOLE_FILE_LABEL}>
+    <Tooltip label={label}>
       <Button
-        aria-label={EXPAND_WHOLE_FILE_LABEL}
+        aria-busy={loading}
+        aria-label={label}
         size="icon-sm"
         variant="quiet"
         onClick={() => {
@@ -389,7 +429,14 @@ function ExpandFileButton({
           if (viewer != null) expandWholeFile(viewer, itemId);
         }}
       >
-        <IconExpandRow size={13} />
+        {loading ? (
+          <span
+            aria-hidden="true"
+            className="size-[13px] animate-spin rounded-full border-[1.5px] border-current/25 border-t-current [animation-duration:1.2s] motion-reduce:animate-none"
+          />
+        ) : (
+          <IconExpandRow size={13} />
+        )}
       </Button>
     </Tooltip>
   );
