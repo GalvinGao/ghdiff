@@ -19,6 +19,7 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
@@ -127,6 +128,9 @@ export const ReviewViewer = memo(function ReviewViewer({
   viewedItemIds,
   viewerRef,
 }: ReviewViewerProps) {
+  // Header portals unmount when a file is folded or scrolled out of view.
+  // Weak keys retain its expansion choice without retaining old reviews.
+  const expandedFiles = useMemo(() => new WeakSet<FileDiffMetadata>(), []);
   // Update only the rendered controls; changing the viewer's options for a
   // pending request would re-render every file in the review.
   const loadingFilesRef = useRef(loadingFiles);
@@ -187,13 +191,15 @@ export const ReviewViewer = memo(function ReviewViewer({
       }
       return (
         <ExpandFileButton
+          expandedFiles={expandedFiles}
+          fileDiff={item.fileDiff}
           itemId={item.id}
           loading={loadingFiles.includes(item.fileDiff)}
           viewerRef={viewerRef}
         />
       );
     },
-    [collapsedItemIds, loadingFiles, viewerRef]
+    [collapsedItemIds, expandedFiles, loadingFiles, viewerRef]
   );
 
   // After the file's own `-N +N`, which is where github.com puts the same
@@ -402,20 +408,30 @@ const EXPAND_WHOLE_FILE_LABEL = 'Show the whole file';
 /**
  * The whole file is safe where a single press is: the file was already turned
  * away at `MAX_FILE_BYTES` if it could not be afforded, and the virtualizer
- * lays out only what is on screen. The button stays after the press, because
- * the expansion state lives inside the viewer's rendered instance and React
- * cannot read it — a second press finds every region already at its full size
- * and changes nothing.
+ * lays out only what is on screen. Hide the control after its request succeeds;
+ * a loaded file alone is not enough, since a single hunk also loads the file.
  */
 function ExpandFileButton({
+  expandedFiles,
+  fileDiff,
   itemId,
   loading,
   viewerRef,
 }: {
+  expandedFiles: WeakSet<FileDiffMetadata>;
+  fileDiff: FileDiffMetadata;
   itemId: string;
   loading: boolean;
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }) {
+  const [requestedExpansion, setRequestedExpansion] = useState(() =>
+    expandedFiles.has(fileDiff)
+  );
+  useLayoutEffect(() => {
+    // Hydration replaces the partial metadata with a full-file copy.
+    if (requestedExpansion) expandedFiles.add(fileDiff);
+  }, [expandedFiles, fileDiff, requestedExpansion]);
+  if (requestedExpansion && !fileDiff.isPartial && !loading) return null;
   const label = loading ? 'Loading unmodified lines' : EXPAND_WHOLE_FILE_LABEL;
   return (
     <Tooltip label={label}>
@@ -426,7 +442,10 @@ function ExpandFileButton({
         variant="quiet"
         onClick={() => {
           const viewer = viewerRef.current;
-          if (viewer != null) expandWholeFile(viewer, itemId);
+          if (viewer != null) {
+            expandWholeFile(viewer, itemId);
+            setRequestedExpansion(true);
+          }
         }}
       >
         {loading ? (
