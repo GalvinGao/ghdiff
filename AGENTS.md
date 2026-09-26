@@ -231,6 +231,15 @@ carries the fragment over only when it is github.com's own `#diff-<64 hex>` form
 with an optional line part, which is the one fragment `lookupDiffAnchor` can
 resolve.
 
+**And it opens a new tab, which is what its own octicon says.** The leading
+`link-external` mark is github.com's for a link that leaves the site, so a
+button wearing one and replacing the page in place was promising one thing and
+doing another. `target="_blank"` with `rel="noreferrer"` is the pair every link
+this app draws to github.com already carries, and the reason runs the same way
+back: the pull request page a reviewer pressed it from holds the conversation,
+the review state and whatever they had already opened, and none of that is worth
+spending to read the diff somewhere else.
+
 `UserscriptInstall` offers it from the home page, under the form and above the
 examples. The line above the button names one manager and links to its install
 page, because Install pressed in a browser with no manager downloads a file that
