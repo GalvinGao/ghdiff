@@ -19,7 +19,6 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 
 import { CommentComposer } from '@/components/CommentComposer';
@@ -240,12 +239,19 @@ export const ReviewViewer = memo(function ReviewViewer({
       unsafeCSS: VIEWER_CSS,
       onPostRender(node, _instance, phase, { item }) {
         if (phase === 'unmount') {
+          node.removeAttribute('data-ghdiff-expanded');
           // The rows are about to go, and so must the ranges painted over
           // them, or the registry keeps a window's worth per pass.
           clearSearchMarks(node);
           return;
         }
         if (item.type !== 'diff') return;
+        // Hydration mutates metadata without necessarily updating React's
+        // header portal. Publish completion from the actual render instead.
+        node.toggleAttribute(
+          'data-ghdiff-expanded',
+          expandedFiles.has(item.fileDiff) && !item.fileDiff.isPartial
+        );
         applyExpansionLoading(
           node,
           loadingFilesRef.current.includes(item.fileDiff)
@@ -261,6 +267,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       controls.diffStyle,
       controls.lineNumbers,
       controls.overflow,
+      expandedFiles,
       loadDiffFiles,
       onCreateDraft,
       themeType,
@@ -424,17 +431,9 @@ function ExpandFileButton({
   loading: boolean;
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }) {
-  const [requestedExpansion, setRequestedExpansion] = useState(() =>
-    expandedFiles.has(fileDiff)
-  );
-  useLayoutEffect(() => {
-    // Hydration replaces the partial metadata with a full-file copy.
-    if (requestedExpansion) expandedFiles.add(fileDiff);
-  }, [expandedFiles, fileDiff, requestedExpansion]);
-  if (requestedExpansion && !fileDiff.isPartial && !loading) return null;
   const label = loading ? 'Loading unmodified lines' : EXPAND_WHOLE_FILE_LABEL;
   return (
-    <Tooltip label={label}>
+    <Tooltip className="[[data-ghdiff-expanded]_&]:hidden" label={label}>
       <Button
         aria-busy={loading}
         aria-label={label}
@@ -443,8 +442,8 @@ function ExpandFileButton({
         onClick={() => {
           const viewer = viewerRef.current;
           if (viewer != null) {
+            expandedFiles.add(fileDiff);
             expandWholeFile(viewer, itemId);
-            setRequestedExpansion(true);
           }
         }}
       >
