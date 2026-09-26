@@ -5,6 +5,7 @@ import {
   toPullCommit,
 } from '../pullCommits.ts';
 import type { GitHubPullTarget } from '../reviewTarget.ts';
+import { fetchGitHubPages } from './githubPages.ts';
 
 interface GitHubCommitParentsSource {
   sha: string;
@@ -34,14 +35,10 @@ export async function readPullCommits(
   const details = await fetchJson<{ commits: number; head: { sha: string } }>(
     path
   );
-  const commits: GitHubCommitSource[] = [];
-  for (let page = 1; page <= 3; page++) {
-    const rows = await fetchJson<GitHubCommitSource[]>(
-      `${path}/commits?per_page=100&page=${page}`
-    );
-    commits.push(...rows);
-    if (rows.length < 100) break;
-  }
+  const { rows: commits } = await fetchGitHubPages<GitHubCommitSource>(
+    fetchJson,
+    { path: `${path}/commits`, maxPages: 3, select: (page) => page }
+  );
   const unique = [
     ...new Map(
       commits.slice(0, 250).map((commit) => [commit.sha, toPullCommit(commit)])

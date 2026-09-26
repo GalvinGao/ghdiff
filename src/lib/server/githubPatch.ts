@@ -12,6 +12,8 @@
 // `synthesizePatch` reports both counts so the UI can say what is missing
 // rather than showing a short diff as if it were whole.
 
+import { fetchGitHubPages } from './githubPages.ts';
+
 export interface GitHubPullFile {
   filename: string;
   status: string;
@@ -121,7 +123,6 @@ export function describeSynthesisGaps(
 
 // --- Fetching the file lists ------------------------------------------------
 
-const PER_PAGE = 100;
 /** GitHub lists at most 3000 files for a pull request. */
 const MAX_PULL_PAGES = 30;
 /** A commit or a compare range lists at most 300. */
@@ -138,27 +139,6 @@ interface PagedFetch {
   maxPages: number;
   /** Reads the file array out of one page of the response. */
   select(page: unknown): GitHubPullFile[];
-}
-
-async function fetchPaged(
-  fetchJson: <T>(path: string) => Promise<T>,
-  spec: PagedFetch
-): Promise<FetchedFiles> {
-  const files: GitHubPullFile[] = [];
-  const separator = spec.path.includes('?') ? '&' : '?';
-
-  for (let page = 1; page <= spec.maxPages; page++) {
-    const body = await fetchJson<unknown>(
-      `${spec.path}${separator}per_page=${PER_PAGE}&page=${page}`
-    );
-    const pageFiles = spec.select(body);
-    files.push(...pageFiles);
-    if (pageFiles.length < PER_PAGE) {
-      return { files, truncated: false };
-    }
-  }
-  // Every page came back full, so GitHub has more than it will list.
-  return { files, truncated: true };
 }
 
 function asFileArray(value: unknown): GitHubPullFile[] {
@@ -209,9 +189,13 @@ export function compareFilesFetch(
   };
 }
 
-export function fetchFilePages(
+export async function fetchFilePages(
   fetchJson: <T>(path: string) => Promise<T>,
   spec: PagedFetch
 ): Promise<FetchedFiles> {
-  return fetchPaged(fetchJson, spec);
+  const { rows, truncated } = await fetchGitHubPages<GitHubPullFile, unknown>(
+    fetchJson,
+    spec
+  );
+  return { files: rows, truncated };
 }
