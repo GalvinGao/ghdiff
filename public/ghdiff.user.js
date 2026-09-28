@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ghdiff
 // @namespace    https://ghdiff.com/
-// @version      1.2.0
+// @version      1.3.0
 // @description  Adds a ghdiff button to the tab row of every GitHub pull request, and beside Browse files on every commit.
 // @author       GalvinGao
 // @homepageURL  https://github.com/GalvinGao/ghdiff
@@ -243,6 +243,13 @@
   function buildButton() {
     const button = document.createElement('a');
     button.id = BUTTON_ID;
+    // A new tab, which is what the leading octicon promises and what the row
+    // this button sits in is worth keeping: a reviewer who presses it still has
+    // the pull request's own conversation, its review state and whatever they
+    // had already opened on that page. `noreferrer` is the pair ghdiff's own
+    // links to github.com carry for the same reason.
+    button.target = '_blank';
+    button.rel = 'noreferrer';
     const label = document.createElement('span');
     label.textContent = 'ghdiff';
     const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
