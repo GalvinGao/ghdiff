@@ -306,7 +306,7 @@ export interface GitHubPullRequest {
   body_html?: string | null;
   user: GitHubUser | null;
   head: { sha: string; ref: string };
-  base: { ref: string };
+  base: { ref: string; sha: string };
   additions?: number;
   deletions?: number;
   changed_files?: number;

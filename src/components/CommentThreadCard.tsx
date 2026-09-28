@@ -1,4 +1,4 @@
-import { IconReply } from '@pierre/icons';
+import { IconArrowUpRight, IconReply } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { AuthorAvatar } from '@/components/AuthorAvatar';
@@ -6,6 +6,7 @@ import { CommentBody } from '@/components/CommentBody';
 import { CommentExpansion } from '@/components/CommentExpansion';
 import { ConfirmInline } from '@/components/ConfirmInline';
 import { Button } from '@/components/ui/Button';
+import { buttonClass } from '@/components/ui/buttonClass';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { measureThread } from '@/lib/commentHeight';
@@ -152,7 +153,23 @@ export function CommentThreadCard({
           </span>
         )}
         {metadata.pending === true && (
-          <span className="text-ink-faint shrink-0 text-[11px]">Posting…</span>
+          <span className="text-ink-faint shrink-0 text-[11px]">
+            {metadata.creatingIssue === true ? 'Creating issue…' : 'Posting…'}
+          </span>
+        )}
+        {metadata.issue != null && (
+          // A chip and not a button: the row is one 20px line box, and a card
+          // that grew here would relay out the virtualized list. The card's
+          // own click handler stands aside for a link.
+          <a
+            href={metadata.issue.htmlUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="bg-surface text-ink-muted hover:text-ink focus-visible:ring-accent inline-flex h-5 shrink-0 items-center gap-0.5 rounded-full px-1.5 text-[11px] tabular-nums focus-visible:ring-2 focus-visible:outline-none"
+          >
+            Issue #{metadata.issue.number}
+            <IconArrowUpRight aria-hidden="true" size={10} />
+          </a>
         )}
         <span className="text-ink-faint ml-auto shrink-0 text-[11px]">
           Click to open
@@ -196,8 +213,23 @@ export function CommentThreadCard({
                 ? root.author
                 : `${comments.length} comments`}
             </span>
+            {metadata.issue != null && (
+              <a
+                href={metadata.issue.htmlUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonClass({
+                  className: 'ml-auto',
+                  size: 'sm',
+                  variant: 'outline',
+                })}
+              >
+                Open issue #{metadata.issue.number}
+                <IconArrowUpRight aria-hidden="true" size={12} />
+              </a>
+            )}
             <ConfirmInline
-              className="ml-auto"
+              className={metadata.issue == null ? 'ml-auto' : undefined}
               label="Delete"
               // Named only where the comment is actually there. A browser
               // store holds this one, and asking a reviewer to confirm deleting

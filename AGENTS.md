@@ -1546,6 +1546,34 @@ which notes are worth acting on. `navigator.clipboard` can simply refuse, so the
 button reports that where it reports success, rather than leaving a reviewer to
 paste and find out.
 
+**A note can be filed as an issue, and the comment left behind points at it.**
+The composer's **Create issue** toggle, top right, sends the text to
+`issues.create` instead of `comments.create`. The issue gets the text, a
+permalink to the selected lines on a line of its own, and the review's own
+address; the comment on the line then says `see #N`. GitHub cross-references
+both mentions, so each end shows the other and nothing here has to remember the
+pair. The card's link to the issue is held in memory and nowhere else — a reload
+keeps `see #N` and drops the button, because finding the issue again would be a
+search and the comment already names it.
+
+The permalink is the part that has to be exact. GitHub embeds a snippet only for
+a `blob` URL in the same repository, with a **full** sha and a `#L` anchor, and
+a rendered document such as a README needs `?plain=1` as well —
+`blobPermalinkUrl` in `src/lib/githubUrls.ts` builds all of that. The browser
+holds a pull request number, a short sha or a branch, so `resolveSideCommit` in
+`src/lib/server/commentIssue.ts` asks: the head for the new side, and for the
+old side the commit the diff was taken against — a commit's first parent, or the
+merge base of a pull request or range, never `base.sha`, which stops being the
+merge base the moment the base branch moves. A note on removed lines of a
+renamed file links the old name, which is why `ReviewFileEntry` carries
+`previousPath`.
+
+The toggle is offered on the three GitHub targets and only with a viewer, and
+the App registration has to grant **Issues**. Without it GitHub answers 403
+"Resource not accessible by integration", which names nothing, so the router
+replaces that sentence with one that names the permission. A failed issue leaves
+the typed text on the line, marked failed, the way a failed comment does.
+
 **A file the reviewer has read is marked in its own header, and GitHub keeps
 that mark.** `markFileAsViewed` and `unmarkFileAsViewed` are the two mutations,
 `PullRequestChangedFile.viewerViewedState` reads it back, and all three are
@@ -2497,6 +2525,7 @@ Metadata is mandatory on any App and GitHub grants it without being asked.
 | Pull requests   | Read and write | A pull request's diff, its comments, its reviews.    |
 | Commit statuses | Read-only      | The check half of the status square.                 |
 | Checks          | Read-only      | The other half of it, via `statusCheckRollup`.       |
+| Issues          | Read and write | A note filed as an issue from the comment composer.  |
 
 This table is the whole of what a sign-in grants, and nothing in the code
 enforces it: a permission added at github.com and not added here is a permission

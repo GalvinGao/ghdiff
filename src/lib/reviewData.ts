@@ -22,6 +22,11 @@ export interface ReviewFileEntry {
   itemId: string;
   /** Repository-relative path, which is what the filter rules read. */
   path: string;
+  /**
+   * The path on the old side, for a renamed file. A permalink to removed lines
+   * names the file as it was called at the commit it links to.
+   */
+  previousPath?: string;
   /** Path shown in the tree. Carries a commit prefix for a multi-commit patch. */
   treePath: string;
   fileOrder: number;
@@ -162,6 +167,7 @@ export function buildReviewData(
       entries.push({
         itemId,
         path,
+        previousPath: fileDiff.prevName ?? undefined,
         treePath,
         fileOrder: entries.length,
         changeType: fileDiff.type,

@@ -715,6 +715,7 @@ export function ReviewScreen({
           <div className="flex min-h-0 min-w-0 flex-col">
             {search.open && <DiffSearchBar search={search} />}
             <ReviewViewer
+              canCreateIssue={comments.canCreateIssue}
               commentStore={comments.store}
               controls={controls}
               items={items}

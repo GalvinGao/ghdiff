@@ -1,6 +1,7 @@
 import { oc, type } from '@orpc/contract';
 import * as z from 'zod';
 
+import type { CreatedIssue } from '@/lib/commentIssue';
 import type { CommentPayload } from '@/lib/comments';
 import type { AppInstallation } from '@/lib/installations';
 import type { PullDetails } from '@/lib/pullDetails';
@@ -35,6 +36,23 @@ const pullRef = repoRef.extend({
 
 /** `additions` is GitHub's RIGHT and `deletions` is its LEFT. */
 const side = z.enum(['additions', 'deletions']);
+
+/**
+ * The diff a note was written on, as the three GitHub targets name it. Each is
+ * the part of `GitHubReviewTarget` that is not the repository.
+ */
+const issueSource = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('github-pull'), number: z.int().positive() }),
+  z.object({
+    kind: z.literal('github-commit'),
+    sha: z.string().regex(/^[0-9a-f]{7,40}$/i, 'Enter a commit sha.'),
+  }),
+  z.object({
+    kind: z.literal('github-compare'),
+    base: z.string().min(1),
+    head: z.string().min(1),
+  }),
+]);
 
 export const contract = {
   viewer: {
@@ -132,6 +150,29 @@ export const contract = {
         })
       )
       .output(type<{ ok: true }>()),
+  },
+
+  issues: {
+    /**
+     * An issue in the repository under review, made from a note on some of its
+     * lines. The Worker resolves the commit each side of the diff was read
+     * from, because a permalink needs a full sha and the browser holds a pull
+     * request number, a short sha or a branch name. `line`, `startLine` and
+     * `side` are one side's range, the way `commentPayloadRangeFields` reduces
+     * a selection for a review comment.
+     */
+    create: oc
+      .input(
+        repoRef.extend({
+          source: issueSource,
+          text: z.string().trim().min(1, 'Write what the issue is about.'),
+          path: z.string().min(1),
+          line: z.int().positive(),
+          startLine: z.int().positive().optional(),
+          side,
+        })
+      )
+      .output(type<CreatedIssue>()),
   },
 
   comments: {

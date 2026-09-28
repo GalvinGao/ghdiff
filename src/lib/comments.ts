@@ -1,5 +1,7 @@
 import type { AnnotationSide, SelectedLineRange } from '@pierre/diffs';
 
+import type { CreatedIssue } from './commentIssue.ts';
+
 /** One message inside a thread. */
 export interface ThreadComment {
   /** Stable key within the page. */
@@ -42,6 +44,14 @@ export interface CommentMetadata {
   pending?: boolean;
   /** Set when the upstream write failed, so the UI can say so. */
   error?: string;
+  /**
+   * Thread only: the issue this note was filed as. Held in memory and nowhere
+   * else, so a reload keeps the `see #N` comment and loses the button. Finding
+   * the issue again would be a search, and the comment already names it.
+   */
+  issue?: CreatedIssue;
+  /** True while that issue is on its way to GitHub. */
+  creatingIssue?: boolean;
 }
 
 /** A comment being typed. It has no upstream identity yet. */

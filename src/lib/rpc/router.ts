@@ -1,12 +1,14 @@
 import { implement, ORPCError } from '@orpc/server';
 
 import { contract } from './contract.ts';
+import { composeCommentIssue } from '@/lib/commentIssue';
 import {
   annotationSideFromGitHub,
   type CommentPayload,
   gitHubSideFromAnnotation,
 } from '@/lib/comments';
 import { installUrl as buildInstallUrl } from '@/lib/githubApp';
+import { blobPermalinkUrl, reviewTargetUrl } from '@/lib/githubUrls';
 import { requestLog } from '@/lib/logger';
 import { toPullDetails } from '@/lib/pullDetails';
 import {
@@ -16,6 +18,7 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { normalizePullStatus, type PullStatusSource } from '@/lib/pullStatus';
+import { resolveSideCommit } from '@/lib/server/commentIssue';
 import { parseDeploymentConfig } from '@/lib/server/config';
 import {
   FULL_JSON_MEDIA_TYPE,
@@ -412,6 +415,59 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
   }
 });
 
+const ISSUES_FORBIDDEN =
+  "GitHub won't let ghdiff open issues here. The ghdiff app needs the Issues permission on this repository.";
+
+const createIssue = os.issues.create.handler(async ({ context, input }) => {
+  const log = requestLog();
+  const { line, owner, path, repo, side, source } = input;
+  log.set({ owner, repo, source: source.kind, side });
+  const token = requireToken(context.token, 'create an issue');
+  const ref = { owner, repo };
+
+  try {
+    const sha = await resolveSideCommit(ref, source, side, token);
+    const { title, body } = composeCommentIssue({
+      text: input.text,
+      permalink: blobPermalinkUrl(ref, sha, path, {
+        start: input.startLine ?? line,
+        end: line,
+      }),
+      sourceUrl: reviewTargetUrl({ ...ref, ...source }),
+      path,
+      line,
+    });
+    const issue = await githubWrite<{ number: number; html_url: string }>(
+      'POST',
+      `/repos/${owner}/${repo}/issues`,
+      token,
+      { title, body }
+    );
+    if (issue == null) {
+      throw new ORPCError('BAD_GATEWAY', {
+        status: 502,
+        message: 'GitHub accepted the issue but returned nothing.',
+      });
+    }
+    log.set({ outcome: 'created', issue: issue.number });
+    return { number: issue.number, htmlUrl: issue.html_url };
+  } catch (error) {
+    if (error instanceof ORPCError) throw error;
+    // A 403 here is almost always the App's registration or its installation
+    // lacking the Issues permission, and GitHub's own sentence for that —
+    // "Resource not accessible by integration" — names no permission at all.
+    // A spent quota is 429 by now, so it does not land here.
+    if (error instanceof GitHubError && error.status === 403) {
+      throw new ORPCError('FORBIDDEN', {
+        status: 403,
+        message: ISSUES_FORBIDDEN,
+        cause: error,
+      });
+    }
+    return fail(error, 'Could not create this issue.');
+  }
+});
+
 const removeComment = os.comments.remove.handler(async ({ context, input }) => {
   const log = requestLog();
   const { commentId, owner, repo } = input;
@@ -525,6 +581,7 @@ export const router = os.router({
     mine: getMyReview,
     submit: submitReview,
   },
+  issues: { create: createIssue },
   comments: {
     list: listComments,
     create: createComment,

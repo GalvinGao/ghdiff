@@ -2,6 +2,7 @@ import type { DiffLineAnnotation, SelectedLineRange } from '@pierre/diffs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { readStoredJson, writeStoredString } from './useLocalStorage';
+import { issueCommentBody } from '@/lib/commentIssue';
 import {
   commentPayloadRangeFields,
   type CommentMetadata,
@@ -12,6 +13,7 @@ import {
 import { groupCommentThreads, threadComments } from '@/lib/commentThreads';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import {
+  isGitHubTarget,
   type ReviewTarget,
   reviewTargetKey,
   supportsGitHubComments,
@@ -50,8 +52,22 @@ export interface ReviewCommentsState {
   error?: string;
   /** Opens an empty composer on the last line of the selection. */
   startDraft(itemId: string, range: SelectedLineRange): void;
-  /** Turns a draft into a saved comment and writes it to the store. */
-  saveDraft(itemId: string, key: string, body: string): void;
+  /**
+   * True when a note can be filed as an issue: the diff is on GitHub and there
+   * is a token to file it with.
+   */
+  canCreateIssue: boolean;
+  /**
+   * Turns a draft into a saved comment and writes it to the store. With
+   * `createIssue`, the text goes into a new issue first and the comment left
+   * on the line is `see #N`.
+   */
+  saveDraft(
+    itemId: string,
+    key: string,
+    body: string,
+    createIssue?: boolean
+  ): void;
   /** Adds a message to the end of a thread that already exists. */
   replyToThread(itemId: string, key: string, body: string): void;
   /** Removes a draft, or deletes a saved comment from its store. */
@@ -139,6 +155,32 @@ export function useReviewComments(options: {
   const pullOwner = target.kind === 'github-pull' ? target.owner : undefined;
   const pullRepo = target.kind === 'github-pull' ? target.repo : undefined;
   const pullNumber = target.kind === 'github-pull' ? target.number : undefined;
+  // The same rule for the issue source, over all three GitHub targets.
+  const gitHubOwner = isGitHubTarget(target) ? target.owner : undefined;
+  const gitHubRepo = isGitHubTarget(target) ? target.repo : undefined;
+  const commitSha = target.kind === 'github-commit' ? target.sha : undefined;
+  const compareBase =
+    target.kind === 'github-compare' ? target.base : undefined;
+  const compareHead =
+    target.kind === 'github-compare' ? target.head : undefined;
+  const issueSource = useMemo(() => {
+    if (pullNumber != null) {
+      return { kind: 'github-pull' as const, number: pullNumber };
+    }
+    if (commitSha != null) {
+      return { kind: 'github-commit' as const, sha: commitSha };
+    }
+    if (compareBase != null && compareHead != null) {
+      return {
+        kind: 'github-compare' as const,
+        base: compareBase,
+        head: compareHead,
+      };
+    }
+    return undefined;
+  }, [commitSha, compareBase, compareHead, pullNumber]);
+  const canCreateIssue =
+    gitHubOwner != null && issueSource != null && viewerLogin != null;
 
   const [state, setState] = useState<CommentState>(EMPTY_STATE);
   const [loading, setLoading] = useState(false);
@@ -158,6 +200,13 @@ export function useReviewComments(options: {
 
   const pathByItemId = useMemo(
     () => new Map(entries.map((entry) => [entry.itemId, entry.path])),
+    [entries]
+  );
+  const previousPathByItemId = useMemo(
+    () =>
+      new Map(
+        entries.map((entry) => [entry.itemId, entry.previousPath ?? entry.path])
+      ),
     [entries]
   );
   /**
@@ -405,10 +454,87 @@ export function useReviewComments(options: {
     [pullNumber, pullOwner, pullRepo, replace]
   );
 
+  /**
+   * Files the note as an issue, then leaves `see #N` on the line in its place.
+   * The typed text is what the thread shows until the issue exists, and what
+   * it keeps if the issue fails: throwing it away would lose what the reviewer
+   * wrote.
+   */
+  const fileIssue = useCallback(
+    async (
+      itemId: string,
+      key: string,
+      pendingKey: string,
+      text: string,
+      range: SelectedLineRange
+    ) => {
+      if (gitHubOwner == null || gitHubRepo == null || issueSource == null) {
+        return;
+      }
+      const fields = commentPayloadRangeFields(range);
+      const path =
+        fields.side === 'deletions'
+          ? previousPathByItemId.get(itemId)
+          : pathByItemId.get(itemId);
+      if (path == null) return;
+
+      let issue;
+      try {
+        issue = await rpc.issues.create({
+          owner: gitHubOwner,
+          repo: gitHubRepo,
+          source: issueSource,
+          text,
+          path,
+          line: fields.line,
+          startLine: fields.startLine,
+          side: fields.side,
+        });
+      } catch (cause) {
+        replace(itemId, key, (metadata) => ({
+          ...metadata,
+          pending: false,
+          creatingIssue: false,
+          error: rpcErrorMessage(
+            cause,
+            'Could not create the issue on GitHub.'
+          ),
+        }));
+        return;
+      }
+
+      const body = issueCommentBody(issue.number);
+      replace(itemId, key, (metadata) => ({
+        ...metadata,
+        issue,
+        creatingIssue: false,
+        pending: store === 'github',
+        comments: (metadata.comments ?? []).map((comment) =>
+          comment.key === pendingKey ? { ...comment, body } : comment
+        ),
+      }));
+      if (store !== 'github') return;
+      const newPath = pathByItemId.get(itemId);
+      if (newPath == null) return;
+      void postToGitHub(itemId, key, { body, path: newPath, ...fields });
+    },
+    [
+      gitHubOwner,
+      gitHubRepo,
+      issueSource,
+      pathByItemId,
+      postToGitHub,
+      previousPathByItemId,
+      replace,
+      store,
+    ]
+  );
+
   const saveDraft = useCallback(
-    (itemId: string, key: string, body: string) => {
+    (itemId: string, key: string, body: string, createIssue = false) => {
       const trimmed = body.trim();
       if (trimmed.length === 0) return;
+      const asIssue = createIssue && canCreateIssue;
 
       const existing = state.byItemId
         .get(itemId)
@@ -431,9 +557,14 @@ export function useReviewComments(options: {
             createdAt: new Date().toISOString(),
           },
         ],
-        pending: store === 'github',
+        pending: store === 'github' || asIssue,
+        creatingIssue: asIssue,
       }));
 
+      if (asIssue) {
+        void fileIssue(itemId, key, `pending-${key}`, trimmed, range);
+        return;
+      }
       if (store !== 'github') return;
       const path = pathByItemId.get(itemId);
       if (path == null) return;
@@ -444,6 +575,8 @@ export function useReviewComments(options: {
       });
     },
     [
+      canCreateIssue,
+      fileIssue,
       pathByItemId,
       postToGitHub,
       replace,
@@ -548,6 +681,7 @@ export function useReviewComments(options: {
     revision: state.revision,
     loading,
     error,
+    canCreateIssue,
     startDraft,
     saveDraft,
     replyToThread,

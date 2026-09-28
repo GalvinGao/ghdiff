@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  blobPermalinkUrl,
   commitUrl,
   repoPullsUrl,
   repoUrl,
@@ -70,6 +71,38 @@ describe('reviewTargetUrl', () => {
         head: 'v1.3.1',
       }),
       'https://github.com/acme/app/compare/v1.3.0...v1.3.1'
+    );
+  });
+});
+
+describe('blobPermalinkUrl', () => {
+  const SHA = 'a'.repeat(40);
+
+  it('anchors one line', () => {
+    assert.equal(
+      blobPermalinkUrl(REF, SHA, 'src/a.ts', { start: 4, end: 4 }),
+      `https://github.com/acme/app/blob/${SHA}/src/a.ts#L4`
+    );
+  });
+
+  it('anchors a range in order, whichever way it was dragged', () => {
+    assert.equal(
+      blobPermalinkUrl(REF, SHA, 'src/a.ts', { start: 9, end: 3 }),
+      `https://github.com/acme/app/blob/${SHA}/src/a.ts#L3-L9`
+    );
+  });
+
+  it('asks a rendered document for its source', () => {
+    assert.equal(
+      blobPermalinkUrl(REF, SHA, 'docs/README.md', { start: 1, end: 2 }),
+      `https://github.com/acme/app/blob/${SHA}/docs/README.md?plain=1#L1-L2`
+    );
+  });
+
+  it('escapes each segment and keeps the slashes', () => {
+    assert.equal(
+      blobPermalinkUrl(REF, SHA, 'a b/#c.ts', { start: 1, end: 1 }),
+      `https://github.com/acme/app/blob/${SHA}/a%20b/%23c.ts#L1`
     );
   });
 });

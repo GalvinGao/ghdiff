@@ -75,3 +75,43 @@ export function reviewTargetUrl(target: GitHubReviewTarget): string {
       return `${root}/compare/${target.base}...${target.head}`;
   }
 }
+
+/**
+ * Files github.com renders as a document rather than as code. A line anchor on
+ * one of those lands on nothing unless the page is asked for its source with
+ * `plain=1`, and an issue that quotes one embeds nothing without it.
+ */
+const RENDERED_EXTENSIONS = new Set([
+  'adoc',
+  'asciidoc',
+  'markdown',
+  'md',
+  'mdown',
+  'mdx',
+  'mkd',
+  'mkdn',
+  'org',
+  'rst',
+]);
+
+/**
+ * A permanent link to lines of one file at one commit. This is the one shape
+ * GitHub turns into an embedded snippet when it is pasted on a line of its own
+ * in an issue of the same repository: `blob`, a full commit sha rather than a
+ * branch, and a `#L` anchor. A branch name would render as a plain link, and it
+ * would also point at different lines tomorrow.
+ */
+export function blobPermalinkUrl(
+  ref: RepoRef,
+  sha: string,
+  path: string,
+  lines: { start: number; end: number }
+): string {
+  const start = Math.min(lines.start, lines.end);
+  const end = Math.max(lines.start, lines.end);
+  const anchor = start === end ? `L${start}` : `L${start}-L${end}`;
+  const extension = path.split('.').pop()?.toLowerCase() ?? '';
+  const query = RENDERED_EXTENSIONS.has(extension) ? '?plain=1' : '';
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  return `${repoUrl(ref)}/blob/${sha}/${encodedPath}${query}#${anchor}`;
+}
