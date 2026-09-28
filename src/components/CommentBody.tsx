@@ -1,9 +1,16 @@
-import { memo } from 'react';
+import {
+  type ComponentProps,
+  createContext,
+  memo,
+  useContext,
+  useMemo,
+} from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
+import { resolveAttachment, type SignedAttachment } from '@/lib/attachments';
 import { cn } from '@/lib/cn';
 
 // GFM for comment bodies: tables, task lists, strikethrough, autolinks, fences.
@@ -75,9 +82,68 @@ function TaskMarker({ checked }: { checked: boolean }) {
   );
 }
 
-const COMPONENTS: Components = {
-  p: ({ children }) => <p className="my-1 first:mt-0 last:mb-0">{children}</p>,
-  a: ({ children, href }) => (
+// The addresses GitHub signed for this body's attachments, and what to do when
+// one fails. A context rather than a prop, because the component map below is a
+// module constant and the renderers in it are the ones that need it.
+interface AttachmentContextValue {
+  byId?: Record<string, SignedAttachment>;
+  onError?(): void;
+}
+
+const AttachmentContext = createContext<AttachmentContextValue>({});
+
+const MEDIA_CLASS =
+  'border-line my-1 block max-h-80 max-w-full rounded border object-contain';
+
+// Either a badge or a screenshot. The height is capped so the expanded thread
+// and the description stay scrollable rather than turning into one tall
+// picture; a collapsed card clips to its reserved height regardless, so a late
+// image cannot resize it. `width` and `height` from the markup are dropped:
+// GitHub writes the pixel width of the original, which is wider than any
+// surface here.
+//
+// An attachment on a private repository is loaded from the address GitHub
+// signed for it, because the address in the markdown answers only github.com's
+// own cookie. See `@/lib/attachments`.
+function BodyImage({ alt, src }: ComponentProps<'img'>) {
+  const attachments = useContext(AttachmentContext);
+  const address = typeof src === 'string' ? src : undefined;
+  const signed = resolveAttachment(address, attachments.byId);
+  return (
+    <img
+      alt={alt ?? ''}
+      src={signed?.url ?? address}
+      loading="lazy"
+      onError={signed == null ? undefined : attachments.onError}
+      className={MEDIA_CLASS}
+    />
+  );
+}
+
+// GitHub turns an attachment link alone on its line into a player, and
+// `body_html` is where it says which attachments those are. The markdown still
+// holds a link there, so the link is what becomes the player: only when its
+// text is its own address, which is the bare line an editor writes, and never a
+// link somebody worded. The `src` is GitHub's own signed address and not
+// anything the body wrote, which is why this needs no room in the sanitize
+// schema: that schema is about what a body may say, and the body said a link.
+function BodyLink({ children, href }: ComponentProps<'a'>) {
+  const attachments = useContext(AttachmentContext);
+  const signed = resolveAttachment(href, attachments.byId);
+  if (signed?.kind === 'video' && children === href) {
+    return (
+      <video
+        className={MEDIA_CLASS}
+        controls
+        muted
+        playsInline
+        preload="metadata"
+        src={signed.url}
+        onError={attachments.onError}
+      />
+    );
+  }
+  return (
     <a
       href={href}
       target="_blank"
@@ -86,7 +152,12 @@ const COMPONENTS: Components = {
     >
       {children}
     </a>
-  ),
+  );
+}
+
+const COMPONENTS: Components = {
+  p: ({ children }) => <p className="my-1 first:mt-0 last:mb-0">{children}</p>,
+  a: BodyLink,
   ul: ({ children }) => (
     <ul className="my-1 list-disc pl-5 first:mt-0 last:mb-0">{children}</ul>
   ),
@@ -169,20 +240,7 @@ const COMPONENTS: Components = {
   td: ({ children }) => (
     <td className="border-line border px-2 py-1">{children}</td>
   ),
-  // Either a badge or a screenshot. The height is capped so the expanded thread
-  // and the description stay scrollable rather than turning into one tall
-  // picture; a collapsed card clips to its reserved height regardless, so a late
-  // image cannot resize it. `width` and `height` from the markup are dropped:
-  // GitHub writes the pixel width of the original, which is wider than any
-  // surface here.
-  img: ({ alt, src }) => (
-    <img
-      alt={alt ?? ''}
-      src={typeof src === 'string' ? src : undefined}
-      loading="lazy"
-      className="border-line my-1 block max-h-80 max-w-full rounded border object-contain"
-    />
-  ),
+  img: BodyImage,
   input: ({ checked, type }) =>
     type === 'checkbox' ? <TaskMarker checked={checked === true} /> : null,
 };
@@ -193,21 +251,33 @@ const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeRaw, rehypeSanitize];
 
 export const CommentBody = memo(function CommentBody({
+  attachments,
   body,
   className,
+  onAttachmentError,
 }: {
+  /** Signed addresses for the body's attachments, by attachment uuid. */
+  attachments?: Record<string, SignedAttachment>;
   body: string;
   className?: string;
+  /** Called when a signed attachment fails to load. */
+  onAttachmentError?(): void;
 }) {
+  const context = useMemo(
+    () => ({ byId: attachments, onError: onAttachmentError }),
+    [attachments, onAttachmentError]
+  );
   return (
     <div className={cn('text-sm leading-snug break-words', className)}>
-      <Markdown
-        components={COMPONENTS}
-        rehypePlugins={REHYPE_PLUGINS}
-        remarkPlugins={REMARK_PLUGINS}
-      >
-        {body}
-      </Markdown>
+      <AttachmentContext.Provider value={context}>
+        <Markdown
+          components={COMPONENTS}
+          rehypePlugins={REHYPE_PLUGINS}
+          remarkPlugins={REMARK_PLUGINS}
+        >
+          {body}
+        </Markdown>
+      </AttachmentContext.Provider>
     </div>
   );
 });

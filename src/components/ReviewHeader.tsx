@@ -563,6 +563,7 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {
           error={pull.error}
           loading={pull.loading}
           now={openedAt}
+          onAttachmentError={pull.renewAttachments}
         />
       </DropdownMenuContent>
     </DropdownMenu>

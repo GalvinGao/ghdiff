@@ -1732,6 +1732,23 @@ descriptions full of holes. Widening that schema means deciding a tag is safe
 against a body any GitHub user can write, so do not widen it without saying here
 why the addition cannot carry script or a navigation.
 
+**A private attachment loads from the address GitHub signed, not the one the
+body wrote.** `github.com/user-attachments/assets/<uuid>` answers only
+github.com's own cookie, which a cross-site `<img>` never carries, so a private
+description drew a broken picture. `pulls.get` asks for the `full` media type,
+and `readSignedAttachments` in `src/lib/attachments.ts` reads `body_html` for
+its `<img>` and `<video>` addresses — signed on
+`private-user-images.githubusercontent.com`, keyed by the uuid both sides share.
+The markdown is still what renders; `CommentBody` swaps a `src`, and turns a
+bare attachment link into the `<video>` GitHub draws there. That player needs no
+room in the schema: its `src` is GitHub's signed address, never text from the
+body. A signature lasts five minutes and the card mounts only when opened, so a
+signed file that fails once its signature is old asks `usePullDetails` to fetch
+again; a young one never does, which is what keeps a real 404 from looping. The
+age is measured from the answer's arrival against the token's own `exp - nbf`,
+so no two clocks are compared. Review comments have the same problem and do not
+have this yet.
+
 **A task list's box is drawn, not a real checkbox.** A `- [x]` reaches
 `CommentBody` as `<input type="checkbox" checked disabled>`, and a native
 control is the wrong answer to it twice over: the browser paints one in the

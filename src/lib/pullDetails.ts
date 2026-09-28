@@ -5,6 +5,10 @@
 // because it costs a separate request, and only the pull request on screen pays
 // for it.
 
+import {
+  readSignedAttachments,
+  type SignedAttachments,
+} from './attachments.ts';
 import { type PullState, pullState } from './pulls.ts';
 
 export interface PullDetails {
@@ -22,6 +26,11 @@ export interface PullDetails {
   updatedAt: string;
   /** The description, as GitHub markdown. Absent when the author left it empty. */
   body?: string;
+  /**
+   * The files the description attaches, at addresses a browser can load.
+   * Absent when it attaches none, or when GitHub sent no `body_html`.
+   */
+  attachments?: SignedAttachments;
   additions?: number;
   deletions?: number;
   changedFiles?: number;
@@ -39,6 +48,8 @@ export interface PullDetailsInput {
   created_at: string;
   updated_at: string;
   body?: string | null;
+  /** Only sent for the `full` or `html` media type. */
+  body_html?: string | null;
   user: { login: string; avatar_url?: string } | null;
   head: { ref: string };
   base: { ref: string };
@@ -54,6 +65,7 @@ export function toPullDetails(
   pull: PullDetailsInput
 ): PullDetails {
   const body = pull.body?.trim();
+  const attachments = readSignedAttachments(pull.body_html);
   return {
     owner,
     repo,
@@ -68,6 +80,8 @@ export function toPullDetails(
     createdAt: pull.created_at,
     updatedAt: pull.updated_at,
     body: body != null && body.length > 0 ? body : undefined,
+    attachments:
+      Object.keys(attachments.byId).length > 0 ? attachments : undefined,
     additions: pull.additions,
     deletions: pull.deletions,
     changedFiles: pull.changed_files,

@@ -75,6 +75,27 @@ describe('toPullDetails', () => {
       'unknown'
     );
   });
+
+  it('carries the signed attachments body_html names, and nothing else', () => {
+    const id = 'ce918f14-5c5a-4961-b33b-e2c54ccf1ab3';
+    const url = `https://private-user-images.githubusercontent.com/1/2-${id}.png`;
+    assert.deepEqual(
+      toPullDetails('a', 'b', {
+        ...BASE,
+        body: `![shot](https://github.com/user-attachments/assets/${id})`,
+        body_html: `<p><img src="${url}" alt="shot"></p>`,
+      }).attachments,
+      { byId: { [id]: { url, kind: 'image' } } }
+    );
+    assert.equal(
+      toPullDetails('a', 'b', {
+        ...BASE,
+        body: 'text',
+        body_html: '<p>text</p>',
+      }).attachments,
+      undefined
+    );
+  });
 });
 
 describe('describeAge', () => {

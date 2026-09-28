@@ -23,6 +23,11 @@ const GITHUB_API_VERSION = '2022-11-28';
 // client.
 export const USER_AGENT = 'ghdiff';
 const JSON_MEDIA_TYPE = 'application/vnd.github+json';
+/**
+ * JSON, with every markdown field also rendered as `*_html`. That HTML is the
+ * one place GitHub hands out signed addresses for a private body's pictures.
+ */
+export const FULL_JSON_MEDIA_TYPE = 'application/vnd.github.full+json';
 const DIFF_MEDIA_TYPE = 'application/vnd.github.diff';
 const RAW_MEDIA_TYPE = 'application/vnd.github.raw';
 
@@ -297,6 +302,8 @@ export interface GitHubPullRequest {
   updated_at: string;
   /** Only the single-pull endpoint returns this; a list omits it. */
   body?: string | null;
+  /** Only sent for `FULL_JSON_MEDIA_TYPE`. */
+  body_html?: string | null;
   user: GitHubUser | null;
   head: { sha: string; ref: string };
   base: { ref: string };

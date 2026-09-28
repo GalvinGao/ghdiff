@@ -14,6 +14,7 @@ export function PullDetailsCard({
   error,
   loading,
   now,
+  onAttachmentError,
 }: {
   details?: PullDetails;
   error?: string;
@@ -24,6 +25,8 @@ export function PullDetailsCard({
    * do, and an age is worth nothing without the moment it was taken.
    */
   now: number | null;
+  /** Called when one of the description's signed attachments fails to load. */
+  onAttachmentError?(): void;
 }) {
   if (details == null) {
     return (
@@ -126,7 +129,11 @@ export function PullDetailsCard({
           {/* A description can be a whole essay. It scrolls inside the card so
               the card keeps the size the header can afford. */}
           <div className="cv-scrollbar text-ink-muted mt-1 max-h-64 overflow-y-auto overscroll-contain">
-            <CommentBody body={details.body} />
+            <CommentBody
+              attachments={details.attachments?.byId}
+              body={details.body}
+              onAttachmentError={onAttachmentError}
+            />
           </div>
         </>
       )}

@@ -18,6 +18,7 @@ import {
 import { normalizePullStatus, type PullStatusSource } from '@/lib/pullStatus';
 import { parseDeploymentConfig } from '@/lib/server/config';
 import {
+  FULL_JSON_MEDIA_TYPE,
   GitHubError,
   type GitHubPullRequest,
   type GitHubReview,
@@ -227,9 +228,12 @@ const getPull = os.pulls.get.handler(async ({ context, input }) => {
   const { number, owner, repo } = input;
   log.set({ owner, repo, number, authenticated: context.token != null });
   try {
+    // The `full` media type is for `body_html`, whose attachment addresses are
+    // signed where the markdown's are not. `@/lib/attachments` says why.
     const pull = await githubJson<GitHubPullRequest>(
       `/repos/${owner}/${repo}/pulls/${number}`,
-      context.token
+      context.token,
+      { headers: { accept: FULL_JSON_MEDIA_TYPE } }
     );
     const details = toPullDetails(owner, repo, pull);
     log.set({ outcome: 'ok', state: details.state });
