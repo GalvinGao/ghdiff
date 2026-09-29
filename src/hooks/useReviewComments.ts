@@ -2,6 +2,11 @@ import type { DiffLineAnnotation, SelectedLineRange } from '@pierre/diffs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { readStoredJson, writeStoredString } from './useLocalStorage';
+import {
+  mergeSignedAttachments,
+  type SignedAttachment,
+  type SignedAttachments,
+} from '@/lib/attachments';
 import { issueCommentBody } from '@/lib/commentIssue';
 import {
   commentPayloadRangeFields,
@@ -42,6 +47,11 @@ interface CommentState {
 }
 
 const EMPTY_STATE: CommentState = { byItemId: new Map(), revision: 0 };
+const NO_ATTACHMENTS: SignedAttachments = { byId: {} };
+
+// Counted from the answer's arrival, a little after GitHub signed it. The same
+// margin, for the same reason, as the description's in `usePullDetails`.
+const RENEW_MARGIN_MS = 30_000;
 
 export interface ReviewCommentsState {
   store: CommentStore;
@@ -73,6 +83,17 @@ export interface ReviewCommentsState {
   /** Removes a draft, or deletes a saved comment from its store. */
   removeComment(itemId: string, key: string): void;
   reload(): void;
+  /**
+   * Signed addresses for every attachment the comments name, by uuid. Kept
+   * beside the annotations and not inside them: a renewal replaces this alone,
+   * so no item takes a new version and the viewer lays nothing out again.
+   */
+  attachments: Record<string, SignedAttachment>;
+  /**
+   * Asks GitHub to sign the comments' attachments again, when one failed to
+   * load and its signature is old enough to be the reason.
+   */
+  renewAttachments(): void;
 }
 
 interface StoredLocalComment extends CommentPayload {
@@ -183,6 +204,15 @@ export function useReviewComments(options: {
     gitHubOwner != null && issueSource != null && viewerLogin != null;
 
   const [state, setState] = useState<CommentState>(EMPTY_STATE);
+  const [attachments, setAttachments] =
+    useState<SignedAttachments>(NO_ATTACHMENTS);
+  // When the addresses on screen arrived, and whether a renewal is on its way.
+  // Read in an event handler and never while rendering, so neither is state.
+  const signedAtRef = useRef(0);
+  const renewingRef = useRef(false);
+  // Bumped by every load, so a renewal that answers after the reviewer moved
+  // to another pull request cannot put that one's addresses over this one's.
+  const loadGenerationRef = useRef(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const nextKeyRef = useRef(0);
@@ -259,6 +289,7 @@ export function useReviewComments(options: {
   // Load whatever the store already holds, once the diff is parsed.
   const load = useCallback(async () => {
     if (!ready) return;
+    loadGenerationRef.current += 1;
 
     const place = (rows: readonly StoredLocalComment[]) => {
       // Group first, so a reply lands in its root's card instead of stacking
@@ -292,6 +323,7 @@ export function useReviewComments(options: {
     };
 
     if (store === 'local') {
+      setAttachments(NO_ATTACHMENTS);
       place(readStoredJson<StoredLocalComment[]>(storageKey, []));
       return;
     }
@@ -307,6 +339,10 @@ export function useReviewComments(options: {
       const comments = await rpc.comments.list(
         { number: pullNumber, owner: pullOwner, repo: pullRepo },
         { signal: controller.signal }
+      );
+      signedAtRef.current = Date.now();
+      setAttachments(
+        mergeSignedAttachments(comments.map((comment) => comment.attachments))
       );
       place(
         comments.map((payload) => ({
@@ -675,6 +711,40 @@ export function useReviewComments(options: {
     void load();
   }, [load]);
 
+  // A thread card is drawn when the viewer scrolls it into the window, which
+  // can be long after the list's five minutes, and only a file the browser
+  // never loaded in time fails. The list is asked for again, and only its
+  // addresses are kept: the threads already on screen are the ones the
+  // reviewer is reading, and replacing them would relayout every file.
+  const lifetimeMs = attachments.lifetimeMs;
+  const renewAttachments = useCallback(() => {
+    if (lifetimeMs == null || renewingRef.current) return;
+    if (pullOwner == null || pullRepo == null || pullNumber == null) return;
+    if (Date.now() - signedAtRef.current < lifetimeMs - RENEW_MARGIN_MS) return;
+    renewingRef.current = true;
+    const generation = loadGenerationRef.current;
+    const renew = async () => {
+      try {
+        const comments = await rpc.comments.list({
+          number: pullNumber,
+          owner: pullOwner,
+          repo: pullRepo,
+        });
+        if (generation !== loadGenerationRef.current) return;
+        signedAtRef.current = Date.now();
+        setAttachments(
+          mergeSignedAttachments(comments.map((comment) => comment.attachments))
+        );
+      } catch {
+        // A picture that stays broken is the whole of the cost, and the next
+        // failure after the margin asks again.
+      } finally {
+        renewingRef.current = false;
+      }
+    };
+    void renew();
+  }, [lifetimeMs, pullNumber, pullOwner, pullRepo]);
+
   return {
     store,
     annotationsByItemId: state.byItemId,
@@ -687,5 +757,7 @@ export function useReviewComments(options: {
     replyToThread,
     removeComment,
     reload,
+    attachments: attachments.byId,
+    renewAttachments,
   };
 }

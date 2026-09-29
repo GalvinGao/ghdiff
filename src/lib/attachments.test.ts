@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   attachmentId,
+  mergeSignedAttachments,
   readSignedAttachments,
   resolveAttachment,
   signatureLifetimeMs,
@@ -162,5 +163,25 @@ describe('resolveAttachment', () => {
       ),
       undefined
     );
+  });
+});
+
+describe('mergeSignedAttachments', () => {
+  it('joins every map and keeps the shortest lifetime', () => {
+    const a = { url: signed('a.png'), kind: 'image' as const };
+    const b = { url: signed('b.mp4'), kind: 'video' as const };
+    assert.deepEqual(
+      mergeSignedAttachments([
+        { byId: { [IMAGE_ID]: a }, lifetimeMs: 300_000 },
+        undefined,
+        { byId: { [VIDEO_ID]: b }, lifetimeMs: 240_000 },
+        { byId: {} },
+      ]),
+      { byId: { [IMAGE_ID]: a, [VIDEO_ID]: b }, lifetimeMs: 240_000 }
+    );
+  });
+
+  it('is an empty map with no lifetime for nothing at all', () => {
+    assert.deepEqual(mergeSignedAttachments([]), { byId: {} });
   });
 });

@@ -1,5 +1,6 @@
 import type { AnnotationSide, SelectedLineRange } from '@pierre/diffs';
 
+import type { SignedAttachments } from './attachments.ts';
 import type { CreatedIssue } from './commentIssue.ts';
 
 /** One message inside a thread. */
@@ -161,6 +162,12 @@ export interface CommentPayload {
   htmlUrl?: string;
   /** The comment this one replies to. Absent for the root of a thread. */
   replyToId?: number;
+  /**
+   * The files the body attaches, at addresses a browser can load. Only a list
+   * from GitHub carries it, and it is never written to browser storage: every
+   * address in it expires within minutes.
+   */
+  attachments?: SignedAttachments;
   /**
    * The thread this comment belongs to, stated outright. Only the browser
    * store writes it: a comment kept in this browser has no GitHub id, so

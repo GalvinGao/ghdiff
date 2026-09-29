@@ -1774,8 +1774,17 @@ body. A signature lasts five minutes and the card mounts only when opened, so a
 signed file that fails once its signature is old asks `usePullDetails` to fetch
 again; a young one never does, which is what keeps a real 404 from looping. The
 age is measured from the answer's arrival against the token's own `exp - nbf`,
-so no two clocks are compared. Review comments have the same problem and do not
-have this yet.
+so no two clocks are compared.
+
+Review comments take the same path with one difference. `comments.list` asks for
+the same media type and each `CommentPayload` carries its own `attachments`, but
+`useReviewComments` merges them into one map held **beside** the annotations and
+never inside them, and `AttachmentsProvider` hands it to every thread card
+through the viewer's portals. A renewal asks for the list again and replaces
+that map alone: putting fresh addresses into the annotations would bump every
+commented item's version, and the viewer would relayout the diff under a
+reviewer who only scrolled a picture into view. The map is never written to
+browser storage, because every address in it is dead within minutes.
 
 **A task list's box is drawn, not a real checkbox.** A `- [x]` reaches
 `CommentBody` as `<input type="checkbox" checked disabled>`, and a native

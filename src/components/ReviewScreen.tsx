@@ -9,6 +9,7 @@ import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
+import { AttachmentsProvider } from '@/components/CommentBody';
 import { DiffSearchBar } from '@/components/DiffSearchBar';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import { ReviewHeader } from '@/components/ReviewHeader';
@@ -714,30 +715,37 @@ export function ReviewScreen({
               reviewer searches. See DiffSearchBar. */}
           <div className="flex min-h-0 min-w-0 flex-col">
             {search.open && <DiffSearchBar search={search} />}
-            <ReviewViewer
-              canCreateIssue={comments.canCreateIssue}
-              commentStore={comments.store}
-              controls={controls}
-              items={items}
-              loadDiffFiles={files.loadDiffFiles}
-              loadingFiles={files.loadingFiles}
-              onCancelDraft={comments.removeComment}
-              onCreateDraft={handleCreateDraft}
-              onDeleteComment={comments.removeComment}
-              onReplyToThread={comments.replyToThread}
-              onSaveDraft={comments.saveDraft}
-              onScroll={onDiffScroll}
-              onSelectedLinesChange={handleSelectedLinesChange}
-              onToggleCollapsed={setCollapsed}
-              onToggleViewed={handleToggleViewed}
-              scrollRef={scrollRef}
-              searchMarks={search.marks}
-              selectedLines={selectedLines}
-              collapsedItemIds={collapsedItemIds}
-              themeType={colorMode.hydrated ? colorMode.mode : 'system'}
-              viewedItemIds={viewedFiles.viewed}
-              viewerRef={viewerRef}
-            />
+            {/* The thread cards read their attachments from here, and a
+                renewal changes this map alone: no item takes a new version. */}
+            <AttachmentsProvider
+              attachments={comments.attachments}
+              onAttachmentError={comments.renewAttachments}
+            >
+              <ReviewViewer
+                canCreateIssue={comments.canCreateIssue}
+                commentStore={comments.store}
+                controls={controls}
+                items={items}
+                loadDiffFiles={files.loadDiffFiles}
+                loadingFiles={files.loadingFiles}
+                onCancelDraft={comments.removeComment}
+                onCreateDraft={handleCreateDraft}
+                onDeleteComment={comments.removeComment}
+                onReplyToThread={comments.replyToThread}
+                onSaveDraft={comments.saveDraft}
+                onScroll={onDiffScroll}
+                onSelectedLinesChange={handleSelectedLinesChange}
+                onToggleCollapsed={setCollapsed}
+                onToggleViewed={handleToggleViewed}
+                scrollRef={scrollRef}
+                searchMarks={search.marks}
+                selectedLines={selectedLines}
+                collapsedItemIds={collapsedItemIds}
+                themeType={colorMode.hydrated ? colorMode.mode : 'system'}
+                viewedItemIds={viewedFiles.viewed}
+                viewerRef={viewerRef}
+              />
+            </AttachmentsProvider>
           </div>
         </div>
       ) : (

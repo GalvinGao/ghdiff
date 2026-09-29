@@ -135,3 +135,26 @@ export function resolveAttachment(
   const id = attachmentId(src);
   return id == null ? undefined : attachments[id];
 }
+
+/**
+ * One map for many bodies. Review comments arrive as a list and a thread card
+ * reads whichever of them it draws, so they share one set of addresses, and the
+ * shortest signature among them is the one that decides when to renew.
+ */
+export function mergeSignedAttachments(
+  sets: readonly (SignedAttachments | undefined)[]
+): SignedAttachments {
+  const byId: Record<string, SignedAttachment> = {};
+  let lifetimeMs: number | undefined;
+  for (const set of sets) {
+    if (set == null) continue;
+    Object.assign(byId, set.byId);
+    if (set.lifetimeMs != null) {
+      lifetimeMs =
+        lifetimeMs == null
+          ? set.lifetimeMs
+          : Math.min(lifetimeMs, set.lifetimeMs);
+    }
+  }
+  return lifetimeMs == null ? { byId } : { byId, lifetimeMs };
+}

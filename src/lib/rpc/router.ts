@@ -1,6 +1,7 @@
 import { implement, ORPCError } from '@orpc/server';
 
 import { contract } from './contract.ts';
+import { readSignedAttachments } from '@/lib/attachments';
 import { composeCommentIssue } from '@/lib/commentIssue';
 import {
   annotationSideFromGitHub,
@@ -329,9 +330,12 @@ const listComments = os.comments.list.handler(async ({ context, input }) => {
   const { number, owner, repo } = input;
   log.set({ owner, repo, pull: number });
   try {
+    // `full` for the same reason `pulls.get` asks for it: `body_html` is where
+    // a private attachment's address is signed.
     const comments = await githubJson<GitHubReviewComment[]>(
       `/repos/${owner}/${repo}/pulls/${number}/comments?per_page=100`,
-      context.token
+      context.token,
+      { headers: { accept: FULL_JSON_MEDIA_TYPE } }
     );
     log.set({ outcome: 'ok', count: comments.length });
     return comments.map(toPayload);
@@ -599,6 +603,7 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
   // after a force push. `original_line` still points at where it was written.
   const line = comment.line ?? comment.original_line ?? 1;
   const startLine = comment.start_line ?? comment.original_start_line;
+  const attachments = readSignedAttachments(comment.body_html);
   return {
     githubId: comment.id,
     path: comment.path,
@@ -618,6 +623,8 @@ function toPayload(comment: GitHubReviewComment): CommentPayload {
     createdAt: comment.created_at,
     htmlUrl: comment.html_url,
     replyToId: comment.in_reply_to_id,
+    attachments:
+      Object.keys(attachments.byId).length > 0 ? attachments : undefined,
   };
 }
 

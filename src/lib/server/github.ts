@@ -325,6 +325,8 @@ export interface GitHubReviewComment {
   id: number;
   path: string;
   body: string;
+  /** Only sent for `FULL_JSON_MEDIA_TYPE`. */
+  body_html?: string | null;
   line: number | null;
   start_line: number | null;
   original_line: number | null;

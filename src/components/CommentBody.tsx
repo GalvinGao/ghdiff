@@ -1,6 +1,7 @@
 import {
   type ComponentProps,
   createContext,
+  type ReactNode,
   memo,
   useContext,
   useMemo,
@@ -91,6 +92,31 @@ interface AttachmentContextValue {
 }
 
 const AttachmentContext = createContext<AttachmentContextValue>({});
+
+/**
+ * Signed addresses for every body below it that is not handed its own. The
+ * review screen puts the comments' map here, because a thread card is drawn by
+ * the viewer, through a portal, far from the hook that holds the map.
+ */
+export function AttachmentsProvider({
+  attachments,
+  children,
+  onAttachmentError,
+}: {
+  attachments: Record<string, SignedAttachment>;
+  children: ReactNode;
+  onAttachmentError(): void;
+}) {
+  const value = useMemo(
+    () => ({ byId: attachments, onError: onAttachmentError }),
+    [attachments, onAttachmentError]
+  );
+  return (
+    <AttachmentContext.Provider value={value}>
+      {children}
+    </AttachmentContext.Provider>
+  );
+}
 
 const MEDIA_CLASS =
   'border-line my-1 block max-h-80 max-w-full rounded border object-contain';
@@ -263,9 +289,14 @@ export const CommentBody = memo(function CommentBody({
   /** Called when a signed attachment fails to load. */
   onAttachmentError?(): void;
 }) {
+  // A body handed its own addresses uses them, and one handed none reads the
+  // nearest provider's. The two are a pair: a map from one source and a renewal
+  // from another would renew the wrong list.
+  const inherited = useContext(AttachmentContext);
+  const own = attachments != null || onAttachmentError != null;
   const context = useMemo(
-    () => ({ byId: attachments, onError: onAttachmentError }),
-    [attachments, onAttachmentError]
+    () => (own ? { byId: attachments, onError: onAttachmentError } : inherited),
+    [attachments, inherited, onAttachmentError, own]
   );
   return (
     <div className={cn('text-sm leading-snug break-words', className)}>
