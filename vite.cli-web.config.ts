@@ -2,6 +2,8 @@ import tailwindcss from '@tailwindcss/vite';
 import viteReact from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+import { pierreI18n } from './scripts/pierre-i18n.mjs';
+
 // The client the `ghdiff` command serves.
 //
 // A plain single-page build, and deliberately not the Worker's one. `pnpm
@@ -22,7 +24,7 @@ export default defineConfig({
     // `@/*` comes from tsconfig.json, the same way the Worker's build reads it.
     tsconfigPaths: true,
   },
-  plugins: [tailwindcss(), viteReact()],
+  plugins: [pierreI18n(), tailwindcss(), viteReact()],
   build: {
     outDir: '../../dist/cli/web',
     emptyOutDir: true,
@@ -38,5 +40,6 @@ export default defineConfig({
     // every grammar into the highlight worker's entry, so it would load 834 kB
     // up front instead of 211 kB and one chunk per language it meets.
     format: 'es',
+    plugins: () => [pierreI18n()],
   },
 });

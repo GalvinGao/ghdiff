@@ -1,6 +1,7 @@
 import { oc, type } from '@orpc/contract';
 import * as z from 'zod';
 
+import { m } from '../../paraglide/messages.js';
 import type { CreatedIssue } from '@/lib/commentIssue';
 import type { CommentPayload } from '@/lib/comments';
 import type { AppInstallation } from '@/lib/installations';
@@ -25,9 +26,9 @@ import type { GitHubViewer } from '@/lib/viewer';
 /** GitHub's own rule for an owner or a repository name. */
 const NAME = /^[A-Za-z0-9._-]+$/;
 
-const name = z
-  .string()
-  .regex(NAME, 'Enter a valid GitHub username or repository name.');
+const name = z.string().regex(NAME, {
+  error: () => m.contract_enter_a_valid_github_username_or_repository_name(),
+});
 
 const repoRef = z.object({ owner: name, repo: name });
 
@@ -46,7 +47,9 @@ const issueSource = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('github-pull'), number: z.int().positive() }),
   z.object({
     kind: z.literal('github-commit'),
-    sha: z.string().regex(/^[0-9a-f]{7,40}$/i, 'Enter a commit sha.'),
+    sha: z.string().regex(/^[0-9a-f]{7,40}$/i, {
+      error: () => m.contract_enter_a_commit_sha(),
+    }),
   }),
   z.object({
     kind: z.literal('github-compare'),
@@ -174,7 +177,12 @@ export const contract = {
       .input(
         repoRef.extend({
           source: issueSource,
-          text: z.string().trim().min(1, 'Write what the issue is about.'),
+          text: z
+            .string()
+            .trim()
+            .min(1, {
+              error: () => m.contract_write_what_the_issue_is_about(),
+            }),
           path: z.string().min(1),
           line: z.int().positive(),
           startLine: z.int().positive().optional(),
@@ -202,7 +210,10 @@ export const contract = {
     create: oc
       .input(
         pullRef.extend({
-          body: z.string().trim().min(1, 'Comment cannot be empty.'),
+          body: z
+            .string()
+            .trim()
+            .min(1, { error: () => m.contract_comment_cannot_be_empty() }),
           replyToId: z.int().positive().optional(),
           path: z.string().min(1).optional(),
           line: z.int().positive().optional(),

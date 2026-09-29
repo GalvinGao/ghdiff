@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // The two things a reviewer wants to know about an open pull request before
 // they open it: has anybody reviewed it, and does it build.
 //
@@ -158,23 +159,40 @@ export function checkTone(check: CheckState): StatusTone {
 }
 
 const REVIEW_LABEL: Record<ReviewState, string> = {
-  approved: 'Approved',
-  changes: 'Changes requested',
-  none: 'No review yet',
+  get approved() {
+    return m.pull_status_approved();
+  },
+  get changes() {
+    return m.pull_status_changes_requested();
+  },
+  get none() {
+    return m.pull_status_no_review_yet();
+  },
 };
 
 const CHECK_LABEL: Record<CheckState, string> = {
-  success: 'checks passing',
-  pending: 'checks running',
-  failure: 'a check failed',
-  none: 'no checks',
+  get success() {
+    return m.pull_status_checks_passing();
+  },
+  get pending() {
+    return m.pull_status_checks_running();
+  },
+  get failure() {
+    return m.pull_status_a_check_failed();
+  },
+  get none() {
+    return m.pull_status_no_checks();
+  },
 };
 
 /** The status in words, for the mark's title and its accessible name. */
 export function describePullStatus(status: PullReviewStatus): string {
   const review =
     status.review === 'changes' && status.commitsSinceChanges === true
-      ? 'Changes requested, new commits since'
+      ? m.pull_status_changes_requested_new_commits_since()
       : REVIEW_LABEL[status.review];
-  return `${review} · ${CHECK_LABEL[status.check]}`;
+  return m.pull_status_description({
+    review,
+    checks: CHECK_LABEL[status.check],
+  });
 }

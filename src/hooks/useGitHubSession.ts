@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { AUTH_ERROR_PARAM, authFailureMessage } from '@/lib/githubApp';
 import { heldLegacyToken } from '@/lib/legacyToken';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
@@ -67,7 +68,10 @@ export function useGitHubSession(): GitHubSessionState {
         setViewer(undefined);
         setCanSignOut(false);
         setViewerError(
-          rpcErrorMessage(cause, 'Could not check who you are signed in as.')
+          rpcErrorMessage(
+            cause,
+            m.use_git_hub_session_could_not_check_who_you_are_signed_in()
+          )
         );
       } finally {
         if (!controller.signal.aborted) setChecking(false);

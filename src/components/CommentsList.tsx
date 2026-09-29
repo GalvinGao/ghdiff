@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { m } from '../paraglide/messages.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { CommentBody } from '@/components/CommentBody';
 import { GitHubTextLink } from '@/components/GitHubLink';
@@ -91,11 +92,11 @@ export function CommentsList({
   if (sections.length === 0 && conversation.length === 0) {
     return (
       <div className="text-ink-muted px-3 py-4 text-sm">
-        <p>No comments here.</p>
+        <p>{m.comments_list_no_comments_here()}</p>
         <p className="text-ink-faint mt-1 text-xs">
           {store === 'github'
-            ? 'Comments you leave here are posted to GitHub.'
-            : 'Comments stay in this browser. Copy them as a prompt when you are done.'}
+            ? m.comments_list_comments_you_leave_here_are_posted_to_github()
+            : m.comments_list_comments_stay_in_this_browser_copy_them_as_a()}
         </p>
       </div>
     );
@@ -149,12 +150,12 @@ export function CommentsList({
                       </span>
                       {thread.pending === true && (
                         <span className="text-ink-faint shrink-0 text-[10px]">
-                          posting
+                          {m.comments_list_posting()}
                         </span>
                       )}
                       {thread.error != null && (
                         <span className="text-removed shrink-0 text-[10px]">
-                          failed
+                          {m.comments_list_failed()}
                         </span>
                       )}
                     </span>
@@ -219,9 +220,9 @@ function ConversationSection({
     });
 
   return (
-    <section aria-label="Conversation" className="min-w-0">
+    <section aria-label={m.comments_list_conversation()} className="min-w-0">
       <h3 className="bg-surface text-ink-faint sticky top-0 z-10 px-3 py-1 text-[11px]">
-        Conversation
+        {m.comments_list_conversation()}
       </h3>
       <ul className="min-w-0">
         {entries.map((entry) => {
@@ -282,9 +283,9 @@ function ConversationSection({
                     <GitHubTextLink
                       className="text-ink-faint mt-1.5 inline-block text-[11px]"
                       href={entry.htmlUrl}
-                      title="Open this on GitHub"
+                      title={m.comments_list_open_this_on_github()}
                     >
-                      Open on GitHub
+                      {m.comments_list_open_on_github()}
                     </GitHubTextLink>
                   )}
                 </div>
@@ -299,14 +300,14 @@ function ConversationSection({
 
 /** What the author did, in the words GitHub's own timeline uses. */
 function conversationAction(entry: ConversationEntry): string {
-  if (entry.kind === 'comment') return 'commented';
+  if (entry.kind === 'comment') return m.review_action_commented();
   switch (entry.state) {
     case 'APPROVED':
-      return 'approved';
+      return m.review_action_approved();
     case 'CHANGES_REQUESTED':
-      return 'requested changes';
+      return m.review_action_changes();
     default:
-      return 'reviewed';
+      return m.review_action_reviewed();
   }
 }
 
@@ -405,7 +406,7 @@ function SectionHeading({
         ref={textRef}
         dir="rtl"
         type="button"
-        aria-label={`Go to ${path}`}
+        aria-label={m.comments_list_go_to({ path: path })}
         onClick={onSelect}
         className={cn(
           'text-ink-faint hover:text-ink block w-full cursor-pointer truncate text-left font-mono text-[11px]',

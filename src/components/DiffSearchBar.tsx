@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/Button';
 import { SearchField } from '@/components/ui/SearchField';
 import type { DiffSearchState } from '@/hooks/useDiffSearch';
 import { cn } from '@/lib/cn';
+import { formatNumber } from '@/lib/locale';
+import { m } from '@/paraglide/messages.js';
 
 // Find in diff, as a strip above the diff.
 //
@@ -21,9 +23,17 @@ import { cn } from '@/lib/cn';
 function describeCount(search: DiffSearchState): string {
   const { current, matches, query, truncated } = search;
   const count = matches.length;
-  if (count === 0) return query.length > 0 ? 'No matches' : '';
-  const position = current === -1 ? '' : `${current + 1} of `;
-  return `${position}${count}${truncated ? '+' : ''}`;
+  if (count === 0)
+    return query.length > 0 ? m.diff_search_bar_no_matches() : '';
+  const total = truncated
+    ? m.diff_search_more({ count: formatNumber(count) })
+    : formatNumber(count);
+  return current === -1
+    ? total
+    : m.diff_search_position({
+        position: formatNumber(current + 1),
+        count: total,
+      });
 }
 
 export function DiffSearchBar({ search }: { search: DiffSearchState }) {
@@ -33,7 +43,7 @@ export function DiffSearchBar({ search }: { search: DiffSearchState }) {
   return (
     <div
       role="search"
-      aria-label="Find in diff"
+      aria-label={m.diff_search_bar_find_in_diff()}
       // Capture before a focused button can turn Enter into a click.
       onKeyDownCapture={(event) => {
         // An IME sends Enter to commit the composed text and Escape to drop
@@ -56,8 +66,8 @@ export function DiffSearchBar({ search }: { search: DiffSearchState }) {
     >
       <SearchField
         ref={attachInput}
-        aria-label="Find in diff"
-        placeholder="Find in diff…"
+        aria-label={m.diff_search_bar_find_in_diff()}
+        placeholder={m.diff_search_bar_find_in_diff_text()}
         value={query}
         wrapperClassName="max-phone:flex-1 w-72 max-w-full min-w-0"
         onChange={(event) => search.setQuery(event.target.value)}
@@ -74,29 +84,29 @@ export function DiffSearchBar({ search }: { search: DiffSearchState }) {
         {describeCount(search)}
       </p>
       <Button
-        aria-label="Previous match"
+        aria-label={m.diff_search_bar_previous_match()}
         disabled={none}
         size="icon-sm"
-        title="Previous match (Shift+Enter)"
+        title={m.diff_search_bar_previous_match_shiftenter()}
         variant="chrome"
         onClick={() => search.previous()}
       >
         <IconChevron className="rotate-180" size={14} />
       </Button>
       <Button
-        aria-label="Next match"
+        aria-label={m.diff_search_bar_next_match()}
         disabled={none}
         size="icon-sm"
-        title="Next match (Enter)"
+        title={m.diff_search_bar_next_match_enter()}
         variant="chrome"
         onClick={() => search.next()}
       >
         <IconChevron size={14} />
       </Button>
       <Button
-        aria-label="Close the search"
+        aria-label={m.diff_search_bar_close_the_search()}
         size="icon-sm"
-        title="Close (Esc)"
+        title={m.diff_search_bar_close_esc()}
         variant="chrome"
         onClick={() => search.close()}
       >

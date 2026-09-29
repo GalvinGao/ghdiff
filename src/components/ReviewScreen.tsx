@@ -9,6 +9,7 @@ import type { CodeViewHandle } from '@pierre/diffs/react';
 import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { AttachmentsProvider } from '@/components/CommentBody';
 import { DiffSearchBar } from '@/components/DiffSearchBar';
@@ -903,6 +904,7 @@ export function ReviewScreen({
           className="bg-canvas relative grid min-h-0 flex-1 overflow-hidden"
           style={{
             ...sidebarStyle,
+            direction: 'ltr',
             // One column on a phone. The file list is not beside the diff
             // there, it is over it, so it takes no track of its own.
             gridTemplateColumns: isPhone
@@ -957,7 +959,7 @@ export function ReviewScreen({
               and there is no width to drag. */}
           {!isPhone && (
             <PaneResizeHandle
-              label="Sidebar width"
+              label={m.review_screen_sidebar_width()}
               max={SIDEBAR_MAX_WIDTH}
               min={SIDEBAR_MIN_WIDTH}
               onKeyDown={onSidebarHandleKeyDown}
@@ -1061,10 +1063,10 @@ export function ReviewScreen({
           display menu makes the undo, and the message, untrue. */}
       {localizationBeforeOff != null && !localizationSettings.enabled && (
         <Toast
-          action={{ label: 'Undo', onPress: undoTurnOffLocalization }}
+          action={{ label: m.lens_undo(), onPress: undoTurnOffLocalization }}
           onDismiss={() => setLocalizationBeforeOff(null)}
         >
-          {`The ${LENSES.localization.label} lens is off for this repository. Turn it back on under Lens in the display settings, top right.`}
+          {m.lens_disabled({ name: LENSES.localization.label })}
         </Toast>
       )}
 
@@ -1144,9 +1146,9 @@ function ReviewNotice({
       </p>
       {onDismiss != null && (
         <Button
-          aria-label="Dismiss"
+          aria-label={m.review_screen_dismiss()}
           size="icon-sm"
-          title="Dismiss"
+          title={m.review_screen_dismiss()}
           variant="quiet"
           onClick={onDismiss}
         >

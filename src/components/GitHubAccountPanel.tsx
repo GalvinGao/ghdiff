@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { m } from '../paraglide/messages.js';
 import {
   InstallationRow,
   InstallationRowSkeleton,
@@ -66,7 +67,7 @@ export function GitHubAccountPanel({
     <div className="min-w-0">
       <ViewerIdentity viewer={viewer} />
       <p className="text-ink-faint mt-2 text-xs">
-        Comments you leave go to GitHub under this account.
+        {m.git_hub_account_panel_comments_you_leave_go_to_github_under_this()}
       </p>
 
       <div className="border-line my-3 border-t" />
@@ -107,7 +108,7 @@ export function GitHubAccountPanel({
                 rel="noreferrer"
                 target="_blank"
               >
-                Install on another account
+                {m.git_hub_account_panel_install_on_another_account()}
               </a>
             )}
           </>
@@ -117,8 +118,7 @@ export function GitHubAccountPanel({
                 code at all. The whole of step two is a page away rather than
                 repeated in a menu, so this points at it. */}
             <p className="text-ink-muted text-xs">
-              ghdiff isn't installed on any account. Set it up to read your
-              code.
+              {m.git_hub_account_panel_ghdiff_isn_t_installed_on_any_account_set()}
             </p>
             <Link
               className={buttonClass({
@@ -133,7 +133,7 @@ export function GitHubAccountPanel({
               }}
               to="/setup"
             >
-              Open setup guide
+              {m.git_hub_account_panel_open_setup_guide()}
             </Link>
           </>
         )}
@@ -146,7 +146,7 @@ export function GitHubAccountPanel({
         <>
           <div className="border-line my-3 border-t" />
           <Button onClick={() => session.signOut()} size="sm" variant="danger">
-            Sign out
+            {m.git_hub_account_panel_sign_out()}
           </Button>
         </>
       )}
@@ -165,9 +165,11 @@ export function GitHubAccountPanel({
 function AccessHeading() {
   return (
     <>
-      <SectionLabel className="block">Accounts with access</SectionLabel>
+      <SectionLabel className="block">
+        {m.git_hub_account_panel_accounts_with_access()}
+      </SectionLabel>
       <p className="text-ink-faint mt-0.5 text-xs">
-        Opens settings on github.com to add or remove repositories.
+        {m.git_hub_account_panel_opens_settings_on_github_com_to_add_or()}
       </p>
     </>
   );
@@ -194,7 +196,7 @@ function InstallationsSkeleton() {
   return (
     <div className="animate-pulse motion-reduce:animate-none" role="status">
       <span className="sr-only">
-        Checking which GitHub accounts ghdiff can read…
+        {m.git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read()}
       </span>
       <AccessHeading />
       <div aria-hidden="true" className="mt-1.5 flex flex-col">

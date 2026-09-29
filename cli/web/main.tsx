@@ -9,6 +9,9 @@ import { Provider } from 'jotai';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { textDirection } from '../../src/lib/locale';
+import { m } from '../../src/paraglide/messages.js';
+import { getLocale } from '../../src/paraglide/runtime.js';
 import { LocalAppData } from './LocalAppData';
 import { claimToken, installTokenHeader } from './localFetch';
 import { ReviewScreen } from '@/components/ReviewScreen';
@@ -77,11 +80,16 @@ function readBootstrap(): Bootstrap {
 function Stopped({ reason }: { reason: string }) {
   return (
     <CenteredNotice role="alert">
-      <h1 className="text-ink text-sm font-medium">ghdiff is not running</h1>
+      <h1 className="text-ink text-sm font-medium">
+        {m.main_ghdiff_is_not_running()}
+      </h1>
       <p className="text-ink-muted mt-1 text-sm text-pretty">{reason}</p>
     </CenteredNotice>
   );
 }
+
+document.documentElement.lang = getLocale();
+document.documentElement.dir = textDirection(getLocale());
 
 const { target, untracked } = readBootstrap();
 const token = claimToken();
@@ -104,12 +112,12 @@ const rootRoute = createRootRoute({
 function LocalReview() {
   if (target == null) {
     return (
-      <Stopped reason="This page did not come from a ghdiff command. Run ghdiff in a repository and open the address it prints." />
+      <Stopped reason={m.main_this_page_did_not_come_from_a_ghdiff_command()} />
     );
   }
   if (token == null) {
     return (
-      <Stopped reason="This tab has no key for the server. Open the address the ghdiff command printed." />
+      <Stopped reason={m.main_this_tab_has_no_key_for_the_server_open()} />
     );
   }
   return <ReviewScreen target={target} untrackedPaths={untracked} />;

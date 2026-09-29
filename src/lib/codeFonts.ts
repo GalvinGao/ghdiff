@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // The faces the diff can be read in.
 //
 // A code review is almost entirely code, so this is the one typeface choice
@@ -41,7 +42,13 @@ const SYSTEM = 'var(--app-font-mono-system)';
  * less than a second face costs.
  */
 export const CODE_FONTS: readonly CodeFont[] = [
-  { id: 'system', label: 'System', stack: SYSTEM },
+  {
+    id: 'system',
+    get label() {
+      return m.code_fonts_system();
+    },
+    stack: SYSTEM,
+  },
   {
     id: 'jetbrains',
     label: 'JetBrains Mono',

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import type { AppInstallation } from '@/lib/installations';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 
@@ -69,7 +70,10 @@ export function useInstallations(options: {
     } catch (cause) {
       if (controller.signal.aborted) return;
       setError(
-        rpcErrorMessage(cause, 'Could not read where ghdiff is installed.')
+        rpcErrorMessage(
+          cause,
+          m.use_installations_could_not_read_where_ghdiff_is_installed()
+        )
       );
     } finally {
       if (!controller.signal.aborted) setLoading(false);

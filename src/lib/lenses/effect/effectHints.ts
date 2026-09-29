@@ -1,5 +1,7 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
 
+import { m } from '../../../paraglide/messages.js';
+
 // What an Effect program says between the `yield*`s.
 //
 // Effect code written with `Effect.gen` puts `yield*` in front of nearly every
@@ -415,59 +417,82 @@ interface Reading {
  */
 function fails(name: string | undefined, yielded: boolean): Reading {
   const what = name == null ? '' : ` · ${name}`;
-  const withName = name == null ? '' : ` with ${name}`;
   return yielded
-    ? { label: `fails${what} ↗`, title: `Stops here and fails${withName}.` }
-    : { label: `fails${what}`, title: `Makes a failure${withName}.` };
+    ? {
+        label: m.effect_fails_exit({ suffix: what }),
+        title:
+          name == null
+            ? m.effect_stop_failure()
+            : m.effect_stop_failure_named({ name }),
+      }
+    : {
+        label: m.effect_fails({ suffix: what }),
+        title:
+          name == null
+            ? m.effect_make_failure()
+            : m.effect_make_failure_named({ name }),
+      };
 }
 
 function dies(yielded: boolean): Reading {
   return yielded
     ? {
-        label: 'dies ↗',
-        title: 'Stops here with a defect. Only a cause handler can see it.',
+        label: m.effect_dies_exit(),
+        title: m.effect_defect_stop(),
       }
     : {
-        label: 'dies',
-        title: 'Makes a defect. Only a cause handler can see it.',
+        label: m.effect_dies(),
+        title: m.effect_defect_value(),
       };
 }
 
 function interrupts(yielded: boolean): Reading {
   return yielded
-    ? { label: 'interrupts ↗', title: 'Stops here and interrupts the fiber.' }
-    : { label: 'interrupts', title: 'Makes an interruption.' };
+    ? { label: m.effect_interrupts_exit(), title: m.effect_interrupt_stop() }
+    : { label: m.effect_interrupts(), title: m.effect_interrupt_value() };
 }
 
 const CATCHES_ALL: Reading = {
-  label: 'catches all',
-  title: 'Handles every expected failure above it.',
+  get label() {
+    return m.effect_catches_all();
+  },
+  get title() {
+    return m.effect_handles_all();
+  },
 };
 
 const CATCHES_SOME: Reading = {
-  label: 'catches some',
-  title: 'Handles the failures its predicate picks. The rest pass through.',
+  get label() {
+    return m.effect_catches_some();
+  },
+  get title() {
+    return m.effect_handles_some();
+  },
 };
 
 const OR_DIE: Reading = {
-  label: 'failure → defect',
-  title: 'Turns any failure above it into a defect.',
+  get label() {
+    return m.effect_failure_defect();
+  },
+  get title() {
+    return m.effect_turns_defect();
+  },
 };
 
 function catches(tags: readonly string[]): Reading {
   if (tags.length === 0) {
-    return { label: 'catches', title: 'Handles failures by tag.' };
+    return { label: m.effect_catches(), title: m.effect_handles_tags() };
   }
   return {
-    label: `catches · ${tags.join(', ')}`,
-    title: `Handles ${tags.join(', ')}. Other failures pass through.`,
+    label: m.effect_catches_named({ tags: tags.join(', ') }),
+    title: m.effect_handles_named({ tags: tags.join(', ') }),
   };
 }
 
 function needs(name: string): Reading {
   return {
-    label: `needs · ${name}`,
-    title: `Reads the ${name} service. Something must provide it before this runs.`,
+    label: m.effect_needs({ name }),
+    title: m.effect_service({ name }),
   };
 }
 

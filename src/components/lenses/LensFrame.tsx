@@ -1,11 +1,14 @@
 import { IconGear } from '@pierre/icons';
 import type { ReactNode } from 'react';
 
+import { m } from '../../paraglide/messages.js';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
+import { textDirection } from '@/lib/locale';
+import { getLocale } from '@/paraglide/runtime.js';
 
 // The one piece of chrome every lens panel shares.
 //
@@ -37,17 +40,17 @@ export function LensFrame({
   // card's negative margins put its border over the tray's, so the two share
   // one outline down the sides and along the bottom.
   return (
-    <div className="px-3 pt-3 pb-3">
+    <div dir={textDirection(getLocale())} className="px-3 pt-3 pb-3">
       <div className="border-line bg-surface rounded-xl border">
         <div className="text-ink-faint flex h-8 items-center gap-1.5 px-3 text-[11px]">
           <LensBadge />
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ms-auto flex items-center gap-1">
             <button
               type="button"
               className="hover:text-ink rounded px-1 underline-offset-2 hover:underline"
               onClick={onTurnOff}
             >
-              Turn off
+              {m.lens_frame_turn_off()}
             </button>
             <span aria-hidden="true" className="bg-line h-3 w-px" />
             {/* modal={false}, so the table can be read against the choices
@@ -88,9 +91,9 @@ export function LensFrame({
 export function LensBadge() {
   return (
     <span className="text-ink-faint inline-flex items-center gap-1.5 text-[11px] font-normal">
-      Lens
+      {m.lens_label()}
       <span className="border-line rounded border px-1 text-[10px] leading-3.5 tracking-wide uppercase">
-        beta
+        {m.lens_frame_beta()}
       </span>
     </span>
   );

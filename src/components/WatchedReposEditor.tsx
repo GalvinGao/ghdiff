@@ -17,6 +17,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GrabberIcon } from '@primer/octicons-react';
 import { useId, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { Input } from '@/components/ui/Input';
@@ -52,8 +53,7 @@ export function WatchedReposEditor({
     <div>
       <div className="px-2 pt-2 pb-2">
         <p className="text-ink-faint mb-2 text-xs">
-          ghdiff lists open pull requests for these repositories. The list stays
-          in this browser.
+          {m.watched_repos_editor_ghdiff_lists_open_pull_requests_for_these_repositories()}
         </p>
 
         <form
@@ -64,18 +64,21 @@ export function WatchedReposEditor({
               setInput('');
               setError(undefined);
             } else {
-              setError('Enter a repository as owner/repo.');
+              setError(
+                m.watched_repos_editor_enter_a_repository_as_owner_repo()
+              );
             }
           }}
         >
           <Input
+            dir="ltr"
             value={input}
-            placeholder="owner/repo"
-            aria-label="Repository to watch"
+            placeholder={m.watched_repos_editor_owner_repo()}
+            aria-label={m.watched_repos_editor_repository_to_watch()}
             onChange={(event) => setInput(event.target.value)}
           />
           <Button type="submit" variant="solid" size="md">
-            Add
+            {m.watched_repos_editor_add()}
           </Button>
         </form>
         {error != null && <p className="text-removed mt-2 text-xs">{error}</p>}
@@ -83,7 +86,7 @@ export function WatchedReposEditor({
 
       {watched.repos.length === 0 ? (
         <p className="text-ink-muted px-2 py-1.5 text-sm">
-          Nothing watched yet.
+          {m.watched_repos_editor_nothing_watched_yet()}
         </p>
       ) : (
         <DndContext
@@ -99,7 +102,10 @@ export function WatchedReposEditor({
             items={watched.repos.map(watchedRepoKey)}
             strategy={verticalListSortingStrategy}
           >
-            <ul aria-label="Watched repositories" className="font-mono text-xs">
+            <ul
+              aria-label={m.watched_repos_dialog_watched_repositories()}
+              className="font-mono text-xs"
+            >
               {watched.repos.map((repo) => (
                 <SortableRepo
                   key={watchedRepoKey(repo)}
@@ -139,13 +145,13 @@ function SortableRepo({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`group hover:bg-surface focus-within:bg-surface relative flex items-center gap-2 rounded-md px-2 py-1.5 ${isDragging ? 'bg-surface z-10 shadow-sm' : ''}`}
     >
-      <Tooltip label="Drag to reorder" side="right">
+      <Tooltip label={m.watched_repos_editor_drag_to_reorder()} side="right">
         <button
           type="button"
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          aria-label={`Drag to reorder ${name}`}
+          aria-label={m.watch_drag_repo({ name })}
           className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:outline-accent -my-1 flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded active:cursor-grabbing"
         >
           <GrabberIcon size={14} />
@@ -157,7 +163,7 @@ function SortableRepo({
       </span>
       <button
         type="button"
-        aria-label={`Remove ${name}`}
+        aria-label={m.watch_remove_repo({ name })}
         onClick={onRemove}
         // `-my-1` keeps the button from making the row taller than an
         // example row: the row's own line is 16px and the button is 24.
@@ -168,7 +174,7 @@ function SortableRepo({
             '-my-1 h-6 px-2 font-sans text-[11px] text-ink-muted hover:text-removed',
         })}
       >
-        Remove
+        {m.watched_repos_editor_remove()}
       </button>
     </li>
   );

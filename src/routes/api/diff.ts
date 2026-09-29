@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { m } from '../../paraglide/messages.js';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
   type GitHubReviewTarget,
@@ -107,7 +108,7 @@ const getDiff = withEvlog(
     const target = reviewTargetFromQuery(params);
     if (target == null) {
       log.set({ outcome: 'invalid-target' });
-      return textResponse('That review target is not valid.', 400);
+      return textResponse(m.diff_that_review_target_is_not_valid(), 400);
     }
     log.set({ target: reviewTargetKey(target), targetKind: target.kind });
     // The one target this host cannot answer for, and the one it must not try
@@ -115,7 +116,7 @@ const getDiff = withEvlog(
     // reaches here only from a link pasted out of a local run.
     if (target.kind === 'local-diff') {
       log.set({ outcome: 'local-target' });
-      return textResponse(LOCAL_TARGET_NOT_SERVED, 400);
+      return textResponse(LOCAL_TARGET_NOT_SERVED(), 400);
     }
 
     // A cookie whose token has died is answered before GitHub is asked: the 401
@@ -124,7 +125,7 @@ const getDiff = withEvlog(
     const { token, refreshDue } = await resolveGitHubToken(request);
     if (refreshDue) {
       log.set({ outcome: 'refresh-due' });
-      return textResponse(SIGN_IN_EXPIRED, 401);
+      return textResponse(SIGN_IN_EXPIRED(), 401);
     }
 
     try {
@@ -140,7 +141,7 @@ const getDiff = withEvlog(
         return textResponse(error.message, error.status);
       }
       log.error(toLoggable(error), { step: 'load-diff' });
-      return textResponse('Could not load that diff.', 500);
+      return textResponse(m.diff_could_not_load_that_diff(), 500);
     }
   }
 );
@@ -216,7 +217,9 @@ function describeFailure(source: string, error: unknown): AttemptFailure {
     source,
     status: 502,
     message:
-      error instanceof Error ? error.message : 'That request to GitHub failed.',
+      error instanceof Error
+        ? error.message
+        : m.diff_that_request_to_github_failed(),
   };
 }
 
@@ -229,7 +232,7 @@ function bestFailure(failures: readonly AttemptFailure[]): GitHubError {
   const api = failures.find((failure) => failure.source === 'api-diff');
   const chosen = api ?? failures[0];
   if (chosen == null) {
-    return new GitHubError(502, 'Could not load that diff.');
+    return new GitHubError(502, m.diff_could_not_load_that_diff());
   }
   return new GitHubError(chosen.status, chosen.message);
 }

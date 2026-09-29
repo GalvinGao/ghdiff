@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 // What reviewer is looking at.
 //
 // Three of the four targets are a place on GitHub that resolves to one unified
@@ -60,8 +61,7 @@ export interface LocalDiffTarget {
  * reaches this pasted an address from a machine that was serving its own diff,
  * so the sentence names the thing that can serve it again.
  */
-export const LOCAL_TARGET_NOT_SERVED =
-  'That diff is on a machine, not on GitHub. Run the ghdiff command inside that repository to read it.';
+export const LOCAL_TARGET_NOT_SERVED = m.local_diff_remote;
 
 /** The three targets github.com has a page for. */
 export type GitHubReviewTarget =
@@ -96,7 +96,7 @@ export function repoNameFromRoot(root: string): string {
 function describeLocalRange(range: LocalDiffRange): string {
   switch (range.mode) {
     case 'worktree':
-      return 'working tree';
+      return m.local_working_tree();
     case 'staged':
       return 'staged';
     case 'branch':

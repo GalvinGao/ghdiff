@@ -1,3 +1,4 @@
+import { m } from '../paraglide/messages.js';
 /** The built-in hunk controls live inside the viewer's shadow roots. */
 export const EXPANSION_LOADING_CSS = `
 [data-expand-button][aria-busy='true'] {
@@ -44,7 +45,10 @@ export function applyExpansionLoading(
   for (const button of buttons ?? []) {
     if (loading) {
       button.setAttribute('aria-busy', 'true');
-      button.setAttribute('aria-label', 'Loading unmodified lines');
+      button.setAttribute(
+        'aria-label',
+        m.review_viewer_loading_unmodified_lines()
+      );
     } else if (button.hasAttribute('aria-busy')) {
       button.removeAttribute('aria-busy');
       button.removeAttribute('aria-label');

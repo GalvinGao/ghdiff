@@ -1,3 +1,4 @@
+import { m } from '../../../paraglide/messages.js';
 // The parts of a translated message a reviewer has to check by eye.
 //
 // A message is prose around placeholders, and the placeholders are the one part
@@ -18,8 +19,20 @@ export const PLACEHOLDER_SYNTAXES: readonly {
   label: string;
   example: string;
 }[] = [
-  { id: 'braces', label: 'Single braces', example: '{name}' },
-  { id: 'double-braces', label: 'Double braces', example: '{{name}}' },
+  {
+    id: 'braces',
+    get label() {
+      return m.placeholder_single();
+    },
+    example: '{name}',
+  },
+  {
+    id: 'double-braces',
+    get label() {
+      return m.placeholder_double();
+    },
+    example: '{{name}}',
+  },
   { id: 'printf', label: 'printf', example: '%s, %(name)s' },
 ];
 

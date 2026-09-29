@@ -2,6 +2,7 @@ import { IconXSquircle } from '@pierre/icons';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { m } from '@/paraglide/messages.js';
 
 // A short message about something the reviewer just did, which goes away by
 // itself.
@@ -55,9 +56,9 @@ export function Toast({
         </Button>
       )}
       <Button
-        aria-label="Dismiss"
+        aria-label={m.review_screen_dismiss()}
         size="icon-sm"
-        title="Dismiss"
+        title={m.review_screen_dismiss()}
         variant="quiet"
         onClick={onDismiss}
       >
