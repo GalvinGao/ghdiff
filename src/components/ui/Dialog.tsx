@@ -50,11 +50,17 @@ interface DialogProps {
   onClose(): void;
   open: boolean;
   title: string;
+  /**
+   * Drawn before the title in the title bar, for a dialog that belongs to
+   * something with a name of its own. The accessible name stays `title`.
+   */
+  eyebrow?: ReactNode;
 }
 
 export function Dialog({
   children,
   className,
+  eyebrow,
   onClose,
   open,
   title,
@@ -108,7 +114,10 @@ export function Dialog({
       }}
     >
       <div className="border-line bg-raised sticky top-0 flex items-center gap-2 border-b px-3 py-2">
-        <h2 className="text-ink text-sm font-semibold">{title}</h2>
+        <h2 className="text-ink flex items-center gap-2 text-sm font-semibold">
+          {eyebrow}
+          {title}
+        </h2>
         <Button
           aria-label="Close"
           className="ml-auto"

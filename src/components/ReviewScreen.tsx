@@ -1,4 +1,5 @@
 import {
+  type AnnotationSide,
   areSelectionsEqual,
   type CodeViewDiffItem,
   type CodeViewLineSelection,
@@ -11,12 +12,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAppData } from '@/components/AppDataProvider';
 import { AttachmentsProvider } from '@/components/CommentBody';
 import { DiffSearchBar } from '@/components/DiffSearchBar';
+import {
+  LocalizationPanel,
+  localizationGroupId,
+} from '@/components/lenses/LocalizationPanel';
+import { LocalizationSettingsDialog } from '@/components/lenses/LocalizationSettingsDialog';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import { ReviewHeader } from '@/components/ReviewHeader';
 import { ReviewSidebar } from '@/components/ReviewSidebar';
 import { ReviewStatusPanel } from '@/components/ReviewStatusPanel';
 import { isSameSelection, ReviewViewer } from '@/components/ReviewViewer';
 import { Button } from '@/components/ui/Button';
+import { Toast } from '@/components/ui/Toast';
 import { WatchOfferDialog } from '@/components/WatchOfferDialog';
 import {
   commentAuthorFilterPreference,
@@ -29,6 +36,7 @@ import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
 import { useDiffSearch } from '@/hooks/useDiffSearch';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { usePullDetails } from '@/hooks/usePullDetails';
+import { useRepoLenses } from '@/hooks/useRepoLenses';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
 import {
@@ -49,6 +57,8 @@ import {
 import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
 import type { SearchMatch } from '@/lib/diffSearch';
+import { applyLenses, LENSES, type LensFile } from '@/lib/lenses/lenses';
+import type { LocalizationSettings } from '@/lib/lenses/localization/config';
 import {
   applyReviewFilter,
   availableStatuses,
@@ -58,6 +68,7 @@ import {
 import {
   describeReviewTarget,
   isGitHubTarget,
+  repoNameFromRoot,
   type ReviewTarget,
 } from '@/lib/reviewTarget';
 import { buildTreeStatIndex } from '@/lib/treeStats';
@@ -114,6 +125,15 @@ export function ReviewScreen({
   const [collapsedItemIds, setCollapsedItemIds] =
     useState<ReadonlySet<string>>(NO_ITEMS);
   const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
+  // True while the files a lens claimed are drawn in the diff as files. Not a
+  // filter: the files stay in the tree either way, and only the form they are
+  // read in changes.
+  const [lensFilesShown, setLensFilesShown] = useState(false);
+  const [localizationOpen, setLocalizationOpen] = useState(false);
+  // The settings from before the reviewer pressed Turn off, held for as long
+  // as the toast that says where the switch went and offers to undo it.
+  const [localizationBeforeOff, setLocalizationBeforeOff] =
+    useState<LocalizationSettings | null>(null);
   const [selectedLines, setSelectedLines] =
     useState<CodeViewLineSelection | null>(null);
   // The comment failure the reviewer has already read and waved away.
@@ -259,6 +279,39 @@ export function ReviewScreen({
     [filter, patch.data]
   );
 
+  // The lenses read what the filter left, so a file the filter hid is neither
+  // in the diff nor in a panel, and the two panes still agree.
+  const repoLenses = useRepoLenses(target);
+  const lensFiles = useMemo<LensFile[]>(() => {
+    const itemById = new Map(filtered.items.map((item) => [item.id, item]));
+    return filtered.entries.flatMap((entry) => {
+      const item = itemById.get(entry.itemId);
+      return item == null
+        ? []
+        : [{ itemId: entry.itemId, path: entry.path, fileDiff: item.fileDiff }];
+    });
+  }, [filtered.entries, filtered.items]);
+  const lenses = useMemo(
+    () => applyLenses(lensFiles, repoLenses.settings),
+    [lensFiles, repoLenses.settings]
+  );
+  const lensHiddenItemIds = lensFilesShown ? NO_ITEMS : lenses.claimedItemIds;
+  const viewerItems = useMemo(
+    () =>
+      lensHiddenItemIds.size === 0
+        ? filtered.items
+        : filtered.items.filter((item) => !lensHiddenItemIds.has(item.id)),
+    [filtered.items, lensHiddenItemIds]
+  );
+  // The repository the lens settings belong to, as the settings name it.
+  const repoLabel = isGitHubTarget(target)
+    ? `${target.owner}/${target.repo}`
+    : repoNameFromRoot(target.root);
+  const patchPaths = useMemo(
+    () => patch.data.entries.map((entry) => entry.path),
+    [patch.data.entries]
+  );
+
   // CodeView keys an update off id and version, so a change to either of the
   // two things this screen writes onto an item — its comments and whether it is
   // folded — must move the version of the item that carries it. Doubling the
@@ -271,9 +324,9 @@ export function ReviewScreen({
       comments.annotationsByItemId.size === 0 &&
       collapsedItemIds.size === 0
     ) {
-      return filtered.items;
+      return viewerItems;
     }
-    return filtered.items.map((item) => {
+    return viewerItems.map((item) => {
       const annotations = comments.annotationsByItemId.get(item.id);
       const collapsed = collapsedItemIds.has(item.id);
       if (annotations == null && !collapsed) return item;
@@ -288,7 +341,7 @@ export function ReviewScreen({
     collapsedItemIds,
     comments.annotationsByItemId,
     comments.revision,
-    filtered.items,
+    viewerItems,
   ]);
 
   const commentSections = useMemo(
@@ -427,6 +480,25 @@ export function ReviewScreen({
     [stopFrameLoop]
   );
 
+  // Read by the jump handlers through a ref, so a rebuilt lens model does not
+  // hand the tree and the comment list a new handler each time.
+  const lensHiddenRef = useRef(lensHiddenItemIds);
+  useEffect(() => {
+    lensHiddenRef.current = lensHiddenItemIds;
+  }, [lensHiddenItemIds]);
+
+  /**
+   * Puts a file a lens drew as a table back into the diff, for a jump that has
+   * to land on one of its lines. True when it did, which tells the caller that
+   * the file has no rows until the next render and the jump must wait for the
+   * frames after it.
+   */
+  const revealLensFile = useCallback((itemId: string) => {
+    if (!lensHiddenRef.current.has(itemId)) return false;
+    setLensFilesShown(true);
+    return true;
+  }, []);
+
   /**
    * What every jump does before it scrolls. The file list is closed, because
    * on a phone it is over the diff and the jump is a request to see the diff.
@@ -458,6 +530,27 @@ export function ReviewScreen({
       openFile(anchored.itemId);
       const { itemId, range } = anchored;
       selectActiveItem(itemId);
+      if (revealLensFile(itemId)) {
+        runOnFrames(() => {
+          if (range != null) viewer.setSelectedLines({ id: itemId, range });
+          viewer.scrollTo({
+            type: 'item',
+            id: itemId,
+            align: 'start',
+            behavior: 'instant',
+          });
+          if (range != null) {
+            viewer.scrollTo({
+              type: 'range',
+              id: itemId,
+              range,
+              align: 'start',
+              behavior: 'instant',
+            });
+          }
+        });
+        return;
+      }
       if (range == null) {
         clearViewerSelection(viewer, setSelectedLines);
       } else {
@@ -497,7 +590,7 @@ export function ReviewScreen({
         });
       });
     },
-    [openFile, runOnFrames, selectActiveItem, stopFrameLoop]
+    [openFile, revealLensFile, runOnFrames, selectActiveItem, stopFrameLoop]
   );
 
   // Puts a search match on screen. Centred, unlike an anchor: a match is a
@@ -525,13 +618,15 @@ export function ReviewScreen({
     [landOn, runOnFrames]
   );
 
-  // Over the filtered items and not the annotated ones: the marks and the folds
+  // Over the drawn items and not the annotated ones: the marks and the folds
   // are written onto a new array on every change, and a search that re-ran for
   // each of them would re-pick its match every time a file was folded.
   const diffReady = patch.state === 'ready' && workersReady;
 
   const search = useDiffSearch({
-    items: filtered.items,
+    // The files the diff draws. A file a lens claimed is read in its panel,
+    // and a match inside it would have no row to land on.
+    items: viewerItems,
     diffStyle: controls.diffStyle,
     ready: diffReady,
     activeItemId,
@@ -547,10 +642,38 @@ export function ReviewScreen({
     onApply: handleApplyAnchor,
   });
 
+  const localizationGroups = lenses.models.localization.groups;
   const handleSelectItem = useCallback(
     (itemId: string) => {
       const viewer = viewerRef.current;
       if (viewer == null) return;
+      // A file read in a lens panel is a row of the panel, not a file of the
+      // diff, so the tree goes to the panel. The address is left alone: a
+      // fragment names a file of the diff, and following it back would put
+      // the file into the diff.
+      if (lensHiddenRef.current.has(itemId)) {
+        setFilesOpen(false);
+        const group = localizationGroups.find((entry) =>
+          entry.itemIds.includes(itemId)
+        );
+        const root = scrollRef.current;
+        const element =
+          group == null
+            ? null
+            : document.getElementById(
+                localizationGroupId(group.source.pattern)
+              );
+        if (root == null || element == null) return;
+        viewer.scrollTo({
+          type: 'position',
+          position:
+            element.getBoundingClientRect().top -
+            root.getBoundingClientRect().top +
+            root.scrollTop,
+          behavior: 'smooth',
+        });
+        return;
+      }
       landOn(itemId);
       // The address is what the reviewer can send to somebody else, so opening
       // a file goes into it and into the history.
@@ -564,7 +687,7 @@ export function ReviewScreen({
         behavior: 'smooth',
       });
     },
-    [anchor, landOn]
+    [anchor, landOn, localizationGroups]
   );
 
   const handleSelectComment = useCallback(
@@ -572,17 +695,108 @@ export function ReviewScreen({
       const viewer = viewerRef.current;
       if (viewer == null) return;
       landOn(comment.itemId);
-      viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
-      viewer.scrollTo({
-        type: 'line',
-        id: comment.itemId,
-        lineNumber: comment.range.end,
-        side: comment.range.endSide ?? comment.range.side ?? comment.side,
-        align: 'center',
-        behavior: 'smooth-auto',
+      const revealed = revealLensFile(comment.itemId);
+      const land = () => {
+        viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
+        viewer.scrollTo({
+          type: 'line',
+          id: comment.itemId,
+          lineNumber: comment.range.end,
+          side: comment.range.endSide ?? comment.range.side ?? comment.side,
+          align: 'center',
+          behavior: revealed ? 'instant' : 'smooth-auto',
+        });
+      };
+      if (revealed) runOnFrames(land);
+      else land();
+    },
+    [landOn, revealLensFile, runOnFrames]
+  );
+
+  // A row of a lens panel, sent to its own line of the patch. The line is
+  // selected as well as shown, which writes it into the address and puts the
+  // comment control under the reviewer's pointer.
+  const handleLensJump = useCallback(
+    (itemId: string, side: AnnotationSide, lineNumber: number) => {
+      const viewer = viewerRef.current;
+      if (viewer == null) return;
+      revealLensFile(itemId);
+      landOn(itemId);
+      const range = { start: lineNumber, end: lineNumber, side };
+      runOnFrames(() => {
+        viewer.setSelectedLines({ id: itemId, range });
+        viewer.scrollTo({
+          type: 'line',
+          id: itemId,
+          lineNumber,
+          side,
+          align: 'center',
+          behavior: 'instant',
+        });
       });
     },
-    [landOn]
+    [landOn, revealLensFile, runOnFrames]
+  );
+
+  const localizationSettings = repoLenses.get('localization');
+  const setRepoLens = repoLenses.set;
+  const setLocalizationSettings = useCallback(
+    (next: LocalizationSettings) => setRepoLens('localization', next),
+    [setRepoLens]
+  );
+  const openLocalization = useCallback(() => setLocalizationOpen(true), []);
+  const turnOffLocalization = useCallback(() => {
+    setLocalizationBeforeOff(localizationSettings);
+    setLocalizationSettings({ ...localizationSettings, enabled: false });
+  }, [localizationSettings, setLocalizationSettings]);
+  const undoTurnOffLocalization = useCallback(() => {
+    if (localizationBeforeOff != null) {
+      setLocalizationSettings(localizationBeforeOff);
+    }
+    setLocalizationBeforeOff(null);
+  }, [localizationBeforeOff, setLocalizationSettings]);
+  const localizationModel = lenses.models.localization;
+  const setLocalizationEnabled = useCallback(
+    (enabled: boolean) => {
+      setLocalizationBeforeOff(null);
+      setLocalizationSettings({ ...localizationSettings, enabled });
+    },
+    [localizationSettings, setLocalizationSettings]
+  );
+  const headerLenses = useMemo(
+    () => [
+      {
+        id: 'localization',
+        label: LENSES.localization.label,
+        enabled: localizationSettings.enabled,
+        onEnabledChange: setLocalizationEnabled,
+        onOpenSettings: openLocalization,
+      },
+    ],
+    [localizationSettings.enabled, openLocalization, setLocalizationEnabled]
+  );
+  const renderLensHeader = useCallback(
+    () => (
+      <LocalizationPanel
+        model={localizationModel}
+        rawShown={lensFilesShown}
+        settings={localizationSettings}
+        onJumpToLine={handleLensJump}
+        onOpenSettings={openLocalization}
+        onRawShownChange={setLensFilesShown}
+        onSettingsChange={setLocalizationSettings}
+        onTurnOff={turnOffLocalization}
+      />
+    ),
+    [
+      handleLensJump,
+      lensFilesShown,
+      localizationModel,
+      localizationSettings,
+      openLocalization,
+      setLocalizationSettings,
+      turnOffLocalization,
+    ]
   );
 
   const handleCreateDraft = useCallback(
@@ -616,6 +830,7 @@ export function ReviewScreen({
           isPhone ? () => setFilesOpen((open) => !open) : undefined
         }
         onControlsChange={setControls}
+        lenses={headerLenses}
         pull={pullTarget == null ? undefined : pull}
         // PullRail renders nothing while the watch list is empty, and the bar's
         // own name is the way home. The header takes that job over when the bar
@@ -737,6 +952,7 @@ export function ReviewScreen({
                 onSelectedLinesChange={handleSelectedLinesChange}
                 onToggleCollapsed={setCollapsed}
                 onToggleViewed={handleToggleViewed}
+                renderHeader={renderLensHeader}
                 scrollRef={scrollRef}
                 searchMarks={search.marks}
                 selectedLines={selectedLines}
@@ -796,6 +1012,26 @@ export function ReviewScreen({
           {viewedFiles.error}
         </ReviewNotice>
       )}
+
+      {/* Only while the lens is still off: a switch thrown back from the
+          display menu makes the undo, and the message, untrue. */}
+      {localizationBeforeOff != null && !localizationSettings.enabled && (
+        <Toast
+          action={{ label: 'Undo', onPress: undoTurnOffLocalization }}
+          onDismiss={() => setLocalizationBeforeOff(null)}
+        >
+          {`The ${LENSES.localization.label} lens is off for this repository. Turn it back on under Lens in the display settings, top right.`}
+        </Toast>
+      )}
+
+      <LocalizationSettingsDialog
+        open={localizationOpen}
+        paths={patchPaths}
+        repoLabel={repoLabel}
+        settings={localizationSettings}
+        onClose={() => setLocalizationOpen(false)}
+        onSave={setLocalizationSettings}
+      />
 
       {/* The offer of a watch list, for a reviewer who has none. It asks
           nothing until the diff is up: a modal over `ReviewStatusPanel` would

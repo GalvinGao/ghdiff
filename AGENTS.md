@@ -98,6 +98,11 @@ src/
   hooks/preferences.ts     every remembered setting, as one jotai atom each
   lib/                     pure domain logic, unit tested
   lib/preferences.ts       what each of those settings is, and how it is stored
+  lib/lenses/              a file kind the diff draws badly, read another way:
+                           the frame, the per-repository store, and one lens,
+                           localization, with its reader, model and checks
+  components/lenses/       the panels a lens draws above the diff, the frame
+                           around them, and each lens's settings dialog
   lib/githubUrls.ts        every address on github.com this app links to
   lib/githubApp.ts         every address the ghdiff GitHub App has there
   lib/session.ts           the cookies, the two clocks, and where a redirect may go
@@ -862,6 +867,55 @@ comment API refuses one. The failure arrives as GitHub's own sentence in the
 strip along the foot of the screen, which is where every other comment failure
 already lands. A commit and a compare range keep their comments in the browser
 and take them anywhere.
+
+**A lens reads one kind of file another way, and it is not a plugin.**
+`src/lib/lenses/lenses.ts` lists every lens in `LENSES`, compiled in. A lens
+claims files of the diff, builds a model of its own from their patches, and a
+panel in `renderCodeViewHeader` draws that model above the first file, in the
+diff's own scroll. A claimed file leaves the viewer's items and stays in the
+tree, because it is still part of the review and the panel is where it is read:
+a tree press on one scrolls to its panel, and a jump that names one of its lines
+— a panel row, a comment, a fragment — puts the claimed files back into the diff
+first and lands over the next frames through `runOnFrames`. The lenses run over
+what the filter left, so a hidden file is in neither place. Add a lens by adding
+its settings and model to `LensSettingsById` and `LensModelsById` and its entry
+to `LENSES`; `applyLenses` gives a file to the first lens that claims it.
+
+**A lens is per repository, kept in this browser, and one press turns it off.**
+`ghdiff-repo-lenses` is one value keyed by `repoLensKey` — owner and name
+without case, or `local:` and the root for the command — and nothing is read
+from the repository itself: no `.gitattributes`, no committed file. That was
+decided, not overlooked. Every panel sits in `LensFrame`, the tray whose strip
+names it a beta lens and carries **Turn off** and a gear, and the display menu
+has a **Lens** section with a switch per lens and a gear beside its name. **Turn
+off** is one press and no dialog, and a `Toast` then says where the switch went
+and offers Undo, because a panel that vanished with no word would leave the
+reviewer hunting for it. There is no second way to hide a lens for the visit:
+"show as files" and "turn off" read as the same press, so only turning off is
+offered. A jump to a claimed line still draws the files, and a one-line bar
+offers the table back.
+
+The card holds content and nothing else. What a lens lets the reviewer tune —
+the localization lens's languages — is in the strip's gear menu, and a clean
+check says nothing: a line that reads "all good" on every diff is a line nobody
+reads on the day it reads otherwise, so the header prints a count only when
+there is a problem.
+
+**The localization lens reads a catalogue from the patch alone.** Detection in
+`localePaths.ts` wants three or more JSON files that differ only by a locale
+segment, so `messages/en.json` and `locales/en/app.json` are both found and two
+stray files named `id` and `it` are not. `readFlatCatalogue` reads
+`"key": "value"` lines and **refuses the whole file** for any changed line it
+cannot read, or one deeper than the shallowest entry: a refused file stays in
+the diff, because a table that guessed would cost the reviewer a change they
+never saw. Nested catalogues and plural variants are that refusal today; the
+whole-file reader that would lift it can use the hydration path. The checks in
+`model.ts` compare placeholder names with the base and run only on the locales
+the diff touches — a catalogue the pull request left alone is not in the patch
+to be checked. A translation equal to the base is a note, never a problem. The
+reviewer's language choice is one list per repository; the base is always shown,
+generated locales (`key`, `pseudo`) never are, and a hidden locale's problem is
+still printed under the rows that are.
 
 **A cron expression says when it runs beside the code.** `src/lib/cron.ts`
 recognizes whole quoted literals, bare `cron` / `schedule` fields, and entries

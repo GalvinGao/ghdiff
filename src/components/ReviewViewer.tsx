@@ -14,6 +14,7 @@ import { CodeView, type CodeViewHandle } from '@pierre/diffs/react';
 import { IconChevron, IconExpandRow } from '@pierre/icons';
 import {
   memo,
+  type ReactNode,
   type RefObject,
   useCallback,
   useLayoutEffect,
@@ -85,6 +86,12 @@ interface ReviewViewerProps {
   onToggleCollapsed(itemId: string, collapsed: boolean): void;
   /** Sets, or takes back, this file's own "I have read this" mark. */
   onToggleViewed(itemId: string, viewed: boolean): void;
+  /**
+   * What sits above the first file, in the diff's own scroll: the lens panels.
+   * Always a function, so the viewer keeps one header host for its whole life
+   * and a panel that empties draws nothing rather than removing the host.
+   */
+  renderHeader(): ReactNode;
   scrollRef: RefObject<HTMLDivElement | null>;
   /**
    * The find-in-diff matches to paint on the rows, and which of them is the
@@ -129,6 +136,7 @@ export const ReviewViewer = memo(function ReviewViewer({
   onSelectedLinesChange,
   onToggleCollapsed,
   onToggleViewed,
+  renderHeader,
   scrollRef,
   searchMarks,
   selectedLines,
@@ -292,6 +300,7 @@ export const ReviewViewer = memo(function ReviewViewer({
       selectedLines={selectedLines}
       onScroll={onScroll}
       onSelectedLinesChange={onSelectedLinesChange}
+      renderCodeViewHeader={renderHeader}
       renderHeaderFilenameSuffix={renderHeaderFilenameSuffix}
       renderHeaderMetadata={renderHeaderMetadata}
       renderHeaderPrefix={renderHeaderPrefix}

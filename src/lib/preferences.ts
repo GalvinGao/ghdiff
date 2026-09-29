@@ -4,6 +4,11 @@ import {
   DEFAULT_COMMENT_AUTHOR_FILTER,
   isCommentAuthorFilter,
 } from './commentAuthors.ts';
+import {
+  acceptRepoLensStore,
+  EMPTY_REPO_LENS_STORE,
+  type RepoLensStore,
+} from './lenses/lenses.ts';
 import { dedupeWatchedRepos, type WatchedRepo } from './pulls.ts';
 import {
   CODE_FONT_STORAGE_KEY,
@@ -11,6 +16,7 @@ import {
   COMMENT_AUTHOR_FILTER_STORAGE_KEY,
   RAIL_COLLAPSED_STORAGE_KEY,
   RAIL_WIDTH_STORAGE_KEY,
+  REPO_LENSES_STORAGE_KEY,
   SHOW_OWN_PULLS_STORAGE_KEY,
   SIDEBAR_WIDTH_STORAGE_KEY,
   VIEWER_CONTROLS_STORAGE_KEY,
@@ -214,4 +220,15 @@ export const SIDEBAR_WIDTH_PREFERENCE = paneWidthPreference(
 
 export const RAIL_WIDTH_PREFERENCE = paneWidthPreference(
   RAIL_WIDTH_STORAGE_KEY
+);
+
+/**
+ * How each repository's special files are read, by `repoLensKey`. One value
+ * for every repository rather than a key apiece, so the store can be read and
+ * edited as a whole and a repository nobody configured costs nothing.
+ */
+export const REPO_LENSES_PREFERENCE = jsonPreference<RepoLensStore>(
+  REPO_LENSES_STORAGE_KEY,
+  EMPTY_REPO_LENS_STORE,
+  acceptRepoLensStore
 );

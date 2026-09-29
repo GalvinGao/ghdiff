@@ -7,6 +7,7 @@ import {
   IconDiffUnified,
   IconEyeSlash,
   IconFileTree,
+  IconGear,
   IconGearFill,
   IconInReview,
   IconSymbolDiffstat,
@@ -20,6 +21,7 @@ import { useId, useState } from 'react';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { GitHubAccountControl } from '@/components/GitHubAccountControl';
 import { GitHubTextLink } from '@/components/GitHubLink';
+import { LensBadge } from '@/components/lenses/LensFrame';
 import { PullDetailsCard } from '@/components/PullDetailsCard';
 import { PullListButton } from '@/components/PullListButton';
 import { pullStateLabel } from '@/components/PullStateIcon';
@@ -91,6 +93,17 @@ interface ReviewHeaderProps {
   /** True while the file list covers the diff. Phone layout only. */
   filesOpen?: boolean;
   onControlsChange(next: ViewerControls): void;
+  /**
+   * The lenses this repository can use, one switch apiece, and the way to each
+   * one's settings. The state is the repository's own; this is its control.
+   */
+  lenses: readonly {
+    id: string;
+    label: string;
+    enabled: boolean;
+    onEnabledChange(enabled: boolean): void;
+    onOpenSettings(): void;
+  }[];
   /** Shows and hides the file list. Absent on every screen wide enough to
       draw the list beside the diff. */
   onToggleFiles?(): void;
@@ -130,6 +143,7 @@ export function ReviewHeader({
   colorMode,
   controls,
   filesOpen = false,
+  lenses,
   onControlsChange,
   onReviewSubmitted,
   onToggleFiles,
@@ -144,6 +158,10 @@ export function ReviewHeader({
   const targetLabel = describeReviewTarget(target);
   const split = controls.diffStyle === 'split';
   const [reviewing, setReviewing] = useState(false);
+  // Held here rather than left to the menu, so a lens's gear can close it on
+  // the way to the dialog: that press is not a menu item, and would otherwise
+  // leave the menu open over the window it opened.
+  const [menuOpen, setMenuOpen] = useState(false);
   const reviewPopoverId = useId();
   // Only the phone layout scrolls this row, and the attributes it writes mean
   // nothing to any other width, so this costs a wider screen two no-op writes.
@@ -250,7 +268,7 @@ export function ReviewHeader({
 
         {/* modal={false}, so the diff still scrolls while the menu is open and
             a setting can be judged against the code it changes. */}
-        <DropdownMenu modal={false}>
+        <DropdownMenu modal={false} open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               aria-label="Display settings"
@@ -387,6 +405,51 @@ export function ReviewHeader({
                 </DropdownMenuCheckboxItem>
               </>
             )}
+
+            {/* About this repository rather than about how any diff is drawn,
+                so the lenses are a section of their own: a switch that says
+                whether each one is on here, and the way to its settings. */}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>
+              <LensBadge />
+            </DropdownMenuLabel>
+            {lenses.map((lens) => (
+              <DropdownMenuCheckboxItem
+                key={lens.id}
+                checked={lens.enabled}
+                indicator="switch"
+                onSelect={(event) => event.preventDefault()}
+                onCheckedChange={(checked) =>
+                  lens.onEnabledChange(checked === true)
+                }
+              >
+                <span className="flex items-center gap-1">
+                  {lens.label}
+                  {/* Beside the name it configures, inside the row that
+                      switches it. Every pointer phase stops here, or the row
+                      would read the press as its own and flip the switch. The
+                      panel's own gear is the keyboard's way to the same
+                      dialog, so this one stays out of the tab order. */}
+                  <button
+                    type="button"
+                    aria-label={`${lens.label} settings`}
+                    className="text-ink-faint hover:text-ink hover:bg-raised inline-flex size-5 items-center justify-center rounded"
+                    tabIndex={-1}
+                    title={`${lens.label} settings`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setMenuOpen(false);
+                      lens.onOpenSettings();
+                    }}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onPointerUp={(event) => event.stopPropagation()}
+                  >
+                    <IconGear size={12} />
+                  </button>
+                </span>
+              </DropdownMenuCheckboxItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 

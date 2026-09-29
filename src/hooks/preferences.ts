@@ -14,6 +14,7 @@ import {
   type PreferenceCodec,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
+  REPO_LENSES_PREFERENCE,
   SHOW_OWN_PULLS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
@@ -160,3 +161,4 @@ export const commentAuthorFilterPreference = preference(
 export const sidebarWidthPreference = preference(SIDEBAR_WIDTH_PREFERENCE);
 export const railWidthPreference = preference(RAIL_WIDTH_PREFERENCE);
 export const showOwnPullsPreference = preference(SHOW_OWN_PULLS_PREFERENCE);
+export const repoLensesPreference = preference(REPO_LENSES_PREFERENCE);
