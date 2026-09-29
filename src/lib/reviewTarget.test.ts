@@ -326,6 +326,34 @@ describe('a local diff target', () => {
     );
   });
 
+  it('cuts every sha in a range label and leaves a name whole', () => {
+    const other = 'b4d725ba5827f10bcd032f16eff3053a980c2ebc';
+    assert.equal(
+      describeReviewTarget({
+        ...worktree,
+        range: { mode: 'range', base: SHA, head: other },
+      }),
+      'ghdiff \u00b7 8c20a53...b4d725b'
+    );
+    assert.equal(
+      describeReviewTarget({
+        ...worktree,
+        range: { mode: 'branch', base: SHA },
+      }),
+      'ghdiff \u00b7 8c20a53...HEAD'
+    );
+    assert.equal(
+      describeReviewTarget({
+        kind: 'github-compare',
+        owner: 'o',
+        repo: 'r',
+        base: 'main',
+        head: other,
+      }),
+      'o/r main...b4d725b'
+    );
+  });
+
   it('survives the trip through the query', () => {
     for (const range of [
       { mode: 'worktree' },
