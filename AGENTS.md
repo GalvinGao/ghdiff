@@ -964,14 +964,14 @@ same path, including deleted lines.
 Behind `Effect.gen` nearly every line opens on `yield*`, and it means one thing
 each time: take the value, or leave the generator on failure — Go's
 `if err != nil { return err }`, which GoLand folds to `: err ↗`. So
-`src/lib/effectHints.ts` finds every `yield*` for the viewer to quiet, and names
-the few expressions whose meaning the keyword hides: a failure made on the spot
-(`fails · NotFound ↗`), a defect or an interruption, a bare PascalCase operand
-read as a service (`needs · UserRepo`), and the handlers — `catchTag`'s strings
-and `catchTags`' keys by name, and the catch-everything and `orDie` family by
-kind. The arrow is claimed only behind a `yield*`: an `Effect.fail(…)` inside a
-ternary in a callback is a value that fails later, not an exit, and it is
-labelled without one. A member handed over uncalled —
+`src/lib/lenses/effect/effectHints.ts` finds every `yield*` for the viewer to
+quiet, and names the few expressions whose meaning the keyword hides: a failure
+made on the spot (`fails · NotFound ↗`), a defect or an interruption, a bare
+PascalCase operand read as a service (`needs · UserRepo`), and the handlers —
+`catchTag`'s strings and `catchTags`' keys by name, and the catch-everything and
+`orDie` family by kind. The arrow is claimed only behind a `yield*`: an
+`Effect.fail(…)` inside a ternary in a callback is a value that fails later, not
+an exit, and it is labelled without one. A member handed over uncalled —
 `Effect.partition(values, Effect.fail)` — is labelled nothing.
 
 A hunk is not a program, so there is no syntax tree: a real parser over a
@@ -1029,11 +1029,20 @@ The keyword is a CSS custom highlight on `--app-effect-yield-ink`, and the
 trailing label is generated content after the code, a chip exactly the row's
 height. Every label's `content` carries an empty alternative after a `/`, or a
 screen reader reads it as code; the button's `aria-label` and the row's `title`
-say the reading instead. **Effect hints** in the display menu is the off switch:
-it walks the rendered files through a ref the way a search query does, so the
-options object — and every file — is not rebuilt for it, and it unwraps every
-fold it made. A row with a cron schedule as well shows both in one chip and
-keeps the schedule's tooltip.
+say the reading instead.
+
+**It is a lens, and the first one that claims nothing.** `effect` sits in
+`LENSES` beside the localization lens, so it is on or off per repository, under
+the same **Lens** heading of the display menu, in the same browser store. It
+takes no file out of the diff and draws no panel — the reading happens on the
+rows the diff already draws — so its model is empty and its row in the menu has
+no gear, which is what `onOpenSettings` being absent means. The switch is the
+whole of its settings, and the lens starts on: it only ever touches a script
+that names `Effect`. `ReviewViewer` takes it as `effectLens` and walks the
+rendered files through a ref when it flips, the way a search query does, so the
+options object — and every file — is not rebuilt for it, and turning it off
+unwraps every fold it made. A row with a cron schedule as well shows both in one
+chip and keeps the schedule's tooltip.
 
 **Cmd+F is answered by the app, because the browser's find reads the DOM and
 most of the diff is not in it.** The viewer renders the files under the viewport

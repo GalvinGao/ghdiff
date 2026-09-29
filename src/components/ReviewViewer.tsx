@@ -29,11 +29,6 @@ import {
   CRON_SCHEDULES_CSS,
 } from '@/components/diffCronSchedules';
 import {
-  applyEffectHints,
-  clearEffectHints,
-  EFFECT_HINTS_CSS,
-} from '@/components/diffEffectHints';
-import {
   applyExpansionLoading,
   EXPANSION_LOADING_CSS,
 } from '@/components/diffExpansionLoading';
@@ -43,6 +38,11 @@ import {
   clearSearchMarks,
   SEARCH_MARKS_CSS,
 } from '@/components/diffSearchMarks';
+import {
+  applyEffectHints,
+  clearEffectHints,
+  EFFECT_HINTS_CSS,
+} from '@/components/lenses/diffEffectHints';
 import { Button } from '@/components/ui/Button';
 import { CheckBox } from '@/components/ui/CheckBox';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -66,6 +66,11 @@ interface ReviewViewerProps {
   /** Where a comment written here goes, which a card says out loud. */
   commentStore: CommentStore;
   controls: ViewerControls;
+  /**
+   * Whether the Effect lens is on for this repository: `yield*` quieted, and
+   * the expressions it hides drawn as labels.
+   */
+  effectLens: boolean;
   items: readonly CodeViewDiffItem<CommentMetadata>[];
   /**
    * Reads a whole file so the viewer can draw the unmodified lines a patch
@@ -130,6 +135,7 @@ export const ReviewViewer = memo(function ReviewViewer({
   collapsedItemIds,
   commentStore,
   controls,
+  effectLens,
   items,
   loadDiffFiles,
   loadingFiles,
@@ -184,23 +190,19 @@ export const ReviewViewer = memo(function ReviewViewer({
     }
   }, [searchMarks, viewerRef]);
 
-  // The same arrangement for the Effect switch: the options stay put, the
+  // The same arrangement for the Effect lens: the options stay put, the
   // files on screen are walked once, and every later pass reads the ref.
-  const effectHintsRef = useRef(controls.effectHints);
+  const effectHintsRef = useRef(effectLens);
   useLayoutEffect(() => {
-    if (effectHintsRef.current === controls.effectHints) return;
-    effectHintsRef.current = controls.effectHints;
+    if (effectHintsRef.current === effectLens) return;
+    effectHintsRef.current = effectLens;
     for (const entry of viewerRef.current?.getInstance()?.getRenderedItems() ??
       []) {
       if (entry.type === 'diff') {
-        applyEffectHints(
-          entry.element,
-          entry.item.fileDiff,
-          controls.effectHints
-        );
+        applyEffectHints(entry.element, entry.item.fileDiff, effectLens);
       }
     }
-  }, [controls.effectHints, viewerRef]);
+  }, [effectLens, viewerRef]);
 
   // First in the header, before the change-type icon, where github.com puts
   // its own. This slot is the one thing drawn to the left of that icon.

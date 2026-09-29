@@ -98,7 +98,8 @@ interface ReviewHeaderProps {
     label: string;
     enabled: boolean;
     onEnabledChange(enabled: boolean): void;
-    onOpenSettings(): void;
+    /** Absent for a lens with nothing to set, which draws no gear. */
+    onOpenSettings?(): void;
   }[];
   /** Shows and hides the file list. Absent on every screen wide enough to
       draw the list beside the diff. */
@@ -376,19 +377,6 @@ export function ReviewHeader({
             >
               Dim whitespace changes
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={controls.effectHints}
-              indicator="switch"
-              onSelect={(event) => event.preventDefault()}
-              onCheckedChange={(checked) =>
-                onControlsChange({
-                  ...controls,
-                  effectHints: checked === true,
-                })
-              }
-            >
-              Effect hints
-            </DropdownMenuCheckboxItem>
 
             {/* Last, and behind a separator, because it is the one switch here
                 that changes which files exist rather than how they are drawn.
@@ -439,23 +427,25 @@ export function ReviewHeader({
                       would read the press as its own and flip the switch. The
                       panel's own gear is the keyboard's way to the same
                       dialog, so this one stays out of the tab order. */}
-                  <button
-                    type="button"
-                    aria-label={`${lens.label} settings`}
-                    className="text-ink-faint hover:text-ink hover:bg-raised inline-flex size-5 items-center justify-center rounded"
-                    tabIndex={-1}
-                    title={`${lens.label} settings`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      setMenuOpen(false);
-                      lens.onOpenSettings();
-                    }}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onPointerUp={(event) => event.stopPropagation()}
-                  >
-                    <IconGear size={12} />
-                  </button>
+                  {lens.onOpenSettings != null && (
+                    <button
+                      type="button"
+                      aria-label={`${lens.label} settings`}
+                      className="text-ink-faint hover:text-ink hover:bg-raised inline-flex size-5 items-center justify-center rounded"
+                      tabIndex={-1}
+                      title={`${lens.label} settings`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setMenuOpen(false);
+                        lens.onOpenSettings?.();
+                      }}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onPointerUp={(event) => event.stopPropagation()}
+                    >
+                      <IconGear size={12} />
+                    </button>
+                  )}
                 </span>
               </DropdownMenuCheckboxItem>
             ))}

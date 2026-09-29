@@ -781,6 +781,11 @@ export function ReviewScreen({
     },
     [localizationSettings, setLocalizationSettings]
   );
+  const effectLens = repoLenses.get('effect').enabled;
+  const setEffectLens = useCallback(
+    (enabled: boolean) => setRepoLens('effect', { enabled }),
+    [setRepoLens]
+  );
   const headerLenses = useMemo(
     () => [
       {
@@ -790,8 +795,21 @@ export function ReviewScreen({
         onEnabledChange: setLocalizationEnabled,
         onOpenSettings: openLocalization,
       },
+      // No gear: the lens reads the code and has nothing to be told.
+      {
+        id: 'effect',
+        label: LENSES.effect.label,
+        enabled: effectLens,
+        onEnabledChange: setEffectLens,
+      },
     ],
-    [localizationSettings.enabled, openLocalization, setLocalizationEnabled]
+    [
+      effectLens,
+      localizationSettings.enabled,
+      openLocalization,
+      setEffectLens,
+      setLocalizationEnabled,
+    ]
   );
   const renderLensHeader = useCallback(
     () => (
@@ -965,6 +983,7 @@ export function ReviewScreen({
                 canCreateIssue={comments.canCreateIssue}
                 commentStore={comments.store}
                 controls={controls}
+                effectLens={effectLens}
                 items={items}
                 loadDiffFiles={files.loadDiffFiles}
                 loadingFiles={files.loadingFiles}

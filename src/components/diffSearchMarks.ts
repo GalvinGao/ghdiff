@@ -1,5 +1,5 @@
-import { openFoldHolding } from '@/components/diffEffectHints';
 import { forEachRenderedRow, rangesForSpans } from '@/components/diffLineMarks';
+import { openFoldHolding } from '@/components/lenses/diffEffectHints';
 import type { SearchMarks, SearchSpan } from '@/lib/diffSearch';
 
 // How the matches from src/lib/diffSearch.ts reach the rendered rows.

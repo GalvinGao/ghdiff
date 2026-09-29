@@ -2,6 +2,11 @@ import type { FileDiffMetadata } from '@pierre/diffs';
 
 import type { ReviewTarget } from '../reviewTarget.ts';
 import {
+  acceptEffectSettings,
+  DEFAULT_EFFECT_SETTINGS,
+  type EffectSettings,
+} from './effect/config.ts';
+import {
   acceptLocalizationSettings,
   DEFAULT_LOCALIZATION_SETTINGS,
   type LocalizationSettings,
@@ -20,6 +25,10 @@ import {
 // diff draws that model instead of the files. A claimed file is taken out of
 // the diff's scroll and left in the tree, because it is still part of the
 // review; the panel is simply where it is read.
+//
+// A lens that reads a file better where it already is claims nothing and
+// draws no panel: the Effect lens is the case, and its model is empty because
+// its reading is done on the rows the diff draws, by the viewer, per file.
 //
 // A lens does nothing for a repository until that repository's settings let
 // it, and the settings are per repository because the files are: a message
@@ -47,11 +56,16 @@ export interface LensModel {
 /** Every lens and its settings, stated once. Add a lens here. */
 export interface LensSettingsById {
   localization: LocalizationSettings;
+  effect: EffectSettings;
 }
 
 export interface LensModelsById {
   localization: LocalizationModel;
+  effect: LensModel;
 }
+
+/** A model for a lens that takes no file out of the diff. */
+const CLAIMS_NOTHING: LensModel = { claimedItemIds: new Set() };
 
 export type LensId = keyof LensSettingsById;
 
@@ -70,6 +84,12 @@ export const LENSES: {
           files.map((file) => file.path)
         )
       ),
+  },
+  effect: {
+    label: 'Effect',
+    defaults: DEFAULT_EFFECT_SETTINGS,
+    accept: acceptEffectSettings,
+    build: () => CLAIMS_NOTHING,
   },
 };
 
@@ -143,7 +163,9 @@ export function applyLenses(
     const open = files.filter((file) => !claimedItemIds.has(file.itemId));
     const model = LENSES[id].build(open, lensSettings(repo, id));
     for (const itemId of model.claimedItemIds) claimedItemIds.add(itemId);
-    models[id] = model;
+    // Each model was built by its own lens, but a loop over the ids reads
+    // them as one union, which no single model's type accepts.
+    (models as Record<LensId, LensModel>)[id] = model;
   }
   return { models, claimedItemIds };
 }

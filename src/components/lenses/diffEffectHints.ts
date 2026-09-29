@@ -6,9 +6,10 @@ import {
   type EffectHints,
   type EffectLineHint,
   findEffectHints,
-} from '@/lib/effectHints';
+} from '@/lib/lenses/effect/effectHints';
 
-// How the reading in src/lib/effectHints.ts reaches the rendered rows.
+// How the Effect lens's reading, in src/lib/lenses/effect/effectHints.ts,
+// reaches the rendered rows.
 //
 // Three marks. The `yield*` keyword is dimmed with a CSS custom highlight, the
 // way a search match is painted. A reading whose expression sits on one line
