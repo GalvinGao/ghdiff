@@ -35,6 +35,7 @@ import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
 import { useDiffSearch } from '@/hooks/useDiffSearch';
 import { useIsPhone } from '@/hooks/useIsPhone';
+import { usePullConversation } from '@/hooks/usePullConversation';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useRepoLenses } from '@/hooks/useRepoLenses';
 import { useReviewComments } from '@/hooks/useReviewComments';
@@ -59,6 +60,10 @@ import { buildCommentSections } from '@/lib/commentSections';
 import type { SearchMatch } from '@/lib/diffSearch';
 import { applyLenses, LENSES, type LensFile } from '@/lib/lenses/lenses';
 import type { LocalizationSettings } from '@/lib/lenses/localization/config';
+import {
+  addConversationAuthors,
+  filterConversation,
+} from '@/lib/pullConversation';
 import {
   applyReviewFilter,
   availableStatuses,
@@ -194,6 +199,11 @@ export function ReviewScreen({
     };
   }, [tabTitle]);
   const review = useSubmitReview({
+    number: pullTarget?.number,
+    owner: pullTarget?.owner,
+    repo: pullTarget?.repo,
+  });
+  const conversation = usePullConversation({
     number: pullTarget?.number,
     owner: pullTarget?.owner,
     repo: pullTarget?.repo,
@@ -358,12 +368,20 @@ export function ReviewScreen({
   // from the whole set, so the buttons still say how many the other filter
   // holds while one of them is on.
   const authorCounts = useMemo(
-    () => countCommentAuthors(commentSections),
-    [commentSections]
+    () =>
+      addConversationAuthors(
+        countCommentAuthors(commentSections),
+        conversation.entries
+      ),
+    [commentSections, conversation.entries]
   );
   const listedSections = useMemo(
     () => filterCommentSections(commentSections, authorMode),
     [authorMode, commentSections]
+  );
+  const listedConversation = useMemo(
+    () => filterConversation(conversation.entries, authorMode),
+    [authorMode, conversation.entries]
   );
 
   // Read from the filtered list, not from the whole patch. The filter drives
@@ -839,8 +857,12 @@ export function ReviewScreen({
         review={pullTarget == null ? undefined : review}
         target={target}
         // A verdict changes the review half of the square the left bar draws on
-        // every row, so the list it came from is asked again.
-        onReviewSubmitted={openPulls.reload}
+        // every row, so the list it came from is asked again — and it is a new
+        // entry in the conversation, so that is asked again too.
+        onReviewSubmitted={() => {
+          openPulls.reload();
+          conversation.reload();
+        }}
         session={session}
         untracked={
           untrackedCount === 0
@@ -897,6 +919,9 @@ export function ReviewScreen({
             colorScheme={colorMode.scheme}
             commentSections={listedSections}
             commentStore={comments.store}
+            conversation={listedConversation}
+            conversationAttachments={conversation.attachments}
+            onConversationAttachmentError={conversation.renewAttachments}
             entries={patch.data.entries}
             filter={filter}
             hiddenCount={filtered.hiddenCount}

@@ -109,14 +109,26 @@ function describeLocalRange(range: LocalDiffRange): string {
 }
 
 /**
- * The same, for a header: a sha is cut to the seven characters a developer
- * reads it by, and a name that is not a sha is left as it was.
+ * A revision as a header prints it: a sha is cut to the seven characters a
+ * developer reads it by, and a name that is not a sha is left as it was.
  */
+function labelRevision(rev: string): string {
+  return SHA_PATTERN.test(rev) ? rev.slice(0, 7) : rev;
+}
+
+/** `describeLocalRange` for a header, with every sha in it cut short. */
 function labelLocalRange(range: LocalDiffRange): string {
-  if (range.mode === 'commit' && SHA_PATTERN.test(range.rev)) {
-    return `commit ${range.rev.slice(0, 7)}`;
+  switch (range.mode) {
+    case 'worktree':
+    case 'staged':
+      return describeLocalRange(range);
+    case 'branch':
+      return `${labelRevision(range.base)}...HEAD`;
+    case 'range':
+      return `${labelRevision(range.base)}...${labelRevision(range.head)}`;
+    case 'commit':
+      return `commit ${labelRevision(range.rev)}`;
   }
-  return describeLocalRange(range);
 }
 
 /**
@@ -159,7 +171,9 @@ export function describeReviewTarget(target: ReviewTarget): string {
     case 'github-commit':
       return `${target.owner}/${target.repo} @ ${target.sha.slice(0, 7)}`;
     case 'github-compare':
-      return `${target.owner}/${target.repo} ${target.base}...${target.head}`;
+      return `${target.owner}/${target.repo} ${labelRevision(
+        target.base
+      )}...${labelRevision(target.head)}`;
     case 'local-diff':
       return `${repoNameFromRoot(target.root)} · ${labelLocalRange(
         target.range

@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { ReviewEvent, SubmittedReview } from '@/lib/reviewDecision';
+import type {
+  ReviewEvent,
+  SubmittedReview,
+  TeamReview,
+} from '@/lib/reviewDecision';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 
 // The state of one reviewer's verdict on one pull request: the one they left
@@ -24,6 +28,11 @@ export interface SubmitReviewState {
    * token's own.
    */
   latest?: SubmittedReview;
+  /**
+   * The newest verdicts other people left, newest first. Empty until GitHub
+   * has answered, and for good when nobody else has reviewed.
+   */
+  team: TeamReview[];
   submit(
     event: ReviewEvent,
     body: string
@@ -44,21 +53,32 @@ export function useSubmitReview(options: {
     undefined
   );
   const [latest, setLatest] = useState<SubmittedReview | undefined>(undefined);
+  const [team, setTeam] = useState<TeamReview[]>([]);
 
   // What GitHub already has. It is one extra fact about a pull request whose
   // diff is the screen, so a failure to read it is reported nowhere: the header
   // goes on offering a first review, which is what it would have said anyway.
   useEffect(() => {
     setLatest(undefined);
+    setTeam([]);
     if (owner == null || repo == null || number == null) return undefined;
     const controller = new AbortController();
+    const pull = { number, owner, repo };
+    const request = { signal: controller.signal };
     void (async () => {
       try {
-        const answer = await rpc.reviews.mine(
-          { number, owner, repo },
-          { signal: controller.signal }
-        );
+        const answer = await rpc.reviews.mine(pull, request);
         if (!controller.signal.aborted) setLatest(answer.review);
+      } catch {
+        // Nothing to say. See above.
+      }
+    })();
+    // The same holds for the team's verdicts: the dialog lists none, which is
+    // what it would list for a pull request nobody else has reviewed.
+    void (async () => {
+      try {
+        const answer = await rpc.reviews.team(pull, request);
+        if (!controller.signal.aborted) setTeam(answer.reviews);
       } catch {
         // Nothing to say. See above.
       }
@@ -105,5 +125,5 @@ export function useSubmitReview(options: {
     setSubmitted(undefined);
   }, []);
 
-  return { error, latest, pending, reset, submit, submitted };
+  return { error, latest, pending, reset, submit, submitted, team };
 }
