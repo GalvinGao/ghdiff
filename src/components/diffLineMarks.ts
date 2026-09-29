@@ -112,3 +112,60 @@ export function applyLineMarks(
     if (quiet.has(line)) row.setAttribute('data-ghdiff-quiet', '');
   });
 }
+
+/** Columns on one line of text, end exclusive. */
+export interface RowSpan {
+  start: number;
+  end: number;
+}
+
+/**
+ * One static range per span, cut in one walk over a row's text nodes. The
+ * spans must be sorted by column and must not overlap, so each is closed
+ * before the next is opened, and a span that begins in one of shiki's tokens
+ * and ends in the next is one range across both. The result lines up with
+ * `spans` from the first; a span past the end of the row's text has no range,
+ * and neither does any after it.
+ */
+export function rangesForSpans(
+  row: HTMLElement,
+  spans: readonly RowSpan[]
+): StaticRange[] {
+  const ranges: StaticRange[] = [];
+  const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+  let offset = 0;
+  let next = 0;
+  let startContainer: Text | undefined;
+  let startOffset = 0;
+  for (
+    let node = walker.nextNode();
+    node != null && next < spans.length;
+    node = walker.nextNode()
+  ) {
+    const text = node as Text;
+    const { length } = text.data;
+    if (length === 0) continue;
+    const end = offset + length;
+    while (next < spans.length) {
+      const span = spans[next]!;
+      if (startContainer == null) {
+        if (span.start >= end) break;
+        startContainer = text;
+        startOffset = span.start - offset;
+      }
+      if (span.end > end) break;
+      ranges.push(
+        new StaticRange({
+          startContainer,
+          startOffset,
+          endContainer: text,
+          endOffset: span.end - offset,
+        })
+      );
+      startContainer = undefined;
+      next += 1;
+    }
+    offset = end;
+  }
+  return ranges;
+}

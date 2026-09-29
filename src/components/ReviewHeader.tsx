@@ -376,6 +376,19 @@ export function ReviewHeader({
             >
               Dim whitespace changes
             </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={controls.effectHints}
+              indicator="switch"
+              onSelect={(event) => event.preventDefault()}
+              onCheckedChange={(checked) =>
+                onControlsChange({
+                  ...controls,
+                  effectHints: checked === true,
+                })
+              }
+            >
+              Effect hints
+            </DropdownMenuCheckboxItem>
 
             {/* Last, and behind a separator, because it is the one switch here
                 that changes which files exist rather than how they are drawn.

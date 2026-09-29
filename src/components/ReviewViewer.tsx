@@ -29,6 +29,11 @@ import {
   CRON_SCHEDULES_CSS,
 } from '@/components/diffCronSchedules';
 import {
+  applyEffectHints,
+  clearEffectHints,
+  EFFECT_HINTS_CSS,
+} from '@/components/diffEffectHints';
+import {
   applyExpansionLoading,
   EXPANSION_LOADING_CSS,
 } from '@/components/diffExpansionLoading';
@@ -113,6 +118,7 @@ interface ReviewViewerProps {
 const VIEWER_CSS =
   LINE_MARKS_CSS +
   CRON_SCHEDULES_CSS +
+  EFFECT_HINTS_CSS +
   SEARCH_MARKS_CSS +
   EXPANSION_LOADING_CSS;
 
@@ -177,6 +183,24 @@ export const ReviewViewer = memo(function ReviewViewer({
       applySearchMarks(entry.element, entry.id, searchMarks);
     }
   }, [searchMarks, viewerRef]);
+
+  // The same arrangement for the Effect switch: the options stay put, the
+  // files on screen are walked once, and every later pass reads the ref.
+  const effectHintsRef = useRef(controls.effectHints);
+  useLayoutEffect(() => {
+    if (effectHintsRef.current === controls.effectHints) return;
+    effectHintsRef.current = controls.effectHints;
+    for (const entry of viewerRef.current?.getInstance()?.getRenderedItems() ??
+      []) {
+      if (entry.type === 'diff') {
+        applyEffectHints(
+          entry.element,
+          entry.item.fileDiff,
+          controls.effectHints
+        );
+      }
+    }
+  }, [controls.effectHints, viewerRef]);
 
   // First in the header, before the change-type icon, where github.com puts
   // its own. This slot is the one thing drawn to the left of that icon.
@@ -260,6 +284,7 @@ export const ReviewViewer = memo(function ReviewViewer({
           // The rows are about to go, and so must the ranges painted over
           // them, or the registry keeps a window's worth per pass.
           clearSearchMarks(node);
+          clearEffectHints(node);
           return;
         }
         if (item.type !== 'diff') return;
@@ -275,6 +300,7 @@ export const ReviewViewer = memo(function ReviewViewer({
         );
         applyLineMarks(node, item.fileDiff);
         applyCronSchedules(node, item.fileDiff);
+        applyEffectHints(node, item.fileDiff, effectHintsRef.current);
         applySearchMarks(node, item.id, searchMarksRef.current);
       },
     }),

@@ -1,4 +1,5 @@
-import { forEachRenderedRow } from '@/components/diffLineMarks';
+import { openFoldHolding } from '@/components/diffEffectHints';
+import { forEachRenderedRow, rangesForSpans } from '@/components/diffLineMarks';
 import type { SearchMarks, SearchSpan } from '@/lib/diffSearch';
 
 // How the matches from src/lib/diffSearch.ts reach the rendered rows.
@@ -147,10 +148,9 @@ export function applySearchMarks(
 }
 
 /**
- * One range per span, cut in one walk over the row's text. The spans arrive
- * sorted by column and never overlap — they are one regex's matches on one
- * line — so each is closed before the next is opened, and a match that begins
- * in one of shiki's tokens and ends in the next is one range across both.
+ * One range per span, each added to the entry its ordinal belongs in. The
+ * spans arrive sorted by column and never overlap — they are one regex's
+ * matches on one line — which is what `rangesForSpans` asks for.
  */
 function paintRow(
   row: HTMLElement,
@@ -158,41 +158,14 @@ function paintRow(
   current: number
 ): StaticRange[] {
   if (registry == null) return [];
-  const ranges: StaticRange[] = [];
-  const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
-  let offset = 0;
-  let next = 0;
-  let startContainer: Text | undefined;
-  let startOffset = 0;
-  for (
-    let node = walker.nextNode();
-    node != null && next < spans.length;
-    node = walker.nextNode()
-  ) {
-    const text = node as Text;
-    const { length } = text.data;
-    if (length === 0) continue;
-    const end = offset + length;
-    while (next < spans.length) {
-      const span = spans[next];
-      if (startContainer == null) {
-        if (span.start >= end) break;
-        startContainer = text;
-        startOffset = span.start - offset;
-      }
-      if (span.end > end) break;
-      const range = new StaticRange({
-        startContainer,
-        startOffset,
-        endContainer: text,
-        endOffset: span.end - offset,
-      });
-      (span.ordinal === current ? registry.current : registry.all).add(range);
-      ranges.push(range);
-      startContainer = undefined;
-      next += 1;
-    }
-    offset = end;
-  }
+  const ranges = rangesForSpans(row, spans);
+  ranges.forEach((range, index) => {
+    const isCurrent = spans[index]!.ordinal === current;
+    (isCurrent ? registry.current : registry.all).add(range);
+    // A match an Effect fold is hiding is opened when the reviewer steps onto
+    // it, and not before: opening every fold a query touches would unfold a
+    // whole file for a search for `Effect`.
+    if (isCurrent) openFoldHolding(range.startContainer);
+  });
   return ranges;
 }

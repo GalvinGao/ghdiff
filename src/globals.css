@@ -134,6 +134,22 @@
   --app-search-current: #fb923c;
   --app-search-current-ink: #0a0a0a;
 
+  /* Effect code: the `yield*` a reader looks past, the label a folded
+     expression is drawn as, and the faint ground under a fold that has been
+     opened, so the reader can see what the label stood for. No hue: all of it
+     is quieter than the code, and on a changed line it sits on the diff's own
+     red or green. Stated once here, from the ink, so the dark scheme follows
+     by itself. Read inside the viewer's shadow roots by `EFFECT_HINTS_CSS`. */
+  --app-effect-yield-ink: var(--app-ink-faint);
+  --app-effect-hint-surface: color-mix(in srgb, var(--app-ink) 8%, transparent);
+  --app-effect-hint-surface-hover: color-mix(
+    in srgb,
+    var(--app-ink) 14%,
+    transparent
+  );
+  --app-effect-hint-ink: var(--app-ink-muted);
+  --app-effect-fold-open: color-mix(in srgb, var(--app-ink) 5%, transparent);
+
   /* GitHub Primer state colors, light mode: fgColor-open, fgColor-muted,
      fgColor-done, fgColor-closed. A pull request state should read the same
      colour here as it does on github.com. */

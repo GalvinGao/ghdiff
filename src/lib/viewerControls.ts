@@ -22,6 +22,8 @@ export interface ViewerControls {
   backgrounds: boolean;
   /** Dim a changed line whose two sides differ only in whitespace. */
   dimWhitespace: boolean;
+  /** Quiet `yield*` in Effect code and label the lines it hides. */
+  effectHints: boolean;
 }
 
 export const DEFAULT_VIEWER_CONTROLS: ViewerControls = {
@@ -31,6 +33,7 @@ export const DEFAULT_VIEWER_CONTROLS: ViewerControls = {
   lineNumbers: true,
   backgrounds: true,
   dimWhitespace: true,
+  effectHints: true,
 };
 
 /** The same set with the one field a phone answers differently. */
@@ -111,6 +114,11 @@ export function acceptViewerControls(
       typeof stored.dimWhitespace === 'boolean',
       stored.dimWhitespace as boolean,
       DEFAULT_VIEWER_CONTROLS.dimWhitespace
+    ),
+    effectHints: take(
+      typeof stored.effectHints === 'boolean',
+      stored.effectHints as boolean,
+      DEFAULT_VIEWER_CONTROLS.effectHints
     ),
   };
   return read === 0 ? undefined : controls;

@@ -960,6 +960,81 @@ A narrow pane clips the hint; the row's native tooltip holds the complete
 expression, description and timezone caveat. Split and unified views use the
 same path, including deleted lines.
 
+**Effect code is read between its `yield*`s, and the read is an island parse.**
+Behind `Effect.gen` nearly every line opens on `yield*`, and it means one thing
+each time: take the value, or leave the generator on failure — Go's
+`if err != nil { return err }`, which GoLand folds to `: err ↗`. So
+`src/lib/effectHints.ts` finds every `yield*` for the viewer to quiet, and names
+the few expressions whose meaning the keyword hides: a failure made on the spot
+(`fails · NotFound ↗`), a defect or an interruption, a bare PascalCase operand
+read as a service (`needs · UserRepo`), and the handlers — `catchTag`'s strings
+and `catchTags`' keys by name, and the catch-everything and `orDie` family by
+kind. The arrow is claimed only behind a `yield*`: an `Effect.fail(…)` inside a
+ternary in a callback is a value that fails later, not an exit, and it is
+labelled without one. A member handed over uncalled —
+`Effect.partition(values, Effect.fail)` — is labelled nothing.
+
+A hunk is not a program, so there is no syntax tree: a real parser over a
+fragment that opens halfway through a call is a tree of error nodes, and every
+tolerant one would be a dependency for a readability hint. A tokenizer knows
+comments, the three kinds of string and a regular expression, because those are
+what would put a `yield*` where there is none, and the recognizers match their
+shapes and skip everything else. Nothing needs the brackets to balance, so a
+closer whose opener is off screen costs nothing and a call that runs past the
+end of a hunk is read to the end of the hunk. A run is each hunk until the file
+is hydrated and the whole file after it, keyed on `isPartial`, so expanding a
+file improves the reading. A run that opens inside a JSDoc block is read as
+comment only when its first line looks like one — a bare `*/` is also what
+`"**/*.ts"` contains. The whole thing is gated on a script path that names
+`Effect` in the lines the diff holds, because `yield*` is plain JavaScript and a
+redux-saga file must not be told its `yield* Foo` is a service.
+
+**A label stands in for the code it reads, and a press gives the code back.** A
+reading whose expression sits on one line is an `EffectFold`: GoLand draws
+`if err != nil { return err }` as `: err ↗`, and ghdiff draws
+`yield* Effect.fail(new NotFound({ id }))` as one button reading
+`fails · NotFound ↗`. The press shows the code on a faint ground, with a `−`
+where the label was to fold it again, and the choice is kept per file by fold,
+because a row is rebuilt every time it scrolls back into the window. The outer
+fold wins, so `Effect.catchTag("E", (e) => Effect.die(e))` is one label and not
+two. This is the one place the app hides text, against the rule the whitespace
+dim follows, and three things make it a fold rather than a hide: one press opens
+it, the tooltip quotes the code it stands for, and a fold over a changed word
+wears the change's colour along its bottom edge.
+
+A fold never crosses a line. The viewer lays a diff out one row per line, the
+virtualizer counts them, and a split view holds the other side's rows level with
+them — a row hidden in one column is a row the other column still draws. So
+`return yield* Effect.fail(` with its argument on the next line keeps its label
+after the code, where it was before folds existed.
+
+`diffEffectHints.ts` is the one module that changes the library's own nodes, and
+it is safe for three reasons, all of them read out of the library. Rows are
+built from HTML strings and a column's rows are counted by its children, so the
+change stays inside a row. A scroll pass keeps the rows still in the window with
+the change on them, so a row already painted for its hint is left alone. And the
+change adds no text: the text nodes are split at the fold's edges and wrapped,
+which leaves shiki's spans where they are, and the button's label is generated
+content — so every column counted from the start of the line, by the search, the
+cron hint and the `yield*` ranges, is the column it was. The button stops its
+own `pointerdown` and `click`, because the viewer's click handler reads no
+target and would take the press for a press on the line. It is 16px in a 20px
+row, since out of wrap mode no row is measured. The search opens a fold that
+hides its current match, and only that one: opening every fold a query touched
+would unfold the file for a search for `Effect`. Two costs remain: a copy across
+a closed fold leaves its text out, and opening one in wrap mode changes a height
+the virtualizer measured on the pass before.
+
+The keyword is a CSS custom highlight on `--app-effect-yield-ink`, and the
+trailing label is generated content after the code, a chip exactly the row's
+height. Every label's `content` carries an empty alternative after a `/`, or a
+screen reader reads it as code; the button's `aria-label` and the row's `title`
+say the reading instead. **Effect hints** in the display menu is the off switch:
+it walks the rendered files through a ref the way a search query does, so the
+options object — and every file — is not rebuilt for it, and it unwraps every
+fold it made. A row with a cron schedule as well shows both in one chip and
+keeps the schedule's tooltip.
+
 **Cmd+F is answered by the app, because the browser's find reads the DOM and
 most of the diff is not in it.** The viewer renders the files under the viewport
 and nothing else, so a browser find lands on a word on screen and misses the
