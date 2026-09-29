@@ -58,7 +58,7 @@ import type { ViewerControls } from '@/lib/viewerControls';
 
 /** The label wears this whether or not there is a page for it to link to. */
 const TARGET_LABEL_CLASS =
-  'text-ink-muted shrink-0 truncate text-xs font-medium';
+  'text-ink-muted shrink-0 truncate font-mono text-xs font-medium';
 
 // The bar sits on the same surface as the sidebar and carries no boxes: a row of
 // bordered buttons across the top of a diff reads as a form to fill in, and the
