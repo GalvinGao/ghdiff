@@ -711,6 +711,19 @@ reviewer changes their mind. Everything about this needs a token, since the
 verdict is the token's own, and a failure to read it is reported nowhere: the
 button falls back to the offer it would have made anyway.
 
+**The team's verdicts sit above the reviewer's own.** `reviews.team` reads the
+last fifty reviews through GraphQL, and `recentTeamReviews` in
+`src/lib/reviewDecision.ts` keeps the five newest that are somebody else's
+decision: not the viewer's own (`viewerDidAuthor`), not a bot's, not `PENDING`
+or `DISMISSED`, and not a `COMMENTED` review with no body — that is how GitHub
+files a reply in a line thread, and on a busy pull request those replies would
+push every verdict off the list. `ReviewSubmitDialog` draws the list under its
+title bar and draws nothing when it is empty. The rows are drawn on the
+popover's first paint and only the ages wait for the open, because the ages sit
+at the right edge of each row, where their arrival moves nothing. `VERDICT_ICON`
+and `VERDICT_COLOR` in `src/components/reviewVerdictStyle.ts` are shared with
+the header's button, so an approval is one glyph in one green in both places.
+
 **The API is one contract, and both sides read it.** `src/lib/rpc/contract.ts`
 names every procedure, its input and its output, and imports nothing from a
 server and nothing from a component. `router.ts` implements it and `client.ts`
@@ -1499,6 +1512,19 @@ all over a browser store: those threads are one reviewer's own notes and can
 hold no bot, so two of its three segments could never do anything. The strip
 stays behind it, because its height is what keeps that foot level with the left
 bar's.
+
+**A pull request's conversation leads the comment list.** Line threads were all
+the list held, so a summary written above the lines, or a remark under the
+description, could not be read here at all. `comments.conversation` reads
+GitHub's two lists — `/issues/{n}/comments` and `/pulls/{n}/reviews` — and
+`buildConversation` in `src/lib/pullConversation.ts` makes one timeline of them,
+oldest first, the way github.com reads. A verdict with no words is an entry and
+a remark with no words is not, for the same reason the dialog drops one: its
+words are line comments, and those are threads in the diff already. The section
+has no line to scroll to, so a press opens the whole body in place under its
+fixed-height row. The People and Bots filter and its counts cover the section as
+well. A commit and a compare range have no conversation, and
+`usePullConversation` asks for nothing there.
 
 **A browser-stored comment is a note to a coding agent, and that is the way out
 of the browser.** A comment that only one browser can see used to be a dead end

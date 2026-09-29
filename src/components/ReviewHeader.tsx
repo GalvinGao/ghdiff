@@ -1,8 +1,6 @@
 import type { DiffIndicators } from '@pierre/diffs';
 import {
-  IconApproved,
   IconCodeStyleBars,
-  IconComment,
   IconDiffSplit,
   IconDiffUnified,
   IconEyeSlash,
@@ -10,7 +8,6 @@ import {
   IconGearFill,
   IconInReview,
   IconSymbolDiffstat,
-  IconX,
 } from '@pierre/icons';
 import { GitMergeIcon } from '@primer/octicons-react/GitMergeIcon';
 import { GitPullRequestClosedIcon } from '@primer/octicons-react/GitPullRequestClosedIcon';
@@ -25,6 +22,7 @@ import { PullListButton } from '@/components/PullListButton';
 import { pullStateLabel } from '@/components/PullStateIcon';
 import { PullStateIcon } from '@/components/PullStateIcon';
 import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';
+import { VERDICT_COLOR, VERDICT_ICON } from '@/components/reviewVerdictStyle';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -46,10 +44,8 @@ import { cn } from '@/lib/cn';
 import { CODE_FONTS, type CodeFontId } from '@/lib/codeFonts';
 import { reviewTargetUrl } from '@/lib/githubUrls';
 import type { PullState } from '@/lib/pulls';
-import type { StatusTone } from '@/lib/pullStatus';
 import {
   describeSubmittedReview,
-  type ReviewVerdict,
   isOwnPullRequest,
   reviewVerdict,
 } from '@/lib/reviewDecision';
@@ -402,26 +398,6 @@ export function ReviewHeader({
     </header>
   );
 }
-
-const VERDICT_ICON: Record<ReviewVerdict, typeof IconInReview> = {
-  approved: IconApproved,
-  changes: IconX,
-  commented: IconComment,
-};
-
-/**
- * The verdict's colour, in the tokens the status square paints with, so the
- * green on this button and the green on the square in the left bar are one
- * colour saying one thing. `pending` never reaches here — a verdict is a
- * decision already made — and it is listed because the tone vocabulary is
- * shared with the check axis, which does have a running state.
- */
-const VERDICT_COLOR: Record<StatusTone, string> = {
-  success: 'text-status-success',
-  failure: 'text-status-failure',
-  pending: 'text-status-pending',
-  neutral: 'text-status-neutral',
-};
 
 // A merge or a close outranks any verdict: it is what has happened to the pull
 // request since, and it is true for a viewer who never reviewed it too.

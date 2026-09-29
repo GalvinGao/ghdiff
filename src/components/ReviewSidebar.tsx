@@ -23,6 +23,7 @@ import {
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { CommentStore } from '@/hooks/useReviewComments';
+import type { SignedAttachment } from '@/lib/attachments';
 import { cn } from '@/lib/cn';
 import type {
   CommentAuthorCounts,
@@ -30,6 +31,7 @@ import type {
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import { countComments, countThreads } from '@/lib/commentSections';
+import type { ConversationEntry } from '@/lib/pullConversation';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
 import {
   EMPTY_FILTER_STATE,
@@ -54,6 +56,10 @@ interface ReviewSidebarProps {
   /** Already narrowed by `authorFilter`. This is what the list shows. */
   commentSections: readonly CommentListSection[];
   commentStore: CommentStore;
+  /** The pull request's own conversation, already narrowed by `authorFilter`. */
+  conversation: readonly ConversationEntry[];
+  conversationAttachments: Record<string, SignedAttachment>;
+  onConversationAttachmentError(): void;
   entries: readonly ReviewFileEntry[];
   filter: ReviewFilterState;
   hiddenCount: number;
@@ -85,6 +91,9 @@ export function ReviewSidebar({
   colorScheme,
   commentSections,
   commentStore,
+  conversation,
+  conversationAttachments,
+  onConversationAttachmentError,
   entries,
   filter,
   hiddenCount,
@@ -107,8 +116,9 @@ export function ReviewSidebar({
     if (filter.query.length > 0) onFilterChange({ ...filter, query: '' });
   };
 
-  const commentCount = countComments(commentSections);
-  const threadCount = countThreads(commentSections);
+  // A conversation entry is one message and one row, so it counts once in each.
+  const commentCount = countComments(commentSections) + conversation.length;
+  const threadCount = countThreads(commentSections) + conversation.length;
 
   return (
     <aside
@@ -223,6 +233,9 @@ export function ReviewSidebar({
         >
           <CommentsList
             activeKey={activeThreadKey}
+            conversation={conversation}
+            conversationAttachments={conversationAttachments}
+            onConversationAttachmentError={onConversationAttachmentError}
             onSelectFile={onSelectItem}
             onSelectThread={onSelectComment}
             sections={commentSections}

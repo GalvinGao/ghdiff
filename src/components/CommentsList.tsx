@@ -2,13 +2,26 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { AuthorAvatar } from '@/components/AuthorAvatar';
+import { CommentBody } from '@/components/CommentBody';
+import { GitHubTextLink } from '@/components/GitHubLink';
+import { VERDICT_COLOR, VERDICT_ICON } from '@/components/reviewVerdictStyle';
+import type { SignedAttachment } from '@/lib/attachments';
 import { cn } from '@/lib/cn';
 import { commentPreviewText } from '@/lib/commentHeight';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
+import type { ConversationEntry } from '@/lib/pullConversation';
+import { reviewVerdict } from '@/lib/reviewDecision';
 
 interface CommentsListProps {
   /** The thread the diff has selected. Its row is marked as the current one. */
   activeKey?: string;
+  /**
+   * What was said about the pull request as a whole, already narrowed by the
+   * author filter. Empty for every target but a pull request.
+   */
+  conversation: readonly ConversationEntry[];
+  conversationAttachments: Record<string, SignedAttachment>;
+  onConversationAttachmentError(): void;
   /** The heading of a group is the file's name, so it opens that file. */
   onSelectFile(itemId: string): void;
   onSelectThread(thread: CommentListEntry): void;
@@ -55,6 +68,9 @@ const REVEAL_SLACK = 1;
 
 export function CommentsList({
   activeKey,
+  conversation,
+  conversationAttachments,
+  onConversationAttachmentError,
   onSelectFile,
   onSelectThread,
   sections,
@@ -72,7 +88,7 @@ export function CommentsList({
     return `${String(digits + 1)}ch`;
   }, [sections]);
 
-  if (sections.length === 0) {
+  if (sections.length === 0 && conversation.length === 0) {
     return (
       <div className="text-ink-muted px-3 py-4 text-sm">
         <p>No comments here.</p>
@@ -89,6 +105,13 @@ export function CommentsList({
     // overflow-x-hidden, because a long path or an unbroken token in a preview
     // must never give the panel a horizontal scrollbar.
     <div className="cv-scrollbar h-full min-h-0 overflow-x-hidden overflow-y-auto pb-4">
+      {conversation.length > 0 && (
+        <ConversationSection
+          attachments={conversationAttachments}
+          entries={conversation}
+          onAttachmentError={onConversationAttachmentError}
+        />
+      )}
       {sections.map((section) => (
         <section key={section.itemId} className="min-w-0">
           <SectionHeading
@@ -162,6 +185,152 @@ export function CommentsList({
         </section>
       ))}
     </div>
+  );
+}
+
+/**
+ * What was said about the pull request as a whole, above the files, the way
+ * github.com puts its Conversation tab before Files changed.
+ *
+ * These entries have no line to scroll to, so a press opens the whole body in
+ * place rather than moving the diff. The row keeps the fixed height every other
+ * row has, and the body goes under it: the list stays scannable while nothing
+ * is open, and an open entry pushes the rows below it rather than covering
+ * them. The sidebar is not the virtualized diff, so a row that grows here
+ * relays out nothing but this list.
+ */
+function ConversationSection({
+  attachments,
+  entries,
+  onAttachmentError,
+}: {
+  attachments: Record<string, SignedAttachment>;
+  entries: readonly ConversationEntry[];
+  onAttachmentError(): void;
+}) {
+  const [openKeys, setOpenKeys] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
+  const toggle = (key: string) =>
+    setOpenKeys((current) => {
+      const next = new Set(current);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+
+  return (
+    <section aria-label="Conversation" className="min-w-0">
+      <h3 className="bg-surface text-ink-faint sticky top-0 z-10 px-3 py-1 text-[11px]">
+        Conversation
+      </h3>
+      <ul className="min-w-0">
+        {entries.map((entry) => {
+          const open = openKeys.has(entry.key);
+          const bodyId = `conversation-${entry.key}`;
+          return (
+            <li key={entry.key} className="min-w-0">
+              <button
+                type="button"
+                aria-controls={open ? bodyId : undefined}
+                aria-expanded={open}
+                onClick={() => toggle(entry.key)}
+                style={{ height: ROW_HEIGHT }}
+                className={cn(
+                  'flex w-full min-w-0 items-center gap-2 overflow-hidden px-3 text-left',
+                  'hover:bg-raised focus-visible:bg-raised',
+                  'focus-visible:ring-accent focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset',
+                  open && 'bg-raised'
+                )}
+              >
+                <AuthorAvatar
+                  author={entry.author}
+                  avatarUrl={entry.authorAvatarUrl}
+                  isBot={entry.authorIsBot}
+                  size={20}
+                />
+                <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+                  <span className="flex min-w-0 items-baseline gap-1.5">
+                    <span className="text-ink truncate text-xs font-medium">
+                      {entry.author}
+                    </span>
+                    <span className="text-ink-faint shrink-0 text-[10px]">
+                      {conversationAction(entry)}
+                    </span>
+                  </span>
+                  <span className="text-ink-muted min-w-0 truncate text-xs">
+                    {entry.body.length > 0
+                      ? commentPreviewText(entry.body)
+                      : conversationAction(entry)}
+                  </span>
+                </span>
+                <ConversationVerdict entry={entry} />
+              </button>
+              {open && (
+                <div
+                  id={bodyId}
+                  className="bg-raised min-w-0 px-3 pt-1 pb-3 pl-10"
+                >
+                  {entry.body.length > 0 && (
+                    <CommentBody
+                      attachments={attachments}
+                      body={entry.body}
+                      className="text-xs"
+                      onAttachmentError={onAttachmentError}
+                    />
+                  )}
+                  {entry.htmlUrl != null && (
+                    <GitHubTextLink
+                      className="text-ink-faint mt-1.5 inline-block text-[11px]"
+                      href={entry.htmlUrl}
+                      title="Open this on GitHub"
+                    >
+                      Open on GitHub
+                    </GitHubTextLink>
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** What the author did, in the words GitHub's own timeline uses. */
+function conversationAction(entry: ConversationEntry): string {
+  if (entry.kind === 'comment') return 'commented';
+  switch (entry.state) {
+    case 'APPROVED':
+      return 'approved';
+    case 'CHANGES_REQUESTED':
+      return 'requested changes';
+    default:
+      return 'reviewed';
+  }
+}
+
+/**
+ * The verdict's glyph, in the column the line threads give their line number.
+ * A plain comment has no verdict and leaves the column empty, the way a thread
+ * with no replies leaves its reply column empty.
+ */
+function ConversationVerdict({ entry }: { entry: ConversationEntry }) {
+  const verdict =
+    entry.state == null
+      ? undefined
+      : reviewVerdict({ id: 0, state: entry.state });
+  const Icon = verdict == null ? undefined : VERDICT_ICON[verdict.verdict];
+  return (
+    <span className="flex w-4 shrink-0 justify-end">
+      {Icon != null && verdict != null && (
+        <Icon
+          aria-hidden="true"
+          className={VERDICT_COLOR[verdict.tone]}
+          size={13}
+        />
+      )}
+    </span>
   );
 }
 

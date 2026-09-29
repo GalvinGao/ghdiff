@@ -11,6 +11,11 @@ import {
 import { installUrl as buildInstallUrl } from '@/lib/githubApp';
 import { blobPermalinkUrl, reviewTargetUrl } from '@/lib/githubUrls';
 import { requestLog } from '@/lib/logger';
+import {
+  buildConversation,
+  type IssueCommentSource,
+  type PullReviewSource,
+} from '@/lib/pullConversation';
 import { toPullDetails } from '@/lib/pullDetails';
 import {
   dedupeWatchedRepos,
@@ -19,6 +24,7 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { normalizePullStatus, type PullStatusSource } from '@/lib/pullStatus';
+import { recentTeamReviews, type TeamReviewSource } from '@/lib/reviewDecision';
 import { resolveSideCommit } from '@/lib/server/commentIssue';
 import { parseDeploymentConfig } from '@/lib/server/config';
 import {
@@ -284,6 +290,31 @@ const getMyReview = os.reviews.mine.handler(async ({ context, input }) => {
   }
 });
 
+const getTeamReviews = os.reviews.team.handler(async ({ context, input }) => {
+  const log = requestLog();
+  const { number, owner, repo } = input;
+  log.set({ owner, repo, pull: number });
+  if (context.token == null) return { reviews: [] };
+
+  try {
+    const data = await githubGraphQL<TeamReviewsQueryData>(
+      TEAM_REVIEWS_QUERY,
+      { owner, repo, number, last: TEAM_REVIEWS_PAGE },
+      context.token
+    );
+    const reviews = recentTeamReviews(
+      data.repository?.pullRequest?.reviews?.nodes ?? []
+    );
+    log.set({ outcome: 'ok', reviews: reviews.length });
+    return { reviews };
+  } catch (error) {
+    return fail(
+      error,
+      "Could not load the team's reviews of this pull request."
+    );
+  }
+});
+
 const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
   const log = requestLog();
   const { body, event, number, owner, repo } = input;
@@ -343,6 +374,38 @@ const listComments = os.comments.list.handler(async ({ context, input }) => {
     return fail(error, 'Could not load comments.');
   }
 });
+
+const listConversation = os.comments.conversation.handler(
+  async ({ context, input }) => {
+    const log = requestLog();
+    const { number, owner, repo } = input;
+    log.set({ owner, repo, pull: number });
+    try {
+      // GitHub files a remark under the description and a verdict on the pull
+      // request in two lists, so both are asked for at once. `full` for the
+      // signed attachment addresses, as `comments.list` asks for it. One page
+      // of each, which is the limit the line comments already live with.
+      const media = { headers: { accept: FULL_JSON_MEDIA_TYPE } };
+      const [comments, reviews] = await Promise.all([
+        githubJson<IssueCommentSource[]>(
+          `/repos/${owner}/${repo}/issues/${number}/comments?per_page=100`,
+          context.token,
+          media
+        ),
+        githubJson<PullReviewSource[]>(
+          `/repos/${owner}/${repo}/pulls/${number}/reviews?per_page=100`,
+          context.token,
+          media
+        ),
+      ]);
+      const entries = buildConversation(comments, reviews);
+      log.set({ outcome: 'ok', count: entries.length });
+      return entries;
+    } catch (error) {
+      return fail(error, 'Could not load the conversation.');
+    }
+  }
+);
 
 const createComment = os.comments.create.handler(async ({ context, input }) => {
   const log = requestLog();
@@ -583,11 +646,13 @@ export const router = os.router({
   stats: { served: getServedCount },
   reviews: {
     mine: getMyReview,
+    team: getTeamReviews,
     submit: submitReview,
   },
   issues: { create: createIssue },
   comments: {
     list: listComments,
+    conversation: listConversation,
     create: createComment,
     remove: removeComment,
   },
@@ -758,6 +823,37 @@ interface MyReviewQueryData {
         submittedAt?: string | null;
         url?: string | null;
       } | null;
+    } | null;
+  } | null;
+}
+
+// The newest reviews on the pull request, whoever wrote them. `recentTeamReviews`
+// drops the viewer's own, the bots', and the bare replies GitHub files as
+// reviews, so the page is wider than the five the dialog lists: on a pull
+// request with a busy line thread, most of the last fifty are those replies.
+// `viewerDidAuthor` is what tells the viewer's own apart without asking GitHub
+// who the viewer is.
+const TEAM_REVIEWS_PAGE = 50;
+
+const TEAM_REVIEWS_QUERY = `
+query($owner:String!,$repo:String!,$number:Int!,$last:Int!){
+  repository(owner:$owner,name:$repo){
+    pullRequest(number:$number){
+      reviews(last:$last){
+        nodes{
+          databaseId state submittedAt url bodyText viewerDidAuthor
+          author{ kind: __typename login avatarUrl }
+          comments{ totalCount }
+        }
+      }
+    }
+  }
+}`;
+
+interface TeamReviewsQueryData {
+  repository?: {
+    pullRequest?: {
+      reviews?: { nodes?: (TeamReviewSource | null)[] | null } | null;
     } | null;
   } | null;
 }

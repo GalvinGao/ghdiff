@@ -1,16 +1,21 @@
 import { IconXSquircle } from '@pierre/icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { AuthorAvatar } from '@/components/AuthorAvatar';
+import { VERDICT_COLOR, VERDICT_ICON } from '@/components/reviewVerdictStyle';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { cn } from '@/lib/cn';
+import { describeAge } from '@/lib/pullDetails';
 import {
   describeSubmittedReview,
   type ReviewBlock,
   reviewBlock,
   REVIEW_EVENTS,
   type ReviewEvent,
+  reviewVerdict,
+  type TeamReview,
 } from '@/lib/reviewDecision';
 
 // The verdict on the pull request as a whole.
@@ -73,6 +78,11 @@ export function ReviewSubmitDialog({
   targetLabel: string;
 }) {
   const [body, setBody] = useState('');
+  // Stamped when the popover opens, so every age in the team's list is read
+  // from one instant and no clock runs behind a closed popover. The rows do
+  // not wait for it: the list is drawn with the popover's first paint, and the
+  // ages arrive at the right edge of their rows, where nothing moves for them.
+  const [openedAt, setOpenedAt] = useState<number | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Follow the visual viewport when the iPhone keyboard shrinks or pans it.
@@ -112,13 +122,14 @@ export function ReviewSubmitDialog({
       viewport?.removeEventListener('scroll', positionPopover);
     };
   }, [open, positionPopover]);
-  const { error, latest, pending, reset, submit, submitted } = review;
+  const { error, latest, pending, reset, submit, submitted, team } = review;
 
   // A popover opening again is a new verdict. The words of the last one, and the
   // failure of the one before that, belong to a decision already made.
   useEffect(() => {
     if (!open) return;
     setBody('');
+    setOpenedAt(Date.now());
     reset();
   }, [open, reset]);
 
@@ -162,6 +173,10 @@ export function ReviewSubmitDialog({
           <IconXSquircle size={14} />
         </Button>
       </div>
+      {/* What the rest of the team decided, above the reviewer's own verdict:
+          it is the context for that verdict. Nothing is drawn when nobody
+          else has reviewed, since an empty section is a promise of rows. */}
+      {team.length > 0 && <TeamReviews now={openedAt} reviews={team} />}
       <div className="p-3">
         <p className="text-ink-muted text-xs">
           This is a review of the whole pull request for{' '}
@@ -267,5 +282,109 @@ export function ReviewSubmitDialog({
         </div>
       </div>
     </div>
+  );
+}
+
+/** What a row says after the login, in the verdict's own words. */
+const TEAM_VERDICT_WORDS: Record<string, string> = {
+  APPROVED: 'approved',
+  CHANGES_REQUESTED: 'requested changes',
+  COMMENTED: 'commented',
+};
+
+function TeamReviews({
+  now,
+  reviews,
+}: {
+  now: number | null;
+  reviews: TeamReview[];
+}) {
+  return (
+    <section
+      aria-label="Recent reviews from the team"
+      className="border-line border-b px-3 py-2"
+    >
+      <h3 className="text-ink-faint text-xs">Recent reviews</h3>
+      <ul className="-mx-1.5 mt-1 flex flex-col">
+        {reviews.map((review) => (
+          <li key={review.id}>
+            <TeamReviewRow now={now} review={review} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function TeamReviewRow({
+  now,
+  review,
+}: {
+  now: number | null;
+  review: TeamReview;
+}) {
+  const verdict = reviewVerdict(review);
+  const Icon = verdict == null ? undefined : VERDICT_ICON[verdict.verdict];
+  const age =
+    review.submittedAt == null || now == null
+      ? ''
+      : describeAge(review.submittedAt, now);
+  const comments =
+    review.commentCount === 0
+      ? undefined
+      : `${review.commentCount} line comment${review.commentCount === 1 ? '' : 's'}`;
+  const content = (
+    <>
+      <div className="flex min-w-0 items-center gap-1.5 text-xs">
+        <AuthorAvatar
+          author={review.author}
+          avatarUrl={review.authorAvatarUrl}
+          size={16}
+        />
+        <span className="text-ink truncate font-medium">{review.author}</span>
+        {Icon != null && verdict != null && (
+          <Icon
+            aria-hidden="true"
+            className={cn('shrink-0', VERDICT_COLOR[verdict.tone])}
+            size={12}
+          />
+        )}
+        <span className="text-ink-muted shrink-0">
+          {TEAM_VERDICT_WORDS[review.state] ?? 'reviewed'}
+        </span>
+        {age.length > 0 && (
+          <span className="text-ink-faint ml-auto shrink-0 tabular-nums">
+            {age}
+          </span>
+        )}
+      </div>
+      {/* The body is GitHub's plain-text rendering, so nothing in it can be
+          markup. Two lines are enough to say what a verdict is about; the
+          whole of it is one press away on GitHub. */}
+      {(review.body.length > 0 || comments != null) && (
+        <p className="text-ink-muted mt-0.5 line-clamp-2 pl-[22px] text-xs break-words">
+          {review.body.length > 0 ? review.body : comments}
+        </p>
+      )}
+    </>
+  );
+  const rowClass = 'block rounded-md px-1.5 py-1';
+  // A new tab, like every other name here that GitHub has a page for: the
+  // reviewer has a diff and a half-written verdict in this one.
+  return review.htmlUrl == null ? (
+    <div className={rowClass}>{content}</div>
+  ) : (
+    <a
+      className={cn(
+        rowClass,
+        'hover:bg-surface focus-visible:ring-accent focus-visible:ring-1 focus-visible:outline-none'
+      )}
+      href={review.htmlUrl}
+      rel="noreferrer"
+      target="_blank"
+      title={`Open ${review.author}'s review on GitHub`}
+    >
+      {content}
+    </a>
   );
 }

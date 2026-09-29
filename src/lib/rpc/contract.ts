@@ -4,9 +4,10 @@ import * as z from 'zod';
 import type { CreatedIssue } from '@/lib/commentIssue';
 import type { CommentPayload } from '@/lib/comments';
 import type { AppInstallation } from '@/lib/installations';
+import type { ConversationEntry } from '@/lib/pullConversation';
 import type { PullDetails } from '@/lib/pullDetails';
 import type { OpenPullsData } from '@/lib/pulls';
-import type { SubmittedReview } from '@/lib/reviewDecision';
+import type { SubmittedReview, TeamReview } from '@/lib/reviewDecision';
 import type { ViewedFilesData } from '@/lib/viewedFiles';
 import type { GitHubViewer } from '@/lib/viewer';
 
@@ -105,6 +106,14 @@ export const contract = {
     mine: oc.input(pullRef).output(type<{ review?: SubmittedReview }>()),
 
     /**
+     * The newest verdicts other people left on this pull request, for the top
+     * of the review dialog. The viewer's own is `mine`, and a caller with no
+     * token gets an empty list: GraphQL refuses an anonymous caller, and the
+     * list is a courtesy beside the diff rather than a part of it.
+     */
+    team: oc.input(pullRef).output(type<{ reviews: TeamReview[] }>()),
+
+    /**
      * A verdict on the pull request as a whole. The three events are GitHub's
      * own spelling, and the body is optional here rather than conditional:
      * `canSubmitReview` holds the button until a verdict that needs words has
@@ -177,6 +186,13 @@ export const contract = {
 
   comments: {
     list: oc.input(pullRef).output(type<CommentPayload[]>()),
+
+    /**
+     * What was said about the pull request as a whole: the comments under its
+     * description and the reviews with a verdict or a summary, oldest first.
+     * The line comments are `list`, and none of them is repeated here.
+     */
+    conversation: oc.input(pullRef).output(type<ConversationEntry[]>()),
 
     /**
      * A new comment, or a reply to one. A reply names only the comment it

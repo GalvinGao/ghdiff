@@ -5,6 +5,7 @@ import { reviewTone } from './pullStatus.ts';
 import {
   canSubmitReview,
   isOwnPullRequest,
+  recentTeamReviews,
   reviewBlock,
   describeSubmittedReview,
   REVIEW_EVENTS,
@@ -201,5 +202,67 @@ describe('isOwnPullRequest', () => {
     assert.equal(isOwnPullRequest(undefined, 'GalvinGao'), false);
     assert.equal(isOwnPullRequest('GalvinGao', undefined), false);
     assert.equal(isOwnPullRequest(undefined, undefined), false);
+  });
+});
+
+describe('recentTeamReviews', () => {
+  const node = (id: number, extra: Record<string, unknown> = {}) => ({
+    databaseId: id,
+    state: 'APPROVED',
+    submittedAt: `2026-09-${String(id).padStart(2, '0')}T00:00:00Z`,
+    bodyText: '',
+    viewerDidAuthor: false,
+    author: { kind: 'User', login: `user${id}` },
+    comments: { totalCount: 0 },
+    ...extra,
+  });
+
+  it('lists the newest first, and stops at the cap', () => {
+    const nodes = [1, 2, 3, 4, 5, 6, 7].map((id) => node(id));
+    assert.deepEqual(
+      recentTeamReviews(nodes).map((review) => review.id),
+      [7, 6, 5, 4, 3]
+    );
+  });
+
+  it('keeps the three verdicts and drops the two that are not decisions', () => {
+    const nodes = [
+      node(1, { state: 'APPROVED' }),
+      node(2, { state: 'CHANGES_REQUESTED', bodyText: 'fix it' }),
+      node(3, { state: 'COMMENTED', bodyText: 'a remark' }),
+      node(4, { state: 'PENDING' }),
+      node(5, { state: 'DISMISSED' }),
+    ];
+    assert.deepEqual(
+      recentTeamReviews(nodes).map((review) => review.state),
+      ['COMMENTED', 'CHANGES_REQUESTED', 'APPROVED']
+    );
+  });
+
+  it('leaves out the viewer, bots, and bare thread replies', () => {
+    const nodes = [
+      node(1, { viewerDidAuthor: true }),
+      node(2, { author: { kind: 'Bot', login: 'coderabbitai' } }),
+      node(3, {
+        state: 'COMMENTED',
+        bodyText: '  ',
+        comments: { totalCount: 1 },
+      }),
+      node(4),
+    ];
+    assert.deepEqual(
+      recentTeamReviews(nodes).map((review) => review.id),
+      [4]
+    );
+  });
+
+  it('skips a node it cannot name, and a missing author is not a crash', () => {
+    const reviews = recentTeamReviews([
+      null,
+      { state: 'APPROVED' },
+      node(1, { author: null }),
+    ]);
+    assert.equal(reviews.length, 1);
+    assert.equal(reviews[0]?.author, 'ghost');
   });
 });

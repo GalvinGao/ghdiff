@@ -200,3 +200,87 @@ export function describeSubmittedReview(review: SubmittedReview): string {
       return 'GitHub recorded your review.';
   }
 }
+
+/**
+ * A verdict somebody else left on this pull request, for the top of the review
+ * dialog. A reviewer about to decide is helped most by what the rest of the
+ * team has already decided, and that is otherwise a trip to github.com.
+ */
+export interface TeamReview {
+  id: number;
+  author: string;
+  authorAvatarUrl?: string;
+  /** `APPROVED`, `CHANGES_REQUESTED` or `COMMENTED`. */
+  state: string;
+  /** GitHub's plain-text rendering of the body, markdown already stripped. */
+  body: string;
+  /** Line comments the review carried with it. */
+  commentCount: number;
+  submittedAt?: string;
+  htmlUrl?: string;
+}
+
+/** A review as the GraphQL `reviews` connection answers it. */
+export interface TeamReviewSource {
+  databaseId?: number | null;
+  state?: string | null;
+  submittedAt?: string | null;
+  url?: string | null;
+  bodyText?: string | null;
+  viewerDidAuthor?: boolean | null;
+  author?: {
+    /** `__typename`, aliased: `User`, `Bot`, `Mannequin` and the rest. */
+    kind?: string | null;
+    login?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+  comments?: { totalCount?: number | null } | null;
+}
+
+/** How many the dialog lists. Past that it is a history, not a glance. */
+export const MAX_TEAM_REVIEWS = 5;
+
+/**
+ * The newest verdicts left by other people, newest first.
+ *
+ * Four kinds of review are not that. The viewer's own is already the line
+ * under the title. A bot's is not a team member's decision. `PENDING` and
+ * `DISMISSED` are not decisions at all, the way `reviewVerdict` reads them.
+ * And a `COMMENTED` review with no body is how GitHub files a reply in a line
+ * thread: its words are on the line in the diff already, and a busy thread
+ * would otherwise push every verdict off the list.
+ */
+export function recentTeamReviews(
+  nodes: readonly (TeamReviewSource | null | undefined)[],
+  limit = MAX_TEAM_REVIEWS
+): TeamReview[] {
+  const reviews: TeamReview[] = [];
+  for (const node of nodes) {
+    if (node == null || typeof node.databaseId !== 'number') continue;
+    const state = node.state ?? '';
+    if (VERDICTS[state] == null) continue;
+    if (node.viewerDidAuthor === true) continue;
+    if (node.author?.kind === 'Bot') continue;
+    const body = node.bodyText?.trim() ?? '';
+    if (state === 'COMMENTED' && body.length === 0) continue;
+    reviews.push({
+      id: node.databaseId,
+      author: node.author?.login ?? 'ghost',
+      authorAvatarUrl: node.author?.avatarUrl ?? undefined,
+      state,
+      body,
+      commentCount: node.comments?.totalCount ?? 0,
+      submittedAt: node.submittedAt ?? undefined,
+      htmlUrl: node.url ?? undefined,
+    });
+  }
+  // GitHub answers oldest first. A review with no time sorts last rather than
+  // first, since nothing says it is recent.
+  reviews.sort((a, b) => time(b.submittedAt) - time(a.submittedAt));
+  return reviews.slice(0, limit);
+}
+
+function time(iso: string | undefined): number {
+  const value = iso == null ? Number.NaN : Date.parse(iso);
+  return Number.isNaN(value) ? Number.NEGATIVE_INFINITY : value;
+}
