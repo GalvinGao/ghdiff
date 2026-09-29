@@ -321,10 +321,10 @@ function CopyPromptButton({ onCopy }: { onCopy(): Promise<boolean> }) {
 
   const label =
     state === 'copied'
-      ? 'Copied'
-      : state === m.comments_list_failed()
-        ? 'This browser would not let ghdiff reach the clipboard'
-        : 'Copy as prompt';
+      ? m.clipboard_copied()
+      : state === 'failed'
+        ? m.review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard()
+        : m.review_sidebar_copy_as_prompt();
 
   return (
     <Tooltip
@@ -333,13 +333,13 @@ function CopyPromptButton({ onCopy }: { onCopy(): Promise<boolean> }) {
       side="bottom-end"
       // Two or three words at rest, and a sentence when it has to say why
       // nothing happened.
-      wide={state === m.comments_list_failed()}
+      wide={state === 'failed'}
     >
       <Button
         aria-label={
           state === 'copied'
-            ? 'Copied'
-            : 'Copy every comment, with the code it is about, for a coding agent'
+            ? m.clipboard_copied()
+            : m.review_sidebar_copy_every_comment_with_the_code_it_is_about()
         }
         size="icon-sm"
         variant="chrome"

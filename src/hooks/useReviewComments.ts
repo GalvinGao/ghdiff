@@ -539,7 +539,7 @@ export function useReviewComments(options: {
           creatingIssue: false,
           error: rpcErrorMessage(
             cause,
-            'Could not create the issue on GitHub.'
+            m.use_review_comments_could_not_create_the_issue_on_github()
           ),
         }));
         return;

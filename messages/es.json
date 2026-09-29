@@ -620,5 +620,223 @@
     }
   ],
   "locale_language": "Idioma",
-  "app_render_error": "ghdiff no pudo mostrar esta página. Vuelve a cargar la página para intentarlo de nuevo."
+  "app_render_error": "ghdiff no pudo mostrar esta página. Vuelve a cargar la página para intentarlo de nuevo.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} archivo de traducción se muestra como archivo abajo.",
+        "countPlural=*": "{countDisplay} archivos de traducción se muestran como archivos abajo."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} archivo tiene mensajes anidados. Permanece en las diferencias de abajo.",
+        "countPlural=*": "{countDisplay} archivos tienen mensajes anidados. Permanecen en las diferencias de abajo."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} clave",
+        "countPlural=*": "{countDisplay} claves"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} problema",
+        "countPlural=*": "{countDisplay} problemas"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Coincide con {countDisplay} archivo en estas diferencias.",
+        "countPlural=*": "Coincide con {countDisplay} archivos en estas diferencias."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "Falta: {names}",
+  "lens_extra_placeholder": "Sobra: {names}",
+  "lens_same_base": "igual que {base}",
+  "lens_settings": "Configuración de {name}",
+  "lens_show_locale": "Mostrar {locale} en las diferencias",
+  "lens_files_question": "¿Qué archivos son traducciones en {repo}?",
+  "lens_path_help": "Escribe la ruta a un archivo de traducción, con {token} donde va el código de idioma.",
+  "lens_detect_help": "ghdiff busca tres o más archivos JSON en una carpeta, cada uno con el nombre de un código de idioma, como messages/en.json. Vuelve a buscarlos en cada diferencia.",
+  "lens_compare_base": "Comparado con {locale}.",
+  "lens_skips": "Omite {locales}.",
+  "lens_add_token": "Añade {token} donde va el código de idioma.",
+  "comment_issue_number": "Incidencia #{number}",
+  "comment_open_issue": "Abrir incidencia #{number}",
+  "diff_search_position": "{position} de {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "La vista {name} está desactivada para este repositorio. Vuelve a activarla en Vista, dentro de la configuración de visualización, arriba a la derecha.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "¿Eliminar este comentario? No se puede deshacer.",
+        "count=*": "¿Eliminar los {countDisplay} comentarios de este hilo? No se puede deshacer."
+      }
+    }
+  ],
+  "lens_base": "base",
+  "main_ghdiff_is_not_running": "ghdiff no se está ejecutando",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Esta página no proviene de un comando de ghdiff. Ejecuta ghdiff en un repositorio y abre la dirección que muestra.",
+  "main_this_tab_has_no_key_for_the_server_open": "Esta pestaña no tiene una clave para el servidor. Abre la dirección que mostró el comando ghdiff.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Crea una incidencia con esta nota y sus líneas, y deja aquí un enlace.",
+  "comment_composer_what_should_the_issue_say": "¿Qué debe decir la incidencia?",
+  "comment_composer_create_issue": "Crear incidencia",
+  "comment_thread_card_creating_issue": "Creando incidencia…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Los comentarios permanecen en este navegador. Cópialos como prompt al terminar.",
+  "comments_list_conversation": "Conversación",
+  "comments_list_open_this_on_github": "Abrir esto en GitHub",
+  "comments_list_open_on_github": "Abrir en GitHub",
+  "diff_search_bar_no_matches": "Sin coincidencias",
+  "diff_search_bar_find_in_diff": "Buscar en las diferencias",
+  "diff_search_bar_find_in_diff_text": "Buscar en las diferencias…",
+  "diff_search_bar_previous_match": "Coincidencia anterior",
+  "diff_search_bar_previous_match_shiftenter": "Coincidencia anterior (Mayús+Intro)",
+  "diff_search_bar_next_match": "Siguiente coincidencia",
+  "diff_search_bar_next_match_enter": "Siguiente coincidencia (Intro)",
+  "diff_search_bar_close_the_search": "Cerrar la búsqueda",
+  "diff_search_bar_close_esc": "Cerrar (Esc)",
+  "pull_request_list_my_pull_requests": "Mis pull requests",
+  "pull_request_list_show": "Mostrar",
+  "pull_request_list_hide": "Ocultar",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Solo tienes tus propios pull requests abiertos y están ocultos.",
+  "review_header_untracked_files": "Archivos sin seguimiento",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Este pull request se fusionó. Revísalo de todos modos.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Este pull request se cerró. Revísalo de todos modos.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Este navegador no permite que ghdiff acceda al portapapeles",
+  "review_sidebar_copy_as_prompt": "Copiar como prompt",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Copiar todos los comentarios con el código al que se refieren para un agente de programación",
+  "review_submit_dialog_recent_reviews_from_the_team": "Revisiones recientes del equipo",
+  "review_submit_dialog_recent_reviews": "Revisiones recientes",
+  "review_viewer_loading_unmodified_lines": "Cargando líneas sin modificar",
+  "route_error_refreshing_ghdiff": "Recargando ghdiff",
+  "route_error_the_page_could_not_load": "No se pudo cargar la página",
+  "route_error_something_interrupted_this_page": "Algo interrumpió esta página",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Un problema de actualización o conexión puede estar impidiendo que cargue esta página. Recarga para intentarlo de nuevo.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Recarga la página para intentarlo de nuevo. La URL de tu revisión seguirá siendo la misma.",
+  "route_error_refresh_page": "Recargar página",
+  "watched_repos_editor_drag_to_reorder": "Arrastra para reordenar",
+  "lens_frame_turn_off": "Desactivar",
+  "lens_frame_beta": "beta",
+  "localization_panel_show_as_table": "Mostrar como tabla",
+  "localization_panel_languages": "Idiomas",
+  "localization_panel_show_all_languages": "Mostrar todos los idiomas",
+  "localization_panel_paths_and_format": "Rutas y formato…",
+  "localization_panel_not_in_this_diff": "No está en estas diferencias",
+  "localization_panel_show_in_the_diff": "Mostrar en las diferencias",
+  "localization_settings_dialog_show_translations_as_a_table": "Mostrar las traducciones como tabla",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Solo para este repositorio. Se guarda en este navegador.",
+  "localization_settings_dialog_which_files_are_translations": "Qué archivos son traducciones",
+  "localization_settings_dialog_detect_automatically": "Detectar automáticamente",
+  "localization_settings_dialog_choose_paths": "Elegir rutas",
+  "localization_settings_dialog_add_another_folder": "Añadir otra carpeta",
+  "localization_settings_dialog_save": "Guardar",
+  "localization_settings_dialog_none_in_this_diff": "Ninguno en estas diferencias.",
+  "localization_settings_dialog_in_this_diff": "En estas diferencias:",
+  "localization_settings_dialog_path_to_a_translation_file": "Ruta a un archivo de traducción",
+  "localization_settings_dialog_remove_this_path": "Eliminar esta ruta",
+  "localization_settings_dialog_how_placeholders_look": "Aspecto de los marcadores de posición",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Cada uno de los demás idiomas se comprueba con el de Comparar con. Los idiomas omitidos son archivos generados por un script y nunca se muestran.",
+  "use_review_comments_could_not_create_the_issue_on_github": "No se pudo crear la incidencia en GitHub.",
+  "contract_enter_a_commit_sha": "Introduce un SHA de commit.",
+  "contract_write_what_the_issue_is_about": "Escribe de qué trata la incidencia.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "No se pudieron cargar las revisiones del equipo de este pull request.",
+  "router_could_not_load_the_conversation": "No se pudo cargar la conversación.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub no permite que ghdiff abra incidencias aquí. La aplicación de ghdiff necesita el permiso Issues en este repositorio.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub aceptó la incidencia, pero no devolvió nada.",
+  "router_could_not_create_this_issue": "No se pudo crear esta incidencia.",
+  "lens_label": "Vista",
+  "lens_localizations": "Traducciones",
+  "lens_compare_against": "Comparar con",
+  "lens_skip_languages": "Omitir estos idiomas",
+  "lens_not_added": "sin añadir",
+  "review_action_commented": "comentó",
+  "review_action_approved": "aprobó",
+  "review_action_changes": "solicitó cambios",
+  "review_action_reviewed": "revisó",
+  "review_open_author": "Abrir la revisión de {author} en GitHub",
+  "route_refresh_version": "Puede haber una versión nueva. Recargando para devolverte a tu revisión.",
+  "issue_create_action": "crear una incidencia",
+  "effect_dies": "muere",
+  "effect_dies_exit": "muere ↗",
+  "effect_defect_stop": "Se detiene aquí con un defecto. Solo un manejador de causas puede verlo.",
+  "effect_defect_value": "Genera un defecto. Solo un manejador de causas puede verlo.",
+  "effect_interrupts": "interrumpe",
+  "effect_interrupts_exit": "interrumpe ↗",
+  "effect_interrupt_stop": "Se detiene aquí e interrumpe la fibra.",
+  "effect_interrupt_value": "Genera una interrupción.",
+  "effect_catches_all": "captura todo",
+  "effect_handles_all": "Gestiona todos los fallos esperados que están por encima.",
+  "effect_catches_some": "captura algunos",
+  "effect_handles_some": "Gestiona los fallos que selecciona su predicado. El resto se propaga.",
+  "effect_failure_defect": "fallo → defecto",
+  "effect_turns_defect": "Convierte en defecto cualquier fallo que esté por encima.",
+  "effect_catches": "captura",
+  "effect_handles_tags": "Gestiona fallos por etiqueta.",
+  "effect_fails": "falla{suffix}",
+  "effect_fails_exit": "falla{suffix} ↗",
+  "effect_stop_failure": "Se detiene aquí y falla.",
+  "effect_stop_failure_named": "Se detiene aquí y falla con {name}.",
+  "effect_make_failure": "Genera un fallo.",
+  "effect_make_failure_named": "Genera un fallo con {name}.",
+  "effect_catches_named": "captura · {tags}",
+  "effect_handles_named": "Gestiona {tags}. Los demás fallos se propagan.",
+  "effect_needs": "necesita · {name}",
+  "effect_service": "Lee el servicio {name}. Algo debe proporcionarlo antes de que se ejecute.",
+  "effect_fold": "Volver a plegar el código en «{label}»",
+  "effect_unfold": "{reading} Mostrar el código.",
+  "watch_drag_repo": "Arrastra para reordenar {name}",
+  "watch_remove_repo": "Quitar {name}",
+  "local_diff_remote": "Estas diferencias están en una máquina, no en GitHub. Ejecuta el comando ghdiff dentro de ese repositorio para leerlas.",
+  "local_working_tree": "árbol de trabajo",
+  "issue_missing_commit": "GitHub no tiene aquí ningún commit llamado {rev}.",
+  "issue_missing_start": "GitHub no indicó dónde empieza este rango.",
+  "issue_no_parent": "Este commit no tiene padre, así que sus líneas eliminadas no tienen ningún archivo al que enlazar.",
+  "issue_fork_range": "Este rango termina en un fork, así que una incidencia aquí no puede enlazar con sus líneas.",
+  "placeholder_single": "Llaves simples",
+  "placeholder_double": "Llaves dobles",
+  "clipboard_copied": "Copiado",
+  "lens_undo": "Deshacer"
 }

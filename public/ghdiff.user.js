@@ -383,7 +383,7 @@
 	*/
 	function deLocalizeUrlDefaultPattern(url) {
 		const urlObj = normalizeTrailingSlash(typeof url === "string" ? new URL(url, getUrlOrigin()) : new URL(url));
-		const pathSegments = urlObj.pathname.split("/").filter(Boolean);
+		const pathSegments = urlObj.pathname.replace(/^\/+/, "").split("/");
 		if (pathSegments.length > 0 && toLocale(pathSegments[0])) urlObj.pathname = "/" + pathSegments.slice(1).join("/");
 		return normalizeTrailingSlash(urlObj);
 	}

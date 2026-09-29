@@ -15,14 +15,15 @@ and [QA.md](QA.md).
 
 ## Current implementation
 
-English (`en`) is the source. All 20 target locales are enabled, each with 387
+English (`en`) is the source. All 20 target locales are enabled, each with 531
 messages. `messages/en.json` holds interface copy. Paraglide generates
 `src/paraglide/`; `src/server.ts` scopes cookie/base-locale detection per
 request, and the root document sets locale and direction. `src/userscript.js` is
 bundled with catalog messages into the generated `public/ghdiff.user.js`. See
-[I18N.md](../../../I18N.md) for runtime ownership, commands, audit records, and
-the pinned Pierre label adapter. A globe menu changes the locale on home, setup,
-and review screens. Arabic and Persian prose uses RTL while code and technical
+[I18N.md](../../../I18N.md) for runtime ownership, commands, verification
+history, and the pinned Pierre label adapter. A globe menu changes the locale on
+home and setup; the review page groups language and color scheme in its
+display-settings cog. Arabic and Persian prose uses RTL while code and technical
 identifiers remain LTR.
 
 The target batch is 20 locales total, including English: `en`, `zh-Hans`, `es`,

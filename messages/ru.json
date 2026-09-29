@@ -664,5 +664,238 @@
     }
   ],
   "locale_language": "Выбрать язык",
-  "app_render_error": "ghdiff не удалось отобразить эту страницу. Перезагрузите страницу, чтобы повторить попытку."
+  "app_render_error": "ghdiff не удалось отобразить эту страницу. Перезагрузите страницу, чтобы повторить попытку.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Внизу показан {countDisplay} файл перевода.",
+        "countPlural=few": "Внизу показано {countDisplay} файла перевода.",
+        "countPlural=many": "Внизу показано {countDisplay} файлов перевода.",
+        "countPlural=other": "Внизу показано {countDisplay} файлов перевода.",
+        "countPlural=*": "Внизу показано {countDisplay} файлов перевода."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "В {countDisplay} файле есть вложенные сообщения. Он остаётся в различиях ниже.",
+        "countPlural=few": "В {countDisplay} файлах есть вложенные сообщения. Они остаются в различиях ниже.",
+        "countPlural=many": "В {countDisplay} файлах есть вложенные сообщения. Они остаются в различиях ниже.",
+        "countPlural=other": "В {countDisplay} файлах есть вложенные сообщения. Они остаются в различиях ниже.",
+        "countPlural=*": "В {countDisplay} файлах есть вложенные сообщения. Они остаются в различиях ниже."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} ключ",
+        "countPlural=few": "{countDisplay} ключа",
+        "countPlural=many": "{countDisplay} ключей",
+        "countPlural=other": "{countDisplay} ключа",
+        "countPlural=*": "{countDisplay} ключей"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} проблема",
+        "countPlural=few": "{countDisplay} проблемы",
+        "countPlural=many": "{countDisplay} проблем",
+        "countPlural=other": "{countDisplay} проблемы",
+        "countPlural=*": "{countDisplay} проблем"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Соответствует {countDisplay} файлу в этих различиях.",
+        "countPlural=few": "Соответствует {countDisplay} файлам в этих различиях.",
+        "countPlural=many": "Соответствует {countDisplay} файлам в этих различиях.",
+        "countPlural=other": "Соответствует {countDisplay} файлам в этих различиях.",
+        "countPlural=*": "Соответствует {countDisplay} файлам в этих различиях."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "нет: {names}",
+  "lens_extra_placeholder": "лишние: {names}",
+  "lens_same_base": "как в {base}",
+  "lens_settings": "Настройки: {name}",
+  "lens_show_locale": "Показывать {locale} в различиях",
+  "lens_files_question": "Какие файлы в {repo} содержат переводы?",
+  "lens_path_help": "Укажите путь к одному файлу перевода, используя {token} вместо кода языка.",
+  "lens_detect_help": "ghdiff ищет три или больше JSON-файлов в одной папке, названных кодами языков, например messages/en.json. Поиск выполняется заново для каждого различия.",
+  "lens_compare_base": "Сравнивается с {locale}.",
+  "lens_skips": "Пропускаются: {locales}.",
+  "lens_add_token": "Добавьте {token} вместо кода языка.",
+  "comment_issue_number": "Issue #{number}",
+  "comment_open_issue": "Открыть Issue #{number}",
+  "diff_search_position": "{position} из {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "Линза {name} отключена для этого репозитория. Включите её в разделе «Линза» настроек отображения в правом верхнем углу.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "Удалить этот комментарий? Это действие нельзя отменить.",
+        "count=*": "Удалить все комментарии из этой ветки ({countDisplay})? Это действие нельзя отменить."
+      }
+    }
+  ],
+  "lens_base": "базовый",
+  "main_ghdiff_is_not_running": "ghdiff не запущен",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Эта страница не открыта командой ghdiff. Запустите ghdiff в репозитории и откройте напечатанный адрес.",
+  "main_this_tab_has_no_key_for_the_server_open": "У этой вкладки нет ключа для сервера. Откройте адрес, который вывела команда ghdiff.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Создаёт issue из этой заметки вместе с указанными строками и оставляет здесь ссылку на неё.",
+  "comment_composer_what_should_the_issue_say": "Что написать в issue?",
+  "comment_composer_create_issue": "Создать issue",
+  "comment_thread_card_creating_issue": "Создаём issue…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Комментарии остаются в этом браузере. Закончив, скопируйте их как промпт.",
+  "comments_list_conversation": "Обсуждение",
+  "comments_list_open_this_on_github": "Открыть на GitHub",
+  "comments_list_open_on_github": "Открыть на GitHub",
+  "diff_search_bar_no_matches": "Нет совпадений",
+  "diff_search_bar_find_in_diff": "Найти в различиях",
+  "diff_search_bar_find_in_diff_text": "Найти в различиях…",
+  "diff_search_bar_previous_match": "Предыдущее совпадение",
+  "diff_search_bar_previous_match_shiftenter": "Предыдущее совпадение (Shift+Enter)",
+  "diff_search_bar_next_match": "Следующее совпадение",
+  "diff_search_bar_next_match_enter": "Следующее совпадение (Enter)",
+  "diff_search_bar_close_the_search": "Закрыть поиск",
+  "diff_search_bar_close_esc": "Закрыть (Esc)",
+  "pull_request_list_my_pull_requests": "Мои пул-реквесты",
+  "pull_request_list_show": "Показать",
+  "pull_request_list_hide": "Скрыть",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Открыты только ваши пул-реквесты, и они скрыты.",
+  "review_header_untracked_files": "Неотслеживаемые файлы",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Этот пул-реквест объединён. Всё равно проверить.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Этот пул-реквест закрыт. Всё равно проверить.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Этот браузер не разрешил ghdiff доступ к буферу обмена",
+  "review_sidebar_copy_as_prompt": "Копировать как промпт",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Скопировать все комментарии с относящимся к ним кодом для агента разработки",
+  "review_submit_dialog_recent_reviews_from_the_team": "Недавние ревью команды",
+  "review_submit_dialog_recent_reviews": "Недавние ревью",
+  "review_viewer_loading_unmodified_lines": "Загрузка неизменённых строк",
+  "route_error_refreshing_ghdiff": "Обновляем ghdiff",
+  "route_error_the_page_could_not_load": "Не удалось загрузить страницу",
+  "route_error_something_interrupted_this_page": "Что-то прервало загрузку этой страницы",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Проблема с обновлением или подключением может мешать загрузке страницы. Обновите страницу и попробуйте снова.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Обновите страницу и попробуйте снова. URL ревью не изменится.",
+  "route_error_refresh_page": "Обновить страницу",
+  "watched_repos_editor_drag_to_reorder": "Перетащите, чтобы изменить порядок",
+  "lens_frame_turn_off": "Выключить",
+  "lens_frame_beta": "бета",
+  "localization_panel_show_as_table": "Показать таблицей",
+  "localization_panel_languages": "Языки",
+  "localization_panel_show_all_languages": "Показать все языки",
+  "localization_panel_paths_and_format": "Пути и формат…",
+  "localization_panel_not_in_this_diff": "Нет в этих различиях",
+  "localization_panel_show_in_the_diff": "Показать в различиях",
+  "localization_settings_dialog_show_translations_as_a_table": "Показывать переводы таблицей",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Только для этого репозитория. Сохранено в этом браузере.",
+  "localization_settings_dialog_which_files_are_translations": "Какие файлы содержат переводы",
+  "localization_settings_dialog_detect_automatically": "Определять автоматически",
+  "localization_settings_dialog_choose_paths": "Выбрать пути",
+  "localization_settings_dialog_add_another_folder": "Добавить другую папку",
+  "localization_settings_dialog_save": "Сохранить",
+  "localization_settings_dialog_none_in_this_diff": "Нет в этих различиях.",
+  "localization_settings_dialog_in_this_diff": "В этих различиях:",
+  "localization_settings_dialog_path_to_a_translation_file": "Путь к файлу перевода",
+  "localization_settings_dialog_remove_this_path": "Удалить этот путь",
+  "localization_settings_dialog_how_placeholders_look": "Вид плейсхолдеров",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Каждый другой язык проверяется относительно языка в разделе «Сравнивать с». Пропущенные языки — это файлы, создаваемые скриптом; они никогда не показываются.",
+  "use_review_comments_could_not_create_the_issue_on_github": "Не удалось создать issue на GitHub.",
+  "contract_enter_a_commit_sha": "Введите SHA коммита.",
+  "contract_write_what_the_issue_is_about": "Напишите, о чём issue.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "Не удалось загрузить ревью команды для этого пул-реквеста.",
+  "router_could_not_load_the_conversation": "Не удалось загрузить обсуждение.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub не разрешает ghdiff создавать issue здесь. Приложению ghdiff требуется разрешение Issues для этого репозитория.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub принял issue, но ничего не вернул.",
+  "router_could_not_create_this_issue": "Не удалось создать этот issue.",
+  "lens_label": "Линза",
+  "lens_localizations": "Локализации",
+  "lens_compare_against": "Сравнивать с",
+  "lens_skip_languages": "Пропустить эти языки",
+  "lens_not_added": "не добавлено",
+  "review_action_commented": "оставлен комментарий",
+  "review_action_approved": "одобрено",
+  "review_action_changes": "запрошены изменения",
+  "review_action_reviewed": "проверено",
+  "review_open_author": "Открыть ревью {author} на GitHub",
+  "route_refresh_version": "Возможно, доступна новая версия. Обновляем страницу, чтобы вернуть вас к ревью.",
+  "issue_create_action": "создать issue",
+  "effect_dies": "завершается дефектом",
+  "effect_dies_exit": "завершается дефектом ↗",
+  "effect_defect_stop": "Здесь выполнение останавливается с дефектом. Его видит только обработчик причин.",
+  "effect_defect_value": "Создаёт дефект. Его видит только обработчик причин.",
+  "effect_interrupts": "прерывается",
+  "effect_interrupts_exit": "прерывается ↗",
+  "effect_interrupt_stop": "Здесь выполнение останавливается и прерывает файбер.",
+  "effect_interrupt_value": "Создаёт прерывание.",
+  "effect_catches_all": "перехватывает все",
+  "effect_handles_all": "Обрабатывает все ожидаемые сбои выше него.",
+  "effect_catches_some": "перехватывает некоторые",
+  "effect_handles_some": "Обрабатывает сбои, выбранные предикатом. Остальные проходят дальше.",
+  "effect_failure_defect": "сбой → дефект",
+  "effect_turns_defect": "Превращает любой сбой выше него в дефект.",
+  "effect_catches": "перехватывает",
+  "effect_handles_tags": "Обрабатывает сбои по тегу.",
+  "effect_fails": "завершается сбоем{suffix}",
+  "effect_fails_exit": "завершается сбоем{suffix} ↗",
+  "effect_stop_failure": "Здесь выполнение останавливается и завершается сбоем.",
+  "effect_stop_failure_named": "Здесь выполнение останавливается и завершается сбоем {name}.",
+  "effect_make_failure": "Создаёт сбой.",
+  "effect_make_failure_named": "Создаёт сбой {name}.",
+  "effect_catches_named": "перехватывает · {tags}",
+  "effect_handles_named": "Обрабатывает {tags}. Остальные сбои проходят дальше.",
+  "effect_needs": "требует · {name}",
+  "effect_service": "Получает сервис {name}. Перед выполнением его нужно предоставить.",
+  "effect_fold": "Свернуть код в «{label}»",
+  "effect_unfold": "{reading} Показать код.",
+  "watch_drag_repo": "Перетащите, чтобы изменить порядок {name}",
+  "watch_remove_repo": "Удалить {name}",
+  "local_diff_remote": "Эти различия находятся на машине, а не на GitHub. Запустите команду ghdiff внутри этого репозитория, чтобы прочитать их.",
+  "local_working_tree": "рабочее дерево",
+  "issue_missing_commit": "На GitHub нет коммита с именем {rev}.",
+  "issue_missing_start": "GitHub не указал, где начинается этот диапазон.",
+  "issue_no_parent": "У этого коммита нет родителя, поэтому для удалённых строк нет файла, на который можно сослаться.",
+  "issue_fork_range": "Этот диапазон заканчивается в форке, поэтому issue здесь не может ссылаться на его строки.",
+  "placeholder_single": "Одинарные фигурные скобки",
+  "placeholder_double": "Двойные фигурные скобки",
+  "clipboard_copied": "Скопировано",
+  "lens_undo": "Отменить"
 }

@@ -609,5 +609,218 @@
     }
   ],
   "locale_language": "选择语言",
-  "app_render_error": "ghdiff 无法显示此页面。重新加载页面后重试。"
+  "app_render_error": "ghdiff 无法显示此页面。重新加载页面后重试。",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "下方以文件形式显示 {countDisplay} 个翻译文件。"
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} 个文件含有嵌套消息，仍显示在下方差异中。"
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} 个键"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} 个问题"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "与此差异中的 {countDisplay} 个文件匹配。"
+      }
+    }
+  ],
+  "lens_missing_placeholder": "缺少 {names}",
+  "lens_extra_placeholder": "多余 {names}",
+  "lens_same_base": "与 {base} 相同",
+  "lens_settings": "{name} 设置",
+  "lens_show_locale": "在差异中显示 {locale}",
+  "lens_files_question": "{repo} 中哪些文件是翻译文件？",
+  "lens_path_help": "填写一个翻译文件的路径，并在语言代码的位置使用 {token}。",
+  "lens_detect_help": "ghdiff 会在同一文件夹中查找三个或更多以语言代码命名的 JSON 文件，例如 messages/en.json。每次查看差异时都会重新查找。",
+  "lens_compare_base": "与 {locale} 比较。",
+  "lens_skips": "跳过 {locales}。",
+  "lens_add_token": "在语言代码的位置添加 {token}。",
+  "comment_issue_number": "议题 #{number}",
+  "comment_open_issue": "打开议题 #{number}",
+  "diff_search_position": "第 {position} 个，共 {count} 个",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "此仓库的 {name} 视图已关闭。可在右上角显示设置中的“视图”下重新开启。",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "删除这条评论？此操作无法撤销。",
+        "count=*": "删除此讨论中的全部 {countDisplay} 条评论？此操作无法撤销。"
+      }
+    }
+  ],
+  "lens_base": "基准",
+  "main_ghdiff_is_not_running": "ghdiff 未运行",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "此页面并非来自 ghdiff 命令。在仓库中运行 ghdiff，然后打开它输出的地址。",
+  "main_this_tab_has_no_key_for_the_server_open": "此标签页没有服务器密钥。打开 ghdiff 命令输出的地址。",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "将此备注及其中的代码行创建为议题，并在这里留下链接。",
+  "comment_composer_what_should_the_issue_say": "议题应写什么？",
+  "comment_composer_create_issue": "创建议题",
+  "comment_thread_card_creating_issue": "正在创建议题…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "评论保留在此浏览器中。完成后可将其复制为提示词。",
+  "comments_list_conversation": "讨论",
+  "comments_list_open_this_on_github": "在 GitHub 上打开此内容",
+  "comments_list_open_on_github": "在 GitHub 上打开",
+  "diff_search_bar_no_matches": "没有匹配项",
+  "diff_search_bar_find_in_diff": "在差异中查找",
+  "diff_search_bar_find_in_diff_text": "在差异中查找…",
+  "diff_search_bar_previous_match": "上一个匹配项",
+  "diff_search_bar_previous_match_shiftenter": "上一个匹配项 (Shift+Enter)",
+  "diff_search_bar_next_match": "下一个匹配项",
+  "diff_search_bar_next_match_enter": "下一个匹配项 (Enter)",
+  "diff_search_bar_close_the_search": "关闭搜索",
+  "diff_search_bar_close_esc": "关闭 (Esc)",
+  "pull_request_list_my_pull_requests": "我的拉取请求",
+  "pull_request_list_show": "显示",
+  "pull_request_list_hide": "隐藏",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "只有自己的拉取请求处于打开状态，且已隐藏。",
+  "review_header_untracked_files": "未跟踪文件",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "此拉取请求已合并，仍可审查。",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "此拉取请求已关闭，仍可审查。",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "此浏览器不允许 ghdiff 访问剪贴板",
+  "review_sidebar_copy_as_prompt": "复制为提示词",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "将所有评论及其对应代码复制给编程代理",
+  "review_submit_dialog_recent_reviews_from_the_team": "团队近期审查",
+  "review_submit_dialog_recent_reviews": "近期审查",
+  "review_viewer_loading_unmodified_lines": "正在加载未修改的行",
+  "route_error_refreshing_ghdiff": "正在刷新 ghdiff",
+  "route_error_the_page_could_not_load": "页面无法加载",
+  "route_error_something_interrupted_this_page": "页面被中断",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "更新或连接问题可能阻止此页面加载。刷新后重试。",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "刷新页面后重试。审查 URL 不会改变。",
+  "route_error_refresh_page": "刷新页面",
+  "watched_repos_editor_drag_to_reorder": "拖动以重新排序",
+  "lens_frame_turn_off": "停用",
+  "lens_frame_beta": "测试版",
+  "localization_panel_show_as_table": "显示为表格",
+  "localization_panel_languages": "语言",
+  "localization_panel_show_all_languages": "显示所有语言",
+  "localization_panel_paths_and_format": "路径和格式…",
+  "localization_panel_not_in_this_diff": "不在此差异中",
+  "localization_panel_show_in_the_diff": "在差异中显示",
+  "localization_settings_dialog_show_translations_as_a_table": "将翻译显示为表格",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "仅适用于此仓库，保存在此浏览器中。",
+  "localization_settings_dialog_which_files_are_translations": "哪些文件是翻译文件",
+  "localization_settings_dialog_detect_automatically": "自动检测",
+  "localization_settings_dialog_choose_paths": "选择路径",
+  "localization_settings_dialog_add_another_folder": "添加其他文件夹",
+  "localization_settings_dialog_save": "保存",
+  "localization_settings_dialog_none_in_this_diff": "此差异中没有。",
+  "localization_settings_dialog_in_this_diff": "此差异中：",
+  "localization_settings_dialog_path_to_a_translation_file": "翻译文件路径",
+  "localization_settings_dialog_remove_this_path": "移除此路径",
+  "localization_settings_dialog_how_placeholders_look": "占位符格式",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "其他每种语言都会与“比较基准”中的语言核对。跳过的语言是由脚本生成的文件，永不显示。",
+  "use_review_comments_could_not_create_the_issue_on_github": "无法在 GitHub 上创建议题。",
+  "contract_enter_a_commit_sha": "输入提交 SHA。",
+  "contract_write_what_the_issue_is_about": "写明议题内容。",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "无法加载团队对此拉取请求的审查。",
+  "router_could_not_load_the_conversation": "无法加载讨论。",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub 不允许 ghdiff 在此创建议题。ghdiff 应用需要此仓库的 Issues 权限。",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub 已接受该议题，但未返回任何内容。",
+  "router_could_not_create_this_issue": "无法创建此议题。",
+  "lens_label": "视图",
+  "lens_localizations": "本地化",
+  "lens_compare_against": "比较基准",
+  "lens_skip_languages": "跳过这些语言",
+  "lens_not_added": "未添加",
+  "review_action_commented": "已评论",
+  "review_action_approved": "已批准",
+  "review_action_changes": "已请求更改",
+  "review_action_reviewed": "已审查",
+  "review_open_author": "在 GitHub 上打开 {author} 的审查",
+  "route_refresh_version": "可能有新版本可用。正在刷新以返回审查。",
+  "issue_create_action": "创建议题",
+  "effect_dies": "因缺陷终止",
+  "effect_dies_exit": "因缺陷终止 ↗",
+  "effect_defect_stop": "在此以缺陷停止。只有 Cause 处理器能看到它。",
+  "effect_defect_value": "产生缺陷。只有 Cause 处理器能看到它。",
+  "effect_interrupts": "中断",
+  "effect_interrupts_exit": "中断 ↗",
+  "effect_interrupt_stop": "在此停止并中断 Fiber。",
+  "effect_interrupt_value": "产生中断。",
+  "effect_catches_all": "捕获全部",
+  "effect_handles_all": "处理其上方的所有预期失败。",
+  "effect_catches_some": "捕获部分",
+  "effect_handles_some": "处理谓词选中的失败，其余继续传递。",
+  "effect_failure_defect": "失败 → 缺陷",
+  "effect_turns_defect": "将其上方的任何失败转为缺陷。",
+  "effect_catches": "捕获",
+  "effect_handles_tags": "按标签处理失败。",
+  "effect_fails": "失败{suffix}",
+  "effect_fails_exit": "失败{suffix} ↗",
+  "effect_stop_failure": "在此停止并失败。",
+  "effect_stop_failure_named": "在此停止，并以 {name} 失败。",
+  "effect_make_failure": "产生失败。",
+  "effect_make_failure_named": "以 {name} 产生失败。",
+  "effect_catches_named": "捕获 · {tags}",
+  "effect_handles_named": "处理 {tags}。其他失败继续传递。",
+  "effect_needs": "需要 · {name}",
+  "effect_service": "读取 {name} 服务。运行前必须提供该服务。",
+  "effect_fold": "将代码折叠回“{label}”",
+  "effect_unfold": "{reading} 显示代码。",
+  "watch_drag_repo": "拖动以重新排序 {name}",
+  "watch_remove_repo": "移除 {name}",
+  "local_diff_remote": "该差异位于一台机器上，不在 GitHub 上。请在该仓库中运行 ghdiff 命令以读取它。",
+  "local_working_tree": "工作树",
+  "issue_missing_commit": "GitHub 此处没有名为 {rev} 的提交。",
+  "issue_missing_start": "GitHub 未说明此范围从何处开始。",
+  "issue_no_parent": "此提交没有父提交，因此其删除的行没有可链接的文件。",
+  "issue_fork_range": "此范围在 fork 中结束，因此此处的议题无法链接到其代码行。",
+  "placeholder_single": "单花括号",
+  "placeholder_double": "双花括号",
+  "clipboard_copied": "已复制",
+  "lens_undo": "撤销"
 }

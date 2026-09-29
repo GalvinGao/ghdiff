@@ -2,6 +2,7 @@ import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
+import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { claimModuleReload, isModuleLoadError } from '@/lib/moduleRecovery';
 
@@ -43,24 +44,24 @@ export function RouteError({ error }: ErrorComponentProps) {
         />
         <h1 className="text-ink text-base font-medium">
           {refreshing
-            ? 'Refreshing ghdiff'
+            ? m.route_error_refreshing_ghdiff()
             : moduleFailure
-              ? 'The page could not load'
-              : 'Something interrupted this page'}
+              ? m.route_error_the_page_could_not_load()
+              : m.route_error_something_interrupted_this_page()}
         </h1>
         <p className="text-ink-muted mt-2 text-sm text-pretty">
           {refreshing
-            ? 'A new version may be available. Refreshing to get you back to your review.'
+            ? m.route_refresh_version()
             : moduleFailure
-              ? 'An update or connection problem may be preventing this page from loading. Refresh to try again.'
-              : 'Refresh the page to try again. Your review URL will stay the same.'}
+              ? m.route_error_an_update_or_connection_problem_may_be_preventing_this()
+              : m.route_error_refresh_the_page_to_try_again_your_review_url()}
         </p>
         <Button
           className="mt-5"
           variant="solid"
           onClick={() => window.location.reload()}
         >
-          Refresh page
+          {m.route_error_refresh_page()}
         </Button>
       </section>
     </main>

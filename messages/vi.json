@@ -610,5 +610,218 @@
     }
   ],
   "locale_language": "Ngôn ngữ",
-  "app_render_error": "ghdiff không thể hiển thị trang này. Tải lại trang để thử lại."
+  "app_render_error": "ghdiff không thể hiển thị trang này. Tải lại trang để thử lại.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} tệp bản dịch được hiển thị dưới dạng tệp bên dưới."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} tệp có thông điệp lồng nhau. Các tệp này vẫn nằm trong diff bên dưới."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} khóa"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} vấn đề"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "Khớp với {countDisplay} tệp trong diff này."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "thiếu {names}",
+  "lens_extra_placeholder": "thừa {names}",
+  "lens_same_base": "giống {base}",
+  "lens_settings": "Cài đặt {name}",
+  "lens_show_locale": "Hiện {locale} trong diff",
+  "lens_files_question": "Tệp nào là bản dịch trong {repo}?",
+  "lens_path_help": "Nhập đường dẫn đến một tệp bản dịch, dùng {token} tại vị trí mã ngôn ngữ.",
+  "lens_detect_help": "ghdiff tìm từ ba tệp JSON trở lên trong cùng một thư mục, mỗi tệp được đặt tên theo mã ngôn ngữ, như messages/en.json. ghdiff tìm lại trong mỗi diff.",
+  "lens_compare_base": "So sánh với {locale}.",
+  "lens_skips": "Bỏ qua {locales}.",
+  "lens_add_token": "Thêm {token} tại vị trí mã ngôn ngữ.",
+  "comment_issue_number": "Issue #{number}",
+  "comment_open_issue": "Mở issue #{number}",
+  "diff_search_position": "{position} / {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "Lens {name} đang tắt cho kho mã này. Bật lại trong mục Lens ở cài đặt hiển thị, góc trên bên phải.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "Xóa bình luận này? Không thể hoàn tác.",
+        "count=*": "Xóa tất cả {countDisplay} bình luận trong luồng này? Không thể hoàn tác."
+      }
+    }
+  ],
+  "lens_base": "gốc",
+  "main_ghdiff_is_not_running": "ghdiff chưa chạy",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Trang này không đến từ lệnh ghdiff. Hãy chạy ghdiff trong một kho mã và mở địa chỉ mà lệnh in ra.",
+  "main_this_tab_has_no_key_for_the_server_open": "Thẻ này không có khóa cho máy chủ. Hãy mở địa chỉ mà lệnh ghdiff đã in ra.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Tạo issue từ ghi chú này cùng các dòng trong đó và để lại liên kết tại đây.",
+  "comment_composer_what_should_the_issue_say": "Issue nên ghi gì?",
+  "comment_composer_create_issue": "Tạo issue",
+  "comment_thread_card_creating_issue": "Đang tạo issue…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Bình luận chỉ ở trong trình duyệt này. Khi xong, hãy sao chép chúng thành một prompt.",
+  "comments_list_conversation": "Cuộc trò chuyện",
+  "comments_list_open_this_on_github": "Mở trên GitHub",
+  "comments_list_open_on_github": "Mở trên GitHub",
+  "diff_search_bar_no_matches": "Không có kết quả",
+  "diff_search_bar_find_in_diff": "Tìm trong diff",
+  "diff_search_bar_find_in_diff_text": "Tìm trong diff…",
+  "diff_search_bar_previous_match": "Kết quả trước",
+  "diff_search_bar_previous_match_shiftenter": "Kết quả trước (Shift+Enter)",
+  "diff_search_bar_next_match": "Kết quả tiếp",
+  "diff_search_bar_next_match_enter": "Kết quả tiếp (Enter)",
+  "diff_search_bar_close_the_search": "Đóng tìm kiếm",
+  "diff_search_bar_close_esc": "Đóng (Esc)",
+  "pull_request_list_my_pull_requests": "Pull request của tôi",
+  "pull_request_list_show": "Hiện",
+  "pull_request_list_hide": "Ẩn",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Chỉ pull request của bạn đang mở và chúng đang bị ẩn.",
+  "review_header_untracked_files": "Tệp chưa được theo dõi",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Pull request này đã được hợp nhất. Vẫn xem xét nó.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Pull request này đã bị đóng. Vẫn xem xét nó.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Trình duyệt này không cho ghdiff truy cập bảng nhớ tạm",
+  "review_sidebar_copy_as_prompt": "Sao chép thành prompt",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Sao chép mọi bình luận cùng đoạn mã liên quan để dùng cho tác nhân lập trình",
+  "review_submit_dialog_recent_reviews_from_the_team": "Các review gần đây từ nhóm",
+  "review_submit_dialog_recent_reviews": "Các review gần đây",
+  "review_viewer_loading_unmodified_lines": "Đang tải các dòng không thay đổi",
+  "route_error_refreshing_ghdiff": "Đang làm mới ghdiff",
+  "route_error_the_page_could_not_load": "Không thể tải trang",
+  "route_error_something_interrupted_this_page": "Có gì đó đã làm gián đoạn trang này",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Sự cố cập nhật hoặc kết nối có thể khiến trang này không tải được. Hãy làm mới để thử lại.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Hãy làm mới trang để thử lại. URL review của bạn sẽ không đổi.",
+  "route_error_refresh_page": "Làm mới trang",
+  "watched_repos_editor_drag_to_reorder": "Kéo để sắp xếp lại",
+  "lens_frame_turn_off": "Tắt",
+  "lens_frame_beta": "beta",
+  "localization_panel_show_as_table": "Hiện dạng bảng",
+  "localization_panel_languages": "Ngôn ngữ",
+  "localization_panel_show_all_languages": "Hiện tất cả ngôn ngữ",
+  "localization_panel_paths_and_format": "Đường dẫn và định dạng…",
+  "localization_panel_not_in_this_diff": "Không có trong diff này",
+  "localization_panel_show_in_the_diff": "Hiện trong diff",
+  "localization_settings_dialog_show_translations_as_a_table": "Hiện bản dịch dạng bảng",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Chỉ áp dụng cho kho mã này. Được lưu trong trình duyệt này.",
+  "localization_settings_dialog_which_files_are_translations": "Tệp nào là bản dịch",
+  "localization_settings_dialog_detect_automatically": "Tự động phát hiện",
+  "localization_settings_dialog_choose_paths": "Chọn đường dẫn",
+  "localization_settings_dialog_add_another_folder": "Thêm thư mục khác",
+  "localization_settings_dialog_save": "Lưu",
+  "localization_settings_dialog_none_in_this_diff": "Không có trong diff này.",
+  "localization_settings_dialog_in_this_diff": "Trong diff này:",
+  "localization_settings_dialog_path_to_a_translation_file": "Đường dẫn đến tệp bản dịch",
+  "localization_settings_dialog_remove_this_path": "Xóa đường dẫn này",
+  "localization_settings_dialog_how_placeholders_look": "Dạng của placeholder",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Mọi ngôn ngữ khác được kiểm tra với ngôn ngữ trong mục So sánh với. Ngôn ngữ bị bỏ qua là các tệp do script tạo và không bao giờ được hiển thị.",
+  "use_review_comments_could_not_create_the_issue_on_github": "Không thể tạo issue trên GitHub.",
+  "contract_enter_a_commit_sha": "Nhập SHA commit.",
+  "contract_write_what_the_issue_is_about": "Viết nội dung issue.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "Không thể tải review của nhóm cho pull request này.",
+  "router_could_not_load_the_conversation": "Không thể tải cuộc trò chuyện.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub không cho ghdiff mở issue ở đây. Ứng dụng ghdiff cần quyền Issues trên kho mã này.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub đã chấp nhận issue nhưng không trả về gì.",
+  "router_could_not_create_this_issue": "Không thể tạo issue này.",
+  "lens_label": "Lens",
+  "lens_localizations": "Bản địa hóa",
+  "lens_compare_against": "So sánh với",
+  "lens_skip_languages": "Bỏ qua các ngôn ngữ này",
+  "lens_not_added": "chưa thêm",
+  "review_action_commented": "đã bình luận",
+  "review_action_approved": "đã phê duyệt",
+  "review_action_changes": "đã yêu cầu thay đổi",
+  "review_action_reviewed": "đã review",
+  "review_open_author": "Mở review của {author} trên GitHub",
+  "route_refresh_version": "Có thể đã có phiên bản mới. Đang làm mới để đưa bạn trở lại review.",
+  "issue_create_action": "tạo issue",
+  "effect_dies": "kết thúc do defect",
+  "effect_dies_exit": "kết thúc do defect ↗",
+  "effect_defect_stop": "Dừng tại đây với defect. Chỉ trình xử lý Cause mới thấy được.",
+  "effect_defect_value": "Tạo defect. Chỉ trình xử lý Cause mới thấy được.",
+  "effect_interrupts": "ngắt",
+  "effect_interrupts_exit": "ngắt ↗",
+  "effect_interrupt_stop": "Dừng tại đây và ngắt fiber.",
+  "effect_interrupt_value": "Tạo một lần ngắt.",
+  "effect_catches_all": "bắt tất cả",
+  "effect_handles_all": "Xử lý mọi failure dự kiến phía trên.",
+  "effect_catches_some": "bắt một số",
+  "effect_handles_some": "Xử lý các failure mà predicate chọn. Phần còn lại được truyền tiếp.",
+  "effect_failure_defect": "failure → defect",
+  "effect_turns_defect": "Biến mọi failure phía trên thành defect.",
+  "effect_catches": "bắt",
+  "effect_handles_tags": "Xử lý failure theo tag.",
+  "effect_fails": "thất bại{suffix}",
+  "effect_fails_exit": "thất bại{suffix} ↗",
+  "effect_stop_failure": "Dừng tại đây và thất bại.",
+  "effect_stop_failure_named": "Dừng tại đây và thất bại với {name}.",
+  "effect_make_failure": "Tạo một failure.",
+  "effect_make_failure_named": "Tạo một failure với {name}.",
+  "effect_catches_named": "bắt · {tags}",
+  "effect_handles_named": "Xử lý {tags}. Các failure khác được truyền tiếp.",
+  "effect_needs": "cần · {name}",
+  "effect_service": "Đọc dịch vụ {name}. Phải có thứ cung cấp dịch vụ này trước khi chạy.",
+  "effect_fold": "Thu gọn mã vào “{label}”",
+  "effect_unfold": "{reading} Hiện mã.",
+  "watch_drag_repo": "Kéo để sắp xếp lại {name}",
+  "watch_remove_repo": "Xóa {name}",
+  "local_diff_remote": "Diff đó nằm trên một máy, không phải trên GitHub. Hãy chạy lệnh ghdiff trong kho mã đó để đọc.",
+  "local_working_tree": "cây làm việc",
+  "issue_missing_commit": "GitHub không có commit tên {rev} ở đây.",
+  "issue_missing_start": "GitHub không cho biết phạm vi này bắt đầu từ đâu.",
+  "issue_no_parent": "Commit này không có commit cha nên các dòng bị xóa không có tệp để liên kết.",
+  "issue_fork_range": "Phạm vi này kết thúc ở một fork nên issue tại đây không thể liên kết đến các dòng của nó.",
+  "placeholder_single": "Dấu ngoặc nhọn đơn",
+  "placeholder_double": "Dấu ngoặc nhọn kép",
+  "clipboard_copied": "Đã sao chép",
+  "lens_undo": "Hoàn tác"
 }

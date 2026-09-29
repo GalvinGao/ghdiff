@@ -89,19 +89,19 @@ export function PullRequestList({
       {hydrated && repos.length > 0 && data?.viewer != null && (
         <div className="flex items-center gap-2 px-2 pt-2 pb-1">
           <span className="text-ink-muted min-w-0 truncate text-xs">
-            My pull requests
+            {m.pull_request_list_my_pull_requests()}
           </span>
           <Segmented
-            aria-label="My pull requests"
+            aria-label={m.pull_request_list_my_pull_requests()}
             className="border-line bg-surface ml-auto shrink-0 rounded-lg border p-0.5"
             value={showOwn ? 'show' : 'hide'}
             onValueChange={(next) => setShowOwn(next === 'show')}
           >
             <SegmentedItem className="h-5 px-2" value="show">
-              Show
+              {m.pull_request_list_show()}
             </SegmentedItem>
             <SegmentedItem className="h-5 px-2" value="hide">
-              Hide
+              {m.pull_request_list_hide()}
             </SegmentedItem>
           </Segmented>
         </div>
@@ -128,7 +128,7 @@ export function PullRequestList({
         <p className="text-removed px-2 py-3 text-sm">{error}</p>
       ) : groups.length === 0 && hiddenOwn > 0 ? (
         <p className="text-ink-muted px-2 py-3 text-sm">
-          Only your own pull requests are open, and they are hidden.
+          {m.pull_request_list_only_your_own_pull_requests_are_open_and_they()}
         </p>
       ) : groups.length === 0 ? (
         // Every repository failing is not the same as every repository being

@@ -33,6 +33,7 @@ import {
   shownLocales,
   toggleShownLocale,
 } from '@/lib/lenses/localization/shownLocales';
+import { m } from '@/paraglide/messages.js';
 
 // The catalogue files of a diff, read as one table instead of one file apiece.
 //
@@ -75,16 +76,14 @@ export function LocalizationPanel({
       >
         <IconGlobe aria-hidden="true" className="text-ink-faint" size={13} />
         <span className="text-ink-muted min-w-0 flex-1 truncate">
-          {model.claimedItemIds.size} translation{' '}
-          {model.claimedItemIds.size === 1 ? 'file is' : 'files are'} shown as
-          files below.
+          {m.lens_raw_files({ count: model.claimedItemIds.size })}
         </span>
         <Button
           size="sm"
           variant="outline"
           onClick={() => onRawShownChange(false)}
         >
-          Show as table
+          {m.localization_panel_show_as_table()}
         </Button>
       </section>
     );
@@ -94,7 +93,7 @@ export function LocalizationPanel({
   const chosenAll = settings.shownLocales == null;
   const menu = (
     <>
-      <DropdownMenuLabel>Languages</DropdownMenuLabel>
+      <DropdownMenuLabel>{m.localization_panel_languages()}</DropdownMenuLabel>
       {choices.readable.map((locale) => {
         const base = choices.bases.has(locale);
         return (
@@ -109,7 +108,9 @@ export function LocalizationPanel({
           >
             <span className="flex items-baseline gap-2">
               <span className="font-mono text-xs">{locale}</span>
-              {base && <span className="text-ink-faint text-xs">base</span>}
+              {base && (
+                <span className="text-ink-faint text-xs">{m.lens_base()}</span>
+              )}
             </span>
           </DropdownMenuCheckboxItem>
         );
@@ -122,12 +123,12 @@ export function LocalizationPanel({
             onSettingsChange(showAllLocales(settings));
           }}
         >
-          Show all languages
+          {m.localization_panel_show_all_languages()}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
       <DropdownMenuItem onSelect={onOpenSettings}>
-        Paths and format…
+        {m.localization_panel_paths_and_format()}
       </DropdownMenuItem>
     </>
   );
@@ -135,7 +136,7 @@ export function LocalizationPanel({
   return (
     <LensFrame
       menu={menu}
-      settingsLabel={`${LENSES.localization.label} settings`}
+      settingsLabel={m.lens_settings({ name: LENSES.localization.label })}
       onTurnOff={onTurnOff}
     >
       {model.groups.map((group) => (
@@ -191,15 +192,15 @@ function LocalizationGroupSection({
           {group.label}
         </span>
         <span className="text-ink-faint shrink-0 text-xs tabular-nums">
-          {group.keys.length} {group.keys.length === 1 ? 'key' : 'keys'} ·{' '}
-          {fileCount} {fileCount === 1 ? 'file' : 'files'}
+          {m.lens_keys({ count: group.keys.length })} ·{' '}
+          {m.common_file_count({ count: fileCount })}
         </span>
         {/* Only a problem is worth a word here. A catalogue that checks out
             says nothing, because a line that says so on every clean diff is
             a line nobody reads by the day it says something else. */}
         {problems > 0 && (
           <span className="text-removed shrink-0 text-xs">
-            {problems} {problems === 1 ? 'problem' : 'problems'}
+            {m.lens_problems({ count: problems })}
           </span>
         )}
       </header>
@@ -224,9 +225,15 @@ function LocalizationGroupSection({
 }
 
 const KIND_LABEL: Record<LocalizationKeyKind, string> = {
-  added: 'added',
-  removed: 'removed',
-  changed: 'changed',
+  get added() {
+    return m.filter_menu_added();
+  },
+  get removed() {
+    return m.filter_menu_deleted();
+  },
+  get changed() {
+    return m.filter_menu_modified();
+  },
 };
 
 const KIND_CLASS: Record<LocalizationKeyKind, string> = {
@@ -284,7 +291,10 @@ function KeyCard({
           {entry.key}
         </span>
       </div>
-      <table className="mb-1.5 w-full table-fixed border-collapse text-[13px]">
+      <table
+        dir="ltr"
+        className="mb-1.5 w-full table-fixed border-collapse text-[13px]"
+      >
         <colgroup>
           <col className="w-16" />
           <col />
@@ -362,7 +372,9 @@ function LocaleRow({
       </th>
       <td className="min-w-0 py-1 pr-2 break-words">
         {value == null ? (
-          <span className="text-ink-faint">Not in this diff</span>
+          <span className="text-ink-faint">
+            {m.localization_panel_not_in_this_diff()}
+          </span>
         ) : (
           <>
             {value.old != null && (
@@ -392,9 +404,9 @@ function LocaleRow({
         {value != null && jump != null && (
           <button
             type="button"
-            aria-label={`Show ${locale} in the diff`}
+            aria-label={m.lens_show_locale({ locale })}
             className="text-ink-faint hover:text-ink inline-flex size-5 items-center justify-center rounded opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100"
-            title="Show in the diff"
+            title={m.localization_panel_show_in_the_diff()}
             onClick={() => onJumpToLine(value.itemId, jump.side, jump.line)}
           >
             <IconArrowDownRight size={12} />
@@ -424,12 +436,13 @@ function Message({
   text: string;
 }) {
   return (
-    <span className={className}>
+    <span dir="auto" className={className}>
       {tokenizeMessage(text, syntax).map((segment, index) =>
         segment.type === 'text' ? (
           <span key={index}>{segment.text}</span>
         ) : (
           <code
+            dir="ltr"
             key={index}
             className="border-line bg-surface text-ink mx-px rounded border px-0.5 font-mono text-[12px] no-underline"
           >
@@ -448,13 +461,13 @@ function describeIssue(
   const names = issue.names?.map((name) => `{${name}}`).join(' ') ?? '';
   switch (issue.kind) {
     case 'missing-placeholder':
-      return `missing ${names}`;
+      return m.lens_missing_placeholder({ names });
     case 'extra-placeholder':
-      return `extra ${names}`;
+      return m.lens_extra_placeholder({ names });
     case 'absent':
-      return 'not added';
+      return m.lens_not_added();
     case 'same-as-base':
-      return `same as ${base ?? 'the base'}`;
+      return m.lens_same_base({ base: base ?? m.lens_base() });
   }
 }
 
@@ -484,10 +497,7 @@ function GroupFootnotes({ group }: { group: LocalizationGroup }) {
   if (group.unreadPaths.length === 0) return null;
   return (
     <p className="border-line text-ink-faint border-t px-3 py-1.5 text-xs">
-      {group.unreadPaths.length}{' '}
-      {group.unreadPaths.length === 1 ? 'file has' : 'files have'} nested
-      messages. {group.unreadPaths.length === 1 ? 'It stays' : 'They stay'} in
-      the diff below.
+      {m.lens_nested_files({ count: group.unreadPaths.length })}
     </p>
   );
 }

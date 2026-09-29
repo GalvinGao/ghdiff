@@ -1063,10 +1063,10 @@ export function ReviewScreen({
           display menu makes the undo, and the message, untrue. */}
       {localizationBeforeOff != null && !localizationSettings.enabled && (
         <Toast
-          action={{ label: 'Undo', onPress: undoTurnOffLocalization }}
+          action={{ label: m.lens_undo(), onPress: undoTurnOffLocalization }}
           onDismiss={() => setLocalizationBeforeOff(null)}
         >
-          {`The ${LENSES.localization.label} lens is off for this repository. Turn it back on under Lens in the display settings, top right.`}
+          {m.lens_disabled({ name: LENSES.localization.label })}
         </Toast>
       )}
 

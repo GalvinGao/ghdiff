@@ -47,7 +47,9 @@ const issueSource = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('github-pull'), number: z.int().positive() }),
   z.object({
     kind: z.literal('github-commit'),
-    sha: z.string().regex(/^[0-9a-f]{7,40}$/i, 'Enter a commit sha.'),
+    sha: z.string().regex(/^[0-9a-f]{7,40}$/i, {
+      error: () => m.contract_enter_a_commit_sha(),
+    }),
   }),
   z.object({
     kind: z.literal('github-compare'),
@@ -175,7 +177,12 @@ export const contract = {
       .input(
         repoRef.extend({
           source: issueSource,
-          text: z.string().trim().min(1, 'Write what the issue is about.'),
+          text: z
+            .string()
+            .trim()
+            .min(1, {
+              error: () => m.contract_write_what_the_issue_is_about(),
+            }),
           path: z.string().min(1),
           line: z.int().positive(),
           startLine: z.int().positive().optional(),

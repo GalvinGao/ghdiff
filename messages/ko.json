@@ -601,5 +601,223 @@
     }
   ],
   "locale_language": "언어 선택",
-  "app_render_error": "ghdiff에서 이 페이지를 표시할 수 없었어요. 페이지를 새로고침한 후 다시 시도해 주세요."
+  "app_render_error": "ghdiff에서 이 페이지를 표시할 수 없었어요. 페이지를 새로고침한 후 다시 시도해 주세요.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "아래에 번역 파일 {countDisplay}개가 파일로 표시됩니다.",
+        "countPlural=*": "아래에 번역 파일 {countDisplay}개가 파일로 표시됩니다."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "파일 {countDisplay}개에 중첩된 메시지가 있습니다. 아래 변경 사항에 그대로 표시됩니다.",
+        "countPlural=*": "파일 {countDisplay}개에 중첩된 메시지가 있습니다. 아래 변경 사항에 그대로 표시됩니다."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "키 {countDisplay}개",
+        "countPlural=*": "키 {countDisplay}개"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "문제 {countDisplay}개",
+        "countPlural=*": "문제 {countDisplay}개"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "이 변경 사항의 파일 {countDisplay}개와 일치합니다.",
+        "countPlural=*": "이 변경 사항의 파일 {countDisplay}개와 일치합니다."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "누락된 {names}",
+  "lens_extra_placeholder": "추가된 {names}",
+  "lens_same_base": "{base}와 같음",
+  "lens_settings": "{name} 설정",
+  "lens_show_locale": "변경 사항에서 {locale} 표시",
+  "lens_files_question": "{repo}에서 어떤 파일이 번역 파일인가요?",
+  "lens_path_help": "언어 코드가 들어갈 곳에 {token}을 넣어 번역 파일 하나의 경로를 작성하세요.",
+  "lens_detect_help": "ghdiff는 한 폴더에서 언어 코드로 이름 붙은 JSON 파일을 세 개 이상 찾습니다. 예: messages/en.json. 변경 사항마다 다시 찾습니다.",
+  "lens_compare_base": "{locale}와 비교했습니다.",
+  "lens_skips": "{locales} 건너뜀.",
+  "lens_add_token": "언어 코드가 들어갈 곳에 {token} 추가",
+  "comment_issue_number": "이슈 #{number}",
+  "comment_open_issue": "이슈 #{number} 열기",
+  "diff_search_position": "{count}개 중 {position}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "이 저장소에서는 {name} 렌즈가 꺼져 있습니다. 오른쪽 위 표시 설정의 렌즈에서 다시 켜세요.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "이 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+        "count=*": "이 스레드의 댓글 {countDisplay}개를 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다."
+      }
+    }
+  ],
+  "lens_base": "기준",
+  "main_ghdiff_is_not_running": "ghdiff가 실행 중이 아닙니다",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "이 페이지는 ghdiff 명령에서 열리지 않았습니다. 저장소에서 ghdiff를 실행하고 출력된 주소를 여세요.",
+  "main_this_tab_has_no_key_for_the_server_open": "이 탭에 서버 키가 없습니다. ghdiff 명령에서 출력된 주소를 여세요.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "이 메모와 해당 줄로 이슈를 만들고 여기에 링크를 남깁니다.",
+  "comment_composer_what_should_the_issue_say": "이슈에 무엇을 쓸까요?",
+  "comment_composer_create_issue": "이슈 만들기",
+  "comment_thread_card_creating_issue": "이슈 만드는 중…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "댓글은 이 브라우저에만 남습니다. 끝나면 프롬프트로 복사하세요.",
+  "comments_list_conversation": "대화",
+  "comments_list_open_this_on_github": "GitHub에서 열기",
+  "comments_list_open_on_github": "GitHub에서 열기",
+  "diff_search_bar_no_matches": "일치 항목 없음",
+  "diff_search_bar_find_in_diff": "변경 사항에서 찾기",
+  "diff_search_bar_find_in_diff_text": "변경 사항에서 찾기…",
+  "diff_search_bar_previous_match": "이전 일치 항목",
+  "diff_search_bar_previous_match_shiftenter": "이전 일치 항목 (Shift+Enter)",
+  "diff_search_bar_next_match": "다음 일치 항목",
+  "diff_search_bar_next_match_enter": "다음 일치 항목 (Enter)",
+  "diff_search_bar_close_the_search": "검색 닫기",
+  "diff_search_bar_close_esc": "닫기 (Esc)",
+  "pull_request_list_my_pull_requests": "내 풀 리퀘스트",
+  "pull_request_list_show": "표시",
+  "pull_request_list_hide": "숨기기",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "내 풀 리퀘스트만 열려 있고 숨겨져 있습니다.",
+  "review_header_untracked_files": "추적되지 않은 파일",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "이 풀 리퀘스트는 병합되었습니다. 그래도 검토하세요.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "이 풀 리퀘스트는 닫혔습니다. 그래도 검토하세요.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "이 브라우저에서는 ghdiff가 클립보드에 접근할 수 없습니다",
+  "review_sidebar_copy_as_prompt": "프롬프트로 복사",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "코딩 에이전트용으로 모든 댓글과 해당 코드를 복사합니다",
+  "review_submit_dialog_recent_reviews_from_the_team": "팀의 최근 검토",
+  "review_submit_dialog_recent_reviews": "최근 검토",
+  "review_viewer_loading_unmodified_lines": "변경되지 않은 줄 불러오는 중",
+  "route_error_refreshing_ghdiff": "ghdiff 새로고침 중",
+  "route_error_the_page_could_not_load": "페이지를 불러올 수 없습니다",
+  "route_error_something_interrupted_this_page": "무언가로 인해 이 페이지가 중단되었습니다",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "업데이트 또는 연결 문제로 이 페이지를 불러오지 못할 수 있습니다. 다시 시도하려면 새로고침하세요.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "다시 시도하려면 페이지를 새로고침하세요. 검토 URL은 그대로 유지됩니다.",
+  "route_error_refresh_page": "페이지 새로고침",
+  "watched_repos_editor_drag_to_reorder": "끌어서 순서 변경",
+  "lens_frame_turn_off": "끄기",
+  "lens_frame_beta": "베타",
+  "localization_panel_show_as_table": "표로 표시",
+  "localization_panel_languages": "언어",
+  "localization_panel_show_all_languages": "모든 언어 표시",
+  "localization_panel_paths_and_format": "경로와 형식…",
+  "localization_panel_not_in_this_diff": "이 변경 사항에 없음",
+  "localization_panel_show_in_the_diff": "변경 사항에 표시",
+  "localization_settings_dialog_show_translations_as_a_table": "번역을 표로 표시",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "이 저장소에만 적용됩니다. 이 브라우저에 저장됩니다.",
+  "localization_settings_dialog_which_files_are_translations": "어떤 파일이 번역 파일인가요",
+  "localization_settings_dialog_detect_automatically": "자동 감지",
+  "localization_settings_dialog_choose_paths": "경로 선택",
+  "localization_settings_dialog_add_another_folder": "다른 폴더 추가",
+  "localization_settings_dialog_save": "저장",
+  "localization_settings_dialog_none_in_this_diff": "이 변경 사항에 없습니다.",
+  "localization_settings_dialog_in_this_diff": "이 변경 사항에 있음:",
+  "localization_settings_dialog_path_to_a_translation_file": "번역 파일 경로",
+  "localization_settings_dialog_remove_this_path": "이 경로 제거",
+  "localization_settings_dialog_how_placeholders_look": "자리표시자 형식",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "다른 모든 언어는 비교 대상의 언어와 비교합니다. 건너뛴 언어는 스크립트가 만드는 파일이며 표시되지 않습니다.",
+  "use_review_comments_could_not_create_the_issue_on_github": "GitHub에서 이슈를 만들 수 없습니다.",
+  "contract_enter_a_commit_sha": "커밋 sha를 입력하세요.",
+  "contract_write_what_the_issue_is_about": "이슈의 내용을 작성하세요.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "이 풀 리퀘스트의 팀 검토를 불러올 수 없습니다.",
+  "router_could_not_load_the_conversation": "대화를 불러올 수 없습니다.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub에서 ghdiff가 여기에서 이슈를 만들 수 없습니다. ghdiff 앱에 이 저장소의 Issues 권한이 필요합니다.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub가 이슈를 수락했지만 아무것도 반환하지 않았습니다.",
+  "router_could_not_create_this_issue": "이 이슈를 만들 수 없습니다.",
+  "lens_label": "렌즈",
+  "lens_localizations": "현지화",
+  "lens_compare_against": "비교 대상",
+  "lens_skip_languages": "이 언어 건너뛰기",
+  "lens_not_added": "추가되지 않음",
+  "review_action_commented": "댓글 작성",
+  "review_action_approved": "승인",
+  "review_action_changes": "변경 요청",
+  "review_action_reviewed": "검토 완료",
+  "review_open_author": "GitHub에서 {author}의 검토 열기",
+  "route_refresh_version": "새 버전을 사용할 수 있습니다. 검토로 돌아갈 수 있도록 새로고침합니다.",
+  "issue_create_action": "이슈 만들기",
+  "effect_dies": "결함 발생",
+  "effect_dies_exit": "결함 발생 ↗",
+  "effect_defect_stop": "여기서 결함과 함께 중단됩니다. 원인 핸들러만 이를 볼 수 있습니다.",
+  "effect_defect_value": "결함을 만듭니다. 원인 핸들러만 이를 볼 수 있습니다.",
+  "effect_interrupts": "인터럽트",
+  "effect_interrupts_exit": "인터럽트 ↗",
+  "effect_interrupt_stop": "여기서 중단되고 fiber를 인터럽트합니다.",
+  "effect_interrupt_value": "인터럽트를 발생시킵니다.",
+  "effect_catches_all": "모두 처리",
+  "effect_handles_all": "위의 예상된 모든 실패를 처리합니다.",
+  "effect_catches_some": "일부 처리",
+  "effect_handles_some": "predicate가 고른 실패를 처리합니다. 나머지는 통과합니다.",
+  "effect_failure_defect": "실패 → 결함",
+  "effect_turns_defect": "위의 모든 실패를 결함으로 바꿉니다.",
+  "effect_catches": "처리",
+  "effect_handles_tags": "태그별로 실패를 처리합니다.",
+  "effect_fails": "실패{suffix}",
+  "effect_fails_exit": "실패{suffix} ↗",
+  "effect_stop_failure": "여기서 중단되고 실패합니다.",
+  "effect_stop_failure_named": "여기서 중단되고 {name}으로 실패합니다.",
+  "effect_make_failure": "실패를 만듭니다.",
+  "effect_make_failure_named": "{name}으로 실패를 만듭니다.",
+  "effect_catches_named": "처리 · {tags}",
+  "effect_handles_named": "{tags} 태그의 실패를 처리합니다. 다른 실패는 통과합니다.",
+  "effect_needs": "필요 · {name}",
+  "effect_service": "{name} 서비스를 읽습니다. 실행 전에 제공되어야 합니다.",
+  "effect_fold": "코드를 “{label}”로 다시 접기",
+  "effect_unfold": "{reading} 코드 표시",
+  "watch_drag_repo": "{name} 끌어서 순서 변경",
+  "watch_remove_repo": "{name} 제거",
+  "local_diff_remote": "그 변경 사항은 GitHub가 아닌 다른 머신에 있습니다. 해당 저장소 안에서 ghdiff 명령을 실행해 읽으세요.",
+  "local_working_tree": "작업 트리",
+  "issue_missing_commit": "이 GitHub 저장소에는 {rev}라는 커밋이 없습니다.",
+  "issue_missing_start": "GitHub가 이 범위의 시작 위치를 알려주지 않았습니다.",
+  "issue_no_parent": "이 커밋에는 부모가 없어 제거된 줄을 연결할 파일이 없습니다.",
+  "issue_fork_range": "이 범위는 포크에서 끝나므로 여기의 이슈는 해당 줄에 연결할 수 없습니다.",
+  "placeholder_single": "단일 중괄호",
+  "placeholder_double": "이중 중괄호",
+  "clipboard_copied": "복사됨",
+  "lens_undo": "실행 취소"
 }

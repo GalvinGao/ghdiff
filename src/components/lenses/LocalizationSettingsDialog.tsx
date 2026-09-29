@@ -137,9 +137,11 @@ export function LocalizationSettingsDialog({
             <CheckBox checked={enabled} />
           </span>
           <span>
-            <span className="text-ink block">Show translations as a table</span>
+            <span className="text-ink block">
+              {m.localization_settings_dialog_show_translations_as_a_table()}
+            </span>
             <span className="text-ink-muted block text-xs">
-              Only for this repository. Saved in this browser.
+              {m.localization_settings_dialog_only_for_this_repository_saved_in_this_browser()}
             </span>
           </span>
         </button>
@@ -148,18 +150,19 @@ export function LocalizationSettingsDialog({
           <>
             <div className="space-y-1.5">
               <p className="text-ink text-sm">
-                Which files are translations in{' '}
-                <span className="font-mono text-[13px]">{repoLabel}</span>?
+                {m.lens_files_question({ repo: repoLabel })}
               </p>
               <Segmented
-                aria-label="Which files are translations"
+                aria-label={m.localization_settings_dialog_which_files_are_translations()}
                 value={mode}
                 onValueChange={(value) => setMode(value as 'detect' | 'custom')}
               >
                 <SegmentedItem value="detect">
-                  Detect automatically
+                  {m.localization_settings_dialog_detect_automatically()}
                 </SegmentedItem>
-                <SegmentedItem value="custom">Choose paths</SegmentedItem>
+                <SegmentedItem value="custom">
+                  {m.localization_settings_dialog_choose_paths()}
+                </SegmentedItem>
               </Segmented>
             </div>
 
@@ -168,9 +171,7 @@ export function LocalizationSettingsDialog({
             ) : (
               <div className="space-y-3">
                 <p className="text-ink-muted text-xs">
-                  Write the path to one translation file, with{' '}
-                  <code className="font-mono">{LOCALE_TOKEN}</code> where the
-                  language code goes.
+                  {m.lens_path_help({ token: LOCALE_TOKEN })}
                 </p>
                 {drafts.map((draft, index) => (
                   <SourceEditor
@@ -192,7 +193,7 @@ export function LocalizationSettingsDialog({
                     setDrafts((current) => [...current, EMPTY_DRAFT])
                   }
                 >
-                  Add another folder
+                  {m.localization_settings_dialog_add_another_folder()}
                 </Button>
               </div>
             )}
@@ -209,7 +210,7 @@ export function LocalizationSettingsDialog({
             onClick={save}
             {...dialogPrimaryAction}
           >
-            Save
+            {m.localization_settings_dialog_save()}
           </Button>
         </div>
       </div>
@@ -226,26 +227,30 @@ function DetectedSummary({
 }) {
   return (
     <div className="space-y-2 text-xs">
-      <p className="text-ink-muted">
-        ghdiff looks for three or more JSON files in one folder, each named by a
-        language code, like <code className="font-mono">messages/en.json</code>.
-        It looks again on every diff.
-      </p>
+      <p className="text-ink-muted">{m.lens_detect_help()}</p>
       {detected.length === 0 ? (
-        <p className="text-ink-muted">None in this diff.</p>
+        <p className="text-ink-muted">
+          {m.localization_settings_dialog_none_in_this_diff()}
+        </p>
       ) : (
         <>
-          <p className="text-ink-faint">In this diff:</p>
+          <p className="text-ink-faint">
+            {m.localization_settings_dialog_in_this_diff()}
+          </p>
           <ul className="space-y-1.5">
             {detected.map((source) => (
               <li key={source.pattern}>
-                <code className="text-ink font-mono">{source.pattern}</code>
+                <code dir="ltr" className="text-ink font-mono">
+                  {source.pattern}
+                </code>
                 <span className="text-ink-muted block">
-                  {matchCount(source.pattern, paths)} files
+                  {m.common_file_count({
+                    count: matchCount(source.pattern, paths),
+                  })}
                   {source.baseLocale != null &&
-                    `, compared against ${source.baseLocale}`}
+                    ` ${m.lens_compare_base({ locale: source.baseLocale })}`}
                   {source.generatedLocales.length > 0 &&
-                    `, skips ${source.generatedLocales.join(' and ')}`}
+                    ` ${m.lens_skips({ locales: source.generatedLocales.join(', ') })}`}
                 </span>
               </li>
             ))}
@@ -277,16 +282,17 @@ function SourceEditor({
     <fieldset className="border-line space-y-2 rounded-lg border p-2.5">
       <div className="flex items-center gap-1.5">
         <Input
-          aria-label="Path to a translation file"
+          dir="ltr"
+          aria-label={m.localization_settings_dialog_path_to_a_translation_file()}
           className="font-mono text-xs"
-          placeholder="apps/web/messages/{locale}.json"
+          placeholder={'apps/web/messages/{locale}.json'}
           value={draft.pattern}
           onChange={(event) => onChange({ pattern: event.target.value })}
         />
         <Button
-          aria-label="Remove this path"
+          aria-label={m.localization_settings_dialog_remove_this_path()}
           size="icon-sm"
-          title="Remove this path"
+          title={m.localization_settings_dialog_remove_this_path()}
           variant="quiet"
           onClick={onRemove}
         >
@@ -295,12 +301,14 @@ function SourceEditor({
       </div>
       <p className={valid ? 'text-ink-muted text-xs' : 'text-removed text-xs'}>
         {valid
-          ? `Matches ${String(matches)} ${matches === 1 ? 'file' : 'files'} in this diff.`
-          : `Add ${LOCALE_TOKEN} where the language code goes.`}
+          ? m.lens_path_matches({ count: matches })
+          : m.lens_add_token({ token: LOCALE_TOKEN })}
       </p>
-      <p className="text-ink-muted text-xs">How placeholders look</p>
+      <p className="text-ink-muted text-xs">
+        {m.localization_settings_dialog_how_placeholders_look()}
+      </p>
       <Segmented
-        aria-label="How placeholders look"
+        aria-label={m.localization_settings_dialog_how_placeholders_look()}
         value={draft.placeholders}
         onValueChange={(value) =>
           onChange({ placeholders: value as PlaceholderSyntax })
@@ -314,19 +322,21 @@ function SourceEditor({
       </Segmented>
       <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-2">
         <label className="text-ink-muted text-xs">
-          Compare against
+          {m.lens_compare_against()}
           <Input
+            dir="ltr"
             className="mt-0.5 font-mono text-xs"
-            placeholder="en"
+            placeholder={'en'}
             value={draft.baseLocale}
             onChange={(event) => onChange({ baseLocale: event.target.value })}
           />
         </label>
         <label className="text-ink-muted text-xs">
-          Skip these languages
+          {m.lens_skip_languages()}
           <Input
+            dir="ltr"
             className="mt-0.5 font-mono text-xs"
-            placeholder="key, pseudo"
+            placeholder={'key, pseudo'}
             value={draft.generatedLocales}
             onChange={(event) =>
               onChange({ generatedLocales: event.target.value })
@@ -335,8 +345,7 @@ function SourceEditor({
         </label>
       </div>
       <p className="text-ink-faint text-xs">
-        Every other language is checked against the one in Compare against.
-        Skipped languages are files a script makes, and they are never shown.
+        {m.localization_settings_dialog_every_other_language_is_checked_against_the_one_in()}
       </p>
     </fieldset>
   );

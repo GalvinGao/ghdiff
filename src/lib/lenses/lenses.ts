@@ -1,5 +1,6 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
 
+import { m } from '../../paraglide/messages.js';
 import type { ReviewTarget } from '../reviewTarget.ts';
 import {
   acceptEffectSettings,
@@ -73,7 +74,9 @@ export const LENSES: {
   [Id in LensId]: Lens<LensSettingsById[Id], LensModelsById[Id]>;
 } = {
   localization: {
-    label: 'Localizations',
+    get label() {
+      return m.lens_localizations();
+    },
     defaults: DEFAULT_LOCALIZATION_SETTINGS,
     accept: acceptLocalizationSettings,
     build: (files, settings) =>

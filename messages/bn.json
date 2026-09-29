@@ -620,5 +620,223 @@
     }
   ],
   "locale_language": "ভাষা নির্বাচন করুন",
-  "app_render_error": "ghdiff এই পৃষ্ঠাটি দেখাতে পারেনি। আবার চেষ্টা করতে পৃষ্ঠাটি পুনরায় লোড করুন।"
+  "app_render_error": "ghdiff এই পৃষ্ঠাটি দেখাতে পারেনি। আবার চেষ্টা করতে পৃষ্ঠাটি পুনরায় লোড করুন।",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "নিচে {countDisplay}টি অনুবাদ ফাইল হিসেবে দেখানো হয়েছে।",
+        "countPlural=*": "নিচে {countDisplay}টি অনুবাদ ফাইল হিসেবে দেখানো হয়েছে।"
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay}টি ফাইলে নেস্টেড বার্তা আছে। এটি নিচের ডিফে থাকবে।",
+        "countPlural=*": "{countDisplay}টি ফাইলে নেস্টেড বার্তা আছে। সেগুলো নিচের ডিফে থাকবে।"
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay}টি কী",
+        "countPlural=*": "{countDisplay}টি কী"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay}টি সমস্যা",
+        "countPlural=*": "{countDisplay}টি সমস্যা"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "এই ডিফের {countDisplay}টি ফাইলের সঙ্গে মেলে।",
+        "countPlural=*": "এই ডিফের {countDisplay}টি ফাইলের সঙ্গে মেলে।"
+      }
+    }
+  ],
+  "lens_missing_placeholder": "অনুপস্থিত {names}",
+  "lens_extra_placeholder": "অতিরিক্ত {names}",
+  "lens_same_base": "{base}-এর মতোই",
+  "lens_settings": "{name} সেটিংস",
+  "lens_show_locale": "ডিফে {locale} দেখান",
+  "lens_files_question": "{repo}-এ কোন ফাইলগুলো অনুবাদ?",
+  "lens_path_help": "একটি অনুবাদ ফাইলের পাথ লিখুন, যেখানে ভাষার কোড বসবে সেখানে {token} দিন।",
+  "lens_detect_help": "ghdiff একটি ফোল্ডারে ভাষার কোডে নামকরণ করা তিন বা তার বেশি JSON ফাইল খোঁজে, যেমন messages/en.json। এটি প্রতিটি ডিফে আবার খোঁজে।",
+  "lens_compare_base": "{locale}-এর সঙ্গে তুলনা করা হয়েছে।",
+  "lens_skips": "{locales} বাদ দেয়।",
+  "lens_add_token": "ভাষার কোড বসবে যেখানে, সেখানে {token} যোগ করুন।",
+  "comment_issue_number": "ইস্যু #{number}",
+  "comment_open_issue": "ইস্যু #{number} খুলুন",
+  "diff_search_position": "{count}-এর মধ্যে {position}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "এই রিপোজিটরির জন্য {name} লেন্স বন্ধ আছে। ডান ওপরে ডিসপ্লে সেটিংসের Lens থেকে এটি আবার চালু করুন।",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "এই মন্তব্য মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।",
+        "count=*": "এই থ্রেডের সব {countDisplay}টি মন্তব্য মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।"
+      }
+    }
+  ],
+  "lens_base": "ভিত্তি",
+  "main_ghdiff_is_not_running": "ghdiff চলছে না",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "এই পৃষ্ঠাটি ghdiff কমান্ড থেকে আসেনি। একটি রিপোজিটরিতে ghdiff চালান এবং এটি যে ঠিকানা দেখায় তা খুলুন।",
+  "main_this_tab_has_no_key_for_the_server_open": "এই ট্যাবে সার্ভারের জন্য কোনো কী নেই। ghdiff কমান্ড যে ঠিকানা দেখিয়েছিল, তা খুলুন।",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "এই নোটটি এর লাইনসহ ইস্যু হিসেবে তৈরি করে এবং এখানে তার লিংক রাখে।",
+  "comment_composer_what_should_the_issue_say": "ইস্যুতে কী লেখা হবে?",
+  "comment_composer_create_issue": "ইস্যু তৈরি করুন",
+  "comment_thread_card_creating_issue": "ইস্যু তৈরি হচ্ছে…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "মন্তব্যগুলো এই ব্রাউজারেই থাকে। কাজ শেষ হলে প্রম্পট হিসেবে কপি করুন।",
+  "comments_list_conversation": "আলোচনা",
+  "comments_list_open_this_on_github": "GitHub-এ এটি খুলুন",
+  "comments_list_open_on_github": "GitHub-এ খুলুন",
+  "diff_search_bar_no_matches": "কোনো মিল নেই",
+  "diff_search_bar_find_in_diff": "ডিফে খুঁজুন",
+  "diff_search_bar_find_in_diff_text": "ডিফে খুঁজুন…",
+  "diff_search_bar_previous_match": "আগের মিল",
+  "diff_search_bar_previous_match_shiftenter": "আগের মিল (Shift+Enter)",
+  "diff_search_bar_next_match": "পরের মিল",
+  "diff_search_bar_next_match_enter": "পরের মিল (Enter)",
+  "diff_search_bar_close_the_search": "অনুসন্ধান বন্ধ করুন",
+  "diff_search_bar_close_esc": "বন্ধ করুন (Esc)",
+  "pull_request_list_my_pull_requests": "আমার পুল রিকোয়েস্ট",
+  "pull_request_list_show": "দেখান",
+  "pull_request_list_hide": "লুকান",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "শুধু আপনার নিজের পুল রিকোয়েস্ট খোলা আছে এবং সেগুলো লুকানো।",
+  "review_header_untracked_files": "ট্র্যাক না করা ফাইল",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "এই পুল রিকোয়েস্ট মার্জ হয়েছে। তবু পর্যালোচনা করুন।",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "এই পুল রিকোয়েস্ট বন্ধ হয়েছে। তবু পর্যালোচনা করুন।",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "এই ব্রাউজারটি ghdiff-কে ক্লিপবোর্ডে পৌঁছাতে দেয়নি",
+  "review_sidebar_copy_as_prompt": "প্রম্পট হিসেবে কপি করুন",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "কোডিং এজেন্টের জন্য প্রতিটি মন্তব্য তার সংশ্লিষ্ট কোডসহ কপি করুন",
+  "review_submit_dialog_recent_reviews_from_the_team": "দলের সাম্প্রতিক পর্যালোচনা",
+  "review_submit_dialog_recent_reviews": "সাম্প্রতিক পর্যালোচনা",
+  "review_viewer_loading_unmodified_lines": "অপরিবর্তিত লাইন লোড হচ্ছে",
+  "route_error_refreshing_ghdiff": "ghdiff রিফ্রেশ হচ্ছে",
+  "route_error_the_page_could_not_load": "পৃষ্ঠাটি লোড করা যায়নি",
+  "route_error_something_interrupted_this_page": "কিছু এই পৃষ্ঠার কাজ ব্যাহত করেছে",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "আপডেট বা সংযোগের সমস্যা এই পৃষ্ঠাটি লোড হতে বাধা দিতে পারে। আবার চেষ্টা করতে রিফ্রেশ করুন।",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "আবার চেষ্টা করতে পৃষ্ঠাটি রিফ্রেশ করুন। আপনার পর্যালোচনার URL একই থাকবে।",
+  "route_error_refresh_page": "পৃষ্ঠাটি রিফ্রেশ করুন",
+  "watched_repos_editor_drag_to_reorder": "ক্রম বদলাতে টানুন",
+  "lens_frame_turn_off": "বন্ধ করুন",
+  "lens_frame_beta": "বিটা",
+  "localization_panel_show_as_table": "টেবিল হিসেবে দেখান",
+  "localization_panel_languages": "ভাষা",
+  "localization_panel_show_all_languages": "সব ভাষা দেখান",
+  "localization_panel_paths_and_format": "পাথ ও ফরম্যাট…",
+  "localization_panel_not_in_this_diff": "এই ডিফে নেই",
+  "localization_panel_show_in_the_diff": "ডিফে দেখান",
+  "localization_settings_dialog_show_translations_as_a_table": "অনুবাদ টেবিল হিসেবে দেখান",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "শুধু এই রিপোজিটরির জন্য। এই ব্রাউজারে সংরক্ষিত।",
+  "localization_settings_dialog_which_files_are_translations": "কোন ফাইলগুলো অনুবাদ",
+  "localization_settings_dialog_detect_automatically": "স্বয়ংক্রিয়ভাবে শনাক্ত করুন",
+  "localization_settings_dialog_choose_paths": "পাথ বেছে নিন",
+  "localization_settings_dialog_add_another_folder": "আরেকটি ফোল্ডার যোগ করুন",
+  "localization_settings_dialog_save": "সংরক্ষণ করুন",
+  "localization_settings_dialog_none_in_this_diff": "এই ডিফে কোনোটি নেই।",
+  "localization_settings_dialog_in_this_diff": "এই ডিফে:",
+  "localization_settings_dialog_path_to_a_translation_file": "একটি অনুবাদ ফাইলের পাথ",
+  "localization_settings_dialog_remove_this_path": "এই পাথ সরান",
+  "localization_settings_dialog_how_placeholders_look": "প্লেসহোল্ডার দেখতে কেমন",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "অন্য সব ভাষা Compare against-এ থাকা ভাষার বিপরীতে পরীক্ষা করা হয়। বাদ দেওয়া ভাষাগুলো স্ক্রিপ্টে তৈরি ফাইল এবং সেগুলো কখনও দেখানো হয় না।",
+  "use_review_comments_could_not_create_the_issue_on_github": "GitHub-এ ইস্যু তৈরি করা যায়নি।",
+  "contract_enter_a_commit_sha": "একটি কমিট sha লিখুন।",
+  "contract_write_what_the_issue_is_about": "ইস্যুটি কী নিয়ে, তা লিখুন।",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "এই পুল রিকোয়েস্টের দলের পর্যালোচনাগুলো লোড করা যায়নি।",
+  "router_could_not_load_the_conversation": "আলোচনাটি লোড করা যায়নি।",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub এখানে ghdiff-কে ইস্যু খুলতে দেবে না। এই রিপোজিটরিতে ghdiff অ্যাপের Issues অনুমতি দরকার।",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub ইস্যুটি গ্রহণ করেছে, কিন্তু কিছু ফেরত দেয়নি।",
+  "router_could_not_create_this_issue": "এই ইস্যুটি তৈরি করা যায়নি।",
+  "lens_label": "লেন্স",
+  "lens_localizations": "স্থানীয়করণ",
+  "lens_compare_against": "এর সঙ্গে তুলনা করুন",
+  "lens_skip_languages": "এই ভাষাগুলো বাদ দিন",
+  "lens_not_added": "যোগ করা হয়নি",
+  "review_action_commented": "মন্তব্য করেছেন",
+  "review_action_approved": "অনুমোদন করেছেন",
+  "review_action_changes": "পরিবর্তন চেয়েছেন",
+  "review_action_reviewed": "পর্যালোচনা করেছেন",
+  "review_open_author": "GitHub-এ {author}-এর পর্যালোচনা খুলুন",
+  "route_refresh_version": "নতুন সংস্করণ উপলভ্য হতে পারে। আপনাকে আবার পর্যালোচনায় ফেরাতে রিফ্রেশ হচ্ছে।",
+  "issue_create_action": "একটি ইস্যু তৈরি করুন",
+  "effect_dies": "অস্বাভাবিকভাবে শেষ হয়",
+  "effect_dies_exit": "অস্বাভাবিকভাবে শেষ হয় ↗",
+  "effect_defect_stop": "এখানে একটি defect নিয়ে থামে। শুধু cause handler এটি দেখতে পারে।",
+  "effect_defect_value": "একটি defect তৈরি করে। শুধু cause handler এটি দেখতে পারে।",
+  "effect_interrupts": "ব্যাহত করে",
+  "effect_interrupts_exit": "ব্যাহত করে ↗",
+  "effect_interrupt_stop": "এখানে থামে এবং fiber-কে ব্যাহত করে।",
+  "effect_interrupt_value": "একটি interruption তৈরি করে।",
+  "effect_catches_all": "সব ধরে",
+  "effect_handles_all": "এর উপরের সব প্রত্যাশিত failure সামলায়।",
+  "effect_catches_some": "কিছু ধরে",
+  "effect_handles_some": "এর predicate যে failure বেছে নেয়, সেগুলো সামলায়। বাকিগুলো এগিয়ে যায়।",
+  "effect_failure_defect": "failure → defect",
+  "effect_turns_defect": "এর উপরের যেকোনো failure-কে defect-এ পরিণত করে।",
+  "effect_catches": "ধরে",
+  "effect_handles_tags": "ট্যাগ অনুযায়ী failure সামলায়।",
+  "effect_fails": "ব্যর্থ হয়{suffix}",
+  "effect_fails_exit": "ব্যর্থ হয়{suffix} ↗",
+  "effect_stop_failure": "এখানে থামে এবং ব্যর্থ হয়।",
+  "effect_stop_failure_named": "এখানে থামে এবং {name} দিয়ে ব্যর্থ হয়।",
+  "effect_make_failure": "একটি failure তৈরি করে।",
+  "effect_make_failure_named": "{name} সহ একটি failure তৈরি করে।",
+  "effect_catches_named": "ধরে · {tags}",
+  "effect_handles_named": "{tags} সামলায়। অন্য failure এগিয়ে যায়।",
+  "effect_needs": "প্রয়োজন · {name}",
+  "effect_service": "{name} service পড়ে। এটি চলার আগে কাউকে তা দিতে হবে।",
+  "effect_fold": "কোড আবার “{label}”-এ গুটিয়ে দিন",
+  "effect_unfold": "{reading} কোড দেখান।",
+  "watch_drag_repo": "{name}-এর ক্রম বদলাতে টানুন",
+  "watch_remove_repo": "{name} সরান",
+  "local_diff_remote": "ওই ডিফটি GitHub-এ নয়, একটি মেশিনে আছে। এটি পড়তে সেই রিপোজিটরির মধ্যে ghdiff কমান্ড চালান।",
+  "local_working_tree": "ওয়ার্কিং ট্রি",
+  "issue_missing_commit": "GitHub এখানে {rev} নামে কোনো কমিট পায়নি।",
+  "issue_missing_start": "GitHub এই রেঞ্জ কোথা থেকে শুরু হয়েছে, তা বলেনি।",
+  "issue_no_parent": "এই কমিটের কোনো parent নেই, তাই এর সরানো লাইনগুলোর লিংক দেওয়ার মতো কোনো ফাইল নেই।",
+  "issue_fork_range": "এই রেঞ্জটি একটি fork-এ শেষ হয়েছে, তাই এখানে ইস্যু তার লাইনগুলোর সঙ্গে লিংক করতে পারে না।",
+  "placeholder_single": "এক জোড়া কার্লি ব্রেস",
+  "placeholder_double": "দুই জোড়া কার্লি ব্রেস",
+  "clipboard_copied": "কপি করা হয়েছে",
+  "lens_undo": "পূর্বাবস্থায় ফেরান"
 }

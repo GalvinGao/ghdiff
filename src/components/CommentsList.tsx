@@ -96,7 +96,7 @@ export function CommentsList({
         <p className="text-ink-faint mt-1 text-xs">
           {store === 'github'
             ? m.comments_list_comments_you_leave_here_are_posted_to_github()
-            : 'Comments stay in this browser. Copy them as a prompt when you are done.'}
+            : m.comments_list_comments_stay_in_this_browser_copy_them_as_a()}
         </p>
       </div>
     );
@@ -220,9 +220,9 @@ function ConversationSection({
     });
 
   return (
-    <section aria-label="Conversation" className="min-w-0">
+    <section aria-label={m.comments_list_conversation()} className="min-w-0">
       <h3 className="bg-surface text-ink-faint sticky top-0 z-10 px-3 py-1 text-[11px]">
-        Conversation
+        {m.comments_list_conversation()}
       </h3>
       <ul className="min-w-0">
         {entries.map((entry) => {
@@ -283,9 +283,9 @@ function ConversationSection({
                     <GitHubTextLink
                       className="text-ink-faint mt-1.5 inline-block text-[11px]"
                       href={entry.htmlUrl}
-                      title="Open this on GitHub"
+                      title={m.comments_list_open_this_on_github()}
                     >
-                      Open on GitHub
+                      {m.comments_list_open_on_github()}
                     </GitHubTextLink>
                   )}
                 </div>
@@ -300,14 +300,14 @@ function ConversationSection({
 
 /** What the author did, in the words GitHub's own timeline uses. */
 function conversationAction(entry: ConversationEntry): string {
-  if (entry.kind === 'comment') return 'commented';
+  if (entry.kind === 'comment') return m.review_action_commented();
   switch (entry.state) {
     case 'APPROVED':
-      return 'approved';
+      return m.review_action_approved();
     case 'CHANGES_REQUESTED':
-      return 'requested changes';
+      return m.review_action_changes();
     default:
-      return 'reviewed';
+      return m.review_action_reviewed();
   }
 }
 

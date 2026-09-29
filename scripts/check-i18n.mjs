@@ -252,7 +252,7 @@ export function checkI18n() {
   );
   return [
     ...inspectCatalogs(catalogs, settings.baseLocale),
-    ...sourceFiles('src').flatMap((file) =>
+    ...[...sourceFiles('src'), ...sourceFiles('cli/web')].flatMap((file) =>
       inspectSource(readFileSync(file, 'utf8'), file)
     ),
   ];

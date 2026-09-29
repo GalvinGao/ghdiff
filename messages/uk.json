@@ -681,5 +681,233 @@
     }
   ],
   "locale_language": "Мова",
-  "app_render_error": "ghdiff не вдалося відобразити цю сторінку. Перезавантажте сторінку, щоб спробувати ще раз."
+  "app_render_error": "ghdiff не вдалося відобразити цю сторінку. Перезавантажте сторінку, щоб спробувати ще раз.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} файл перекладу показано нижче як файл.",
+        "countPlural=few": "{countDisplay} файли перекладу показано нижче як файли.",
+        "countPlural=many": "{countDisplay} файлів перекладу показано нижче як файли.",
+        "countPlural=*": "{countDisplay} файла перекладу показано нижче як файли."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} файл має вкладені повідомлення. Він лишається в дифі нижче.",
+        "countPlural=few": "{countDisplay} файли мають вкладені повідомлення. Вони лишаються в дифі нижче.",
+        "countPlural=many": "{countDisplay} файлів мають вкладені повідомлення. Вони лишаються в дифі нижче.",
+        "countPlural=*": "{countDisplay} файла має вкладені повідомлення. Вони лишаються в дифі нижче."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} ключ",
+        "countPlural=few": "{countDisplay} ключі",
+        "countPlural=many": "{countDisplay} ключів",
+        "countPlural=*": "{countDisplay} ключа"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} проблема",
+        "countPlural=few": "{countDisplay} проблеми",
+        "countPlural=many": "{countDisplay} проблем",
+        "countPlural=*": "{countDisplay} проблеми"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Збігається з {countDisplay} файлом у цьому дифі.",
+        "countPlural=few": "Збігається з {countDisplay} файлами в цьому дифі.",
+        "countPlural=many": "Збігається з {countDisplay} файлами в цьому дифі.",
+        "countPlural=*": "Збігається з {countDisplay} файлами в цьому дифі."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "бракує {names}",
+  "lens_extra_placeholder": "зайві {names}",
+  "lens_same_base": "так само, як у {base}",
+  "lens_settings": "Налаштування {name}",
+  "lens_show_locale": "Показати {locale} у дифі",
+  "lens_files_question": "Які файли є перекладами в {repo}?",
+  "lens_path_help": "Вкажіть шлях до одного файлу перекладу, використовуючи {token} там, де має бути код мови.",
+  "lens_detect_help": "ghdiff шукає три або більше JSON-файлів в одній папці, названих кодами мов, наприклад messages/en.json. Пошук виконується знову для кожного дифа.",
+  "lens_compare_base": "Порівняно з {locale}.",
+  "lens_skips": "Пропускає {locales}.",
+  "lens_add_token": "Додати {token} там, де має бути код мови.",
+  "comment_issue_number": "Issue #{number}",
+  "comment_open_issue": "Відкрити issue #{number}",
+  "diff_search_position": "{position} з {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "Лінзу {name} вимкнено для цього репозиторію. Увімкніть її знову в розділі «Лінза» налаштувань відображення вгорі праворуч.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "Видалити цей коментар? Цю дію не можна скасувати.",
+        "count=*": "Видалити всі коментарі ({countDisplay}) у цій гілці? Цю дію не можна скасувати."
+      }
+    }
+  ],
+  "lens_base": "базова",
+  "main_ghdiff_is_not_running": "ghdiff не запущено",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Цю сторінку не відкрито командою ghdiff. Запустіть ghdiff у репозиторії та відкрийте адресу, яку вона виведе.",
+  "main_this_tab_has_no_key_for_the_server_open": "У цій вкладці немає ключа для сервера. Відкрийте адресу, яку вивела команда ghdiff.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Створює issue із цією нотаткою та рядками коду, яких вона стосується, і лишає тут посилання на нього.",
+  "comment_composer_what_should_the_issue_say": "Що має бути написано в issue?",
+  "comment_composer_create_issue": "Створити issue",
+  "comment_thread_card_creating_issue": "Створення issue…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Коментарі лишаються в цьому браузері. Коли завершите, скопіюйте їх як промпт.",
+  "comments_list_conversation": "Обговорення",
+  "comments_list_open_this_on_github": "Відкрити це на GitHub",
+  "comments_list_open_on_github": "Відкрити на GitHub",
+  "diff_search_bar_no_matches": "Немає збігів",
+  "diff_search_bar_find_in_diff": "Знайти в дифі",
+  "diff_search_bar_find_in_diff_text": "Знайти в дифі…",
+  "diff_search_bar_previous_match": "Попередній збіг",
+  "diff_search_bar_previous_match_shiftenter": "Попередній збіг (Shift+Enter)",
+  "diff_search_bar_next_match": "Наступний збіг",
+  "diff_search_bar_next_match_enter": "Наступний збіг (Enter)",
+  "diff_search_bar_close_the_search": "Закрити пошук",
+  "diff_search_bar_close_esc": "Закрити (Esc)",
+  "pull_request_list_my_pull_requests": "Мої пул-реквести",
+  "pull_request_list_show": "Показати",
+  "pull_request_list_hide": "Сховати",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Відкриті лише ваші пул-реквести, і їх приховано.",
+  "review_header_untracked_files": "Невідстежувані файли",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Цей пул-реквест об’єднано. Все одно переглянути його.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Цей пул-реквест закрито. Все одно переглянути його.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Цей браузер не дозволив ghdiff отримати доступ до буфера обміну",
+  "review_sidebar_copy_as_prompt": "Копіювати як промпт",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Копіювати кожен коментар разом із кодом, якого він стосується, для агента для написання коду",
+  "review_submit_dialog_recent_reviews_from_the_team": "Останні рев’ю від команди",
+  "review_submit_dialog_recent_reviews": "Останні рев’ю",
+  "review_viewer_loading_unmodified_lines": "Завантаження незмінених рядків",
+  "route_error_refreshing_ghdiff": "Оновлення ghdiff",
+  "route_error_the_page_could_not_load": "Не вдалося завантажити сторінку",
+  "route_error_something_interrupted_this_page": "Щось перервало роботу цієї сторінки",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Проблема з оновленням або з’єднанням може заважати завантаженню цієї сторінки. Оновіть її, щоб спробувати знову.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Оновіть сторінку, щоб спробувати знову. URL вашого рев’ю не зміниться.",
+  "route_error_refresh_page": "Оновити сторінку",
+  "watched_repos_editor_drag_to_reorder": "Перетягніть, щоб змінити порядок",
+  "lens_frame_turn_off": "Вимкнути",
+  "lens_frame_beta": "бета",
+  "localization_panel_show_as_table": "Показати як таблицю",
+  "localization_panel_languages": "Мови",
+  "localization_panel_show_all_languages": "Показати всі мови",
+  "localization_panel_paths_and_format": "Шляхи й формат…",
+  "localization_panel_not_in_this_diff": "Не в цьому дифі",
+  "localization_panel_show_in_the_diff": "Показати в дифі",
+  "localization_settings_dialog_show_translations_as_a_table": "Показувати переклади як таблицю",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Лише для цього репозиторію. Збережено в цьому браузері.",
+  "localization_settings_dialog_which_files_are_translations": "Які файли є перекладами",
+  "localization_settings_dialog_detect_automatically": "Виявляти автоматично",
+  "localization_settings_dialog_choose_paths": "Вибрати шляхи",
+  "localization_settings_dialog_add_another_folder": "Додати іншу папку",
+  "localization_settings_dialog_save": "Зберегти",
+  "localization_settings_dialog_none_in_this_diff": "Немає в цьому дифі.",
+  "localization_settings_dialog_in_this_diff": "У цьому дифі:",
+  "localization_settings_dialog_path_to_a_translation_file": "Шлях до файлу перекладу",
+  "localization_settings_dialog_remove_this_path": "Вилучити цей шлях",
+  "localization_settings_dialog_how_placeholders_look": "Вигляд заповнювачів",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Кожну іншу мову перевіряють відносно мови в полі «Порівняти з». Пропущені мови — це файли, які створює скрипт, і їх ніколи не показують.",
+  "use_review_comments_could_not_create_the_issue_on_github": "Не вдалося створити issue на GitHub.",
+  "contract_enter_a_commit_sha": "Введіть SHA коміту.",
+  "contract_write_what_the_issue_is_about": "Напишіть, про що цей issue.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "Не вдалося завантажити рев’ю команди для цього пул-реквесту.",
+  "router_could_not_load_the_conversation": "Не вдалося завантажити обговорення.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub не дозволяє ghdiff створювати тут issue. Застосунку ghdiff потрібен дозвіл Issues для цього репозиторію.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub прийняв issue, але нічого не повернув.",
+  "router_could_not_create_this_issue": "Не вдалося створити цей issue.",
+  "lens_label": "Лінза",
+  "lens_localizations": "Локалізації",
+  "lens_compare_against": "Порівняти з",
+  "lens_skip_languages": "Пропустити ці мови",
+  "lens_not_added": "не додано",
+  "review_action_commented": "прокоментовано",
+  "review_action_approved": "схвалено",
+  "review_action_changes": "запитано зміни",
+  "review_action_reviewed": "переглянуто",
+  "review_open_author": "Відкрити рев’ю {author} на GitHub",
+  "route_refresh_version": "Можливо, доступна нова версія. Оновлюємо, щоб повернути вас до рев’ю.",
+  "issue_create_action": "створити issue",
+  "effect_dies": "завершується дефектом",
+  "effect_dies_exit": "завершується дефектом ↗",
+  "effect_defect_stop": "Зупиняється тут із дефектом. Його може побачити лише обробник Cause.",
+  "effect_defect_value": "Створює дефект. Його може побачити лише обробник Cause.",
+  "effect_interrupts": "переривається",
+  "effect_interrupts_exit": "переривається ↗",
+  "effect_interrupt_stop": "Зупиняється тут і перериває fiber.",
+  "effect_interrupt_value": "Створює переривання.",
+  "effect_catches_all": "перехоплює всі",
+  "effect_handles_all": "Обробляє всі очікувані помилки над ним.",
+  "effect_catches_some": "перехоплює деякі",
+  "effect_handles_some": "Обробляє помилки, які вибирає його предикат. Решта проходять далі.",
+  "effect_failure_defect": "помилка → дефект",
+  "effect_turns_defect": "Перетворює будь-яку помилку над ним на дефект.",
+  "effect_catches": "перехоплює",
+  "effect_handles_tags": "Обробляє помилки за тегом.",
+  "effect_fails": "завершується помилкою{suffix}",
+  "effect_fails_exit": "завершується помилкою{suffix} ↗",
+  "effect_stop_failure": "Зупиняється тут із помилкою.",
+  "effect_stop_failure_named": "Зупиняється тут із помилкою {name}.",
+  "effect_make_failure": "Створює помилку.",
+  "effect_make_failure_named": "Створює помилку {name}.",
+  "effect_catches_named": "перехоплює · {tags}",
+  "effect_handles_named": "Обробляє {tags}. Інші помилки проходять далі.",
+  "effect_needs": "потребує · {name}",
+  "effect_service": "Читає сервіс {name}. Перед виконанням його потрібно надати.",
+  "effect_fold": "Згорнути код назад у «{label}»",
+  "effect_unfold": "{reading} Показати код.",
+  "watch_drag_repo": "Перетягнути, щоб змінити порядок {name}",
+  "watch_remove_repo": "Прибрати {name}",
+  "local_diff_remote": "Цей диф на комп’ютері, а не на GitHub. Запустіть команду ghdiff у цьому репозиторії, щоб прочитати його.",
+  "local_working_tree": "робоче дерево",
+  "issue_missing_commit": "GitHub не має коміту з назвою {rev} у цьому репозиторії.",
+  "issue_missing_start": "GitHub не вказав, де починається цей діапазон.",
+  "issue_no_parent": "Цей коміт не має батьківського коміту, тому для вилучених рядків немає файлу, на який можна послатися.",
+  "issue_fork_range": "Цей діапазон закінчується у форку, тому issue тут не може послатися на його рядки.",
+  "placeholder_single": "Одинарні фігурні дужки",
+  "placeholder_double": "Подвійні фігурні дужки",
+  "clipboard_copied": "Скопійовано",
+  "lens_undo": "Скасувати"
 }

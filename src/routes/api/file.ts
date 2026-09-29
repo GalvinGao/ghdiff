@@ -115,7 +115,7 @@ const getFile = withEvlog(
     // serve, and this host has no disk to read it from.
     if (target.kind === 'local-diff') {
       log.set({ outcome: 'local-target' });
-      return textResponse(LOCAL_TARGET_NOT_SERVED, 400);
+      return textResponse(LOCAL_TARGET_NOT_SERVED(), 400);
     }
     const path = params.get('path');
     if (path == null || !isReadablePath(path)) {

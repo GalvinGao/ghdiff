@@ -480,7 +480,7 @@ function ExpandFileButton({
   viewerRef: RefObject<CodeViewHandle<CommentMetadata> | null>;
 }) {
   const label = loading
-    ? 'Loading unmodified lines'
+    ? m.review_viewer_loading_unmodified_lines()
     : m.review_viewer_show_the_whole_file();
   return (
     <Tooltip className="[[data-ghdiff-expanded]_&]:hidden" label={label}>

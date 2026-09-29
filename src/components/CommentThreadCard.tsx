@@ -160,7 +160,7 @@ export function CommentThreadCard({
         {metadata.pending === true && (
           <span className="text-ink-faint shrink-0 text-[11px]">
             {metadata.creatingIssue === true
-              ? 'Creating issue…'
+              ? m.comment_thread_card_creating_issue()
               : m.comment_thread_card_posting()}
           </span>
         )}
@@ -174,7 +174,7 @@ export function CommentThreadCard({
             rel="noreferrer"
             className="bg-surface text-ink-muted hover:text-ink focus-visible:ring-accent inline-flex h-5 shrink-0 items-center gap-0.5 rounded-full px-1.5 text-[11px] tabular-nums focus-visible:ring-2 focus-visible:outline-none"
           >
-            Issue #{metadata.issue.number}
+            {m.comment_issue_number({ number: metadata.issue.number })}
             <IconArrowUpRight aria-hidden="true" size={10} />
           </a>
         )}
@@ -231,7 +231,7 @@ export function CommentThreadCard({
                   variant: 'outline',
                 })}
               >
-                Open issue #{metadata.issue.number}
+                {m.comment_open_issue({ number: metadata.issue.number })}
                 <IconArrowUpRight aria-hidden="true" size={12} />
               </a>
             )}
@@ -242,11 +242,13 @@ export function CommentThreadCard({
               // store holds this one, and asking a reviewer to confirm deleting
               // something on GitHub that was never on GitHub is the wrong
               // sentence in the one place it matters most.
-              question={`Delete ${
-                comments.length === 1
-                  ? 'this comment'
-                  : `all ${comments.length} comments in this thread`
-              }${store === 'github' ? ' on GitHub' : ''}? This cannot be undone.`}
+              question={
+                store === 'github'
+                  ? m.thread_delete_confirmation({ count: comments.length })
+                  : m.thread_delete_local_confirmation({
+                      count: comments.length,
+                    })
+              }
               confirmLabel={m.comment_thread_card_delete()}
               onConfirm={() => {
                 close();

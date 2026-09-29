@@ -714,5 +714,243 @@
     }
   ],
   "locale_language": "اللغة",
-  "app_render_error": "تعذّر على ghdiff عرض هذه الصفحة. أعد تحميل الصفحة للمحاولة مرة أخرى."
+  "app_render_error": "تعذّر على ghdiff عرض هذه الصفحة. أعد تحميل الصفحة للمحاولة مرة أخرى.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=zero": "⁦{countDisplay}⁩ ملفات ترجمة معروضة كملفات أدناه.",
+        "countPlural=one": "⁦{countDisplay}⁩ ملف ترجمة معروض كملف أدناه.",
+        "countPlural=two": "⁦{countDisplay}⁩ ملفا ترجمة معروضان كملفين أدناه.",
+        "countPlural=few": "⁦{countDisplay}⁩ ملفات ترجمة معروضة كملفات أدناه.",
+        "countPlural=many": "⁦{countDisplay}⁩ ملف ترجمة معروض كملف أدناه.",
+        "countPlural=*": "⁦{countDisplay}⁩ ملف ترجمة معروض كملف أدناه."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=zero": "تحتوي ⁦{countDisplay}⁩ ملفات على رسائل متداخلة. تبقى في الفروق أدناه.",
+        "countPlural=one": "يحتوي ⁦{countDisplay}⁩ ملف على رسائل متداخلة. يبقى في الفروق أدناه.",
+        "countPlural=two": "يحتوي ⁦{countDisplay}⁩ ملفان على رسائل متداخلة. يبقيان في الفروق أدناه.",
+        "countPlural=few": "تحتوي ⁦{countDisplay}⁩ ملفات على رسائل متداخلة. تبقى في الفروق أدناه.",
+        "countPlural=many": "يحتوي ⁦{countDisplay}⁩ ملفًا على رسائل متداخلة. يبقى في الفروق أدناه.",
+        "countPlural=*": "يحتوي ⁦{countDisplay}⁩ ملف على رسائل متداخلة. يبقى في الفروق أدناه."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=zero": "⁦{countDisplay}⁩ مفاتيح",
+        "countPlural=one": "⁦{countDisplay}⁩ مفتاح",
+        "countPlural=two": "⁦{countDisplay}⁩ مفتاحان",
+        "countPlural=few": "⁦{countDisplay}⁩ مفاتيح",
+        "countPlural=many": "⁦{countDisplay}⁩ مفتاحًا",
+        "countPlural=*": "⁦{countDisplay}⁩ مفتاح"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=zero": "⁦{countDisplay}⁩ مشكلات",
+        "countPlural=one": "⁦{countDisplay}⁩ مشكلة",
+        "countPlural=two": "⁦{countDisplay}⁩ مشكلتان",
+        "countPlural=few": "⁦{countDisplay}⁩ مشكلات",
+        "countPlural=many": "⁦{countDisplay}⁩ مشكلةً",
+        "countPlural=*": "⁦{countDisplay}⁩ مشكلة"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=zero": "يطابق ⁦{countDisplay}⁩ ملفات في هذه الفروق.",
+        "countPlural=one": "يطابق ⁦{countDisplay}⁩ ملفًا في هذه الفروق.",
+        "countPlural=two": "يطابق ⁦{countDisplay}⁩ ملفين في هذه الفروق.",
+        "countPlural=few": "يطابق ⁦{countDisplay}⁩ ملفات في هذه الفروق.",
+        "countPlural=many": "يطابق ⁦{countDisplay}⁩ ملفًا في هذه الفروق.",
+        "countPlural=*": "يطابق ⁦{countDisplay}⁩ ملفًا في هذه الفروق."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "عناصر نائبة مفقودة: ⁦{names}⁩",
+  "lens_extra_placeholder": "عناصر نائبة إضافية: ⁦{names}⁩",
+  "lens_same_base": "مثل ⁦{base}⁩",
+  "lens_settings": "إعدادات ⁦{name}⁩",
+  "lens_show_locale": "إظهار ⁦{locale}⁩ في الفروق",
+  "lens_files_question": "أي الملفات هي ترجمات في ⁦{repo}⁩؟",
+  "lens_path_help": "اكتب مسار ملف ترجمة واحد، وضع ⁦{token}⁩ مكان رمز اللغة.",
+  "lens_detect_help": "يبحث ghdiff عن ثلاثة ملفات JSON أو أكثر في مجلد واحد، يُسمّى كل منها برمز لغة، مثل ⁦messages/en.json⁩. ويعيد البحث في كل فرق.",
+  "lens_compare_base": "مقارنةً بـ ⁦{locale}⁩.",
+  "lens_skips": "يتخطى ⁦{locales}⁩.",
+  "lens_add_token": "أضف ⁦{token}⁩ مكان رمز اللغة.",
+  "comment_issue_number": "المشكلة رقم ⁦{number}⁩",
+  "comment_open_issue": "فتح المشكلة رقم ⁦{number}⁩",
+  "diff_search_position": "⁦{position}⁩ من ⁦{count}⁩",
+  "diff_search_more": "⁦{count}⁩+",
+  "lens_disabled": "عدسة ⁦{name}⁩ متوقفة لهذا المستودع. أعد تشغيلها من «العدسة» في إعدادات العرض أعلى اليمين.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "حذف هذا التعليق؟ لا يمكن التراجع عن ذلك.",
+        "count=*": "حذف كل التعليقات (⁦{countDisplay}⁩) في هذا النقاش؟ لا يمكن التراجع عن ذلك."
+      }
+    }
+  ],
+  "lens_base": "الأساس",
+  "main_ghdiff_is_not_running": "ghdiff غير مشغّل",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "لم تأتِ هذه الصفحة من أمر ghdiff. شغّل ghdiff في مستودع وافتح العنوان الذي يطبعه.",
+  "main_this_tab_has_no_key_for_the_server_open": "لا يحتوي هذا التبويب على مفتاح للخادم. افتح العنوان الذي طبعه أمر ghdiff.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "ينشئ مشكلة من هذه الملاحظة مع الأسطر الواردة فيها، ويترك رابطًا إليها هنا.",
+  "comment_composer_what_should_the_issue_say": "ماذا يجب أن تقول المشكلة؟",
+  "comment_composer_create_issue": "إنشاء مشكلة",
+  "comment_thread_card_creating_issue": "جارٍ إنشاء المشكلة…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "تبقى التعليقات في هذا المتصفح. انسخها كموجّه عند الانتهاء.",
+  "comments_list_conversation": "المحادثة",
+  "comments_list_open_this_on_github": "فتح هذا على GitHub",
+  "comments_list_open_on_github": "فتح على GitHub",
+  "diff_search_bar_no_matches": "لا تطابقات",
+  "diff_search_bar_find_in_diff": "بحث في الفروق",
+  "diff_search_bar_find_in_diff_text": "بحث في الفروق…",
+  "diff_search_bar_previous_match": "النتيجة السابقة",
+  "diff_search_bar_previous_match_shiftenter": "النتيجة السابقة (Shift+Enter)",
+  "diff_search_bar_next_match": "النتيجة التالية",
+  "diff_search_bar_next_match_enter": "النتيجة التالية (Enter)",
+  "diff_search_bar_close_the_search": "إغلاق البحث",
+  "diff_search_bar_close_esc": "إغلاق (Esc)",
+  "pull_request_list_my_pull_requests": "طلبات السحب الخاصة بي",
+  "pull_request_list_show": "إظهار",
+  "pull_request_list_hide": "إخفاء",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "طلبات السحب الخاصة بك فقط مفتوحة، وهي مخفية.",
+  "review_header_untracked_files": "ملفات غير متعقبة",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "تم دمج طلب السحب هذا. يمكنك مراجعته على أي حال.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "أُغلق طلب السحب هذا. يمكنك مراجعته على أي حال.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "لم يسمح هذا المتصفح لـ ghdiff بالوصول إلى الحافظة",
+  "review_sidebar_copy_as_prompt": "نسخ كموجّه",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "انسخ كل تعليق، مع الكود الذي يتعلق به، لوكيل برمجة",
+  "review_submit_dialog_recent_reviews_from_the_team": "مراجعات الفريق الأخيرة",
+  "review_submit_dialog_recent_reviews": "المراجعات الأخيرة",
+  "review_viewer_loading_unmodified_lines": "جارٍ تحميل الأسطر غير المعدلة",
+  "route_error_refreshing_ghdiff": "جارٍ تحديث ghdiff",
+  "route_error_the_page_could_not_load": "تعذر تحميل الصفحة",
+  "route_error_something_interrupted_this_page": "تسبّب شيء في مقاطعة هذه الصفحة",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "قد تمنع مشكلة تحديث أو اتصال تحميل هذه الصفحة. حدّث الصفحة للمحاولة مجددًا.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "يمكنك تحديث الصفحة للمحاولة مجددًا. سيبقى عنوان URL للمراجعة كما هو.",
+  "route_error_refresh_page": "تحديث الصفحة",
+  "watched_repos_editor_drag_to_reorder": "اسحب لإعادة الترتيب",
+  "lens_frame_turn_off": "إيقاف",
+  "lens_frame_beta": "تجريبي",
+  "localization_panel_show_as_table": "إظهار كجدول",
+  "localization_panel_languages": "اللغات",
+  "localization_panel_show_all_languages": "إظهار كل اللغات",
+  "localization_panel_paths_and_format": "المسارات والتنسيق…",
+  "localization_panel_not_in_this_diff": "ليست في هذه الفروق",
+  "localization_panel_show_in_the_diff": "إظهار في الفروق",
+  "localization_settings_dialog_show_translations_as_a_table": "إظهار الترجمات كجدول",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "لهذا المستودع فقط. محفوظة في هذا المتصفح.",
+  "localization_settings_dialog_which_files_are_translations": "أي الملفات هي ترجمات",
+  "localization_settings_dialog_detect_automatically": "اكتشاف تلقائي",
+  "localization_settings_dialog_choose_paths": "اختيار المسارات",
+  "localization_settings_dialog_add_another_folder": "إضافة مجلد آخر",
+  "localization_settings_dialog_save": "حفظ",
+  "localization_settings_dialog_none_in_this_diff": "لا شيء في هذه الفروق.",
+  "localization_settings_dialog_in_this_diff": "في هذه الفروق:",
+  "localization_settings_dialog_path_to_a_translation_file": "مسار ملف ترجمة",
+  "localization_settings_dialog_remove_this_path": "إزالة هذا المسار",
+  "localization_settings_dialog_how_placeholders_look": "شكل العناصر النائبة",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "تُفحص كل لغة أخرى مقابل اللغة في «المقارنة بـ». اللغات المتخطاة هي ملفات ينشئها نص برمجي، ولا تُعرض أبدًا.",
+  "use_review_comments_could_not_create_the_issue_on_github": "تعذر إنشاء المشكلة على GitHub.",
+  "contract_enter_a_commit_sha": "أدخل SHA للالتزام.",
+  "contract_write_what_the_issue_is_about": "اكتب موضوع المشكلة.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "تعذر تحميل مراجعات الفريق لطلب السحب هذا.",
+  "router_could_not_load_the_conversation": "تعذر تحميل المحادثة.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "لا يسمح GitHub لـ ghdiff بفتح مشكلات هنا. يحتاج تطبيق ghdiff إلى إذن «المشكلات» في هذا المستودع.",
+  "router_github_accepted_the_issue_but_returned_nothing": "قبل GitHub المشكلة لكنه لم يُرجع شيئًا.",
+  "router_could_not_create_this_issue": "تعذر إنشاء هذه المشكلة.",
+  "lens_label": "العدسة",
+  "lens_localizations": "الترجمات",
+  "lens_compare_against": "المقارنة بـ",
+  "lens_skip_languages": "تخطّي هذه اللغات",
+  "lens_not_added": "غير مضافة",
+  "review_action_commented": "علّق",
+  "review_action_approved": "وافق",
+  "review_action_changes": "طلب تغييرات",
+  "review_action_reviewed": "راجع",
+  "review_open_author": "فتح مراجعة ⁦{author}⁩ على GitHub",
+  "route_refresh_version": "قد يتوفر إصدار جديد. جارٍ التحديث لإعادتك إلى مراجعتك.",
+  "issue_create_action": "إنشاء مشكلة",
+  "effect_dies": "ينتهي بعيب",
+  "effect_dies_exit": "ينتهي بعيب ↗",
+  "effect_defect_stop": "يتوقف هنا بعيب. لا يراه إلا معالج السبب.",
+  "effect_defect_value": "ينشئ عيبًا. لا يراه إلا معالج السبب.",
+  "effect_interrupts": "يقاطع",
+  "effect_interrupts_exit": "يقاطع ↗",
+  "effect_interrupt_stop": "يتوقف هنا ويقاطع الـ Fiber.",
+  "effect_interrupt_value": "ينشئ مقاطعة.",
+  "effect_catches_all": "يلتقط الكل",
+  "effect_handles_all": "يعالج كل الإخفاقات المتوقعة فوقه.",
+  "effect_catches_some": "يلتقط بعضًا",
+  "effect_handles_some": "يعالج الإخفاقات التي يختارها المسند. وتمر البقية.",
+  "effect_failure_defect": "إخفاق ← عيب",
+  "effect_turns_defect": "يحوّل أي إخفاق فوقه إلى عيب.",
+  "effect_catches": "يلتقط",
+  "effect_handles_tags": "يعالج الإخفاقات حسب الوسوم.",
+  "effect_fails": "يفشل{suffix}",
+  "effect_fails_exit": "يفشل{suffix} ↗",
+  "effect_stop_failure": "يتوقف هنا ويفشل.",
+  "effect_stop_failure_named": "يتوقف هنا ويفشل بـ ⁦{name}⁩.",
+  "effect_make_failure": "ينشئ إخفاقًا.",
+  "effect_make_failure_named": "ينشئ إخفاقًا بـ ⁦{name}⁩.",
+  "effect_catches_named": "يلتقط · ⁦{tags}⁩",
+  "effect_handles_named": "يعالج ⁦{tags}⁩. تمر الإخفاقات الأخرى.",
+  "effect_needs": "يحتاج · ⁦{name}⁩",
+  "effect_service": "يقرأ خدمة ⁦{name}⁩. يجب أن يوفّرها شيء قبل تشغيل هذا.",
+  "effect_fold": "اطوِ الكود إلى «⁦{label}⁩»",
+  "effect_unfold": "⁦{reading}⁩ اعرض الكود.",
+  "watch_drag_repo": "اسحب لإعادة ترتيب ⁦{name}⁩",
+  "watch_remove_repo": "إزالة ⁦{name}⁩",
+  "local_diff_remote": "هذه الفروق على جهاز، وليست على GitHub. شغّل أمر ghdiff داخل ذلك المستودع لقراءتها.",
+  "local_working_tree": "شجرة العمل",
+  "issue_missing_commit": "ليس لدى GitHub التزام باسم ⁦{rev}⁩ هنا.",
+  "issue_missing_start": "لم يذكر GitHub من أين يبدأ هذا النطاق.",
+  "issue_no_parent": "ليس لهذا الالتزام التزام أب، لذا لا يوجد ملف لربط أسطره المحذوفة به.",
+  "issue_fork_range": "ينتهي هذا النطاق في نسخة متفرعة، لذا لا يمكن لمشكلة هنا الارتباط بأسطره.",
+  "placeholder_single": "أقواس مفردة",
+  "placeholder_double": "أقواس مزدوجة",
+  "clipboard_copied": "تم النسخ",
+  "lens_undo": "تراجع"
 }

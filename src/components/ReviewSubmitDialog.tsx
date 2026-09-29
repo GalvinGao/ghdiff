@@ -303,9 +303,15 @@ export function ReviewSubmitDialog({
 
 /** What a row says after the login, in the verdict's own words. */
 const TEAM_VERDICT_WORDS: Record<string, string> = {
-  APPROVED: 'approved',
-  CHANGES_REQUESTED: 'requested changes',
-  COMMENTED: 'commented',
+  get APPROVED() {
+    return m.review_action_approved();
+  },
+  get CHANGES_REQUESTED() {
+    return m.review_action_changes();
+  },
+  get COMMENTED() {
+    return m.review_action_commented();
+  },
 };
 
 function TeamReviews({
@@ -317,10 +323,12 @@ function TeamReviews({
 }) {
   return (
     <section
-      aria-label="Recent reviews from the team"
+      aria-label={m.review_submit_dialog_recent_reviews_from_the_team()}
       className="border-line border-b px-3 py-2"
     >
-      <h3 className="text-ink-faint text-xs">Recent reviews</h3>
+      <h3 className="text-ink-faint text-xs">
+        {m.review_submit_dialog_recent_reviews()}
+      </h3>
       <ul className="-mx-1.5 mt-1 flex flex-col">
         {reviews.map((review) => (
           <li key={review.id}>
@@ -366,7 +374,7 @@ function TeamReviewRow({
           />
         )}
         <span className="text-ink-muted shrink-0">
-          {TEAM_VERDICT_WORDS[review.state] ?? 'reviewed'}
+          {TEAM_VERDICT_WORDS[review.state] ?? m.review_action_reviewed()}
         </span>
         {age.length > 0 && (
           <span className="text-ink-faint ml-auto shrink-0 tabular-nums">
@@ -398,7 +406,7 @@ function TeamReviewRow({
       href={review.htmlUrl}
       rel="noreferrer"
       target="_blank"
-      title={`Open ${review.author}'s review on GitHub`}
+      title={m.review_open_author({ author: review.author })}
     >
       {content}
     </a>

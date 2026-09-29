@@ -311,7 +311,7 @@ const getTeamReviews = os.reviews.team.handler(async ({ context, input }) => {
   } catch (error) {
     return fail(
       error,
-      "Could not load the team's reviews of this pull request."
+      m.router_could_not_load_the_teams_reviews_of_this_pull()
     );
   }
 });
@@ -405,7 +405,7 @@ const listConversation = os.comments.conversation.handler(
       log.set({ outcome: 'ok', count: entries.length });
       return entries;
     } catch (error) {
-      return fail(error, 'Could not load the conversation.');
+      return fail(error, m.router_could_not_load_the_conversation());
     }
   }
 );
@@ -492,13 +492,13 @@ const createComment = os.comments.create.handler(async ({ context, input }) => {
 });
 
 const ISSUES_FORBIDDEN =
-  "GitHub won't let ghdiff open issues here. The ghdiff app needs the Issues permission on this repository.";
+  m.router_github_wont_let_ghdiff_open_issues_here_the_ghdiff;
 
 const createIssue = os.issues.create.handler(async ({ context, input }) => {
   const log = requestLog();
   const { line, owner, path, repo, side, source } = input;
   log.set({ owner, repo, source: source.kind, side });
-  const token = requireToken(context.token, 'create an issue');
+  const token = requireToken(context.token, m.issue_create_action());
   const ref = { owner, repo };
 
   try {
@@ -522,7 +522,7 @@ const createIssue = os.issues.create.handler(async ({ context, input }) => {
     if (issue == null) {
       throw new ORPCError('BAD_GATEWAY', {
         status: 502,
-        message: 'GitHub accepted the issue but returned nothing.',
+        message: m.router_github_accepted_the_issue_but_returned_nothing(),
       });
     }
     log.set({ outcome: 'created', issue: issue.number });
@@ -536,11 +536,11 @@ const createIssue = os.issues.create.handler(async ({ context, input }) => {
     if (error instanceof GitHubError && error.status === 403) {
       throw new ORPCError('FORBIDDEN', {
         status: 403,
-        message: ISSUES_FORBIDDEN,
+        message: ISSUES_FORBIDDEN(),
         cause: error,
       });
     }
-    return fail(error, 'Could not create this issue.');
+    return fail(error, m.router_could_not_create_this_issue());
   }
 });
 

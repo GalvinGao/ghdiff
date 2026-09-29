@@ -609,5 +609,223 @@
     }
   ],
   "locale_language": "Dil",
-  "app_render_error": "ghdiff bu sayfayı görüntüleyemedi. Yeniden denemek için sayfayı yeniden yükleyin."
+  "app_render_error": "ghdiff bu sayfayı görüntüleyemedi. Yeniden denemek için sayfayı yeniden yükleyin.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} çeviri dosyası aşağıda dosya olarak gösteriliyor.",
+        "countPlural=*": "{countDisplay} çeviri dosyası aşağıda dosya olarak gösteriliyor."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} dosyada iç içe mesajlar var. Aşağıdaki farkta kalır.",
+        "countPlural=*": "{countDisplay} dosyada iç içe mesajlar var. Aşağıdaki farkta kalır."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} anahtar",
+        "countPlural=*": "{countDisplay} anahtar"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} sorun",
+        "countPlural=*": "{countDisplay} sorun"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Bu farkta {countDisplay} dosyayla eşleşiyor.",
+        "countPlural=*": "Bu farkta {countDisplay} dosyayla eşleşiyor."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "eksik {names}",
+  "lens_extra_placeholder": "fazladan {names}",
+  "lens_same_base": "{base} ile aynı",
+  "lens_settings": "{name} ayarları",
+  "lens_show_locale": "{locale} dilini farkta göster",
+  "lens_files_question": "{repo} içindeki hangi dosyalar çeviri dosyasıdır?",
+  "lens_path_help": "Bir çeviri dosyasının yolunu, dil kodunun yerine {token} gelecek şekilde yazın.",
+  "lens_detect_help": "ghdiff, aynı klasörde dil kodlarıyla adlandırılmış en az üç JSON dosyası arar; örneğin messages/en.json. Her farkta yeniden arar.",
+  "lens_compare_base": "{locale} ile karşılaştırıldı.",
+  "lens_skips": "{locales} atlanır.",
+  "lens_add_token": "Dil kodunun geleceği yere {token} ekleyin.",
+  "comment_issue_number": "Issue #{number}",
+  "comment_open_issue": "Issue #{number}'ı aç",
+  "diff_search_position": "{position} / {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "{name} lensi bu depo için kapalı. Sağ üstteki görüntü ayarlarında Lens altında yeniden açın.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "Bu yorum silinsin mi? Bu işlem geri alınamaz.",
+        "count=*": "Bu ileti dizisindeki {countDisplay} yorumun tümü silinsin mi? Bu işlem geri alınamaz."
+      }
+    }
+  ],
+  "lens_base": "temel",
+  "main_ghdiff_is_not_running": "ghdiff çalışmıyor",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Bu sayfa bir ghdiff komutundan gelmedi. Bir depoda ghdiff çalıştırın ve yazdırdığı adresi açın.",
+  "main_this_tab_has_no_key_for_the_server_open": "Bu sekmede sunucu için anahtar yok. ghdiff komutunun yazdırdığı adresi açın.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Bu notu, ilgili satırlarla birlikte yeni bir GitHub issue'su olarak oluşturur ve bağlantısını buraya bırakır.",
+  "comment_composer_what_should_the_issue_say": "Issue'da ne yazmalı?",
+  "comment_composer_create_issue": "Issue oluştur",
+  "comment_thread_card_creating_issue": "Issue oluşturuluyor…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Yorumlar bu tarayıcıda kalır. İşiniz bitince istem olarak kopyalayın.",
+  "comments_list_conversation": "Konuşma",
+  "comments_list_open_this_on_github": "Bunu GitHub'da aç",
+  "comments_list_open_on_github": "GitHub'da aç",
+  "diff_search_bar_no_matches": "Eşleşme yok",
+  "diff_search_bar_find_in_diff": "Farkta bul",
+  "diff_search_bar_find_in_diff_text": "Farkta bul…",
+  "diff_search_bar_previous_match": "Önceki eşleşme",
+  "diff_search_bar_previous_match_shiftenter": "Önceki eşleşme (Shift+Enter)",
+  "diff_search_bar_next_match": "Sonraki eşleşme",
+  "diff_search_bar_next_match_enter": "Sonraki eşleşme (Enter)",
+  "diff_search_bar_close_the_search": "Aramayı kapat",
+  "diff_search_bar_close_esc": "Kapat (Esc)",
+  "pull_request_list_my_pull_requests": "Pull request'lerim",
+  "pull_request_list_show": "Göster",
+  "pull_request_list_hide": "Gizle",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Yalnızca kendi pull request'leriniz açık ve bunlar gizli.",
+  "review_header_untracked_files": "İzlenmeyen dosyalar",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Bu pull request birleştirildi. Yine de inceleyin.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Bu pull request kapatıldı. Yine de inceleyin.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Bu tarayıcı ghdiff'in panoya erişmesine izin vermedi",
+  "review_sidebar_copy_as_prompt": "İstem olarak kopyala",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Her yorumu, ilgili koduyla birlikte bir kodlama aracısı için kopyala",
+  "review_submit_dialog_recent_reviews_from_the_team": "Ekipten son incelemeler",
+  "review_submit_dialog_recent_reviews": "Son incelemeler",
+  "review_viewer_loading_unmodified_lines": "Değiştirilmemiş satırlar yükleniyor",
+  "route_error_refreshing_ghdiff": "ghdiff yenileniyor",
+  "route_error_the_page_could_not_load": "Sayfa yüklenemedi",
+  "route_error_something_interrupted_this_page": "Bir şey bu sayfayı kesintiye uğrattı",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Bir güncelleme veya bağlantı sorunu bu sayfanın yüklenmesini engelliyor olabilir. Yenileyip tekrar deneyin.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Tekrar denemek için sayfayı yenileyin. İnceleme URL'niz aynı kalır.",
+  "route_error_refresh_page": "Sayfayı yenile",
+  "watched_repos_editor_drag_to_reorder": "Sıralamak için sürükle",
+  "lens_frame_turn_off": "Devre dışı bırak",
+  "lens_frame_beta": "beta",
+  "localization_panel_show_as_table": "Tablo olarak göster",
+  "localization_panel_languages": "Diller",
+  "localization_panel_show_all_languages": "Tüm dilleri göster",
+  "localization_panel_paths_and_format": "Yollar ve biçim…",
+  "localization_panel_not_in_this_diff": "Bu farkta yok",
+  "localization_panel_show_in_the_diff": "Farkta göster",
+  "localization_settings_dialog_show_translations_as_a_table": "Çevirileri tablo olarak göster",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Yalnızca bu depo için. Bu tarayıcıya kaydedilir.",
+  "localization_settings_dialog_which_files_are_translations": "Hangi dosyalar çeviri dosyası",
+  "localization_settings_dialog_detect_automatically": "Otomatik algıla",
+  "localization_settings_dialog_choose_paths": "Yolları seç",
+  "localization_settings_dialog_add_another_folder": "Başka klasör ekle",
+  "localization_settings_dialog_save": "Kaydet",
+  "localization_settings_dialog_none_in_this_diff": "Bu farkta yok.",
+  "localization_settings_dialog_in_this_diff": "Bu farkta:",
+  "localization_settings_dialog_path_to_a_translation_file": "Çeviri dosyasının yolu",
+  "localization_settings_dialog_remove_this_path": "Bu yolu kaldır",
+  "localization_settings_dialog_how_placeholders_look": "Yer tutucuların görünümü",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Diğer tüm diller, Karşılaştırılacak dildeki dille karşılaştırılır. Atlanan diller, bir betiğin oluşturduğu dosyalardır ve hiç gösterilmez.",
+  "use_review_comments_could_not_create_the_issue_on_github": "GitHub'da issue oluşturulamadı.",
+  "contract_enter_a_commit_sha": "Bir commit sha girin.",
+  "contract_write_what_the_issue_is_about": "Issue'un ne hakkında olduğunu yazın.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "Ekibin bu pull request için yaptığı incelemeler yüklenemedi.",
+  "router_could_not_load_the_conversation": "Konuşma yüklenemedi.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub, ghdiff'in burada issue açmasına izin vermiyor. ghdiff uygulamasının bu depoda Issues iznine ihtiyacı var.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub, issue'yu kabul etti ancak hiçbir şey döndürmedi.",
+  "router_could_not_create_this_issue": "Bu issue oluşturulamadı.",
+  "lens_label": "Lens",
+  "lens_localizations": "Yerelleştirmeler",
+  "lens_compare_against": "Karşılaştırılacak",
+  "lens_skip_languages": "Bu dilleri atla",
+  "lens_not_added": "eklenmedi",
+  "review_action_commented": "yorum yaptı",
+  "review_action_approved": "onayladı",
+  "review_action_changes": "değişiklik istedi",
+  "review_action_reviewed": "inceledi",
+  "review_open_author": "{author} kullanıcısının incelemesini GitHub'da aç",
+  "route_refresh_version": "Yeni bir sürüm mevcut olabilir. İncelemenize dönmeniz için yenileniyor.",
+  "issue_create_action": "issue oluştur",
+  "effect_dies": "ölür",
+  "effect_dies_exit": "ölür ↗",
+  "effect_defect_stop": "Burada bir defect ile durur. Bunu yalnızca bir cause handler görebilir.",
+  "effect_defect_value": "Bir defect oluşturur. Bunu yalnızca bir cause handler görebilir.",
+  "effect_interrupts": "kesintiye uğratır",
+  "effect_interrupts_exit": "kesintiye uğratır ↗",
+  "effect_interrupt_stop": "Burada durur ve fiber'ı kesintiye uğratır.",
+  "effect_interrupt_value": "Bir kesinti oluşturur.",
+  "effect_catches_all": "tümünü yakalar",
+  "effect_handles_all": "Üstündeki beklenen tüm failure'ları işler.",
+  "effect_catches_some": "bazılarını yakalar",
+  "effect_handles_some": "Predicate'in seçtiği failure'ları işler. Kalanlar geçer.",
+  "effect_failure_defect": "failure → defect",
+  "effect_turns_defect": "Üstündeki tüm failure'ları defect'e çevirir.",
+  "effect_catches": "yakalar",
+  "effect_handles_tags": "Failure'ları etikete göre işler.",
+  "effect_fails": "başarısız olur{suffix}",
+  "effect_fails_exit": "başarısız olur{suffix} ↗",
+  "effect_stop_failure": "Burada durur ve başarısız olur.",
+  "effect_stop_failure_named": "Burada durur ve {name} ile başarısız olur.",
+  "effect_make_failure": "Bir failure oluşturur.",
+  "effect_make_failure_named": "{name} ile bir failure oluşturur.",
+  "effect_catches_named": "yakalar · {tags}",
+  "effect_handles_named": "{tags} işler. Diğer failure'lar geçer.",
+  "effect_needs": "gerektirir · {name}",
+  "effect_service": "{name} service'ini okur. Bu çalışmadan önce birinin onu sağlaması gerekir.",
+  "effect_fold": "Kodu yeniden “{label}” altında daralt",
+  "effect_unfold": "{reading} Kodu göster.",
+  "watch_drag_repo": "{name} sırasını değiştirmek için sürükle",
+  "watch_remove_repo": "{name} deposunu kaldır",
+  "local_diff_remote": "Bu fark GitHub'da değil, bir makinede. Okumak için ghdiff komutunu o deponun içinde çalıştırın.",
+  "local_working_tree": "çalışma ağacı",
+  "issue_missing_commit": "GitHub burada {rev} adlı bir commit bulamadı.",
+  "issue_missing_start": "GitHub bu aralığın nerede başladığını söylemedi.",
+  "issue_no_parent": "Bu commit'in üst commit'i yok, bu yüzden kaldırılan satırlarının bağlantılanacak dosyası yok.",
+  "issue_fork_range": "Bu aralık bir fork'ta bitiyor, bu nedenle buradaki bir issue satırlarına bağlanamaz.",
+  "placeholder_single": "Tek süslü parantezler",
+  "placeholder_double": "Çift süslü parantezler",
+  "clipboard_copied": "Kopyalandı",
+  "lens_undo": "Geri al"
 }

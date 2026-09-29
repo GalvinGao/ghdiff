@@ -116,7 +116,7 @@ const getDiff = withEvlog(
     // reaches here only from a link pasted out of a local run.
     if (target.kind === 'local-diff') {
       log.set({ outcome: 'local-target' });
-      return textResponse(LOCAL_TARGET_NOT_SERVED, 400);
+      return textResponse(LOCAL_TARGET_NOT_SERVED(), 400);
     }
 
     // A cookie whose token has died is answered before GitHub is asked: the 401

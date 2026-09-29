@@ -1,5 +1,6 @@
 import type { FileDiffMetadata, SelectionSide } from '@pierre/diffs';
 
+import { m } from '../../paraglide/messages.js';
 import { forEachRenderedRow, rangesForSpans } from '@/components/diffLineMarks';
 import {
   type EffectFold,
@@ -360,9 +361,7 @@ function foldRange(
     button.setAttribute('aria-expanded', String(next));
     button.setAttribute(
       'aria-label',
-      next
-        ? `Fold the code back into “${fold.label}”`
-        : `${reading} Show the code.`
+      next ? m.effect_fold({ label: fold.label }) : m.effect_unfold({ reading })
     );
     button.title = next ? 'Fold' : fold.title;
   };

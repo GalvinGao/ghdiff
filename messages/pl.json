@@ -662,5 +662,238 @@
     }
   ],
   "locale_language": "Język",
-  "app_render_error": "ghdiff nie mógł wyświetlić tej strony. Odśwież stronę, aby spróbować ponownie."
+  "app_render_error": "ghdiff nie mógł wyświetlić tej strony. Odśwież stronę, aby spróbować ponownie.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Poniżej pokazano {countDisplay} plik tłumaczenia jako plik.",
+        "countPlural=few": "Poniżej pokazano {countDisplay} pliki tłumaczeń jako pliki.",
+        "countPlural=many": "Poniżej pokazano {countDisplay} plików tłumaczeń jako pliki.",
+        "countPlural=other": "Poniżej pokazano {countDisplay} pliku tłumaczenia jako pliki.",
+        "countPlural=*": "Poniżej pokazano {countDisplay} plików tłumaczeń jako pliki."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} plik zawiera zagnieżdżone komunikaty. Pozostaje w różnicach poniżej.",
+        "countPlural=few": "{countDisplay} pliki zawierają zagnieżdżone komunikaty. Pozostają w różnicach poniżej.",
+        "countPlural=many": "{countDisplay} plików zawiera zagnieżdżone komunikaty. Pozostają w różnicach poniżej.",
+        "countPlural=other": "{countDisplay} pliku zawiera zagnieżdżone komunikaty. Pozostaje w różnicach poniżej.",
+        "countPlural=*": "{countDisplay} plików zawiera zagnieżdżone komunikaty. Pozostają w różnicach poniżej."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} klucz",
+        "countPlural=few": "{countDisplay} klucze",
+        "countPlural=many": "{countDisplay} kluczy",
+        "countPlural=other": "{countDisplay} klucza",
+        "countPlural=*": "{countDisplay} kluczy"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} problem",
+        "countPlural=few": "{countDisplay} problemy",
+        "countPlural=many": "{countDisplay} problemów",
+        "countPlural=other": "{countDisplay} problemu",
+        "countPlural=*": "{countDisplay} problemów"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Pasuje do {countDisplay} pliku w tych różnicach.",
+        "countPlural=few": "Pasuje do {countDisplay} plików w tych różnicach.",
+        "countPlural=many": "Pasuje do {countDisplay} plików w tych różnicach.",
+        "countPlural=other": "Pasuje do {countDisplay} pliku w tych różnicach.",
+        "countPlural=*": "Pasuje do {countDisplay} plików w tych różnicach."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "brakuje {names}",
+  "lens_extra_placeholder": "dodatkowe {names}",
+  "lens_same_base": "takie samo jak w {base}",
+  "lens_settings": "Ustawienia {name}",
+  "lens_show_locale": "Pokaż {locale} w różnicach",
+  "lens_files_question": "Które pliki w {repo} zawierają tłumaczenia?",
+  "lens_path_help": "Wpisz ścieżkę do jednego pliku tłumaczenia, używając {token} w miejscu kodu języka.",
+  "lens_detect_help": "ghdiff szuka co najmniej trzech plików JSON w jednym folderze, nazwanych kodem języka, np. messages/en.json. Szuka ponownie przy każdej różnicy.",
+  "lens_compare_base": "Porównano z {locale}.",
+  "lens_skips": "Pomija {locales}.",
+  "lens_add_token": "Dodaj {token} w miejscu kodu języka.",
+  "comment_issue_number": "Zgłoszenie nr {number}",
+  "comment_open_issue": "Otwórz zgłoszenie nr {number}",
+  "diff_search_position": "{position} z {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "Lens {name} jest wyłączony dla tego repozytorium. Włącz go ponownie w sekcji Lens w ustawieniach wyświetlania w prawym górnym rogu.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "Usunąć ten komentarz? Tej operacji nie można cofnąć.",
+        "count=*": "Usunąć wszystkie komentarze ({countDisplay}) w tym wątku? Tej operacji nie można cofnąć."
+      }
+    }
+  ],
+  "lens_base": "baza",
+  "main_ghdiff_is_not_running": "ghdiff nie jest uruchomiony",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Ta strona nie pochodzi z polecenia ghdiff. Uruchom ghdiff w repozytorium i otwórz adres, który wypisze.",
+  "main_this_tab_has_no_key_for_the_server_open": "Ta karta nie ma klucza do serwera. Otwórz adres wypisany przez polecenie ghdiff.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Tworzy zgłoszenie z tej notatki i zawartych w niej linii oraz zostawia tu link do niego.",
+  "comment_composer_what_should_the_issue_say": "Co ma zawierać zgłoszenie?",
+  "comment_composer_create_issue": "Utwórz zgłoszenie",
+  "comment_thread_card_creating_issue": "Tworzenie zgłoszenia…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Komentarze pozostają w tej przeglądarce. Po zakończeniu skopiuj je jako prompt.",
+  "comments_list_conversation": "Dyskusja",
+  "comments_list_open_this_on_github": "Otwórz to w GitHub",
+  "comments_list_open_on_github": "Otwórz w GitHub",
+  "diff_search_bar_no_matches": "Brak dopasowań",
+  "diff_search_bar_find_in_diff": "Znajdź w różnicach",
+  "diff_search_bar_find_in_diff_text": "Znajdź w różnicach…",
+  "diff_search_bar_previous_match": "Poprzednie dopasowanie",
+  "diff_search_bar_previous_match_shiftenter": "Poprzednie dopasowanie (Shift+Enter)",
+  "diff_search_bar_next_match": "Następne dopasowanie",
+  "diff_search_bar_next_match_enter": "Następne dopasowanie (Enter)",
+  "diff_search_bar_close_the_search": "Zamknij wyszukiwanie",
+  "diff_search_bar_close_esc": "Zamknij (Esc)",
+  "pull_request_list_my_pull_requests": "Moje pull requesty",
+  "pull_request_list_show": "Pokaż",
+  "pull_request_list_hide": "Ukryj",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Otwarte są tylko twoje pull requesty i są ukryte.",
+  "review_header_untracked_files": "Nieśledzone pliki",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Ten pull request został scalony. Mimo to go przejrzyj.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Ten pull request został zamknięty. Mimo to go przejrzyj.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Ta przeglądarka nie pozwoliła aplikacji ghdiff uzyskać dostępu do schowka",
+  "review_sidebar_copy_as_prompt": "Kopiuj jako prompt",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Skopiuj każdy komentarz wraz z kodem, którego dotyczy, dla agenta programistycznego",
+  "review_submit_dialog_recent_reviews_from_the_team": "Ostatnie przeglądy zespołu",
+  "review_submit_dialog_recent_reviews": "Ostatnie przeglądy",
+  "review_viewer_loading_unmodified_lines": "Wczytywanie niezmienionych linii",
+  "route_error_refreshing_ghdiff": "Odświeżanie ghdiff",
+  "route_error_the_page_could_not_load": "Nie udało się wczytać strony",
+  "route_error_something_interrupted_this_page": "Coś przerwało działanie tej strony",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Problem z aktualizacją lub połączeniem może uniemożliwiać wczytanie tej strony. Odśwież, aby spróbować ponownie.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Odśwież stronę, aby spróbować ponownie. Adres URL przeglądu pozostanie bez zmian.",
+  "route_error_refresh_page": "Odśwież stronę",
+  "watched_repos_editor_drag_to_reorder": "Przeciągnij, aby zmienić kolejność",
+  "lens_frame_turn_off": "Wyłącz",
+  "lens_frame_beta": "beta",
+  "localization_panel_show_as_table": "Pokaż jako tabelę",
+  "localization_panel_languages": "Języki",
+  "localization_panel_show_all_languages": "Pokaż wszystkie języki",
+  "localization_panel_paths_and_format": "Ścieżki i format…",
+  "localization_panel_not_in_this_diff": "Nie w tych różnicach",
+  "localization_panel_show_in_the_diff": "Pokaż w różnicach",
+  "localization_settings_dialog_show_translations_as_a_table": "Pokaż tłumaczenia jako tabelę",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Tylko dla tego repozytorium. Zapisane w tej przeglądarce.",
+  "localization_settings_dialog_which_files_are_translations": "Które pliki zawierają tłumaczenia",
+  "localization_settings_dialog_detect_automatically": "Wykrywaj automatycznie",
+  "localization_settings_dialog_choose_paths": "Wybierz ścieżki",
+  "localization_settings_dialog_add_another_folder": "Dodaj kolejny folder",
+  "localization_settings_dialog_save": "Zapisz",
+  "localization_settings_dialog_none_in_this_diff": "Brak w tych różnicach.",
+  "localization_settings_dialog_in_this_diff": "W tych różnicach:",
+  "localization_settings_dialog_path_to_a_translation_file": "Ścieżka do pliku tłumaczenia",
+  "localization_settings_dialog_remove_this_path": "Usuń tę ścieżkę",
+  "localization_settings_dialog_how_placeholders_look": "Wygląd symboli zastępczych",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Każdy inny język jest sprawdzany względem języka w polu Porównaj z. Pominięte języki pochodzą z plików tworzonych przez skrypt i nigdy nie są pokazywane.",
+  "use_review_comments_could_not_create_the_issue_on_github": "Nie udało się utworzyć zgłoszenia w GitHub.",
+  "contract_enter_a_commit_sha": "Wpisz SHA commita.",
+  "contract_write_what_the_issue_is_about": "Napisz, czego dotyczy zgłoszenie.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "Nie udało się wczytać przeglądów zespołu dla tego pull requesta.",
+  "router_could_not_load_the_conversation": "Nie udało się wczytać dyskusji.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub nie pozwala aplikacji ghdiff tworzyć tu zgłoszeń. Aplikacja ghdiff potrzebuje uprawnienia Issues w tym repozytorium.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub przyjął zgłoszenie, ale nic nie zwrócił.",
+  "router_could_not_create_this_issue": "Nie udało się utworzyć tego zgłoszenia.",
+  "lens_label": "Lens",
+  "lens_localizations": "Tłumaczenia",
+  "lens_compare_against": "Porównaj z",
+  "lens_skip_languages": "Pomiń te języki",
+  "lens_not_added": "nie dodano",
+  "review_action_commented": "skomentowano",
+  "review_action_approved": "zatwierdzono",
+  "review_action_changes": "poproszono o zmiany",
+  "review_action_reviewed": "przejrzano",
+  "review_open_author": "Otwórz przegląd {author} w GitHub",
+  "route_refresh_version": "Może być dostępna nowa wersja. Odświeżam, aby wrócić do przeglądu.",
+  "issue_create_action": "utwórz zgłoszenie",
+  "effect_dies": "kończy się defektem",
+  "effect_dies_exit": "kończy się defektem ↗",
+  "effect_defect_stop": "Zatrzymuje się tu z defektem. Tylko handler przyczyny może go zobaczyć.",
+  "effect_defect_value": "Tworzy defekt. Tylko handler przyczyny może go zobaczyć.",
+  "effect_interrupts": "przerywa",
+  "effect_interrupts_exit": "przerywa ↗",
+  "effect_interrupt_stop": "Zatrzymuje się tu i przerywa fiber.",
+  "effect_interrupt_value": "Tworzy przerwanie.",
+  "effect_catches_all": "przechwytuje wszystkie",
+  "effect_handles_all": "Obsługuje wszystkie oczekiwane niepowodzenia powyżej.",
+  "effect_catches_some": "przechwytuje wybrane",
+  "effect_handles_some": "Obsługuje niepowodzenia wybrane przez predykat. Pozostałe przechodzą dalej.",
+  "effect_failure_defect": "niepowodzenie → defekt",
+  "effect_turns_defect": "Zamienia każde niepowodzenie powyżej w defekt.",
+  "effect_catches": "przechwytuje",
+  "effect_handles_tags": "Obsługuje niepowodzenia według tagów.",
+  "effect_fails": "zawodzi{suffix}",
+  "effect_fails_exit": "zawodzi{suffix} ↗",
+  "effect_stop_failure": "Zatrzymuje się tu i zawodzi.",
+  "effect_stop_failure_named": "Zatrzymuje się tu i kończy się niepowodzeniem: {name}.",
+  "effect_make_failure": "Tworzy niepowodzenie.",
+  "effect_make_failure_named": "Tworzy niepowodzenie: {name}.",
+  "effect_catches_named": "przechwytuje · {tags}",
+  "effect_handles_named": "Obsługuje {tags}. Pozostałe niepowodzenia przechodzą dalej.",
+  "effect_needs": "wymaga · {name}",
+  "effect_service": "Odczytuje usługę {name}. Ktoś musi ją dostarczyć przed uruchomieniem.",
+  "effect_fold": "Zwiń kod do „{label}”",
+  "effect_unfold": "{reading} Pokaż kod.",
+  "watch_drag_repo": "Przeciągnij, aby zmienić kolejność {name}",
+  "watch_remove_repo": "Usuń {name}",
+  "local_diff_remote": "Te różnice są na komputerze, nie w GitHub. Uruchom polecenie ghdiff w tym repozytorium, aby je odczytać.",
+  "local_working_tree": "drzewo robocze",
+  "issue_missing_commit": "GitHub nie ma tu commita o nazwie {rev}.",
+  "issue_missing_start": "GitHub nie podał początku tego zakresu.",
+  "issue_no_parent": "Ten commit nie ma rodzica, więc usunięte linie nie mają pliku, do którego można utworzyć link.",
+  "issue_fork_range": "Ten zakres kończy się w forku, więc zgłoszenie tutaj nie może zawierać linków do jego linii.",
+  "placeholder_single": "Pojedyncze nawiasy klamrowe",
+  "placeholder_double": "Podwójne nawiasy klamrowe",
+  "clipboard_copied": "Skopiowano",
+  "lens_undo": "Cofnij"
 }

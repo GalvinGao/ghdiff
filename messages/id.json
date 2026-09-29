@@ -602,5 +602,218 @@
     }
   ],
   "locale_language": "Bahasa Indonesia",
-  "app_render_error": "ghdiff tidak dapat menampilkan halaman ini. Muat ulang halaman untuk mencoba lagi."
+  "app_render_error": "ghdiff tidak dapat menampilkan halaman ini. Muat ulang halaman untuk mencoba lagi.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} file terjemahan ditampilkan sebagai file di bawah."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} file memiliki pesan bersarang. File tersebut tetap ada di diff di bawah."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} kunci"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "{countDisplay} masalah"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=*": "Cocok dengan {countDisplay} file dalam diff ini."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "{names} tidak ada",
+  "lens_extra_placeholder": "{names} tambahan",
+  "lens_same_base": "sama seperti {base}",
+  "lens_settings": "Pengaturan {name}",
+  "lens_show_locale": "Tampilkan {locale} di diff",
+  "lens_files_question": "File mana yang merupakan terjemahan di {repo}?",
+  "lens_path_help": "Tulis jalur ke satu file terjemahan, dengan {token} di tempat kode bahasa.",
+  "lens_detect_help": "ghdiff mencari tiga atau lebih file JSON dalam satu folder, masing-masing dinamai dengan kode bahasa, seperti messages/en.json. Pencarian diulang pada setiap diff.",
+  "lens_compare_base": "Dibandingkan dengan {locale}.",
+  "lens_skips": "Melewati {locales}.",
+  "lens_add_token": "Tambahkan {token} di tempat kode bahasa.",
+  "comment_issue_number": "Issue #{number}",
+  "comment_open_issue": "Buka issue #{number}",
+  "diff_search_position": "{position} dari {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "Lens {name} dinonaktifkan untuk repositori ini. Aktifkan lagi di bawah Lens dalam pengaturan tampilan di kanan atas.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "Hapus komentar ini? Tindakan ini tidak dapat dibatalkan.",
+        "count=*": "Hapus semua {countDisplay} komentar dalam thread ini? Tindakan ini tidak dapat dibatalkan."
+      }
+    }
+  ],
+  "lens_base": "dasar",
+  "main_ghdiff_is_not_running": "ghdiff tidak berjalan",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Halaman ini tidak berasal dari perintah ghdiff. Jalankan ghdiff di dalam repositori, lalu buka alamat yang dicetaknya.",
+  "main_this_tab_has_no_key_for_the_server_open": "Tab ini tidak memiliki kunci untuk server. Buka alamat yang dicetak oleh perintah ghdiff.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Membuat issue dari catatan ini beserta baris di dalamnya, lalu meninggalkan tautannya di sini.",
+  "comment_composer_what_should_the_issue_say": "Apa isi issue ini?",
+  "comment_composer_create_issue": "Buat issue",
+  "comment_thread_card_creating_issue": "Membuat issue…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Komentar tetap di browser ini. Salin sebagai prompt setelah selesai.",
+  "comments_list_conversation": "Percakapan",
+  "comments_list_open_this_on_github": "Buka ini di GitHub",
+  "comments_list_open_on_github": "Buka di GitHub",
+  "diff_search_bar_no_matches": "Tidak ada kecocokan",
+  "diff_search_bar_find_in_diff": "Cari di diff",
+  "diff_search_bar_find_in_diff_text": "Cari di diff…",
+  "diff_search_bar_previous_match": "Kecocokan sebelumnya",
+  "diff_search_bar_previous_match_shiftenter": "Kecocokan sebelumnya (Shift+Enter)",
+  "diff_search_bar_next_match": "Kecocokan berikutnya",
+  "diff_search_bar_next_match_enter": "Kecocokan berikutnya (Enter)",
+  "diff_search_bar_close_the_search": "Tutup pencarian",
+  "diff_search_bar_close_esc": "Tutup (Esc)",
+  "pull_request_list_my_pull_requests": "Pull request saya",
+  "pull_request_list_show": "Tampilkan",
+  "pull_request_list_hide": "Sembunyikan",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Hanya pull request Anda yang terbuka, dan semuanya disembunyikan.",
+  "review_header_untracked_files": "File tidak terlacak",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Pull request ini telah digabungkan. Tetap tinjau.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Pull request ini telah ditutup. Tetap tinjau.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Browser ini tidak mengizinkan ghdiff mengakses papan klip",
+  "review_sidebar_copy_as_prompt": "Salin sebagai prompt",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Salin setiap komentar beserta kode yang dibahas untuk agen pemrograman",
+  "review_submit_dialog_recent_reviews_from_the_team": "Tinjauan terbaru dari tim",
+  "review_submit_dialog_recent_reviews": "Tinjauan terbaru",
+  "review_viewer_loading_unmodified_lines": "Memuat baris yang tidak diubah",
+  "route_error_refreshing_ghdiff": "Memuat ulang ghdiff",
+  "route_error_the_page_could_not_load": "Halaman tidak dapat dimuat",
+  "route_error_something_interrupted_this_page": "Sesuatu mengganggu halaman ini",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Masalah pembaruan atau koneksi mungkin menghalangi halaman ini dimuat. Muat ulang untuk mencoba lagi.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Muat ulang halaman untuk mencoba lagi. URL tinjauan Anda akan tetap sama.",
+  "route_error_refresh_page": "Muat ulang halaman",
+  "watched_repos_editor_drag_to_reorder": "Seret untuk mengubah urutan",
+  "lens_frame_turn_off": "Nonaktifkan",
+  "lens_frame_beta": "beta",
+  "localization_panel_show_as_table": "Tampilkan sebagai tabel",
+  "localization_panel_languages": "Bahasa",
+  "localization_panel_show_all_languages": "Tampilkan semua bahasa",
+  "localization_panel_paths_and_format": "Jalur dan format…",
+  "localization_panel_not_in_this_diff": "Tidak ada di diff ini",
+  "localization_panel_show_in_the_diff": "Tampilkan di diff",
+  "localization_settings_dialog_show_translations_as_a_table": "Tampilkan terjemahan sebagai tabel",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Hanya untuk repositori ini. Disimpan di browser ini.",
+  "localization_settings_dialog_which_files_are_translations": "File mana yang merupakan terjemahan",
+  "localization_settings_dialog_detect_automatically": "Deteksi otomatis",
+  "localization_settings_dialog_choose_paths": "Pilih jalur",
+  "localization_settings_dialog_add_another_folder": "Tambahkan folder lain",
+  "localization_settings_dialog_save": "Simpan",
+  "localization_settings_dialog_none_in_this_diff": "Tidak ada di diff ini.",
+  "localization_settings_dialog_in_this_diff": "Dalam diff ini:",
+  "localization_settings_dialog_path_to_a_translation_file": "Jalur ke file terjemahan",
+  "localization_settings_dialog_remove_this_path": "Hapus jalur ini",
+  "localization_settings_dialog_how_placeholders_look": "Tampilan placeholder",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Setiap bahasa lain diperiksa terhadap bahasa di Bandingkan dengan. Bahasa yang dilewati adalah file yang dibuat skrip dan tidak pernah ditampilkan.",
+  "use_review_comments_could_not_create_the_issue_on_github": "Tidak dapat membuat issue di GitHub.",
+  "contract_enter_a_commit_sha": "Masukkan SHA commit.",
+  "contract_write_what_the_issue_is_about": "Tulis isi issue.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "Tidak dapat memuat tinjauan tim untuk pull request ini.",
+  "router_could_not_load_the_conversation": "Tidak dapat memuat percakapan.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub tidak mengizinkan ghdiff membuat issue di sini. Aplikasi ghdiff memerlukan izin Issues pada repositori ini.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub menerima issue ini, tetapi tidak mengembalikan apa pun.",
+  "router_could_not_create_this_issue": "Tidak dapat membuat issue ini.",
+  "lens_label": "Lens",
+  "lens_localizations": "Lokalisasi",
+  "lens_compare_against": "Bandingkan dengan",
+  "lens_skip_languages": "Lewati bahasa ini",
+  "lens_not_added": "belum ditambahkan",
+  "review_action_commented": "berkomentar",
+  "review_action_approved": "disetujui",
+  "review_action_changes": "meminta perubahan",
+  "review_action_reviewed": "ditinjau",
+  "review_open_author": "Buka tinjauan {author} di GitHub",
+  "route_refresh_version": "Versi baru mungkin tersedia. Memuat ulang untuk mengembalikan Anda ke tinjauan.",
+  "issue_create_action": "buat issue",
+  "effect_dies": "berakhir karena defect",
+  "effect_dies_exit": "berakhir karena defect ↗",
+  "effect_defect_stop": "Berhenti di sini dengan defect. Hanya cause handler yang dapat melihatnya.",
+  "effect_defect_value": "Membuat defect. Hanya cause handler yang dapat melihatnya.",
+  "effect_interrupts": "menginterupsi",
+  "effect_interrupts_exit": "menginterupsi ↗",
+  "effect_interrupt_stop": "Berhenti di sini dan menginterupsi fiber.",
+  "effect_interrupt_value": "Membuat interupsi.",
+  "effect_catches_all": "menangkap semua",
+  "effect_handles_all": "Menangani setiap failure yang diharapkan di atasnya.",
+  "effect_catches_some": "menangkap sebagian",
+  "effect_handles_some": "Menangani failure yang dipilih predikatnya. Sisanya diteruskan.",
+  "effect_failure_defect": "failure → defect",
+  "effect_turns_defect": "Mengubah setiap failure di atasnya menjadi defect.",
+  "effect_catches": "menangkap",
+  "effect_handles_tags": "Menangani failure berdasarkan tag.",
+  "effect_fails": "gagal{suffix}",
+  "effect_fails_exit": "gagal{suffix} ↗",
+  "effect_stop_failure": "Berhenti di sini dan gagal.",
+  "effect_stop_failure_named": "Berhenti di sini dan gagal dengan {name}.",
+  "effect_make_failure": "Membuat failure.",
+  "effect_make_failure_named": "Membuat failure dengan {name}.",
+  "effect_catches_named": "menangkap · {tags}",
+  "effect_handles_named": "Menangani {tags}. Failure lain diteruskan.",
+  "effect_needs": "memerlukan · {name}",
+  "effect_service": "Membaca service {name}. Seseorang harus menyediakannya sebelum ini berjalan.",
+  "effect_fold": "Lipat kembali kode menjadi “{label}”",
+  "effect_unfold": "{reading} Tampilkan kode.",
+  "watch_drag_repo": "Seret untuk mengubah urutan {name}",
+  "watch_remove_repo": "Hapus {name}",
+  "local_diff_remote": "Diff itu ada di mesin, bukan di GitHub. Jalankan perintah ghdiff di dalam repositori tersebut untuk membacanya.",
+  "local_working_tree": "working tree",
+  "issue_missing_commit": "GitHub tidak memiliki commit bernama {rev} di sini.",
+  "issue_missing_start": "GitHub tidak menyebutkan awal rentang ini.",
+  "issue_no_parent": "Commit ini tidak memiliki induk, jadi baris yang dihapus tidak memiliki file untuk ditautkan.",
+  "issue_fork_range": "Rentang ini berakhir di fork, jadi issue di sini tidak dapat menautkan barisnya.",
+  "placeholder_single": "Kurung kurawal tunggal",
+  "placeholder_double": "Kurung kurawal ganda",
+  "clipboard_copied": "Disalin",
+  "lens_undo": "Urungkan"
 }

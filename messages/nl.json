@@ -619,5 +619,223 @@
     }
   ],
   "locale_language": "Taal",
-  "app_render_error": "ghdiff kon deze pagina niet weergeven. Laad de pagina opnieuw om het opnieuw te proberen."
+  "app_render_error": "ghdiff kon deze pagina niet weergeven. Laad de pagina opnieuw om het opnieuw te proberen.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} vertaalbestand wordt hieronder als bestand weergegeven.",
+        "countPlural=*": "{countDisplay} vertaalbestanden worden hieronder als bestanden weergegeven."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} bestand heeft geneste berichten. Het blijft in de diff hieronder.",
+        "countPlural=*": "{countDisplay} bestanden hebben geneste berichten. Ze blijven in de diff hieronder."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} sleutel",
+        "countPlural=*": "{countDisplay} sleutels"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} probleem",
+        "countPlural=*": "{countDisplay} problemen"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Komt overeen met {countDisplay} bestand in deze diff.",
+        "countPlural=*": "Komt overeen met {countDisplay} bestanden in deze diff."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "ontbrekende {names}",
+  "lens_extra_placeholder": "extra {names}",
+  "lens_same_base": "hetzelfde als {base}",
+  "lens_settings": "Instellingen voor {name}",
+  "lens_show_locale": "{locale} in de diff tonen",
+  "lens_files_question": "Welke bestanden zijn vertaalbestanden in {repo}?",
+  "lens_path_help": "Vul het pad naar één vertaalbestand in, met {token} op de plaats van de taalcode.",
+  "lens_detect_help": "ghdiff zoekt naar drie of meer JSON-bestanden in één map, elk genoemd naar een taalcode, zoals messages/en.json. Dit gebeurt opnieuw bij elke diff.",
+  "lens_compare_base": "Vergeleken met {locale}.",
+  "lens_skips": "Slaat {locales} over.",
+  "lens_add_token": "Voeg {token} toe op de plaats van de taalcode.",
+  "comment_issue_number": "Issue #{number}",
+  "comment_open_issue": "Issue #{number} openen",
+  "diff_search_position": "{position} van {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "De lens {name} is uitgeschakeld voor deze repository. Schakel deze weer in via Lens in de weergave-instellingen rechtsboven.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "Deze opmerking verwijderen? Dit kan niet ongedaan worden gemaakt.",
+        "count=*": "Alle {countDisplay} opmerkingen in deze thread verwijderen? Dit kan niet ongedaan worden gemaakt."
+      }
+    }
+  ],
+  "lens_base": "basis",
+  "main_ghdiff_is_not_running": "ghdiff wordt niet uitgevoerd",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "Deze pagina komt niet van een ghdiff-opdracht. Voer ghdiff uit in een repository en open het adres dat wordt getoond.",
+  "main_this_tab_has_no_key_for_the_server_open": "Dit tabblad heeft geen sleutel voor de server. Open het adres dat de ghdiff-opdracht heeft getoond.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "Maakt van deze notitie een issue met de betreffende regels en laat hier een link ernaartoe achter.",
+  "comment_composer_what_should_the_issue_say": "Wat moet er in het issue staan?",
+  "comment_composer_create_issue": "Issue maken",
+  "comment_thread_card_creating_issue": "Issue wordt gemaakt…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "Opmerkingen blijven in deze browser. Kopieer ze als prompt wanneer je klaar bent.",
+  "comments_list_conversation": "Gesprek",
+  "comments_list_open_this_on_github": "Dit openen op GitHub",
+  "comments_list_open_on_github": "Openen op GitHub",
+  "diff_search_bar_no_matches": "Geen overeenkomsten",
+  "diff_search_bar_find_in_diff": "Zoeken in diff",
+  "diff_search_bar_find_in_diff_text": "Zoeken in diff…",
+  "diff_search_bar_previous_match": "Vorige overeenkomst",
+  "diff_search_bar_previous_match_shiftenter": "Vorige overeenkomst (Shift+Enter)",
+  "diff_search_bar_next_match": "Volgende overeenkomst",
+  "diff_search_bar_next_match_enter": "Volgende overeenkomst (Enter)",
+  "diff_search_bar_close_the_search": "Zoeken sluiten",
+  "diff_search_bar_close_esc": "Sluiten (Esc)",
+  "pull_request_list_my_pull_requests": "Mijn pull requests",
+  "pull_request_list_show": "Tonen",
+  "pull_request_list_hide": "Verbergen",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "Alleen je eigen pull requests zijn open, en ze zijn verborgen.",
+  "review_header_untracked_files": "Niet-getrackte bestanden",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "Deze pull request is samengevoegd. Toch beoordelen.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "Deze pull request is gesloten. Toch beoordelen.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "Deze browser geeft ghdiff geen toegang tot het klembord",
+  "review_sidebar_copy_as_prompt": "Kopiëren als prompt",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "Alle opmerkingen kopiëren, met de bijbehorende code, voor een code-agent",
+  "review_submit_dialog_recent_reviews_from_the_team": "Recente reviews van het team",
+  "review_submit_dialog_recent_reviews": "Recente reviews",
+  "review_viewer_loading_unmodified_lines": "Ongewijzigde regels worden geladen",
+  "route_error_refreshing_ghdiff": "ghdiff wordt vernieuwd",
+  "route_error_the_page_could_not_load": "De pagina kon niet worden geladen",
+  "route_error_something_interrupted_this_page": "Iets heeft deze pagina onderbroken",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "Een probleem met een update of verbinding kan verhinderen dat deze pagina wordt geladen. Vernieuw de pagina om het opnieuw te proberen.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "Vernieuw de pagina om het opnieuw te proberen. Je review-URL blijft hetzelfde.",
+  "route_error_refresh_page": "Pagina vernieuwen",
+  "watched_repos_editor_drag_to_reorder": "Sleep om te herordenen",
+  "lens_frame_turn_off": "Uitschakelen",
+  "lens_frame_beta": "bèta",
+  "localization_panel_show_as_table": "Als tabel tonen",
+  "localization_panel_languages": "Talen",
+  "localization_panel_show_all_languages": "Alle talen tonen",
+  "localization_panel_paths_and_format": "Paden en indeling…",
+  "localization_panel_not_in_this_diff": "Niet in deze diff",
+  "localization_panel_show_in_the_diff": "In de diff tonen",
+  "localization_settings_dialog_show_translations_as_a_table": "Vertalingen als tabel tonen",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "Alleen voor deze repository. Opgeslagen in deze browser.",
+  "localization_settings_dialog_which_files_are_translations": "Welke bestanden zijn vertalingen",
+  "localization_settings_dialog_detect_automatically": "Automatisch detecteren",
+  "localization_settings_dialog_choose_paths": "Paden kiezen",
+  "localization_settings_dialog_add_another_folder": "Nog een map toevoegen",
+  "localization_settings_dialog_save": "Opslaan",
+  "localization_settings_dialog_none_in_this_diff": "Geen in deze diff.",
+  "localization_settings_dialog_in_this_diff": "In deze diff:",
+  "localization_settings_dialog_path_to_a_translation_file": "Pad naar een vertaalbestand",
+  "localization_settings_dialog_remove_this_path": "Dit pad verwijderen",
+  "localization_settings_dialog_how_placeholders_look": "Hoe placeholders eruitzien",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "Elke andere taal wordt vergeleken met de taal die bij Vergelijken met is geselecteerd. Overgeslagen talen zijn bestanden die door een script worden gemaakt en nooit worden getoond.",
+  "use_review_comments_could_not_create_the_issue_on_github": "Kon het issue niet maken op GitHub.",
+  "contract_enter_a_commit_sha": "Voer een commit-sha in.",
+  "contract_write_what_the_issue_is_about": "Schrijf waar het issue over gaat.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "Kon de reviews van het team voor deze pull request niet laden.",
+  "router_could_not_load_the_conversation": "Kon het gesprek niet laden.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub staat ghdiff niet toe hier issues te openen. De ghdiff-app heeft de Issues-machtiging nodig voor deze repository.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub heeft het issue geaccepteerd maar niets teruggestuurd.",
+  "router_could_not_create_this_issue": "Kon dit issue niet maken.",
+  "lens_label": "Lens",
+  "lens_localizations": "Lokalisaties",
+  "lens_compare_against": "Vergelijken met",
+  "lens_skip_languages": "Deze talen overslaan",
+  "lens_not_added": "niet toegevoegd",
+  "review_action_commented": "opmerking geplaatst",
+  "review_action_approved": "goedgekeurd",
+  "review_action_changes": "wijzigingen aangevraagd",
+  "review_action_reviewed": "beoordeeld",
+  "review_open_author": "Review van {author} openen op GitHub",
+  "route_refresh_version": "Er is mogelijk een nieuwe versie beschikbaar. We vernieuwen om je terug te brengen naar je review.",
+  "issue_create_action": "een issue maken",
+  "effect_dies": "stopt met defect",
+  "effect_dies_exit": "stopt met defect ↗",
+  "effect_defect_stop": "Stopt hier met een defect. Alleen een Cause-handler kan dit zien.",
+  "effect_defect_value": "Maakt een defect. Alleen een Cause-handler kan dit zien.",
+  "effect_interrupts": "onderbreekt",
+  "effect_interrupts_exit": "onderbreekt ↗",
+  "effect_interrupt_stop": "Stopt hier en onderbreekt de fiber.",
+  "effect_interrupt_value": "Maakt een onderbreking.",
+  "effect_catches_all": "vangt alles op",
+  "effect_handles_all": "Handelt elke verwachte fout erboven af.",
+  "effect_catches_some": "vangt sommige op",
+  "effect_handles_some": "Handelt de fouten af die het predicaat kiest. De rest gaat door.",
+  "effect_failure_defect": "fout → defect",
+  "effect_turns_defect": "Zet elke fout erboven om in een defect.",
+  "effect_catches": "vangt op",
+  "effect_handles_tags": "Handelt fouten op tag af.",
+  "effect_fails": "faalt{suffix}",
+  "effect_fails_exit": "faalt{suffix} ↗",
+  "effect_stop_failure": "Stopt hier en faalt.",
+  "effect_stop_failure_named": "Stopt hier en faalt met {name}.",
+  "effect_make_failure": "Maakt een fout.",
+  "effect_make_failure_named": "Maakt een fout met {name}.",
+  "effect_catches_named": "vangt op · {tags}",
+  "effect_handles_named": "Handelt {tags} af. Andere fouten gaan door.",
+  "effect_needs": "vereist · {name}",
+  "effect_service": "Leest de service {name}. Iets moet die leveren voordat dit draait.",
+  "effect_fold": "Code terugvouwen in “{label}”",
+  "effect_unfold": "{reading} Code tonen.",
+  "watch_drag_repo": "Sleep om {name} te herordenen",
+  "watch_remove_repo": "{name} verwijderen",
+  "local_diff_remote": "Die diff staat op een machine, niet op GitHub. Voer de ghdiff-opdracht uit in die repository om hem te lezen.",
+  "local_working_tree": "working tree",
+  "issue_missing_commit": "GitHub heeft hier geen commit met de naam {rev}.",
+  "issue_missing_start": "GitHub heeft niet aangegeven waar dit bereik begint.",
+  "issue_no_parent": "Deze commit heeft geen parent, dus de verwijderde regels hebben geen bestand om naar te linken.",
+  "issue_fork_range": "Dit bereik eindigt in een fork, dus een issue hier kan niet naar de regels linken.",
+  "placeholder_single": "Enkele accolades",
+  "placeholder_double": "Dubbele accolades",
+  "clipboard_copied": "Gekopieerd",
+  "lens_undo": "Ongedaan maken"
 }

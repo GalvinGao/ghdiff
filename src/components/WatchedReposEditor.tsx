@@ -71,6 +71,7 @@ export function WatchedReposEditor({
           }}
         >
           <Input
+            dir="ltr"
             value={input}
             placeholder={m.watched_repos_editor_owner_repo()}
             aria-label={m.watched_repos_editor_repository_to_watch()}
@@ -144,13 +145,13 @@ function SortableRepo({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`group hover:bg-surface focus-within:bg-surface relative flex items-center gap-2 rounded-md px-2 py-1.5 ${isDragging ? 'bg-surface z-10 shadow-sm' : ''}`}
     >
-      <Tooltip label="Drag to reorder" side="right">
+      <Tooltip label={m.watched_repos_editor_drag_to_reorder()} side="right">
         <button
           type="button"
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          aria-label={`Drag to reorder ${name}`}
+          aria-label={m.watch_drag_repo({ name })}
           className="text-ink-faint hover:text-ink focus-visible:text-ink focus-visible:outline-accent -my-1 flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded active:cursor-grabbing"
         >
           <GrabberIcon size={14} />
@@ -162,7 +163,7 @@ function SortableRepo({
       </span>
       <button
         type="button"
-        aria-label={`Remove ${name}`}
+        aria-label={m.watch_remove_repo({ name })}
         onClick={onRemove}
         // `-my-1` keeps the button from making the row taller than an
         // example row: the row's own line is 16px and the button is 24.

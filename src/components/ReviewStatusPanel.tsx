@@ -123,10 +123,10 @@ export function ReviewStatusPanel({
             the download moving. */}
       {!isError && bytes != null && (
         <p className="text-ink-muted mt-1 text-sm tabular-nums">
-          {formatBytes(bytes)} read
+          {m.review_bytes_read({ amount: formatBytes(bytes) })}
         </p>
       )}
-      <p className="text-ink-faint mt-3 truncate font-mono text-xs">
+      <p dir="ltr" className="text-ink-faint mt-3 truncate font-mono text-xs">
         {describeReviewTarget(target)}
       </p>
       {isError && (

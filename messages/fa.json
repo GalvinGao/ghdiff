@@ -620,5 +620,223 @@
     }
   ],
   "locale_language": "زبان",
-  "app_render_error": "ghdiff نتوانست این صفحه را نمایش دهد. برای تلاش دوباره، صفحه را دوباره بارگیری کنید."
+  "app_render_error": "ghdiff نتوانست این صفحه را نمایش دهد. برای تلاش دوباره، صفحه را دوباره بارگیری کنید.",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} فایل ترجمه به‌صورت فایل در پایین نشان داده می‌شود.",
+        "countPlural=*": "{countDisplay} فایل ترجمه به‌صورت فایل در پایین نشان داده می‌شوند."
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} فایل پیام‌های تو‌در‌تو دارد. در دیف زیر باقی می‌ماند.",
+        "countPlural=*": "{countDisplay} فایل پیام‌های تو‌در‌تو دارند. در دیف زیر باقی می‌مانند."
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} کلید",
+        "countPlural=*": "{countDisplay} کلید"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} مشکل",
+        "countPlural=*": "{countDisplay} مشکل"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "با {countDisplay} فایل در این دیف مطابقت دارد.",
+        "countPlural=*": "با {countDisplay} فایل در این دیف مطابقت دارد."
+      }
+    }
+  ],
+  "lens_missing_placeholder": "جاافتاده: ⁦{names}⁩",
+  "lens_extra_placeholder": "اضافی: ⁦{names}⁩",
+  "lens_same_base": "همانند ⁦{base}⁩",
+  "lens_settings": "تنظیمات ⁦{name}⁩",
+  "lens_show_locale": "نمایش ⁦{locale}⁩ در دیف",
+  "lens_files_question": "کدام فایل‌ها در ⁦{repo}⁩ ترجمه هستند؟",
+  "lens_path_help": "مسیر یک فایل ترجمه را بنویسید و ⁦{token}⁩ را جای کد زبان بگذارید.",
+  "lens_detect_help": "ghdiff در یک پوشه به‌دنبال سه یا چند فایل JSON می‌گردد که نام هرکدام یک کد زبان است، مانند messages/en.json. این بررسی را در هر دیف تکرار می‌کند.",
+  "lens_compare_base": "با ⁦{locale}⁩ مقایسه شده است.",
+  "lens_skips": "⁦{locales}⁩ را نادیده می‌گیرد.",
+  "lens_add_token": "⁦{token}⁩ را جای کد زبان بگذارید.",
+  "comment_issue_number": "ایشوی شمارهٔ ⁦#{number}⁩",
+  "comment_open_issue": "باز کردن ایشوی شمارهٔ ⁦#{number}⁩",
+  "diff_search_position": "{position} از {count}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "نمای تخصصی ⁦{name}⁩ برای این مخزن خاموش است. آن را از بخش «نمای تخصصی» در تنظیمات نمایش، بالا سمت راست، دوباره روشن کنید.",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "این نظر حذف شود؟ قابل بازگردانی نیست.",
+        "count=*": "همهٔ {countDisplay} نظر این رشته حذف شوند؟ قابل بازگردانی نیست."
+      }
+    }
+  ],
+  "lens_base": "مبنا",
+  "main_ghdiff_is_not_running": "ghdiff در حال اجرا نیست",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "این صفحه از دستور ghdiff نیامده است. ghdiff را در یک مخزن اجرا کنید و نشانی چاپ‌شده را باز کنید.",
+  "main_this_tab_has_no_key_for_the_server_open": "این زبانه کلید سرور را ندارد. نشانی چاپ‌شده توسط دستور ghdiff را باز کنید.",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "این یادداشت را همراه خط‌هایش به‌عنوان ایشو ثبت می‌کند و پیوندش را اینجا می‌گذارد.",
+  "comment_composer_what_should_the_issue_say": "ایشو چه بگوید؟",
+  "comment_composer_create_issue": "ایجاد ایشو",
+  "comment_thread_card_creating_issue": "در حال ایجاد ایشو…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "نظرها در این مرورگر می‌مانند. وقتی کارتان تمام شد، آن‌ها را به‌عنوان پرامپت کپی کنید.",
+  "comments_list_conversation": "گفت‌وگو",
+  "comments_list_open_this_on_github": "باز کردن در GitHub",
+  "comments_list_open_on_github": "باز کردن در GitHub",
+  "diff_search_bar_no_matches": "بدون نتیجه",
+  "diff_search_bar_find_in_diff": "یافتن در دیف",
+  "diff_search_bar_find_in_diff_text": "یافتن در دیف…",
+  "diff_search_bar_previous_match": "نتیجهٔ قبلی",
+  "diff_search_bar_previous_match_shiftenter": "نتیجهٔ قبلی (Shift+Enter)",
+  "diff_search_bar_next_match": "نتیجهٔ بعدی",
+  "diff_search_bar_next_match_enter": "نتیجهٔ بعدی (Enter)",
+  "diff_search_bar_close_the_search": "بستن جست‌وجو",
+  "diff_search_bar_close_esc": "بستن (Esc)",
+  "pull_request_list_my_pull_requests": "پول‌ریکوئست‌های من",
+  "pull_request_list_show": "نمایش",
+  "pull_request_list_hide": "پنهان کردن",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "فقط پول‌ریکوئست‌های خودتان باز هستند و پنهان شده‌اند.",
+  "review_header_untracked_files": "فایل‌های پیگیری‌نشده",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "این پول‌ریکوئست ادغام شده است. باز هم بررسی‌اش کنید.",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "این پول‌ریکوئست بسته شده است. باز هم بررسی‌اش کنید.",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "این مرورگر به ghdiff اجازهٔ دسترسی به کلیپ‌بورد نداد",
+  "review_sidebar_copy_as_prompt": "کپی به‌عنوان پرامپت",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "کپی همهٔ نظرها همراه کدی که دربارهٔ آن هستند، برای یک عامل کدنویسی",
+  "review_submit_dialog_recent_reviews_from_the_team": "بررسی‌های اخیر تیم",
+  "review_submit_dialog_recent_reviews": "بررسی‌های اخیر",
+  "review_viewer_loading_unmodified_lines": "در حال بارگذاری خط‌های تغییرنکرده",
+  "route_error_refreshing_ghdiff": "در حال تازه‌سازی ghdiff",
+  "route_error_the_page_could_not_load": "صفحه بارگیری نشد",
+  "route_error_something_interrupted_this_page": "چیزی این صفحه را مختل کرد",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "ممکن است مشکل به‌روزرسانی یا اتصال مانع بارگیری این صفحه شده باشد. برای تلاش دوباره تازه‌سازی کنید.",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "برای تلاش دوباره صفحه را تازه‌سازی کنید. نشانی بررسی‌تان همان می‌ماند.",
+  "route_error_refresh_page": "تازه‌سازی صفحه",
+  "watched_repos_editor_drag_to_reorder": "برای مرتب‌سازی دوباره بکشید",
+  "lens_frame_turn_off": "خاموش کردن",
+  "lens_frame_beta": "بتا",
+  "localization_panel_show_as_table": "نمایش به‌صورت جدول",
+  "localization_panel_languages": "زبان‌ها",
+  "localization_panel_show_all_languages": "نمایش همهٔ زبان‌ها",
+  "localization_panel_paths_and_format": "مسیرها و قالب…",
+  "localization_panel_not_in_this_diff": "در این دیف نیست",
+  "localization_panel_show_in_the_diff": "نمایش در دیف",
+  "localization_settings_dialog_show_translations_as_a_table": "نمایش ترجمه‌ها به‌صورت جدول",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "فقط برای این مخزن. در این مرورگر ذخیره می‌شود.",
+  "localization_settings_dialog_which_files_are_translations": "کدام فایل‌ها ترجمه هستند",
+  "localization_settings_dialog_detect_automatically": "تشخیص خودکار",
+  "localization_settings_dialog_choose_paths": "انتخاب مسیرها",
+  "localization_settings_dialog_add_another_folder": "افزودن پوشهٔ دیگر",
+  "localization_settings_dialog_save": "ذخیره",
+  "localization_settings_dialog_none_in_this_diff": "در این دیف هیچ‌کدام نیست.",
+  "localization_settings_dialog_in_this_diff": "در این دیف:",
+  "localization_settings_dialog_path_to_a_translation_file": "مسیر فایل ترجمه",
+  "localization_settings_dialog_remove_this_path": "حذف این مسیر",
+  "localization_settings_dialog_how_placeholders_look": "ظاهر جای‌نگهدارها",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "هر زبان دیگر با زبان بخش «مقایسه با» بررسی می‌شود. زبان‌های نادیده‌گرفته‌شده فایل‌هایی هستند که یک اسکریپت می‌سازد و هرگز نمایش داده نمی‌شوند.",
+  "use_review_comments_could_not_create_the_issue_on_github": "ایشو در GitHub ایجاد نشد.",
+  "contract_enter_a_commit_sha": "SHA کامیت را وارد کنید.",
+  "contract_write_what_the_issue_is_about": "موضوع ایشو را بنویسید.",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "بررسی‌های تیم برای این پول‌ریکوئست بارگیری نشد.",
+  "router_could_not_load_the_conversation": "گفت‌وگو بارگیری نشد.",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub اجازهٔ ایجاد ایشو در اینجا را به ghdiff نمی‌دهد. برنامهٔ ghdiff برای این مخزن به مجوز Issues نیاز دارد.",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub ایشو را پذیرفت، اما چیزی برنگرداند.",
+  "router_could_not_create_this_issue": "این ایشو ایجاد نشد.",
+  "lens_label": "نمای تخصصی",
+  "lens_localizations": "بومی‌سازی‌ها",
+  "lens_compare_against": "مقایسه با",
+  "lens_skip_languages": "نادیده گرفتن این زبان‌ها",
+  "lens_not_added": "افزوده نشده",
+  "review_action_commented": "نظر داده شد",
+  "review_action_approved": "تأیید شد",
+  "review_action_changes": "تغییرات درخواست شد",
+  "review_action_reviewed": "بررسی شد",
+  "review_open_author": "باز کردن بررسی ⁦{author}⁩ در GitHub",
+  "route_refresh_version": "ممکن است نسخهٔ جدیدی در دسترس باشد. در حال تازه‌سازی برای بازگرداندن شما به بررسی‌تان.",
+  "issue_create_action": "ایجاد یک ایشو",
+  "effect_dies": "با نقص متوقف می‌شود",
+  "effect_dies_exit": "با نقص متوقف می‌شود ↗",
+  "effect_defect_stop": "اینجا با یک نقص متوقف می‌شود. فقط یک مدیریت‌کنندهٔ ⁦Cause⁩ آن را می‌بیند.",
+  "effect_defect_value": "یک نقص ایجاد می‌کند. فقط یک مدیریت‌کنندهٔ ⁦Cause⁩ آن را می‌بیند.",
+  "effect_interrupts": "قطع می‌کند",
+  "effect_interrupts_exit": "قطع می‌کند ↗",
+  "effect_interrupt_stop": "اینجا متوقف می‌شود و فایبر را قطع می‌کند.",
+  "effect_interrupt_value": "یک قطع‌شدن ایجاد می‌کند.",
+  "effect_catches_all": "همه را می‌گیرد",
+  "effect_handles_all": "همهٔ شکست‌های موردانتظار بالادست را مدیریت می‌کند.",
+  "effect_catches_some": "برخی را می‌گیرد",
+  "effect_handles_some": "شکست‌هایی را مدیریت می‌کند که گزاره‌اش انتخاب می‌کند. بقیه عبور می‌کنند.",
+  "effect_failure_defect": "شکست → نقص",
+  "effect_turns_defect": "هر شکست بالادست را به نقص تبدیل می‌کند.",
+  "effect_catches": "می‌گیرد",
+  "effect_handles_tags": "شکست‌ها را بر اساس برچسب مدیریت می‌کند.",
+  "effect_fails": "ناموفق می‌شود{suffix}",
+  "effect_fails_exit": "ناموفق می‌شود{suffix} ↗",
+  "effect_stop_failure": "اینجا متوقف و ناموفق می‌شود.",
+  "effect_stop_failure_named": "اینجا متوقف و با ⁦{name}⁩ ناموفق می‌شود.",
+  "effect_make_failure": "یک شکست ایجاد می‌کند.",
+  "effect_make_failure_named": "یک شکست با ⁦{name}⁩ ایجاد می‌کند.",
+  "effect_catches_named": "می‌گیرد · ⁦{tags}⁩",
+  "effect_handles_named": "⁦{tags}⁩ را مدیریت می‌کند. شکست‌های دیگر عبور می‌کنند.",
+  "effect_needs": "نیاز دارد · ⁦{name}⁩",
+  "effect_service": "سرویس ⁦{name}⁩ را می‌خواند. پیش از اجرا باید فراهم شود.",
+  "effect_fold": "کد را در «⁦{label}⁩» جمع کنید",
+  "effect_unfold": "⁦{reading}⁩ کد را نشان دهید.",
+  "watch_drag_repo": "برای مرتب‌سازی دوبارهٔ ⁦{name}⁩ بکشید",
+  "watch_remove_repo": "حذف ⁦{name}⁩",
+  "local_diff_remote": "این دیف روی یک دستگاه است، نه در GitHub. برای خواندنش، دستور ghdiff را در همان مخزن اجرا کنید.",
+  "local_working_tree": "درخت کاری",
+  "issue_missing_commit": "GitHub در اینجا کامیتی با نام ⁦{rev}⁩ ندارد.",
+  "issue_missing_start": "GitHub نگفت این بازه از کجا شروع می‌شود.",
+  "issue_no_parent": "این کامیت والد ندارد، پس خط‌های حذف‌شده فایل قابل پیوندی ندارند.",
+  "issue_fork_range": "این بازه در یک فورک پایان می‌یابد، پس ایشوی اینجا نمی‌تواند به خط‌هایش پیوند دهد.",
+  "placeholder_single": "آکولاد تکی",
+  "placeholder_double": "آکولاد دوتایی",
+  "clipboard_copied": "کپی شد",
+  "lens_undo": "واگرد"
 }

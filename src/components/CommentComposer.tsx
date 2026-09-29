@@ -68,11 +68,11 @@ export function CommentComposer({
               textareaRef.current?.focus();
             }}
             size="sm"
-            title="Files this note as an issue with the lines in it, and leaves a link to it here."
+            title={m.comment_composer_files_this_note_as_an_issue_with_the_lines()}
             variant="quiet"
           >
             <CheckBox checked={createIssue} />
-            Create issue
+            {m.comment_composer_create_issue()}
           </Button>
         )}
       </div>
@@ -83,7 +83,7 @@ export function CommentComposer({
         rows={3}
         placeholder={
           createIssue
-            ? 'What should the issue say?'
+            ? m.comment_composer_what_should_the_issue_say()
             : m.comment_composer_leave_a_comment()
         }
         className="border-line bg-canvas text-ink placeholder:text-ink-faint focus-visible:border-accent w-full resize-y rounded-md border p-2 text-sm focus-visible:outline-none"
@@ -103,7 +103,9 @@ export function CommentComposer({
       />
       <div className="mt-2 flex items-center gap-2">
         <Button type="submit" variant="solid" size="sm" disabled={!canSave}>
-          {createIssue ? 'Create issue' : m.review_decision_comment()}
+          {createIssue
+            ? m.comment_composer_create_issue()
+            : m.review_decision_comment()}
         </Button>
         <Button
           variant="quiet"

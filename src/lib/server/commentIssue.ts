@@ -1,3 +1,4 @@
+import type { AnnotationSide } from '@pierre/diffs';
 // Which commit each side of a diff was read from, as a full sha.
 //
 // A permalink that GitHub embeds as a snippet names a commit by its full sha,
@@ -9,8 +10,7 @@
 // three-dot diff runs from. Neither `base.sha` nor the base branch is that
 // commit once the base has moved on.
 
-import type { AnnotationSide } from '@pierre/diffs';
-
+import { m } from '../../paraglide/messages.js';
 import type { GitHubRepoRef } from '../reviewTarget.ts';
 import {
   encodeRefForPath,
@@ -58,7 +58,7 @@ async function readCommit(
   );
   const commit = data.repository?.object;
   if (commit?.oid == null) {
-    throw new GitHubError(404, `GitHub has no commit named ${rev} here.`);
+    throw new GitHubError(404, m.issue_missing_commit({ rev }));
   }
   return {
     oid: commit.oid,
@@ -85,7 +85,7 @@ async function readMergeBase(
   );
   const sha = compare.merge_base_commit?.sha;
   if (sha == null) {
-    throw new GitHubError(404, 'GitHub did not say where this range starts.');
+    throw new GitHubError(404, m.issue_missing_start());
   }
   return sha;
 }
@@ -109,10 +109,7 @@ export async function resolveSideCommit(
       const commit = await readCommit(ref, source.sha, token);
       if (side === 'additions') return commit.oid;
       if (commit.parent == null) {
-        throw new GitHubError(
-          422,
-          'This commit has no parent, so its removed lines have no file to link to.'
-        );
+        throw new GitHubError(422, m.issue_no_parent());
       }
       return commit.parent;
     }
@@ -123,10 +120,7 @@ export async function resolveSideCommit(
       // `owner:branch` names a branch in a fork, which `object(expression:)`
       // cannot read in this repository.
       if (source.head.includes(':')) {
-        throw new GitHubError(
-          422,
-          'This range ends in a fork, so an issue here cannot link to its lines.'
-        );
+        throw new GitHubError(422, m.issue_fork_range());
       }
       return (await readCommit(ref, source.head, token)).oid;
     }

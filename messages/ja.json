@@ -609,5 +609,223 @@
     }
   ],
   "locale_language": "言語",
-  "app_render_error": "ghdiffでこのページを表示できませんでした。ページを再読み込みして、もう一度お試しください。"
+  "app_render_error": "ghdiffでこのページを表示できませんでした。ページを再読み込みして、もう一度お試しください。",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} 個の翻訳ファイルが、下のファイルとして表示されています。",
+        "countPlural=*": "{countDisplay} 個の翻訳ファイルが、下のファイルとして表示されています。"
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} 個のファイルにネストされたメッセージがあります。下の差分にそのまま表示されます。",
+        "countPlural=*": "{countDisplay} 個のファイルにネストされたメッセージがあります。下の差分にそのまま表示されます。"
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} 個のキー",
+        "countPlural=*": "{countDisplay} 個のキー"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} 件の問題",
+        "countPlural=*": "{countDisplay} 件の問題"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "この差分で {countDisplay} 個のファイルに一致します。",
+        "countPlural=*": "この差分で {countDisplay} 個のファイルに一致します。"
+      }
+    }
+  ],
+  "lens_missing_placeholder": "不足: {names}",
+  "lens_extra_placeholder": "余分: {names}",
+  "lens_same_base": "{base} と同じ",
+  "lens_settings": "{name} の設定",
+  "lens_show_locale": "差分に {locale} を表示",
+  "lens_files_question": "{repo} ではどのファイルが翻訳ファイルですか？",
+  "lens_path_help": "翻訳ファイルへのパスを入力します。言語コードの場所には {token} を使います。",
+  "lens_detect_help": "ghdiff は、1 つのフォルダにあり、言語コードで名前が付いた JSON ファイルを 3 つ以上探します。例: messages/en.json。差分ごとに再度探します。",
+  "lens_compare_base": "{locale} と比較中。",
+  "lens_skips": "{locales} をスキップします。",
+  "lens_add_token": "言語コードの場所に {token} を追加",
+  "comment_issue_number": "Issue #{number}",
+  "comment_open_issue": "Issue #{number} を開く",
+  "diff_search_position": "{count} 件中 {position} 件目",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "このリポジトリでは {name} レンズがオフです。右上の表示設定にある［レンズ］から再度オンにできます。",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "このコメントを削除しますか？この操作は元に戻せません。",
+        "count=*": "このスレッドの {countDisplay} 件のコメントをすべて削除しますか？この操作は元に戻せません。"
+      }
+    }
+  ],
+  "lens_base": "ベース",
+  "main_ghdiff_is_not_running": "ghdiff は実行されていません",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "このページは ghdiff コマンドから開かれていません。リポジトリで ghdiff を実行し、表示されたアドレスを開いてください。",
+  "main_this_tab_has_no_key_for_the_server_open": "このタブにはサーバー用のキーがありません。ghdiff コマンドが表示したアドレスを開いてください。",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "このメモを該当行付きの Issue として作成し、ここにリンクを残します。",
+  "comment_composer_what_should_the_issue_say": "Issue には何を書きますか？",
+  "comment_composer_create_issue": "Issue を作成",
+  "comment_thread_card_creating_issue": "Issue を作成中…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "コメントはこのブラウザ内に残ります。終わったらプロンプトとしてコピーできます。",
+  "comments_list_conversation": "会話",
+  "comments_list_open_this_on_github": "GitHub でこれを開く",
+  "comments_list_open_on_github": "GitHub で開く",
+  "diff_search_bar_no_matches": "一致なし",
+  "diff_search_bar_find_in_diff": "差分内を検索",
+  "diff_search_bar_find_in_diff_text": "差分内を検索…",
+  "diff_search_bar_previous_match": "前の一致",
+  "diff_search_bar_previous_match_shiftenter": "前の一致（Shift+Enter）",
+  "diff_search_bar_next_match": "次の一致",
+  "diff_search_bar_next_match_enter": "次の一致（Enter）",
+  "diff_search_bar_close_the_search": "検索を閉じる",
+  "diff_search_bar_close_esc": "閉じる（Esc）",
+  "pull_request_list_my_pull_requests": "自分のプルリクエスト",
+  "pull_request_list_show": "表示",
+  "pull_request_list_hide": "非表示",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "開いているのは自分のプルリクエストだけで、非表示になっています。",
+  "review_header_untracked_files": "未追跡ファイル",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "このプルリクエストはマージ済みです。それでもレビューする。",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "このプルリクエストはクローズ済みです。それでもレビューする。",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "このブラウザでは ghdiff がクリップボードにアクセスできません",
+  "review_sidebar_copy_as_prompt": "プロンプトとしてコピー",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "コーディングエージェント用に、すべてのコメントと対象コードをコピー",
+  "review_submit_dialog_recent_reviews_from_the_team": "チームの最近のレビュー",
+  "review_submit_dialog_recent_reviews": "最近のレビュー",
+  "review_viewer_loading_unmodified_lines": "未変更行を読み込み中",
+  "route_error_refreshing_ghdiff": "ghdiff を更新中",
+  "route_error_the_page_could_not_load": "ページを読み込めませんでした",
+  "route_error_something_interrupted_this_page": "このページで処理が中断されました",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "更新または接続の問題により、このページを読み込めない可能性があります。再読み込みしてもう一度試してください。",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "もう一度試すにはページを再読み込みしてください。レビュー URL は変わりません。",
+  "route_error_refresh_page": "ページを再読み込み",
+  "watched_repos_editor_drag_to_reorder": "ドラッグして並べ替え",
+  "lens_frame_turn_off": "オフにする",
+  "lens_frame_beta": "ベータ",
+  "localization_panel_show_as_table": "表として表示",
+  "localization_panel_languages": "言語",
+  "localization_panel_show_all_languages": "すべての言語を表示",
+  "localization_panel_paths_and_format": "パスと形式…",
+  "localization_panel_not_in_this_diff": "この差分にはありません",
+  "localization_panel_show_in_the_diff": "差分に表示",
+  "localization_settings_dialog_show_translations_as_a_table": "翻訳を表として表示",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "このリポジトリのみ。このブラウザに保存されます。",
+  "localization_settings_dialog_which_files_are_translations": "翻訳ファイルはどれですか",
+  "localization_settings_dialog_detect_automatically": "自動検出",
+  "localization_settings_dialog_choose_paths": "パスを選択",
+  "localization_settings_dialog_add_another_folder": "別のフォルダを追加",
+  "localization_settings_dialog_save": "保存",
+  "localization_settings_dialog_none_in_this_diff": "この差分にはありません。",
+  "localization_settings_dialog_in_this_diff": "この差分内:",
+  "localization_settings_dialog_path_to_a_translation_file": "翻訳ファイルへのパス",
+  "localization_settings_dialog_remove_this_path": "このパスを削除",
+  "localization_settings_dialog_how_placeholders_look": "プレースホルダーの形式",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "他のすべての言語は［比較対象］で選んだ言語と照合されます。スキップした言語はスクリプトが作るファイルで、表示されません。",
+  "use_review_comments_could_not_create_the_issue_on_github": "GitHub で Issue を作成できませんでした。",
+  "contract_enter_a_commit_sha": "コミット SHA を入力してください。",
+  "contract_write_what_the_issue_is_about": "Issue の内容を書いてください。",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "このプルリクエストに対するチームのレビューを読み込めませんでした。",
+  "router_could_not_load_the_conversation": "会話を読み込めませんでした。",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub はここで ghdiff が Issue を作成することを許可していません。このリポジトリでは ghdiff アプリに Issues 権限が必要です。",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub は Issue を受け付けましたが、何も返しませんでした。",
+  "router_could_not_create_this_issue": "この Issue を作成できませんでした。",
+  "lens_label": "レンズ",
+  "lens_localizations": "ローカライゼーション",
+  "lens_compare_against": "比較対象",
+  "lens_skip_languages": "これらの言語をスキップ",
+  "lens_not_added": "未追加",
+  "review_action_commented": "コメント済み",
+  "review_action_approved": "承認済み",
+  "review_action_changes": "変更をリクエスト済み",
+  "review_action_reviewed": "レビュー済み",
+  "review_open_author": "GitHub で {author} のレビューを開く",
+  "route_refresh_version": "新しいバージョンが利用できる可能性があります。レビューに戻るため、再読み込みしています。",
+  "issue_create_action": "Issue を作成",
+  "effect_dies": "欠陥で停止",
+  "effect_dies_exit": "欠陥で停止 ↗",
+  "effect_defect_stop": "ここで欠陥により停止します。原因ハンドラーだけがこれを確認できます。",
+  "effect_defect_value": "欠陥を作ります。原因ハンドラーだけがこれを確認できます。",
+  "effect_interrupts": "中断",
+  "effect_interrupts_exit": "中断 ↗",
+  "effect_interrupt_stop": "ここで停止し、ファイバーを中断します。",
+  "effect_interrupt_value": "中断を発生させます。",
+  "effect_catches_all": "すべて捕捉",
+  "effect_handles_all": "これより上の想定された失敗をすべて処理します。",
+  "effect_catches_some": "一部を捕捉",
+  "effect_handles_some": "述語が選んだ失敗を処理します。残りは通過します。",
+  "effect_failure_defect": "失敗 → 欠陥",
+  "effect_turns_defect": "これより上のすべての失敗を欠陥に変えます。",
+  "effect_catches": "捕捉",
+  "effect_handles_tags": "タグで失敗を処理します。",
+  "effect_fails": "失敗{suffix}",
+  "effect_fails_exit": "失敗{suffix} ↗",
+  "effect_stop_failure": "ここで停止し、失敗します。",
+  "effect_stop_failure_named": "ここで停止し、{name} で失敗します。",
+  "effect_make_failure": "失敗を作ります。",
+  "effect_make_failure_named": "{name} で失敗を作ります。",
+  "effect_catches_named": "捕捉 · {tags}",
+  "effect_handles_named": "{tags} を処理します。他の失敗は通過します。",
+  "effect_needs": "必要 · {name}",
+  "effect_service": "{name} サービスを読み取ります。実行前に提供されている必要があります。",
+  "effect_fold": "コードを「{label}」に戻す",
+  "effect_unfold": "{reading} コードを表示",
+  "watch_drag_repo": "ドラッグして {name} を並べ替え",
+  "watch_remove_repo": "{name} を削除",
+  "local_diff_remote": "その差分は GitHub ではなく、別のマシンにあります。そのリポジトリ内で ghdiff コマンドを実行して読み込んでください。",
+  "local_working_tree": "作業ツリー",
+  "issue_missing_commit": "GitHub に {rev} というコミットはありません。",
+  "issue_missing_start": "GitHub はこの範囲の開始位置を返しませんでした。",
+  "issue_no_parent": "このコミットには親がないため、削除行をリンクできるファイルがありません。",
+  "issue_fork_range": "この範囲はフォークで終わるため、ここで作成した Issue から行にリンクできません。",
+  "placeholder_single": "単一波かっこ",
+  "placeholder_double": "二重波かっこ",
+  "clipboard_copied": "コピーしました",
+  "lens_undo": "元に戻す"
 }

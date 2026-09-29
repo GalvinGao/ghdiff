@@ -619,5 +619,223 @@
     }
   ],
   "locale_language": "भाषा",
-  "app_render_error": "ghdiff यह पेज नहीं दिखा सका। फिर से कोशिश करने के लिए पेज को रीलोड करें।"
+  "app_render_error": "ghdiff यह पेज नहीं दिखा सका। फिर से कोशिश करने के लिए पेज को रीलोड करें।",
+  "lens_raw_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "नीचे {countDisplay} अनुवाद फ़ाइल को फ़ाइल के रूप में दिखाया गया है।",
+        "countPlural=*": "नीचे {countDisplay} अनुवाद फ़ाइलों को फ़ाइलों के रूप में दिखाया गया है।"
+      }
+    }
+  ],
+  "lens_nested_files": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} फ़ाइल में नेस्ट किए हुए संदेश हैं। वह नीचे diff में रहती है।",
+        "countPlural=*": "{countDisplay} फ़ाइलों में नेस्ट किए हुए संदेश हैं। वे नीचे diff में रहती हैं।"
+      }
+    }
+  ],
+  "lens_keys": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} कुंजी",
+        "countPlural=*": "{countDisplay} कुंजियाँ"
+      }
+    }
+  ],
+  "lens_problems": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{countDisplay} समस्या",
+        "countPlural=*": "{countDisplay} समस्याएँ"
+      }
+    }
+  ],
+  "lens_path_matches": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural",
+        "local countDisplay = count: number"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "इस diff में {countDisplay} फ़ाइल से मेल खाता है।",
+        "countPlural=*": "इस diff में {countDisplay} फ़ाइलों से मेल खाता है।"
+      }
+    }
+  ],
+  "lens_missing_placeholder": "अनुपस्थित {names}",
+  "lens_extra_placeholder": "अतिरिक्त {names}",
+  "lens_same_base": "{base} जैसा ही",
+  "lens_settings": "{name} सेटिंग",
+  "lens_show_locale": "diff में {locale} दिखाएँ",
+  "lens_files_question": "{repo} में कौन-सी फ़ाइलें अनुवाद हैं?",
+  "lens_path_help": "एक अनुवाद फ़ाइल का पथ लिखें, जहाँ भाषा कोड के स्थान पर {token} हो।",
+  "lens_detect_help": "ghdiff एक फ़ोल्डर में भाषा कोड के नाम वाली तीन या अधिक JSON फ़ाइलें खोजता है, जैसे messages/en.json। यह हर diff पर फिर खोजता है।",
+  "lens_compare_base": "{locale} के विरुद्ध तुलना की गई।",
+  "lens_skips": "{locales} छोड़े गए।",
+  "lens_add_token": "जहाँ भाषा कोड हो वहाँ {token} जोड़ें।",
+  "comment_issue_number": "इश्यू #{number}",
+  "comment_open_issue": "इश्यू #{number} खोलें",
+  "diff_search_position": "{count} में से {position}",
+  "diff_search_more": "{count}+",
+  "lens_disabled": "इस रिपॉज़िटरी के लिए {name} लेंस बंद है। ऊपर दाईं ओर डिस्प्ले सेटिंग में लेंस के अंतर्गत इसे फिर चालू करें।",
+  "thread_delete_local_confirmation": [
+    {
+      "declarations": ["input count", "local countDisplay = count: number"],
+      "selectors": ["count"],
+      "match": {
+        "count=1": "इस टिप्पणी को हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",
+        "count=*": "इस थ्रेड की सभी {countDisplay} टिप्पणियाँ हटाएँ? इसे पूर्ववत नहीं किया जा सकता।"
+      }
+    }
+  ],
+  "lens_base": "आधार",
+  "main_ghdiff_is_not_running": "ghdiff चल नहीं रहा है",
+  "main_this_page_did_not_come_from_a_ghdiff_command": "यह पेज ghdiff कमांड से नहीं आया। किसी रिपॉज़िटरी में ghdiff चलाएँ और उसके प्रिंट किए गए पते को खोलें।",
+  "main_this_tab_has_no_key_for_the_server_open": "इस टैब में सर्वर की कुंजी नहीं है। ghdiff कमांड से प्रिंट किया गया पता खोलें।",
+  "comment_composer_files_this_note_as_an_issue_with_the_lines": "इस नोट को इसकी पंक्तियों के साथ इश्यू के रूप में दर्ज करता है और यहाँ उसका लिंक छोड़ता है।",
+  "comment_composer_what_should_the_issue_say": "इश्यू में क्या लिखा हो?",
+  "comment_composer_create_issue": "इश्यू बनाएँ",
+  "comment_thread_card_creating_issue": "इश्यू बनाया जा रहा है…",
+  "comments_list_comments_stay_in_this_browser_copy_them_as_a": "टिप्पणियाँ इसी ब्राउज़र में रहती हैं। पूरा होने पर उन्हें प्रॉम्प्ट के रूप में कॉपी करें।",
+  "comments_list_conversation": "बातचीत",
+  "comments_list_open_this_on_github": "इसे GitHub पर खोलें",
+  "comments_list_open_on_github": "GitHub पर खोलें",
+  "diff_search_bar_no_matches": "कोई मिलान नहीं",
+  "diff_search_bar_find_in_diff": "diff में खोजें",
+  "diff_search_bar_find_in_diff_text": "diff में खोजें…",
+  "diff_search_bar_previous_match": "पिछला मिलान",
+  "diff_search_bar_previous_match_shiftenter": "पिछला मिलान (Shift+Enter)",
+  "diff_search_bar_next_match": "अगला मिलान",
+  "diff_search_bar_next_match_enter": "अगला मिलान (Enter)",
+  "diff_search_bar_close_the_search": "खोज बंद करें",
+  "diff_search_bar_close_esc": "बंद करें (Esc)",
+  "pull_request_list_my_pull_requests": "मेरे pull request",
+  "pull_request_list_show": "दिखाएँ",
+  "pull_request_list_hide": "छिपाएँ",
+  "pull_request_list_only_your_own_pull_requests_are_open_and_they": "सिर्फ़ आपके अपने pull request खुले हैं और वे छिपे हुए हैं।",
+  "review_header_untracked_files": "अनट्रैक की गई फ़ाइलें",
+  "review_header_this_pull_request_was_merged_review_it_anyway": "यह pull request मर्ज हो चुका है। फिर भी इसकी समीक्षा करें।",
+  "review_header_this_pull_request_was_closed_review_it_anyway": "यह pull request बंद हो चुका है। फिर भी इसकी समीक्षा करें।",
+  "review_sidebar_this_browser_would_not_let_ghdiff_reach_the_clipboard": "इस ब्राउज़र ने ghdiff को क्लिपबोर्ड तक पहुँचने नहीं दिया",
+  "review_sidebar_copy_as_prompt": "प्रॉम्प्ट के रूप में कॉपी करें",
+  "review_sidebar_copy_every_comment_with_the_code_it_is_about": "कोडिंग एजेंट के लिए हर टिप्पणी को उसके संबंधित कोड के साथ कॉपी करें",
+  "review_submit_dialog_recent_reviews_from_the_team": "टीम की हाल की समीक्षाएँ",
+  "review_submit_dialog_recent_reviews": "हाल की समीक्षाएँ",
+  "review_viewer_loading_unmodified_lines": "अपरिवर्तित पंक्तियाँ लोड हो रही हैं",
+  "route_error_refreshing_ghdiff": "ghdiff रीफ़्रेश हो रहा है",
+  "route_error_the_page_could_not_load": "पेज लोड नहीं हो सका",
+  "route_error_something_interrupted_this_page": "किसी चीज़ ने इस पेज को बाधित किया",
+  "route_error_an_update_or_connection_problem_may_be_preventing_this": "अपडेट या कनेक्शन की समस्या इस पेज को लोड होने से रोक रही हो सकती है। फिर कोशिश करने के लिए रीफ़्रेश करें।",
+  "route_error_refresh_the_page_to_try_again_your_review_url": "फिर कोशिश करने के लिए पेज रीफ़्रेश करें। आपका समीक्षा URL वही रहेगा।",
+  "route_error_refresh_page": "पेज रीफ़्रेश करें",
+  "watched_repos_editor_drag_to_reorder": "क्रम बदलने के लिए खींचें",
+  "lens_frame_turn_off": "बंद करें",
+  "lens_frame_beta": "बीटा",
+  "localization_panel_show_as_table": "तालिका के रूप में दिखाएँ",
+  "localization_panel_languages": "भाषाएँ",
+  "localization_panel_show_all_languages": "सभी भाषाएँ दिखाएँ",
+  "localization_panel_paths_and_format": "पथ और फ़ॉर्मैट…",
+  "localization_panel_not_in_this_diff": "इस diff में नहीं",
+  "localization_panel_show_in_the_diff": "diff में दिखाएँ",
+  "localization_settings_dialog_show_translations_as_a_table": "अनुवादों को तालिका के रूप में दिखाएँ",
+  "localization_settings_dialog_only_for_this_repository_saved_in_this_browser": "केवल इस रिपॉज़िटरी के लिए। इस ब्राउज़र में सहेजा गया।",
+  "localization_settings_dialog_which_files_are_translations": "कौन-सी फ़ाइलें अनुवाद हैं",
+  "localization_settings_dialog_detect_automatically": "अपने-आप पहचानें",
+  "localization_settings_dialog_choose_paths": "पथ चुनें",
+  "localization_settings_dialog_add_another_folder": "दूसरा फ़ोल्डर जोड़ें",
+  "localization_settings_dialog_save": "सहेजें",
+  "localization_settings_dialog_none_in_this_diff": "इस diff में कोई नहीं।",
+  "localization_settings_dialog_in_this_diff": "इस diff में:",
+  "localization_settings_dialog_path_to_a_translation_file": "अनुवाद फ़ाइल का पथ",
+  "localization_settings_dialog_remove_this_path": "यह पथ हटाएँ",
+  "localization_settings_dialog_how_placeholders_look": "प्लेसहोल्डर कैसे दिखते हैं",
+  "localization_settings_dialog_every_other_language_is_checked_against_the_one_in": "हर दूसरी भाषा की तुलना इसके विरुद्ध तुलना करें में चुनी भाषा से की जाती है। छोड़ी गई भाषाओं की फ़ाइलें स्क्रिप्ट बनाती है और वे कभी नहीं दिखाई जातीं।",
+  "use_review_comments_could_not_create_the_issue_on_github": "GitHub पर इश्यू नहीं बनाया जा सका।",
+  "contract_enter_a_commit_sha": "commit sha दर्ज करें।",
+  "contract_write_what_the_issue_is_about": "लिखें कि इश्यू किस बारे में है।",
+  "router_could_not_load_the_teams_reviews_of_this_pull": "इस pull request पर टीम की समीक्षाएँ लोड नहीं हो सकीं।",
+  "router_could_not_load_the_conversation": "बातचीत लोड नहीं हो सकी।",
+  "router_github_wont_let_ghdiff_open_issues_here_the_ghdiff": "GitHub यहाँ ghdiff को इश्यू बनाने नहीं देगा। ghdiff ऐप को इस रिपॉज़िटरी पर Issues अनुमति चाहिए।",
+  "router_github_accepted_the_issue_but_returned_nothing": "GitHub ने इश्यू स्वीकार किया, लेकिन कुछ नहीं लौटाया।",
+  "router_could_not_create_this_issue": "यह इश्यू नहीं बनाया जा सका।",
+  "lens_label": "लेंस",
+  "lens_localizations": "स्थानीयकरण",
+  "lens_compare_against": "इसके विरुद्ध तुलना करें",
+  "lens_skip_languages": "इन भाषाओं को छोड़ें",
+  "lens_not_added": "जोड़ा नहीं गया",
+  "review_action_commented": "टिप्पणी की",
+  "review_action_approved": "स्वीकृत किया",
+  "review_action_changes": "बदलाव का अनुरोध किया",
+  "review_action_reviewed": "समीक्षा की",
+  "review_open_author": "GitHub पर {author} की समीक्षा खोलें",
+  "route_refresh_version": "नया संस्करण उपलब्ध हो सकता है। आपको आपकी समीक्षा पर वापस लाने के लिए रीफ़्रेश किया जा रहा है।",
+  "issue_create_action": "इश्यू बनाएँ",
+  "effect_dies": "समाप्त होता है",
+  "effect_dies_exit": "समाप्त होता है ↗",
+  "effect_defect_stop": "यहाँ defect के साथ रुकता है। इसे केवल cause handler देख सकता है।",
+  "effect_defect_value": "एक defect बनाता है। इसे केवल cause handler देख सकता है।",
+  "effect_interrupts": "इंटरप्ट करता है",
+  "effect_interrupts_exit": "इंटरप्ट करता है ↗",
+  "effect_interrupt_stop": "यहाँ रुकता है और fiber को इंटरप्ट करता है।",
+  "effect_interrupt_value": "एक interruption बनाता है।",
+  "effect_catches_all": "सबको पकड़ता है",
+  "effect_handles_all": "इसके ऊपर की हर अपेक्षित विफलता संभालता है।",
+  "effect_catches_some": "कुछ को पकड़ता है",
+  "effect_handles_some": "इसके predicate से चुनी विफलताएँ संभालता है। बाकी आगे जाती हैं।",
+  "effect_failure_defect": "विफलता → defect",
+  "effect_turns_defect": "इसके ऊपर की किसी भी विफलता को defect में बदलता है।",
+  "effect_catches": "पकड़ता है",
+  "effect_handles_tags": "टैग के आधार पर विफलताएँ संभालता है।",
+  "effect_fails": "विफल होता है{suffix}",
+  "effect_fails_exit": "विफल होता है{suffix} ↗",
+  "effect_stop_failure": "यहाँ रुकता है और विफल होता है।",
+  "effect_stop_failure_named": "यहाँ रुकता है और {name} के साथ विफल होता है।",
+  "effect_make_failure": "एक विफलता बनाता है।",
+  "effect_make_failure_named": "{name} के साथ एक विफलता बनाता है।",
+  "effect_catches_named": "पकड़ता है · {tags}",
+  "effect_handles_named": "{tags} संभालता है। दूसरी विफलताएँ आगे जाती हैं।",
+  "effect_needs": "चाहिए · {name}",
+  "effect_service": "{name} सेवा पढ़ता है। चलने से पहले किसी को इसे देना होगा।",
+  "effect_fold": "कोड को वापस “{label}” में समेटें",
+  "effect_unfold": "{reading} कोड दिखाएँ।",
+  "watch_drag_repo": "{name} का क्रम बदलने के लिए खींचें",
+  "watch_remove_repo": "{name} हटाएँ",
+  "local_diff_remote": "वह diff किसी मशीन पर है, GitHub पर नहीं। उसे पढ़ने के लिए उस रिपॉज़िटरी में ghdiff कमांड चलाएँ।",
+  "local_working_tree": "working tree",
+  "issue_missing_commit": "GitHub को यहाँ {rev} नाम का कोई commit नहीं मिला।",
+  "issue_missing_start": "GitHub ने नहीं बताया कि यह रेंज कहाँ से शुरू होती है।",
+  "issue_no_parent": "इस commit का कोई parent नहीं है, इसलिए इसकी हटाई गई पंक्तियों के लिए लिंक करने योग्य फ़ाइल नहीं है।",
+  "issue_fork_range": "यह रेंज किसी fork पर खत्म होती है, इसलिए यहाँ का इश्यू इसकी पंक्तियों से लिंक नहीं कर सकता।",
+  "placeholder_single": "एकल ब्रेसेस",
+  "placeholder_double": "दोहरी ब्रेसेस",
+  "clipboard_copied": "कॉपी हो गया",
+  "lens_undo": "पहले जैसा करें"
 }

@@ -312,3 +312,59 @@ test('every enabled catalog renders its messages and representative count branch
     }
   }
 });
+
+test('new local deletion copy distinguishes exactly one from plural-category one', () => {
+  assert.doesNotMatch(
+    m.thread_delete_local_confirmation({ count: 1 }),
+    /GitHub/
+  );
+  assert.match(
+    m.thread_delete_local_confirmation({ count: 21 }, { locale: 'ru' }),
+    /21/
+  );
+  assert.doesNotMatch(
+    m.thread_delete_local_confirmation({ count: 1 }, { locale: 'ru' }),
+    /1/
+  );
+  for (const locale of locales) {
+    for (const count of [0, 1, 2, 5, 21, 1000]) {
+      for (const message of [
+        m.lens_raw_files,
+        m.lens_nested_files,
+        m.lens_keys,
+        m.lens_problems,
+        m.lens_path_matches,
+        m.thread_delete_local_confirmation,
+      ]) {
+        const text = message({ count }, { locale });
+        assert.ok(text.length > 0, `${locale}: count ${count}`);
+        assert.doesNotMatch(text, /undefined|NaN|\{count/);
+      }
+    }
+  }
+});
+
+test('lens labels and Effect hints use the current request locale', async () => {
+  const { LENSES } = await import('./lenses/lenses.ts');
+  const { scanEffectRun } = await import('./lenses/effect/effectHints.ts');
+  for (const locale of ['en', 'fr', 'ja'] as const) {
+    await paraglideMiddleware(
+      new Request('https://example.test/', {
+        headers: { cookie: `${cookieName}=${locale}` },
+      }),
+      () => {
+        assert.equal(
+          LENSES.localization.label,
+          m.lens_localizations({}, { locale })
+        );
+        const hints = new Map();
+        scanEffectRun(['Effect.fail("boom")'], 1, hints);
+        assert.equal(
+          hints.get(1)?.folds[0]?.label,
+          m.effect_fails({ suffix: '' }, { locale })
+        );
+        return new Response();
+      }
+    );
+  }
+});

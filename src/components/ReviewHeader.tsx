@@ -240,7 +240,7 @@ export function ReviewHeader({
         <GitHubTextLink
           className={TARGET_LABEL_CLASS}
           href={reviewTargetUrl(gitHubTarget)}
-          title={`Open ${targetLabel} on GitHub`}
+          title={m.review_header_open_on_github({ targetLabel })}
         >
           {targetLabel}
         </GitHubTextLink>
@@ -431,7 +431,9 @@ export function ReviewHeader({
                   }
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="truncate">Untracked files</span>
+                    <span className="truncate">
+                      {m.review_header_untracked_files()}
+                    </span>
                     <span className="text-ink-faint shrink-0 tabular-nums">
                       {untracked.count}
                     </span>
@@ -467,10 +469,10 @@ export function ReviewHeader({
                   {lens.onOpenSettings != null && (
                     <button
                       type="button"
-                      aria-label={`${lens.label} settings`}
+                      aria-label={m.lens_settings({ name: lens.label })}
                       className="text-ink-faint hover:text-ink hover:bg-raised inline-flex size-5 items-center justify-center rounded"
                       tabIndex={-1}
-                      title={`${lens.label} settings`}
+                      title={m.lens_settings({ name: lens.label })}
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -510,12 +512,16 @@ const SETTLED: Partial<
   merged: {
     icon: GitMergeIcon,
     color: 'text-pr-merged',
-    title: 'This pull request was merged. Review it anyway.',
+    get title() {
+      return m.review_header_this_pull_request_was_merged_review_it_anyway();
+    },
   },
   closed: {
     icon: GitPullRequestClosedIcon,
     color: 'text-pr-closed',
-    title: 'This pull request was closed. Review it anyway.',
+    get title() {
+      return m.review_header_this_pull_request_was_closed_review_it_anyway();
+    },
   },
 };
 
