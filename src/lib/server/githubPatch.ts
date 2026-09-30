@@ -1,4 +1,3 @@
-import { m } from '../../paraglide/messages.js';
 // Fallback for a diff GitHub refuses to render.
 //
 // The unified-diff media type on the pull request, commit, and compare
@@ -12,6 +11,9 @@ import { m } from '../../paraglide/messages.js';
 //  - A single file whose diff is very large arrives with no `patch` field.
 // `synthesizePatch` reports both counts so the UI can say what is missing
 // rather than showing a short diff as if it were whole.
+
+import { m } from '../../paraglide/messages.js';
+import { quoteGitPath } from '../gitPath.ts';
 
 export interface GitHubPullFile {
   filename: string;
@@ -34,16 +36,18 @@ const DEFAULT_MODE = '100644';
 function headerLines(file: GitHubPullFile): string[] {
   const newPath = file.filename;
   const oldPath = file.previous_filename ?? file.filename;
-  const lines = [`diff --git a/${oldPath} b/${newPath}`];
+  const oldA = quoteGitPath(oldPath, 'a/');
+  const newB = quoteGitPath(newPath, 'b/');
+  const lines = [`diff --git ${oldA} ${newB}`];
 
   switch (file.status) {
     case 'added':
       lines.push(`new file mode ${DEFAULT_MODE}`);
-      lines.push('--- /dev/null', `+++ b/${newPath}`);
+      lines.push('--- /dev/null', `+++ ${newB}`);
       break;
     case 'removed':
       lines.push(`deleted file mode ${DEFAULT_MODE}`);
-      lines.push(`--- a/${oldPath}`, '+++ /dev/null');
+      lines.push(`--- ${oldA}`, '+++ /dev/null');
       break;
     case 'renamed':
     case 'copied': {
@@ -55,16 +59,22 @@ function headerLines(file: GitHubPullFile): string[] {
       // carries the nearest value below 100.
       if (file.patch == null) {
         lines.push('similarity index 100%');
-        lines.push(`${verb} from ${oldPath}`, `${verb} to ${newPath}`);
+        lines.push(
+          `${verb} from ${quoteGitPath(oldPath)}`,
+          `${verb} to ${quoteGitPath(newPath)}`
+        );
       } else {
         lines.push('similarity index 99%');
-        lines.push(`${verb} from ${oldPath}`, `${verb} to ${newPath}`);
-        lines.push(`--- a/${oldPath}`, `+++ b/${newPath}`);
+        lines.push(
+          `${verb} from ${quoteGitPath(oldPath)}`,
+          `${verb} to ${quoteGitPath(newPath)}`
+        );
+        lines.push(`--- ${oldA}`, `+++ ${newB}`);
       }
       break;
     }
     default:
-      lines.push(`--- a/${oldPath}`, `+++ b/${newPath}`);
+      lines.push(`--- ${oldA}`, `+++ ${newB}`);
       break;
   }
 

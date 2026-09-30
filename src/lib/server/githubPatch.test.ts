@@ -2,6 +2,7 @@ import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { buildReviewData } from '../reviewData.ts';
 import {
   describeSynthesisGaps,
   type GitHubPullFile,
@@ -180,5 +181,28 @@ describe('describeSynthesisGaps', () => {
   it('reports a truncated file list', () => {
     const result = synthesizePatch([file({ patch: MODIFIED_PATCH })]);
     assert.match(describeSynthesisGaps(result, true) ?? '', /at most/);
+  });
+});
+
+describe('synthesizePatch paths', () => {
+  it('leaves a plain path and a UTF-8 path bare', () => {
+    const { patch } = synthesizePatch([
+      file({ filename: 'docs/規約.md', patch: MODIFIED_PATCH }),
+    ]);
+    assert.match(patch, /^diff --git a\/docs\/規約\.md b\/docs\/規約\.md$/m);
+  });
+
+  it('quotes a path the reader would take for an escape', () => {
+    // GitHub's `filename` is the real path. Written bare, the backslash here
+    // would be read back as the start of a tab.
+    const renamed = file({
+      filename: 'win\\to"new".txt',
+      previous_filename: 'win\\to\told.txt',
+      status: 'renamed',
+    });
+    const { patch } = synthesizePatch([renamed]);
+    const { entries } = buildReviewData(patch, 'test');
+    assert.equal(entries[0]?.path, 'win\\to"new".txt');
+    assert.equal(entries[0]?.previousPath, 'win\\to\told.txt');
   });
 });

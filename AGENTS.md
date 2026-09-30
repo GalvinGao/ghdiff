@@ -2061,6 +2061,18 @@ those two families and `buildReviewData` sets the answer on the item as `lang`,
 which the renderer prefers over its own guess. Add a family there, with its
 cases in `src/lib/diffLanguage.test.ts`.
 
+**A path is unquoted before anything reads it.** Git quotes a header path that
+holds a `"`, a `\`, a control byte or — under the default `core.quotePath`,
+which github.com's `.diff` host runs with — any byte above 0x7f, and writes each
+as a C escape. `@pierre/diffs` strips the quotes and keeps the escapes, so
+`docs/プライバシー.md` reached the tree, the header, the fragment and
+`/api/file` as `docs/\343\203\227…`. `buildReviewData` puts every name through
+`unquoteGitPath` in `src/lib/gitPath.ts`, once and only for a git patch: a path
+git left bare holds no backslash, so a backslash there is always an escape.
+`synthesizePatch` writes its headers through `quoteGitPath` for the same reason,
+since a GitHub `filename` with a backslash in it written bare would read back as
+an escape.
+
 **A modal is the platform's `dialog`.** `src/components/ui/Dialog.tsx` drives
 `showModal()` from React state, which brings the focus trap, Escape, the inert
 background, and the top layer, so a dialog opened from inside a portaled menu is

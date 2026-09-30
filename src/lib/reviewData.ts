@@ -9,6 +9,7 @@ import type { GitStatus, GitStatusEntry } from '@pierre/trees';
 import { m } from '../paraglide/messages.js';
 import type { CommentMetadata } from './comments.ts';
 import { diffLanguage } from './diffLanguage.ts';
+import { isGitPatch, unquoteGitPath } from './gitPath.ts';
 
 export interface ReviewDiffStats {
   addedLines: number;
@@ -133,6 +134,9 @@ export function buildReviewData(
   untracked?: ReadonlySet<string>
 ): ReviewData {
   const patches = parsePatchFiles(patchContent, encodeURIComponent(cacheKey));
+  // Only git quotes a path, and only git's format is read for one: a plain
+  // unified diff may hold a real backslash in a name.
+  const unquote = isGitPatch(patchContent);
   const prefixPaths = patches.length > 1;
 
   const items: CodeViewDiffItem<CommentMetadata>[] = [];
@@ -151,6 +155,15 @@ export function buildReviewData(
       : undefined;
 
     for (const fileDiff of patch.files) {
+      // Every reader downstream takes the name off the metadata — the header,
+      // the tree, the fragment, `/api/file`, a comment's path — so it is
+      // unquoted once, here, where the parse is still ours alone.
+      if (unquote) {
+        fileDiff.name = unquoteGitPath(fileDiff.name);
+        if (fileDiff.prevName != null) {
+          fileDiff.prevName = unquoteGitPath(fileDiff.prevName);
+        }
+      }
       const path = fileDiff.name;
       const treePath = prefix == null ? path : `${prefix}/${path}`;
       const itemId = uniqueItemId(usedItemIds, treePath);
