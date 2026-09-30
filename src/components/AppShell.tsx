@@ -1,5 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'jotai';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { getLocale } from '../paraglide/runtime.js';
 import { AppDataProvider } from '@/components/AppDataProvider';
@@ -24,21 +25,30 @@ import { textDirection } from '@/lib/locale';
  * reader inherited. A `Provider` gives each render its own store, so the server
  * cannot carry a settings value from one reviewer to the next. Every reader of
  * `src/hooks/preferences.ts` sits under this.
+ *
+ * The query client is made per render for the same reason, and it holds one
+ * thing: the deployments the review header polls. Every other request in this
+ * app is a hook of its own and stays one. The local command mounts no shell and
+ * no client, and it draws no deployment menu either — there is no GitHub for it
+ * to ask.
  */
 export function AppShell({ children }: { children: ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
   return (
     <Provider>
-      <AppDataProvider>
-        <div dir="ltr" className="flex min-h-0 flex-1">
-          <PullRail />
-          <div
-            dir={textDirection(getLocale())}
-            className="flex min-h-0 min-w-0 flex-1 flex-col"
-          >
-            {children}
+      <QueryClientProvider client={queryClient}>
+        <AppDataProvider>
+          <div dir="ltr" className="flex min-h-0 flex-1">
+            <PullRail />
+            <div
+              dir={textDirection(getLocale())}
+              className="flex min-h-0 min-w-0 flex-1 flex-col"
+            >
+              {children}
+            </div>
           </div>
-        </div>
-      </AppDataProvider>
+        </AppDataProvider>
+      </QueryClientProvider>
     </Provider>
   );
 }

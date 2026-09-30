@@ -1,18 +1,87 @@
 import { IconCheck } from '@pierre/icons';
 import * as Primitive from '@radix-ui/react-dropdown-menu';
-import type { ComponentProps } from 'react';
+import {
+  type ComponentProps,
+  createContext,
+  forwardRef,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 
 import { cn } from '@/lib/cn';
 import { textDirection } from '@/lib/locale';
 import { getLocale } from '@/paraglide/runtime';
 
+/**
+ * Whether the menu is open, and the way to change it, for the trigger below.
+ * Radix keeps its own copy out of reach, so the root holds the state and hands
+ * Radix the controlled pair.
+ */
+const OpenState = createContext<{
+  open: boolean;
+  setOpen(open: boolean): void;
+} | null>(null);
+
 export function DropdownMenu({
+  defaultOpen = false,
   dir = textDirection(getLocale()),
+  onOpenChange,
+  open: openProp,
   ...props
 }: ComponentProps<typeof Primitive.Root>) {
-  return <Primitive.Root dir={dir} {...props} />;
+  const [ownOpen, setOwnOpen] = useState(defaultOpen);
+  const open = openProp ?? ownOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp == null) setOwnOpen(next);
+    onOpenChange?.(next);
+  };
+  return (
+    <OpenState.Provider value={{ open, setOpen }}>
+      <Primitive.Root dir={dir} {...props} open={open} onOpenChange={setOpen} />
+    </OpenState.Provider>
+  );
 }
-export const DropdownMenuTrigger = Primitive.Trigger;
+
+/**
+ * Opens on a press for a mouse and on a tap for a finger.
+ *
+ * Radix opens a menu on `pointerdown`, which is right for a mouse — the menu is
+ * there before the button comes back up, the way a native menu is. For a
+ * finger it is wrong, because a touch that lands on a trigger is the start of
+ * a scroll as often as a tap: the review header scrolls sideways on a phone,
+ * and every swipe that began on the title opened its card. So a touch or a pen
+ * cancels Radix's handler — it runs only when the event is not
+ * default-prevented — and the menu opens on `click`, which the browser never
+ * sends for a touch that became a scroll.
+ */
+export const DropdownMenuTrigger = forwardRef<
+  HTMLButtonElement,
+  ComponentProps<typeof Primitive.Trigger>
+>(function DropdownMenuTrigger({ onClick, onPointerDown, ...props }, ref) {
+  const state = useContext(OpenState);
+  const touchRef = useRef(false);
+  return (
+    <Primitive.Trigger
+      ref={ref}
+      {...props}
+      onPointerDown={(event) => {
+        onPointerDown?.(event);
+        touchRef.current = event.pointerType !== 'mouse';
+        if (touchRef.current) event.preventDefault();
+      }}
+      onClick={(event) => {
+        onClick?.(event);
+        // Enter and Space never reach here as a click: Radix prevents their
+        // default on keydown and toggles the menu itself.
+        if (!touchRef.current || state == null) return;
+        touchRef.current = false;
+        state.setOpen(!state.open);
+      }}
+    />
+  );
+});
+
 export const DropdownMenuGroup = Primitive.Group;
 export const DropdownMenuPortal = Primitive.Portal;
 

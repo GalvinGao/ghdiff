@@ -15,7 +15,7 @@ and [QA.md](QA.md).
 
 ## Current implementation
 
-English (`en`) is the source. All 20 target locales are enabled, each with 531
+English (`en`) is the source. All 20 target locales are enabled, each with 551
 messages. `messages/en.json` holds interface copy. Paraglide generates
 `src/paraglide/`; `src/server.ts` scopes cookie/base-locale detection per
 request, and the root document sets locale and direction. `src/userscript.js` is

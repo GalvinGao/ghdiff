@@ -17,6 +17,7 @@ import { useId, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { ColorModeMenuItems } from '@/components/ColorModeToggle';
+import { DeploymentMenu } from '@/components/DeploymentMenu';
 import { GitHubAccountControl } from '@/components/GitHubAccountControl';
 import { GitHubTextLink } from '@/components/GitHubLink';
 import { LanguageSubmenu } from '@/components/LanguageMenu';
@@ -248,6 +249,12 @@ export function ReviewHeader({
       {pull != null && <PullTitle pull={pull} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5">
+        {/* First in the group, because it is drawn only once GitHub says there
+            is something deployed: the group is pinned to the right edge, so a
+            control that arrives at its left end moves nothing else. */}
+        {gitHubTarget != null && (
+          <DeploymentMenu session={session} target={gitHubTarget} />
+        )}
         {/* Only a pull request has a review to submit. A commit and a compare
             range have no thread on GitHub for a verdict to land in. */}
         {review != null && (
@@ -627,12 +634,15 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {
     >
       <DropdownMenuTrigger asChild>
         {/* `min-w-0 flex-1` so it gives its width up to the controls first and
-            truncates rather than push them off. `max-phone:min-w-32` puts a
+            truncates rather than push them off. `max-phone:min-w-44` puts a
             floor under that: on a phone the row scrolls instead of shrinking,
             and a title squeezed to nothing is a control nobody can read or
-            aim at — it is the way in to what the pull request is for. */}
+            aim at — it is the way in to what the pull request is for. The
+            floor is 176px and not less because the row scrolls anyway: once
+            it overflows, every pixel the title gives up is a pixel of title
+            lost for no control gained. */}
         <Button
-          className="max-phone:min-w-32 ml-1 min-w-0 flex-1 justify-start"
+          className="max-phone:min-w-44 ml-1 min-w-0 flex-1 justify-start"
           size="sm"
           title={title}
           variant="chrome"

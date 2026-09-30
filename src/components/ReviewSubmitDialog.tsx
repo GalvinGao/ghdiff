@@ -209,14 +209,15 @@ export function ReviewSubmitDialog({
           </p>
         )}
 
-        {/* Touch fields use 16px text to avoid Safari focus zoom, including
-            landscape iPhones. Native popover autofocus runs on each opening. */}
+        {/* Native popover autofocus runs on each opening. The 16px a touch
+            screen needs to keep Safari from zooming is `globals.css`'s, for
+            every field at once. */}
         <textarea
           autoFocus
           aria-label={m.review_submit_dialog_review_body()}
           className={cn(
             'border-line bg-canvas text-ink placeholder:text-ink-faint focus-visible:border-accent',
-            'mt-2 w-full resize-y rounded-md border p-2 text-sm [@media(pointer:coarse)]:text-base focus-visible:outline-none'
+            'mt-2 w-full resize-y rounded-md border p-2 text-sm focus-visible:outline-none'
           )}
           disabled={busy}
           placeholder={m.review_submit_dialog_leave_a_note_with_your_review()}

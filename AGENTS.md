@@ -111,6 +111,7 @@ src/
   lib/fileLimit.ts         the cap on a whole file, where three hosts can read it
   lib/prePaintScripts.ts   the colour mode and the code font, as source text
   lib/authFetch.ts         every call to this Worker, with one retry behind it
+  lib/deployments.ts       where each environment stands, and the Pages alias
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
@@ -730,6 +731,78 @@ popover's first paint and only the ages wait for the open, because the ages sit
 at the right edge of each row, where their arrival moves nothing. `VERDICT_ICON`
 and `VERDICT_COLOR` in `src/components/reviewVerdictStyle.ts` are shared with
 the header's button, so an approval is one glyph in one green in both places.
+
+**The deployments sit first in the header's right group, and arrive last.**
+`DeploymentMenu` reads GitHub's Deployments API and nothing else. That is where
+GitHub's own **View deployment** button reads from, and it is provider-neutral:
+Vercel, wrangler-action with a `gitHubToken`, and every workflow that calls
+`createDeployment` land there. A provider that only posts a bot comment is not
+read, because a parser per bot is a parser that breaks the day the bot rewords
+itself. The button is drawn only once GitHub says there is something deployed,
+and the group is pinned to the right edge, so arriving at its left end moves
+nothing.
+
+The menu answers two questions, in that order. **Latest** is one row per
+environment, in name order so a poll never moves a row under the pointer, and
+each row says where that environment stands against the head —
+`latestByEnvironment` in `src/lib/deployments.ts` reads it as `current`,
+`building`, `failed`, `waiting` (no build of the head yet, and its checks are
+still running) or `outdated` (no build of the head, and nothing running that
+will make one). A press opens the newest build that works, which is older than
+the head for every reading but `current`, and the row prints that build's sha,
+not the head's. **All** is every deployment, newest first, and an older commit's
+row is drawn faint. It is left out when it would only repeat the rows above.
+
+`inactive` is not a failure. GitHub marks a deployment inactive when a newer one
+in the same environment succeeds, and a preview host keeps every build at its
+own address, so the link still answers. A deployment with no status for an hour
+is `unknown` rather than in progress forever, because Actions can create one and
+be cancelled before it reports anything.
+
+**A Cloudflare Pages branch alias is rebuilt, not read.** wrangler-action
+records the build's own address, `<8 hex>.<project>.pages.dev`, and the alias
+that follows the branch's newest build — the address a preview comment calls
+**Branch (latest)** — reaches GitHub nowhere. `pagesBranchAlias` makes it from
+the branch the deployment names by Cloudflare's rule: lower case, every
+character that is not a letter or a digit replaced by `-`, cut at 28, and no `-`
+left at the end. Four live aliases on troph-team/lilja pin it in the tests, one
+cut mid-word and one cut on a `-`. Only the Latest row uses it; a row in All
+opens its own build.
+
+wrangler-action creates its deployment after the upload succeeds, with one
+`success` status. A Pages build in progress or failed is therefore not a
+deployment at all, and `waiting` and `outdated` are how the menu reports it: the
+head's check rollup, read in the same query, says whether something is still
+running.
+
+**`environment_url` is untrusted.** Anybody who can create a deployment writes
+it, and a `javascript:` address in an `href` runs in this origin.
+`safeDeploymentUrl` keeps http and https and drops everything else, on the
+server, before the address reaches a component.
+
+**The poll is React Query's, and it stops.** `useDeployments` polls every 15
+seconds while `deploymentsInFlight` says the answer is about to change — a build
+of the head still going, or head checks running while an environment has no
+build of the head — for ten minutes per head at most, backing off on failure,
+and not at all while the tab is hidden. A pull request with no deployments is
+never polled: most repositories deploy nothing, and every one of them has checks
+that run. The schedule, the single request in flight, the retry and the answer
+kept through a failure are all the library's, which is the whole reason it is in
+the graph.
+
+A caller with no token is asked once and never polled. GraphQL refuses it, so
+the server reads REST instead — the head, its deployments, and one status per
+environment, at most three — which is up to five of sixty requests an hour. It
+gets the head's builds alone and no check rollup. A signed-in reviewer gets one
+GraphQL query: the newest twenty commits of the pull request, ten deployments
+each, and the head's rollup.
+
+The App needs **Deployments: Read-only** for any of this, and an owner has to
+accept the new permission before GitHub will answer. Until then GitHub answers
+"Resource not accessible by integration", and `readDeployments` reads that as an
+empty list: the header draws no menu, which is what a repository that deploys
+nothing draws too, and a reviewer cannot fix somebody else's installation from a
+diff.
 
 **The API is one contract, and both sides read it.** `src/lib/rpc/contract.ts`
 names every procedure, its input and its output, and imports nothing from a
@@ -1366,9 +1439,34 @@ alike — and the second is a claim about content that is not there. That is not
 hypothetical: a commit target with a token signed in fits inside 402 and would
 have carried a permanent fade. The hook writes onto the node and tells React
 nothing, the way `usePaneWidth` does, so a gesture reported many times a second
-costs no render. The pull request title takes `max-phone:min-w-32` for the same
+costs no render. The pull request title takes `max-phone:min-w-44` for the same
 row: it is the way in to what the pull request is for, and a control squeezed to
-nothing is one nobody can read or aim at.
+nothing is one nobody can read or aim at. The floor is 176px because the row
+scrolls anyway — once it overflows, every pixel the title gives up is title lost
+for no control gained.
+
+**A menu opens on a tap, not on a touch.** Radix opens a `DropdownMenu` on
+`pointerdown`, which is right for a mouse and wrong for a finger: a touch that
+lands on a trigger starts a scroll as often as a tap, and the header above
+scrolls sideways on a phone, so every swipe that began on the title opened its
+card. `DropdownMenuTrigger` in `src/components/ui/DropdownMenu.tsx` calls
+`preventDefault()` on a touch or pen `pointerdown` — Radix's own handler runs
+only when the event is not default-prevented — and opens on `click`, which the
+browser never sends for a touch that turned into a scroll. That needs the open
+state, which Radix keeps out of reach, so `DropdownMenu` holds it and hands
+Radix the controlled pair; a caller's own `open` still wins. A mouse and the
+keyboard are unchanged.
+
+**A field is 16px under a finger, or Safari zooms onto it.** Safari on iOS zooms
+the page onto any field whose text is under 16px the moment the field takes
+focus, and the page stays zoomed after. The line comment composer focuses itself
+as it opens, so every comment zoomed the diff. One rule in `src/globals.css`
+sets every text field to 16px under `(pointer: coarse)`, and it is unlayered on
+purpose: Tailwind's utilities sit in a cascade layer, and an unlayered rule
+outranks every layered one, so no `text-sm` on a field can undo it. A coarse
+pointer and not a phone width, because an iPad zooms the same way at any width.
+Do not answer this per field again — that is how the review popover had the fix
+and the composer did not.
 
 **The filter drives both panes.** `applyReviewFilter` returns the items for the
 viewer and the paths for the tree from one pass. Never filter one without the
@@ -2713,6 +2811,7 @@ Metadata is mandatory on any App and GitHub grants it without being asked.
 | Commit statuses | Read-only      | The check half of the status square.                 |
 | Checks          | Read-only      | The other half of it, via `statusCheckRollup`.       |
 | Issues          | Read and write | A note filed as an issue from the comment composer.  |
+| Deployments     | Read-only      | The header's deployment menu.                        |
 
 This table is the whole of what a sign-in grants, and nothing in the code
 enforces it: a permission added at github.com and not added here is a permission
@@ -2840,3 +2939,10 @@ the `storage` event and a subscription per key would have cost anyway — with t
 tab synchronization and the read-on-mount contract left to be got right here
 rather than upstream. Everything else in this app is React state or a ref, and
 adding a second store would be the change to argue for.
+
+`@tanstack/react-query` is in the graph for one hook, `useDeployments`, and it
+is a request scheduler there rather than a store: a poll that stops, backs off,
+pauses in a hidden tab and never has two requests in flight is what it does
+without being asked. `AppShell` makes its client per render, for the same reason
+jotai's `Provider` sits there. Every other request stays a hook of its own;
+moving one onto the library is a change to make deliberately, not in passing.

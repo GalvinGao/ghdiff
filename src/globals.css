@@ -228,6 +228,21 @@ body {
   overflow: hidden;
 }
 
+/* Safari on iOS zooms the page onto a field whose text is under 16px the moment
+   the field takes focus, and the page stays zoomed after the field is left. The
+   line comment composer focuses itself as it opens, so every comment zoomed the
+   diff. This is unlayered on purpose: Tailwind's utilities sit in a cascade
+   layer, and an unlayered rule outranks every layered one, so no `text-sm` on
+   a field can undo it. The test is a coarse pointer and not a phone width,
+   because an iPad zooms in the same way at any width. */
+@media (pointer: coarse) {
+  input:not([type='checkbox'], [type='radio'], [type='range']),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 /* The left bar, before the browser has read the watch list. `WatchedReposScript`
    writes the attribute in the document head, and `PullRail` returns null a
    moment later for the same reading, so this rule only covers the first paint.

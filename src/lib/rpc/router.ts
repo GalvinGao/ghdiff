@@ -28,6 +28,7 @@ import { normalizePullStatus, type PullStatusSource } from '@/lib/pullStatus';
 import { recentTeamReviews, type TeamReviewSource } from '@/lib/reviewDecision';
 import { resolveSideCommit } from '@/lib/server/commentIssue';
 import { parseDeploymentConfig } from '@/lib/server/config';
+import { readDeployments } from '@/lib/server/deployments';
 import {
   FULL_JSON_MEDIA_TYPE,
   GitHubError,
@@ -642,6 +643,26 @@ const setViewedFile = os.viewedFiles.set.handler(async ({ context, input }) => {
  * failure: a store that cannot answer throws, the browser catches it, and the
  * footer prints no figure at all.
  */
+const listDeployments = os.deployments.list.handler(
+  async ({ context, input }) => {
+    const log = requestLog();
+    const { owner, repo, source } = input;
+    log.set({ owner, repo, target: source.kind });
+    try {
+      const { outcome, ...data } = await readDeployments(
+        owner,
+        repo,
+        source,
+        context.token
+      );
+      log.set({ outcome, deployments: data.deployments.length });
+      return data;
+    } catch (error) {
+      return fail(error, m.router_could_not_load_the_deployments());
+    }
+  }
+);
+
 const getServedCount = os.stats.served.handler(async () => {
   const count = await readServedCount();
   requestLog().set({ outcome: 'ok', served: count });
@@ -653,6 +674,7 @@ export const router = os.router({
   viewer: { get: getViewer },
   pulls: { list: listPulls, get: getPull },
   stats: { served: getServedCount },
+  deployments: { list: listDeployments },
   reviews: {
     mine: getMyReview,
     team: getTeamReviews,

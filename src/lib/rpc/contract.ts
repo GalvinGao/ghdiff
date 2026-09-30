@@ -4,6 +4,7 @@ import * as z from 'zod';
 import { m } from '../../paraglide/messages.js';
 import type { CreatedIssue } from '@/lib/commentIssue';
 import type { CommentPayload } from '@/lib/comments';
+import type { DeploymentsData } from '@/lib/deployments';
 import type { AppInstallation } from '@/lib/installations';
 import type { ConversationEntry } from '@/lib/pullConversation';
 import type { PullDetails } from '@/lib/pullDetails';
@@ -40,10 +41,10 @@ const pullRef = repoRef.extend({
 const side = z.enum(['additions', 'deletions']);
 
 /**
- * The diff a note was written on, as the three GitHub targets name it. Each is
- * the part of `GitHubReviewTarget` that is not the repository.
+ * The diff under review, as the three GitHub targets name it. Each is the part
+ * of `GitHubReviewTarget` that is not the repository.
  */
-const issueSource = z.discriminatedUnion('kind', [
+const targetSource = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('github-pull'), number: z.int().positive() }),
   z.object({
     kind: z.literal('github-commit'),
@@ -132,6 +133,25 @@ export const contract = {
       .output(type<SubmittedReview>()),
   },
 
+  deployments: {
+    /**
+     * The deployments GitHub has on record for the commits under review, and
+     * the head they are measured against. A pull request answers for its
+     * newest twenty commits, so a build of an older push is still a link the
+     * menu can offer; a commit and a compare range answer for their head.
+     *
+     * A caller with no token gets the head's deployments alone, and no check
+     * rollup: GraphQL refuses an anonymous caller, and REST costs a request
+     * per deployment against a quota of sixty an hour. A repository the App
+     * may not read deployments in answers with an empty list, not an error:
+     * the header then draws no menu, which is what a repository that deploys
+     * nothing draws too.
+     */
+    list: oc
+      .input(repoRef.extend({ source: targetSource }))
+      .output(type<DeploymentsData>()),
+  },
+
   stats: {
     /**
      * How many diffs this deployment has served, for the footer's own line. It
@@ -176,7 +196,7 @@ export const contract = {
     create: oc
       .input(
         repoRef.extend({
-          source: issueSource,
+          source: targetSource,
           text: z
             .string()
             .trim()
