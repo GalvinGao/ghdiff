@@ -1,7 +1,13 @@
 import type { CodeViewLineSelection, SelectedLineRange } from '@pierre/diffs';
 import { useStableCallback } from '@pierre/diffs/react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 
 import {
   buildDiffAnchorIndex,
@@ -83,10 +89,23 @@ export function useDiffAnchor(options: {
   // The file the fragment names now. A selection that goes away leaves the file
   // behind, the way github.com drops the line part and keeps the anchor.
   const itemRef = useRef<string | undefined>(undefined);
+  // Set once the screen is coming down. The route keys the review screen by
+  // its target, so a move to the next pull request takes this hook down in the
+  // same commit that clears the fragment, before the effect below has seen the
+  // empty one — and the viewer reports its selection away as it goes. A layout
+  // cleanup, because a deleted tree runs those parent first, ahead of anything
+  // the viewer under it tears down.
+  const disposedRef = useRef(false);
+  useLayoutEffect(() => {
+    disposedRef.current = false;
+    return () => {
+      disposedRef.current = true;
+    };
+  }, []);
 
   const write = useCallback(
     (next: string, push: boolean) => {
-      if (next === settledRef.current) return;
+      if (disposedRef.current || next === settledRef.current) return;
       settledRef.current = next;
       void navigate({
         hash: next,

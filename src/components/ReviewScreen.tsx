@@ -180,14 +180,9 @@ export function ReviewScreen({
     owner: pullTarget?.owner,
     repo: pullTarget?.repo,
   });
-  // Details can still belong to the previous PR while navigation loads the next.
-  const pullTitle =
-    pullTarget != null &&
-    pull.data?.owner === pullTarget.owner &&
-    pull.data.repo === pullTarget.repo &&
-    pull.data.number === pullTarget.number
-      ? pull.data.title
-      : undefined;
+  // The route keys this screen by its target, so these details are never the
+  // previous pull request's.
+  const pullTitle = pullTarget == null ? undefined : pull.data?.title;
   // A local diff has no title to fetch, and its repository and range are what
   // tell two runs' tabs apart.
   const tabTitle =

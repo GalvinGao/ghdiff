@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
 
 import { ReviewScreen } from '@/components/ReviewScreen';
-import { gitHubTargetFromSegments } from '@/lib/reviewTarget';
+import { gitHubTargetFromSegments, reviewTargetKey } from '@/lib/reviewTarget';
 
 // Mirrors github.com's own paths at the root of the site, so a pull request URL
 // becomes a ghdiff URL by swapping the host and nothing else. The splat holds
@@ -21,6 +21,12 @@ export const Route = createFileRoute('/$')({
   component: GitHubReviewRoute,
 });
 
+// Keyed by the target, because every piece of state on that screen belongs to
+// one diff: the pull request's details, the reviewer's verdict, the filter,
+// the folds. A move to the next pull request reuses this route, and without a
+// key the header went on naming the last one until GitHub answered for the
+// new one.
 function GitHubReviewRoute() {
-  return <ReviewScreen target={Route.useLoaderData()} />;
+  const target = Route.useLoaderData();
+  return <ReviewScreen key={reviewTargetKey(target)} target={target} />;
 }
