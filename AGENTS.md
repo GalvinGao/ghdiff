@@ -20,6 +20,44 @@ implementation. ghdiff differs from it in three ways that matter:
 | Auth           | none                                               | the ghdiff GitHub App, in a sealed `httpOnly` cookie      |
 | Item ownership | `initialItems` plus an imperative handle, streamed | controlled `items`, whole patch in state                  |
 
+## A turn that changes the screen ends with a picture of it
+
+**An agent turn that changes what a reviewer sees must give screenshots in its
+reply.** Not a description of the change, and not a promise that it was checked:
+the picture. This app's surface is checked in a browser and nowhere else — no
+test renders a component — so a reply about a UI change without one asks the
+reader to take its word for the one thing they cannot verify by reading the
+diff.
+
+That covers anything that renders differently: markup, a class, a token in
+`globals.css`, copy on screen, a new state, a layout at some width. A change
+that renders identically — a server route, a pure function in `src/lib/`, a
+test, a comment, the build — needs none, and a reply should not invent one.
+
+What to capture is whatever the change touched, in the state where it shows:
+
+- **The change itself, at the size a reviewer meets it.** An element shot of the
+  control is fine for detail, but give at least one shot with the screen around
+  it, so the reader can see where it sits.
+- **Each state it adds** — pressed and unpressed, empty, loading, failure — when
+  the change is about that state.
+- **A phone, at 402 × 874, whenever the change reaches a screen a phone draws.**
+  The phone layout is not a second design, but it is a second set of widths, and
+  that is where a row overflows.
+- **The narrowest and widest a pane allows**, when the change sits in a
+  resizable one. The left bar runs from 200px to 480px.
+- **Both colour schemes**, when the change touches a colour.
+
+Take them from the running app — `pnpm dev` and a browser the agent drives —
+against real data where it can reach some, and say in the reply what the screen
+was showing: which target, which width, signed in or not. A shot of seeded or
+mocked state is allowed when real data cannot reach the case, and the reply says
+so. Send the images to the user. Leave the files out of the repository:
+`.playwright-mcp/` is ignored for that reason.
+
+A pull request for the same change follows the same rule: the screenshot goes
+first in its description.
+
 ## The stack
 
 TanStack Start on Vite, served by Cloudflare Workers in production at
