@@ -103,6 +103,10 @@ export function Dialog({
       className={cn(
         'border-line bg-raised text-ink fixed inset-0 m-auto max-h-[85vh] w-[min(30rem,calc(100vw-2rem))]',
         'overflow-y-auto overscroll-contain rounded-xl border p-0 shadow-lg',
+        // The title bar's height, stated so that something sticky in the body
+        // can stop under the bar rather than behind it: a 28px close button,
+        // 8px above and below it, and the 1px rule.
+        '[--app-sticky-top:45px]',
         'backdrop:bg-black/50 backdrop:backdrop-blur-[1px]'
       )}
       // Escape fires `cancel`. React state stays the one source of truth for
@@ -117,7 +121,7 @@ export function Dialog({
         if (event.target === ref.current) onClose();
       }}
     >
-      <div className="border-line bg-raised sticky top-0 flex items-center gap-2 border-b px-3 py-2">
+      <div className="border-line bg-raised sticky top-0 z-[2] flex h-(--app-sticky-top) items-center gap-2 border-b px-3 py-2">
         <h2 className="text-ink flex items-center gap-2 text-sm font-semibold">
           {eyebrow}
           {title}

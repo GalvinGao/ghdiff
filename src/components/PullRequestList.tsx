@@ -3,17 +3,17 @@ import { useMemo } from 'react';
 
 import { formatList, formatNumber } from '../lib/locale.ts';
 import { m } from '../paraglide/messages.js';
+import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
-import { SectionLabel } from '@/components/ui/SectionLabel';
 import { Segmented, SegmentedItem } from '@/components/ui/Segmented';
 import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import { showOwnPullsPreference, usePreference } from '@/hooks/preferences';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
-import { repoPullsUrl, repoUrl } from '@/lib/githubUrls';
+import { accountAvatarUrl, repoPullsUrl, repoUrl } from '@/lib/githubUrls';
 import {
   formatWatchedRepo,
   groupPullsByRepo,
@@ -142,42 +142,58 @@ export function PullRequestList({
           </p>
         )
       ) : (
-        // A rule between the groups, and none above the first. A heading alone
-        // left two authors' pull requests reading as one run, because the
-        // heading sits closer to the rows under it than the rows do to each
-        // other — which is what a heading is for, and why it cannot also be
-        // the boundary.
+        // Space between the groups and no rule: the heading's band already says
+        // where a repository starts, and a rule on top of it said so twice.
         groups.map((group, groupIndex) => (
           // The gap belongs between the groups. On the last one it would be
           // a second bottom padding under the menu's or the card's own.
           //
-          // The rule is drawn from the index rather than `:first-child`. A
-          // group is not always the first child of what holds it, and an author
-          // never is: the repository heading is.
+          // From the index rather than `:first-child`: the switch above is the
+          // first child whenever somebody is signed in.
           <section
             key={group.key}
-            className={cn(
-              'border-line pb-1 last:pb-0',
-              groupIndex > 0 && 'border-t'
-            )}
+            className={cn('pb-1 last:pb-0', groupIndex > 0 ? 'pt-3' : 'pt-1')}
           >
-            {/* The repository's name goes to the repository, and the count
-                goes to the rows it counted: GitHub's own open pull requests
-                for it. Both are the answer to "what is this", so both are the
-                text itself rather than a glyph beside it. */}
-            <div className="flex items-baseline gap-2 px-2 pt-2 pb-1">
-              <SectionLabel className="min-w-0">
-                <GitHubTextLink
-                  className="block truncate [direction:ltr]"
-                  href={repoUrl(group)}
-                  title={m.pull_request_list_open_on_github({
-                    owner: group.owner,
-                    repo: group.repo,
-                  })}
-                >
-                  {group.owner}/{group.repo}
-                </GitHubTextLink>
-              </SectionLabel>
+            {/* The repository is the top of the list's three levels, so it is
+                the loudest line in it: the owner's picture, the repository's
+                name in the rows' own ink, and a band behind both. It was an
+                uppercase caption in the faint ink once, quieter than the author
+                under it, and a reviewer scrolling a long list could not find
+                where one repository ended.
+
+                Sticky inside its own section, so the next heading pushes this
+                one out rather than sliding over it. `--app-sticky-top` is zero
+                in the bar and the title bar's height in the phone's dialog,
+                which is sticky as well and would otherwise cover it.
+
+                The name goes to the repository, and the count goes to the rows
+                it counted: GitHub's own open pull requests for it. Both are the
+                answer to "what is this", so both are the text itself rather
+                than a glyph beside it. */}
+            <div className="bg-group-band sticky top-(--app-sticky-top,0px) z-[1] flex items-center gap-2 rounded-md px-2 py-1.5">
+              {/* Square with a little rounding, for a person and an
+                  organization alike: the list cannot tell them apart without
+                  asking GitHub, and an organization's logo is drawn to fill a
+                  square that a circle would cut. */}
+              <AuthorAvatar
+                author={group.owner}
+                avatarUrl={accountAvatarUrl(group.owner, 32)}
+                className="rounded-sm"
+                size={16}
+              />
+              <GitHubTextLink
+                className="min-w-0 truncate text-[13px] [direction:ltr]"
+                href={repoUrl(group)}
+                title={m.pull_request_list_open_on_github({
+                  owner: group.owner,
+                  repo: group.repo,
+                })}
+              >
+                {/* The owner is the same on every heading of one account, and
+                    the repository is what tells two headings apart. */}
+                <span className="text-ink-faint">{group.owner}/</span>
+                <span className="text-ink font-semibold">{group.repo}</span>
+              </GitHubTextLink>
               <GitHubTextLink
                 className="text-ink-faint ml-auto shrink-0 text-xs tabular-nums"
                 href={repoPullsUrl(group)}

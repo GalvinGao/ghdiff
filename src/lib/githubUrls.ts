@@ -21,6 +21,16 @@ export interface RepoRef {
 /** ghdiff's own repository, for the two links in the home page's footer. */
 export const GHDIFF_REPO: RepoRef = { owner: 'GalvinGao', repo: 'ghdiff' };
 
+/**
+ * An account's picture, person or organization alike. github.com answers
+ * `/<login>.png` with a redirect to the avatar host, so the list can draw an
+ * owner's mark without asking the API who that owner is. `size` is the side in
+ * device pixels, which GitHub scales the picture to.
+ */
+export function accountAvatarUrl(login: string, size: number): string {
+  return `${GITHUB}/${encodeURIComponent(login)}.png?size=${String(size)}`;
+}
+
 /** The repository's own page. */
 /**
  * Where a reviewer manages their fine-grained personal access tokens, which is
