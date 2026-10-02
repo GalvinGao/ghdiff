@@ -3,6 +3,7 @@ import pierreDark from '@pierre/theme/pierre-dark';
 import pierreLight from '@pierre/theme/pierre-light';
 import {
   type FileTree as FileTreeModel,
+  type FileTreeIconConfig,
   type FileTreeOptions,
   type FileTreeRowDecoration,
   type FileTreeRowDecorationContext,
@@ -110,6 +111,29 @@ const TREE_CSS = `
   }
 `;
 
+// A story file is a component's tsx by extension and a different kind of file
+// by purpose, so it wears Storybook's mark rather than React's. The library has
+// no built-in token for it, which is why the symbol arrives in a sprite sheet of
+// its own and paints its own colour: a custom icon carries no
+// `data-icon-token`, and the tree would otherwise draw it in the muted ink.
+// The path is Simple Icons' Storybook glyph, and the pink is Storybook's own.
+const STORYBOOK_ICON = 'ghdiff-icon-storybook';
+const STORYBOOK_SPRITE = `<svg aria-hidden="true" width="0" height="0"><symbol id="${STORYBOOK_ICON}" viewBox="0 0 24 24"><path fill="#ff4785" d="M16.71.243l-.12 2.71a.18.18 0 00.29.15l1.06-.8.9.7a.18.18 0 00.28-.14l-.1-2.76 1.33-.1a1.2 1.2 0 011.279 1.2v21.596a1.2 1.2 0 01-1.26 1.2l-16.096-.72a1.2 1.2 0 01-1.15-1.16l-.75-19.797a1.2 1.2 0 011.13-1.27L16.7.222zM13.64 9.3c0 .47 3.16.24 3.59-.08 0-3.2-1.72-4.89-4.859-4.89-3.15 0-4.899 1.72-4.899 4.29 0 4.45 5.999 4.53 5.999 6.959 0 .7-.32 1.1-1.05 1.1-.96 0-1.35-.49-1.3-2.16 0-.36-3.649-.48-3.769 0-.27 4.03 2.23 5.2 5.099 5.2 2.79 0 4.969-1.49 4.969-4.18 0-4.77-6.099-4.64-6.099-6.999 0-.97.72-1.1 1.13-1.1.45 0 1.25.07 1.19 1.87z"/></symbol></svg>`;
+const STORY_EXTENSIONS = ['js', 'jsx', 'mdx', 'svelte', 'ts', 'tsx', 'vue'];
+
+// `set` is stated, not left to the default: a config with any override in it
+// falls back to `none`, which would take every other file's icon away.
+const TREE_ICONS = {
+  byFileExtension: Object.fromEntries(
+    STORY_EXTENSIONS.map((extension) => [
+      `stories.${extension}`,
+      STORYBOOK_ICON,
+    ])
+  ),
+  set: 'complete',
+  spriteSheet: STORYBOOK_SPRITE,
+} as const satisfies FileTreeIconConfig;
+
 // The patch order is the review order, so the tree must not re-sort.
 const PRESERVE_PATCH_ORDER: Exclude<
   NonNullable<FileTreeOptions['sort']>,
@@ -118,6 +142,7 @@ const PRESERVE_PATCH_ORDER: Exclude<
 
 const BASE_OPTIONS = {
   flattenEmptyDirectories: true,
+  icons: TREE_ICONS,
   id: 'ghdiff-file-tree',
   initialExpansion: 'open',
   presorted: true,
