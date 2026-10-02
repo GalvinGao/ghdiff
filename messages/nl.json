@@ -43,6 +43,7 @@
   "filter_menu_renamed": "Hernoemd",
   "filter_menu_deleted": "Verwijderd",
   "filter_menu_filter_files": "Bestanden filteren",
+  "filter_menu_prefix": "Filter:",
   "filter_menu_file_rules": "Bestandsregels",
   "filter_menu_git_status": "Git-status",
   "filter_menu_clear_filters": "Filters wissen",

@@ -43,6 +43,7 @@
   "filter_menu_renamed": "নাম পরিবর্তন করা হয়েছে",
   "filter_menu_deleted": "মুছে ফেলা হয়েছে",
   "filter_menu_filter_files": "ফাইল ফিল্টার করুন",
+  "filter_menu_prefix": "ফিল্টার:",
   "filter_menu_file_rules": "ফাইলের নিয়ম",
   "filter_menu_git_status": "Git-এর অবস্থা",
   "filter_menu_clear_filters": "ফিল্টার পরিষ্কার করুন",

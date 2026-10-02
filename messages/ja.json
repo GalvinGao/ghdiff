@@ -43,6 +43,7 @@
   "filter_menu_renamed": "名前変更",
   "filter_menu_deleted": "削除",
   "filter_menu_filter_files": "ファイルを絞り込む",
+  "filter_menu_prefix": "フィルター：",
   "filter_menu_file_rules": "ファイルルール",
   "filter_menu_git_status": "Git ステータス",
   "filter_menu_clear_filters": "フィルターをクリア",

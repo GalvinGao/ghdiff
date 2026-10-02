@@ -43,6 +43,7 @@
   "filter_menu_renamed": "تغییرنام‌یافته",
   "filter_menu_deleted": "حذف‌شده",
   "filter_menu_filter_files": "فیلتر فایل‌ها",
+  "filter_menu_prefix": "فیلتر:",
   "filter_menu_file_rules": "قواعد فایل",
   "filter_menu_git_status": "وضعیت git",
   "filter_menu_clear_filters": "پاک کردن فیلترها",

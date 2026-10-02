@@ -43,6 +43,7 @@
   "filter_menu_renamed": "Renommés",
   "filter_menu_deleted": "Supprimés",
   "filter_menu_filter_files": "Filtrer les fichiers",
+  "filter_menu_prefix": "Filtre :",
   "filter_menu_file_rules": "Règles de fichiers",
   "filter_menu_git_status": "État Git",
   "filter_menu_clear_filters": "Effacer les filtres",

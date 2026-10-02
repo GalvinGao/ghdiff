@@ -122,7 +122,9 @@ export function FilterMenu({
           {/* The word says what the control is; the value after it is what the
               filter is set to, and only that half reads as ink. */}
           <span className="truncate">
-            <span className="text-ink-faint">Filter: </span>
+            <span className="text-ink-faint me-1">
+              {m.filter_menu_prefix()}
+            </span>
             {activeLabel(state)}
           </span>
           {hiddenCount > 0 && (

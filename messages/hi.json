@@ -43,6 +43,7 @@
   "filter_menu_renamed": "नाम बदला गया",
   "filter_menu_deleted": "हटाई गई",
   "filter_menu_filter_files": "फ़ाइलें फ़िल्टर करें",
+  "filter_menu_prefix": "फ़िल्टर:",
   "filter_menu_file_rules": "फ़ाइल नियम",
   "filter_menu_git_status": "Git स्थिति",
   "filter_menu_clear_filters": "फ़िल्टर साफ़ करें",

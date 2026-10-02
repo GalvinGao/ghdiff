@@ -43,6 +43,7 @@
   "filter_menu_renamed": "Переименованные",
   "filter_menu_deleted": "Удалённые",
   "filter_menu_filter_files": "Фильтровать файлы",
+  "filter_menu_prefix": "Фильтр:",
   "filter_menu_file_rules": "Правила для файлов",
   "filter_menu_git_status": "Статус Git",
   "filter_menu_clear_filters": "Очистить фильтры",

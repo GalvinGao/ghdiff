@@ -43,6 +43,7 @@
   "filter_menu_renamed": "Renamed",
   "filter_menu_deleted": "Deleted",
   "filter_menu_filter_files": "Filter files",
+  "filter_menu_prefix": "Filter:",
   "filter_menu_file_rules": "File rules",
   "filter_menu_git_status": "Git status",
   "filter_menu_clear_filters": "Clear filters",

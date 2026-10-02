@@ -43,6 +43,7 @@
   "filter_menu_renamed": "이름 변경됨",
   "filter_menu_deleted": "삭제됨",
   "filter_menu_filter_files": "파일 필터",
+  "filter_menu_prefix": "필터:",
   "filter_menu_file_rules": "파일 규칙",
   "filter_menu_git_status": "Git 상태",
   "filter_menu_clear_filters": "필터 지우기",

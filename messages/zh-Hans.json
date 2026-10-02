@@ -43,6 +43,7 @@
   "filter_menu_renamed": "已重命名",
   "filter_menu_deleted": "已删除",
   "filter_menu_filter_files": "筛选文件",
+  "filter_menu_prefix": "筛选：",
   "filter_menu_file_rules": "文件规则",
   "filter_menu_git_status": "Git 状态",
   "filter_menu_clear_filters": "清除筛选条件",

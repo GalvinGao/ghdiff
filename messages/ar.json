@@ -43,6 +43,7 @@
   "filter_menu_renamed": "أُعيدت تسميته",
   "filter_menu_deleted": "محذوف",
   "filter_menu_filter_files": "تصفية الملفات",
+  "filter_menu_prefix": "التصفية:",
   "filter_menu_file_rules": "قواعد الملفات",
   "filter_menu_git_status": "حالة Git",
   "filter_menu_clear_filters": "مسح عوامل التصفية",

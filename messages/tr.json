@@ -43,6 +43,7 @@
   "filter_menu_renamed": "Yeniden adlandırıldı",
   "filter_menu_deleted": "Silindi",
   "filter_menu_filter_files": "Dosyaları filtrele",
+  "filter_menu_prefix": "Filtre:",
   "filter_menu_file_rules": "Dosya kuralları",
   "filter_menu_git_status": "Git durumu",
   "filter_menu_clear_filters": "Filtreleri temizle",

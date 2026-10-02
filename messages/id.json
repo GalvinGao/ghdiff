@@ -43,6 +43,7 @@
   "filter_menu_renamed": "Diganti nama",
   "filter_menu_deleted": "Dihapus",
   "filter_menu_filter_files": "Filter file",
+  "filter_menu_prefix": "Filter:",
   "filter_menu_file_rules": "Aturan file",
   "filter_menu_git_status": "Status Git",
   "filter_menu_clear_filters": "Hapus semua filter",

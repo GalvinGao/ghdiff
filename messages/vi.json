@@ -43,6 +43,7 @@
   "filter_menu_renamed": "Đã đổi tên",
   "filter_menu_deleted": "Đã xóa",
   "filter_menu_filter_files": "Lọc tệp",
+  "filter_menu_prefix": "Bộ lọc:",
   "filter_menu_file_rules": "Quy tắc tệp",
   "filter_menu_git_status": "Trạng thái Git",
   "filter_menu_clear_filters": "Xóa bộ lọc",
