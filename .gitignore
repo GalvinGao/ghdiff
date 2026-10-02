@@ -24,3 +24,4 @@ Thumbs.db
 # Compiled from messages/*.json before development, tests, and builds.
 src/paraglide/
 project.inlang/cache/
+storybook-static/

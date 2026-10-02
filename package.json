@@ -20,7 +20,11 @@
     "fmt:check": "oxfmt --check",
     "test": "pnpm i18n:compile && node --test --experimental-strip-types \"src/lib/**/*.test.ts\" \"cli/src/**/*.test.ts\"",
     "i18n:compile": "node scripts/compile-i18n.mjs && node scripts/build-userscript.mjs",
-    "i18n:check": "node scripts/check-i18n.mjs"
+    "i18n:check": "node scripts/check-i18n.mjs",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook:build": "storybook build",
+    "storybook:shot": "node scripts/storybook-shot.mjs",
+    "storybook:video": "node .agents/skills/pr-visual-evidence/scripts/record-interaction.mjs scripts/storybook-dialog.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -67,6 +71,8 @@
     "@cloudflare/vite-plugin": "^1.53.1",
     "@inlang/plugin-message-format": "4.4.0",
     "@j178/prek": "^0.4.14",
+    "@storybook/addon-themes": "^10.6.0",
+    "@storybook/react-vite": "^10.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
@@ -75,6 +81,8 @@
     "nitro": "3.0.260903-beta",
     "oxfmt": "^0.64.0",
     "oxlint": "^1.79.0",
+    "playwright": "^1.63.0",
+    "storybook": "^10.6.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",

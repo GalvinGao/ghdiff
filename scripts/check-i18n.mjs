@@ -234,6 +234,7 @@ function sourceFiles(directory) {
       return entry.name === 'paraglide' ? [] : sourceFiles(file);
     return /\.(?:ts|tsx|js)$/.test(file) &&
       !file.endsWith('.test.ts') &&
+      !file.endsWith('.stories.tsx') &&
       !file.endsWith('routeTree.gen.ts')
       ? [file]
       : [];

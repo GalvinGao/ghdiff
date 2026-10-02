@@ -2962,3 +2962,12 @@ pauses in a hidden tab and never has two requests in flight is what it does
 without being asked. `AppShell` makes its client per render, for the same reason
 jotai's `Provider` sits there. Every other request stays a hook of its own;
 moving one onto the library is a change to make deliberately, not in passing.
+
+## PR visual evidence
+
+For reviewer-visible UI changes, use
+[the PR visual evidence skill](.agents/skills/pr-visual-evidence/SKILL.md). Run
+`pnpm storybook` for component fixtures and `pnpm storybook:shot` or
+`pnpm storybook:video` for captures. Keep fixture stories beside components;
+Storybook's separate Vite config must not load the app's Cloudflare/Start
+plugins.
