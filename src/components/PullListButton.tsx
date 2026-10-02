@@ -51,10 +51,14 @@ export function PullListButton({ className }: { className?: string }) {
         <IconSidebarLeftOpen size={15} />
       </Button>
 
+      {/* A sheet, because this is the left bar brought up from below: a list
+          to pick from on a screen held in one hand, where the bottom edge is
+          where the thumb already is and a swipe down is how it goes away. */}
       <Dialog
         className="p-1"
         onClose={() => setOpen(false)}
         open={open}
+        presentation="sheet"
         title={m.pull_list_button_open_pull_requests()}
       >
         <PullRequestList

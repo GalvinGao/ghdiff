@@ -1430,6 +1430,20 @@ the next. `null` is what says nobody has pressed anything, which is why
 `acceptViewerControls` refuses an object with none of the five fields in it
 rather than reading it as the default set: those two answers differ on a phone.
 
+**The pull request list on a phone is a sheet, not a card.** `Dialog` takes
+`presentation="sheet"`, and `PullListButton` is the one caller that asks for it:
+the window rises from the bottom edge, as wide as the screen, with a grabber and
+a centred title, and the app behind it steps back — `[data-sheet-host]` on
+`AppShell` scales to 94% and rounds its corners on a black document. The sheet
+is in the top layer, so that transform never reaches it although the sheet sits
+inside the host in the document. `useSheetDrag` lets it go on a swipe down:
+pointer events on the title bar, which is `touch-action: none`, and touch events
+on a list already at its top, because a scroll region ends the pointer stream in
+`pointercancel` the moment a finger moves. The drag writes onto the nodes and
+`--sheet-drag` onto the document element, so the backdrop and the page come
+forward with the finger and React is told nothing until the release. A question
+with two answers stays a card on every screen.
+
 **The header scrolls sideways, and only a measurement may say so.** More
 controls than 402px holds, so on a phone that row is `overflow-x-auto` and the
 fade at an end says there is more that way. `useEdgeFade` writes

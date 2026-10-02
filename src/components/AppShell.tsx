@@ -38,7 +38,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     <Provider>
       <QueryClientProvider client={queryClient}>
         <AppDataProvider>
-          <div dir="ltr" className="flex min-h-0 flex-1">
+          {/* `data-sheet-host` is what steps back behind an open sheet, and
+              `bg-canvas` is what it steps back with: the document turns black
+              behind it then, and a transparent shell would let that through. */}
+          <div
+            dir="ltr"
+            className="bg-canvas flex min-h-0 flex-1"
+            data-sheet-host=""
+          >
             <PullRail />
             <div
               dir={textDirection(getLocale())}
