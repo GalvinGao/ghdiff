@@ -119,7 +119,12 @@ export function FilterMenu({
             className={active ? 'text-accent' : 'text-ink-faint'}
             size={13}
           />
-          <span className="truncate">{activeLabel(state)}</span>
+          {/* The word says what the control is; the value after it is what the
+              filter is set to, and only that half reads as ink. */}
+          <span className="truncate">
+            <span className="text-ink-faint">Filter: </span>
+            {activeLabel(state)}
+          </span>
           {hiddenCount > 0 && (
             <span className="text-accent ml-auto shrink-0 tabular-nums">
               {m.filter_hidden_count({ count: hiddenCount })}
