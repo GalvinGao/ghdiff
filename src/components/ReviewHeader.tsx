@@ -249,9 +249,10 @@ export function ReviewHeader({
       {pull != null && <PullTitle pull={pull} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5">
-        {/* First in the group, because it is drawn only once GitHub says there
-            is something deployed: the group is pinned to the right edge, so a
-            control that arrives at its left end moves nothing else. */}
+        {/* First in the group, because it is drawn while GitHub is asked and
+            then only if something is deployed: the group is pinned to the
+            right edge, so a control that comes and goes at its left end moves
+            nothing else. */}
         {gitHubTarget != null && (
           <DeploymentMenu session={session} target={gitHubTarget} />
         )}

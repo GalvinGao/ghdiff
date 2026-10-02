@@ -908,6 +908,7 @@
   "deployment_menu_outdated": "Устарело",
   "deployment_menu_replaced": "Заменено более новой сборкой",
   "deployment_menu_no_status": "Статус не сообщён",
+  "deployment_menu_checking": "Проверяем развёртывания",
   "deployment_menu_trigger": "Развёртывания: {state}",
   "deployment_menu_older": "{state}, из более старого коммита",
   "deployment_menu_head_ready": "Сборка {sha} готова.",

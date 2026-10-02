@@ -963,6 +963,7 @@
   "deployment_menu_outdated": "قديم",
   "deployment_menu_replaced": "استُبدل ببناء أحدث",
   "deployment_menu_no_status": "لم تُبلَّغ أي حالة",
+  "deployment_menu_checking": "جارٍ البحث عن عمليات النشر",
   "deployment_menu_trigger": "عمليات النشر: {state}",
   "deployment_menu_older": "{state}، من إيداع أقدم",
   "deployment_menu_head_ready": "بناء ⁦{sha}⁩ جاهز.",

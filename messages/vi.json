@@ -834,6 +834,7 @@
   "deployment_menu_outdated": "Đã cũ",
   "deployment_menu_replaced": "Đã được thay bằng bản dựng mới hơn",
   "deployment_menu_no_status": "Chưa báo trạng thái",
+  "deployment_menu_checking": "Đang kiểm tra triển khai",
   "deployment_menu_trigger": "Triển khai: {state}",
   "deployment_menu_older": "{state}, từ một commit cũ hơn",
   "deployment_menu_head_ready": "Bản dựng của {sha} đã sẵn sàng.",

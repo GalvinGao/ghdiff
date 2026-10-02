@@ -848,6 +848,7 @@
   "deployment_menu_outdated": "Veraltet",
   "deployment_menu_replaced": "Durch einen neueren Build ersetzt",
   "deployment_menu_no_status": "Kein Status gemeldet",
+  "deployment_menu_checking": "Deployments werden geprüft",
   "deployment_menu_trigger": "Deployments: {state}",
   "deployment_menu_older": "{state}, aus einem älteren Commit",
   "deployment_menu_head_ready": "Der Build von {sha} ist bereit.",

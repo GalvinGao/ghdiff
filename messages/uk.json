@@ -920,6 +920,7 @@
   "deployment_menu_outdated": "Застаріло",
   "deployment_menu_replaced": "Замінено новішою збіркою",
   "deployment_menu_no_status": "Статус не повідомлено",
+  "deployment_menu_checking": "Перевіряємо розгортання",
   "deployment_menu_trigger": "Розгортання: {state}",
   "deployment_menu_older": "{state}, зі старішого коміту",
   "deployment_menu_head_ready": "Збірка {sha} готова.",

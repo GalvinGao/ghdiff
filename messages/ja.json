@@ -838,6 +838,7 @@
   "deployment_menu_outdated": "古い",
   "deployment_menu_replaced": "新しいビルドに置き換えられました",
   "deployment_menu_no_status": "ステータスが報告されていません",
+  "deployment_menu_checking": "デプロイを確認中",
   "deployment_menu_trigger": "デプロイ: {state}",
   "deployment_menu_older": "{state}（古いコミット）",
   "deployment_menu_head_ready": "{sha} のビルドは準備完了です。",

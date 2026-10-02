@@ -830,6 +830,7 @@
   "deployment_menu_outdated": "오래됨",
   "deployment_menu_replaced": "더 새로운 빌드로 대체됨",
   "deployment_menu_no_status": "보고된 상태 없음",
+  "deployment_menu_checking": "배포 확인 중",
   "deployment_menu_trigger": "배포: {state}",
   "deployment_menu_older": "{state}, 이전 커밋",
   "deployment_menu_head_ready": "{sha} 빌드가 준비됐어요.",

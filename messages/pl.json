@@ -906,6 +906,7 @@
   "deployment_menu_outdated": "Nieaktualne",
   "deployment_menu_replaced": "Zastąpione nowszym buildem",
   "deployment_menu_no_status": "Nie zgłoszono statusu",
+  "deployment_menu_checking": "Sprawdzanie wdrożeń",
   "deployment_menu_trigger": "Wdrożenia: {state}",
   "deployment_menu_older": "{state}, ze starszego commita",
   "deployment_menu_head_ready": "Build {sha} jest gotowy.",

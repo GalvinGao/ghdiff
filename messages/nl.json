@@ -848,6 +848,7 @@
   "deployment_menu_outdated": "Verouderd",
   "deployment_menu_replaced": "Vervangen door een nieuwere build",
   "deployment_menu_no_status": "Geen status gemeld",
+  "deployment_menu_checking": "Deployments controleren",
   "deployment_menu_trigger": "Deployments: {state}",
   "deployment_menu_older": "{state}, van een oudere commit",
   "deployment_menu_head_ready": "De build van {sha} is klaar.",

@@ -850,6 +850,7 @@
   "deployment_menu_outdated": "Obsoleto",
   "deployment_menu_replaced": "Sostituito da una build più recente",
   "deployment_menu_no_status": "Nessuno stato segnalato",
+  "deployment_menu_checking": "Verifica dei deployment in corso",
   "deployment_menu_trigger": "Deployment: {state}",
   "deployment_menu_older": "{state}, da un commit precedente",
   "deployment_menu_head_ready": "La build di {sha} è pronta.",

@@ -847,6 +847,7 @@
   "deployment_menu_outdated": "Outdated",
   "deployment_menu_replaced": "Replaced by a newer build",
   "deployment_menu_no_status": "No status reported",
+  "deployment_menu_checking": "Checking for deployments",
   "deployment_menu_trigger": "Deployments: {state}",
   "deployment_menu_older": "{state}, from an older commit",
   "deployment_menu_head_ready": "The build of {sha} is ready.",

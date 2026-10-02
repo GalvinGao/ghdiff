@@ -116,9 +116,11 @@ function stateLabel(state: DeploymentState): string {
  * Every deployment follows, newest first, for the reviewer who wants the build
  * of one particular push. A press on either opens the build itself.
  *
- * Nothing is drawn for a target with no deployments, which is most of them. The
- * button arrives after the header's first paint, and it is the leftmost of its
- * group, so its arrival moves nothing to its right.
+ * Until GitHub has answered, the button is drawn faint and pulsing, and it
+ * opens nothing: there is nothing in it yet. Nothing at all is drawn once the
+ * answer is that there are no deployments, which is most targets, and nothing
+ * after a failure either. The button is the leftmost of its group, so neither
+ * its arrival nor its departure moves anything to its right.
  */
 export function DeploymentMenu({
   session,
@@ -136,6 +138,9 @@ export function DeploymentMenu({
   // and no clock runs behind a closed menu.
   const [openedAt, setOpenedAt] = useState<number | null>(null);
   const data = query.data;
+  // Pending covers the session check too: the query is held back until the
+  // session answers, and that wait is part of the same wait for the reviewer.
+  if (query.isPending) return <DeploymentMenuLoading />;
   if (data == null || data.deployments.length === 0) return null;
 
   const latest = latestByEnvironment(data);
@@ -201,6 +206,28 @@ export function DeploymentMenu({
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/**
+ * The same button before GitHub has answered. It wears no dot, because the dot
+ * is the answer, and it is disabled rather than an empty menu.
+ */
+function DeploymentMenuLoading() {
+  return (
+    <Button
+      disabled
+      aria-label={m.deployment_menu_checking()}
+      className="shrink-0"
+      size="icon"
+      title={m.deployment_menu_checking()}
+      variant="chrome"
+    >
+      <RocketIcon
+        className="animate-pulse motion-reduce:animate-none"
+        size={15}
+      />
+    </Button>
   );
 }
 

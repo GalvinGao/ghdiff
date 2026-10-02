@@ -848,6 +848,7 @@
   "deployment_menu_outdated": "पुराना",
   "deployment_menu_replaced": "नए बिल्ड से बदल दिया गया",
   "deployment_menu_no_status": "कोई स्थिति नहीं बताई गई",
+  "deployment_menu_checking": "डिप्लॉयमेंट जाँचे जा रहे हैं",
   "deployment_menu_trigger": "डिप्लॉयमेंट: {state}",
   "deployment_menu_older": "{state}, पुराने कमिट से",
   "deployment_menu_head_ready": "{sha} का बिल्ड तैयार है।",

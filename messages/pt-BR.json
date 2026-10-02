@@ -849,6 +849,7 @@
   "deployment_menu_outdated": "Desatualizado",
   "deployment_menu_replaced": "Substituído por uma versão mais recente",
   "deployment_menu_no_status": "Nenhum status informado",
+  "deployment_menu_checking": "Verificando implantações",
   "deployment_menu_trigger": "Implantações: {state}",
   "deployment_menu_older": "{state}, de um commit anterior",
   "deployment_menu_head_ready": "A versão de {sha} está pronta.",

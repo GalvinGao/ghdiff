@@ -861,6 +861,7 @@
   "deployment_menu_outdated": "Obsolète",
   "deployment_menu_replaced": "Remplacé par une version plus récente",
   "deployment_menu_no_status": "Aucun statut signalé",
+  "deployment_menu_checking": "Recherche des déploiements",
   "deployment_menu_trigger": "Déploiements : {state}",
   "deployment_menu_older": "{state}, d’un commit antérieur",
   "deployment_menu_head_ready": "La version de {sha} est prête.",

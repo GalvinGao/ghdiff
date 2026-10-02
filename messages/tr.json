@@ -838,6 +838,7 @@
   "deployment_menu_outdated": "Eski",
   "deployment_menu_replaced": "Daha yeni bir derlemeyle değiştirildi",
   "deployment_menu_no_status": "Durum bildirilmedi",
+  "deployment_menu_checking": "Dağıtımlar denetleniyor",
   "deployment_menu_trigger": "Dağıtımlar: {state}",
   "deployment_menu_older": "{state}, daha eski bir commit'ten",
   "deployment_menu_head_ready": "{sha} derlemesi hazır.",

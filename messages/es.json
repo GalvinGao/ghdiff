@@ -849,6 +849,7 @@
   "deployment_menu_outdated": "Desactualizado",
   "deployment_menu_replaced": "Sustituido por una compilación más reciente",
   "deployment_menu_no_status": "No se informó ningún estado",
+  "deployment_menu_checking": "Buscando despliegues",
   "deployment_menu_trigger": "Despliegues: {state}",
   "deployment_menu_older": "{state}, de un commit anterior",
   "deployment_menu_head_ready": "La compilación de {sha} está lista.",

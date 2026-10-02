@@ -833,6 +833,7 @@
   "deployment_menu_outdated": "已过时",
   "deployment_menu_replaced": "已被更新的构建取代",
   "deployment_menu_no_status": "未报告状态",
+  "deployment_menu_checking": "正在检查部署",
   "deployment_menu_trigger": "部署：{state}",
   "deployment_menu_older": "{state}，来自较早的提交",
   "deployment_menu_head_ready": "{sha} 的构建已就绪。",

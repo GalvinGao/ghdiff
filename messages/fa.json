@@ -849,6 +849,7 @@
   "deployment_menu_outdated": "قدیمی",
   "deployment_menu_replaced": "با ساختی جدیدتر جایگزین شد",
   "deployment_menu_no_status": "وضعیتی گزارش نشده است",
+  "deployment_menu_checking": "در حال بررسی استقرارها",
   "deployment_menu_trigger": "استقرارها: {state}",
   "deployment_menu_older": "{state}، از یک کامیت قدیمی‌تر",
   "deployment_menu_head_ready": "ساخت ⁦{sha}⁩ آماده است.",

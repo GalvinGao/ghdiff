@@ -849,6 +849,7 @@
   "deployment_menu_outdated": "পুরোনো",
   "deployment_menu_replaced": "নতুন বিল্ড দিয়ে প্রতিস্থাপিত",
   "deployment_menu_no_status": "কোনো স্ট্যাটাস জানানো হয়নি",
+  "deployment_menu_checking": "ডিপ্লয়মেন্ট খোঁজা হচ্ছে",
   "deployment_menu_trigger": "ডিপ্লয়মেন্ট: {state}",
   "deployment_menu_older": "{state}, পুরোনো কমিট থেকে",
   "deployment_menu_head_ready": "{sha}-এর বিল্ড প্রস্তুত।",

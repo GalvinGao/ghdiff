@@ -826,6 +826,7 @@
   "deployment_menu_outdated": "Usang",
   "deployment_menu_replaced": "Digantikan oleh build yang lebih baru",
   "deployment_menu_no_status": "Tidak ada status yang dilaporkan",
+  "deployment_menu_checking": "Memeriksa deployment",
   "deployment_menu_trigger": "Deployment: {state}",
   "deployment_menu_older": "{state}, dari commit yang lebih lama",
   "deployment_menu_head_ready": "Build {sha} sudah siap.",
