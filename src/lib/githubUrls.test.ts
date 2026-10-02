@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  accountAvatarUrl,
   blobPermalinkUrl,
   commitUrl,
   repoPullsUrl,
@@ -10,6 +11,15 @@ import {
 } from './githubUrls.ts';
 
 const REF = { owner: 'acme', repo: 'app' };
+
+describe('accountAvatarUrl', () => {
+  it('is the login with .png and a size', () => {
+    assert.equal(
+      accountAvatarUrl('acme', 32),
+      'https://github.com/acme.png?size=32'
+    );
+  });
+});
 
 describe('repoUrl', () => {
   it('is the repository page', () => {

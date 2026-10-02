@@ -1272,9 +1272,11 @@ for `latestOpinionatedReviews`, `reviewDecision` and the head commit's
 `statusCheckRollup`, none of which REST carries. GraphQL refuses an anonymous
 caller, so a signed-out caller gets the REST list and `PullSummary.status` stays
 **absent** — not `none`. Absent means "never asked", and `PullRow` leaves the
-square off the row rather than claim there is no review and no CI. It keeps the
-lane the square sits in, so the number after it starts on the same pixel either
-way.
+square off the row rather than claim there is no review and no CI. The lane the
+square sits in is the list's to keep or drop, never one row's: one answer is
+asked with a token or without one, so every row in it has the axes or none does.
+A signed-out list drops the lane on every row and gives the titles its width; a
+signed-in one keeps it on every row, so every number starts on the same pixel.
 
 **The review axis is the reviews, and `reviewDecision` only adds to them.** That
 field was the whole of the axis once, and it answers a different question:

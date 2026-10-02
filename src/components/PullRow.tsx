@@ -15,9 +15,13 @@ import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
 // every pull request the list holds is open — and it took half the lane from the
 // one glyph that carries new information.
 //
-// The lane keeps its width when it has no square to hold. A reviewer with no
-// token never had the review and the check axes fetched, and a row that closed
-// the gap would start its number under the previous row's title.
+// The lane is the list's to keep or drop, never the row's. A reviewer with no
+// token never had the review and the check axes fetched, and that is true of
+// every row in one answer: `pulls.list` asks with the token or without it, once.
+// So a signed-out list drops the lane on every row and gives its width to the
+// titles, and a signed-in one keeps it on every row, square or no square. A row
+// that closed the gap alone would start its number under the previous row's
+// title.
 const MARK_SIZE = 13;
 /** `gap-1.5`: what stands between the lane and the number. */
 const MARK_GAP = 6;
@@ -52,10 +56,13 @@ export function PullRow({
   current,
   onNavigate,
   pull,
+  statusLane,
 }: {
   current?: GitHubPullTarget;
   onNavigate?(): void;
   pull: PullSummary;
+  /** Whether the list holds a lane for the status square on every row. */
+  statusLane: boolean;
 }) {
   const isCurrent = isCurrentPull(pull, current);
   return (
@@ -91,17 +98,19 @@ export function PullRow({
             in the collapsed bar, so toggling the bar flies one square between
             the two layouts (hooks/useRailFlip.ts). An empty lane is not
             marked: a flight needs a square to fly. */}
-        <span
-          className="flex shrink-0 items-center justify-center"
-          data-rail-flip={
-            pull.status == null ? undefined : railPullFlipKey(pull)
-          }
-          style={{ width: MARK_SIZE }}
-        >
-          {pull.status != null && (
-            <PullStatusMark size={MARK_SIZE} status={pull.status} />
-          )}
-        </span>
+        {statusLane && (
+          <span
+            className="flex shrink-0 items-center justify-center"
+            data-rail-flip={
+              pull.status == null ? undefined : railPullFlipKey(pull)
+            }
+            style={{ width: MARK_SIZE }}
+          >
+            {pull.status != null && (
+              <PullStatusMark size={MARK_SIZE} status={pull.status} />
+            )}
+          </span>
+        )}
         <span
           className="text-ink-faint shrink-0 font-mono text-xs tabular-nums"
           dir="ltr"
@@ -137,7 +146,7 @@ export function PullRow({
       <span
         dir="ltr"
         className="text-ink-faint block truncate font-mono text-[11px]"
-        style={{ paddingLeft: TEXT_INSET }}
+        style={statusLane ? { paddingLeft: TEXT_INSET } : undefined}
       >
         {pull.headRef}
       </span>
