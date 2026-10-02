@@ -278,8 +278,8 @@ function RailContent({
     ? m.pull_rail_show_the_pull_requests()
     : m.pull_rail_hide_the_pull_requests();
   // Everything that changes how wide the switch is without the bar moving.
-  const { counts, tabs } = usePullScope(pulls, current);
-  const fitKey = `${tabs.join()}:${String(counts.mine)}:${String(counts.others)}:${String(counts.stack?.length)}`;
+  const { counts, tabs, waiting } = usePullScope(pulls, current);
+  const fitKey = `${(waiting?.tabs ?? tabs).join()}:${String(counts.mine)}:${String(counts.others)}:${String(counts.stack?.length)}`;
   const fitRef = useRowFit<HTMLDivElement>(HEADER_FIT, fitKey);
   return (
     <>

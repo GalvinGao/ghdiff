@@ -5,6 +5,7 @@ import { StackIcon } from '@primer/octicons-react/StackIcon';
 import { type ComponentType, type KeyboardEvent, useRef } from 'react';
 
 import { m } from '../paraglide/messages.js';
+import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { usePullScope } from '@/hooks/usePullScope';
@@ -59,8 +60,16 @@ export function PullScopeSwitch({
   size = 'default',
   state,
 }: PullScopeSwitchProps) {
-  const { counts, scope, setScope, tabs } = usePullScope(state, current);
+  const { counts, scope, setScope, tabs, waiting } = usePullScope(
+    state,
+    current
+  );
   const listRef = useRef<HTMLDivElement>(null);
+  if (waiting != null) {
+    return waiting.tabs.length < 2 ? null : (
+      <ScopeSkeleton className={className} size={size} waiting={waiting} />
+    );
+  }
   if (tabs.length < 2) return null;
 
   const tabFor = (value: PullScope) => {
@@ -128,6 +137,67 @@ export function PullScopeSwitch({
       <div className={FRAME_CLASS}>{authorTabs.map(tabFor)}</div>
       {tabs.includes('stack') && (
         <div className={FRAME_CLASS}>{tabFor('stack')}</div>
+      )}
+    </div>
+  );
+}
+
+/** A scope's name: its tab's label, and the title of the sheet it fills. */
+export function pullScopeLabel(scope: PullScope): string {
+  return TABS[scope].label();
+}
+
+/**
+ * The tabs before the list has arrived, in the shape the answer is expected
+ * to take: the same frames, the same tabs at the same size, and the expected
+ * choice already lifted, with a bar where each count will be. The list under
+ * it draws a skeleton for the same wait, and a switch that appeared only once
+ * the list did pushed every row of that skeleton down as it arrived.
+ */
+function ScopeSkeleton({
+  className,
+  size,
+  waiting,
+}: {
+  className?: string;
+  size: Size;
+  waiting: { scope: PullScope; tabs: readonly PullScope[] };
+}) {
+  const tab = (value: PullScope) => {
+    const Glyph = TABS[value].glyph;
+    return (
+      <span
+        key={value}
+        className={cn(
+          'inline-flex shrink-0 items-center rounded-md border',
+          size === 'touch'
+            ? 'h-8 gap-1.5 px-2'
+            : 'h-6 gap-1 px-1.5 group-[[data-fit~=tight]]/rail-header:gap-0.5 group-[[data-fit~=tight]]/rail-header:px-1',
+          value === waiting.scope
+            ? 'border-line bg-raised text-ink-faint shadow-sm'
+            : 'text-ink-faint/60 border-transparent'
+        )}
+      >
+        <Glyph />
+        {/* Two digits wide, which is the count most lists have. */}
+        <SkeletonBar className="h-2.5 w-[2ch] group-[[data-fit~=bare]]/rail-header:hidden" />
+      </span>
+    );
+  };
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        'flex shrink-0 animate-pulse items-center gap-1.5 motion-reduce:animate-none',
+        size !== 'touch' && 'group-[[data-fit~=tight]]/rail-header:gap-1',
+        className
+      )}
+    >
+      <div className={FRAME_CLASS}>
+        {waiting.tabs.filter((value) => value !== 'stack').map(tab)}
+      </div>
+      {waiting.tabs.includes('stack') && (
+        <div className={FRAME_CLASS}>{tab('stack')}</div>
       )}
     </div>
   );

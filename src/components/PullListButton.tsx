@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullRequestList } from '@/components/PullRequestList';
-import { PullScopeSwitch } from '@/components/PullScopeSwitch';
+import { pullScopeLabel, PullScopeSwitch } from '@/components/PullScopeSwitch';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Spinner } from '@/components/ui/Spinner';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useCurrentPull } from '@/hooks/useCurrentPull';
+import { useHydrated } from '@/hooks/useHydrated';
 import { usePullScope } from '@/hooks/usePullScope';
 
 // What the left bar is on a phone.
@@ -33,8 +34,20 @@ export function PullListButton({ className }: { className?: string }) {
   const [editing, setEditing] = useState(false);
   const current = useCurrentPull();
   // Asked here as well as in the switch, because a toolbar row with nothing in
-  // it would still take its height out of the sheet.
-  const { tabs } = usePullScope(pulls, current);
+  // it would still take its height out of the sheet, and because the sheet is
+  // titled by the tab that is chosen. While the list is on its way both come
+  // from the guess the skeleton draws, so neither changes when the answer
+  // lands unless the guess was wrong.
+  const scope = usePullScope(pulls, current);
+  const tabs = scope.waiting?.tabs ?? scope.tabs;
+  const chosen = scope.waiting?.scope ?? scope.scope;
+  // The sheet is mounted only past hydration. This button is in the review
+  // route, which hydrates after the bar has already read the stored scope, so
+  // a sheet rendered on that pass titled itself with the stored tab where the
+  // server had the fallback, and React rebuilt the route over it. The sheet is
+  // closed on the server and on the first paint alike, so waiting costs
+  // nothing anybody sees.
+  const hydrated = useHydrated();
 
   // The same test the bar itself applies: with nothing watched there is no
   // list to open, and a button onto an empty window is a promise this app
@@ -59,65 +72,70 @@ export function PullListButton({ className }: { className?: string }) {
       {/* A sheet, because this is the left bar brought up from below: a list
           to pick from on a screen held in one hand, where the bottom edge is
           where the thumb already is and a swipe down is how it goes away. */}
-      <Dialog
-        className="p-1"
-        onClose={() => setOpen(false)}
-        open={open}
-        presentation="sheet"
-        title={m.pull_list_button_open_pull_requests()}
-        // Under the title rather than over the list, because the bar is the
-        // part of this sheet that does not scroll away, and the repository
-        // headings in the list pin under whatever height the bar has.
-        toolbar={
-          tabs.length > 1 ? (
-            <PullScopeSwitch current={current} size="touch" state={pulls} />
-          ) : undefined
-        }
-      >
-        <PullRequestList
-          current={current}
-          hydrated={watched.hydrated}
-          repos={watched.repos}
-          state={pulls}
-          // A row taps through to a review, and the window it was tapped in
-          // has to go with it: the dialog sits in the top layer, above the
-          // diff the reviewer just asked for.
-          onNavigate={() => setOpen(false)}
-        />
-        {/* The foot of the bar, which the list needs as much here: the watch
-            list is what fills it, and a reviewer looking at an answer they did
-            not expect wants the way to change it in the same window. */}
-        <div className="border-line mt-1 flex items-center gap-1 border-t px-1 pt-1">
-          <Button
-            className="min-w-0"
-            size="sm"
-            variant="chrome"
-            onClick={() => setEditing(true)}
-          >
-            <span className="truncate">
-              {m.pull_list_button_watched_repos()}
-            </span>
-          </Button>
-          <Button
-            aria-label={m.pull_list_button_reload_the_pull_requests()}
-            className="ml-auto"
-            disabled={pulls.loading}
-            size="icon-sm"
-            title={m.pull_list_button_reload_the_pull_requests()}
-            variant="chrome"
-            onClick={pulls.reload}
-          >
-            {pulls.loading ? (
-              <Spinner
-                label={m.pull_list_button_loading_the_pull_requests()}
-                size={14}
-              />
-            ) : (
-              <IconReload size={14} />
-            )}
-          </Button>
-        </div>
-      </Dialog>
+      {hydrated && (
+        <Dialog
+          className="p-1"
+          onClose={() => setOpen(false)}
+          open={open}
+          presentation="sheet"
+          // The sheet is the list the chosen tab draws, so it says which one:
+          // a title that read "Open pull requests" over Mine alone named a list
+          // that was not on screen.
+          title={pullScopeLabel(chosen)}
+          // Under the title rather than over the list, because the bar is the
+          // part of this sheet that does not scroll away, and the repository
+          // headings in the list pin under whatever height the bar has.
+          toolbar={
+            tabs.length > 1 ? (
+              <PullScopeSwitch current={current} size="touch" state={pulls} />
+            ) : undefined
+          }
+        >
+          <PullRequestList
+            current={current}
+            hydrated={watched.hydrated}
+            repos={watched.repos}
+            state={pulls}
+            // A row taps through to a review, and the window it was tapped in
+            // has to go with it: the dialog sits in the top layer, above the
+            // diff the reviewer just asked for.
+            onNavigate={() => setOpen(false)}
+          />
+          {/* The foot of the bar, which the list needs as much here: the watch
+              list is what fills it, and a reviewer looking at an answer they did
+              not expect wants the way to change it in the same window. */}
+          <div className="border-line mt-1 flex items-center gap-1 border-t px-1 pt-1">
+            <Button
+              className="min-w-0"
+              size="sm"
+              variant="chrome"
+              onClick={() => setEditing(true)}
+            >
+              <span className="truncate">
+                {m.pull_list_button_watched_repos()}
+              </span>
+            </Button>
+            <Button
+              aria-label={m.pull_list_button_reload_the_pull_requests()}
+              className="ml-auto"
+              disabled={pulls.loading}
+              size="icon-sm"
+              title={m.pull_list_button_reload_the_pull_requests()}
+              variant="chrome"
+              onClick={pulls.reload}
+            >
+              {pulls.loading ? (
+                <Spinner
+                  label={m.pull_list_button_loading_the_pull_requests()}
+                  size={14}
+                />
+              ) : (
+                <IconReload size={14} />
+              )}
+            </Button>
+          </div>
+        </Dialog>
+      )}
 
       <WatchedReposDialog
         open={editing}

@@ -6,6 +6,7 @@ import {
   availablePullScopes,
   countPullScopes,
   currentStackPulls,
+  expectedPullScopes,
   effectivePullScope,
   scopePulls,
 } from './pullScope.ts';
@@ -148,5 +149,29 @@ describe('availablePullScopes', () => {
     ]);
     assert.deepEqual(availablePullScopes(undefined, inStack), ['all', 'stack']);
     assert.deepEqual(availablePullScopes(undefined, alone), ['all']);
+  });
+});
+
+describe('expectedPullScopes', () => {
+  it('draws the tabs a viewer will get, and the stack only when it was chosen', () => {
+    assert.deepEqual(expectedPullScopes('mine', true, at(1)), {
+      scope: 'mine',
+      tabs: ['all', 'mine', 'others'],
+    });
+    assert.deepEqual(expectedPullScopes('stack', true, at(1)), {
+      scope: 'stack',
+      tabs: ['all', 'mine', 'others', 'stack'],
+    });
+  });
+
+  it('expects everything where the stored choice cannot apply', () => {
+    assert.deepEqual(expectedPullScopes('stack', true, undefined), {
+      scope: 'all',
+      tabs: ['all', 'mine', 'others'],
+    });
+    assert.deepEqual(expectedPullScopes('mine', false, at(1)), {
+      scope: 'all',
+      tabs: ['all'],
+    });
   });
 });

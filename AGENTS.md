@@ -669,7 +669,30 @@ title, inside the sticky bar that does not scroll away. It is part of the bar's
 height, which `Dialog` states as `--app-sticky-top`, so the repository headings
 the list pins under the bar pin under the toolbar too. It is part of the drag
 handle as well, and `useSheetDrag` already leaves a press on a button to the
-button. Its tabs are 32px tall.
+button. Its tabs are 32px tall. The sheet's title is the chosen tab's name, so
+it names the list on screen rather than "Open pull requests" over Mine alone.
+
+**The sheet does not move while it fills.** Three things used to move it, and
+each was a fix of its own. A sheet is always at its full height — iOS's large
+detent — so a skeleton a third of the screen tall no longer shoots up to the
+full height when the answer lands. The switch has a skeleton of its own,
+`ScopeSkeleton`, drawn from `expectedPullScopes`: the tabs a signed-in reviewer
+will get, the stored tab already chosen, and the stack only when the stored tab
+was the stack, because whether the pull request on screen has one is part of the
+answer still on its way. The title follows the same guess. And a sheet's body is
+not inside `AnimatedHeight`: that box clips with `overflow: hidden` while it
+travels, which makes it the scroll container of anything sticky inside it, so
+for every frame a tab change spent travelling the repository heading was pinned
+`--app-sticky-top` below the top of the box, over a row. A card keeps the box,
+and nothing sticky inside a card's body may rely on the dialog's scroll while it
+does.
+
+The sheet mounts only past hydration, through `useHydrated`. `PullListButton`
+sits in the review route, which hydrates as a lazy chunk after the bar has
+already read the stored scope, so a sheet rendered on that pass titled itself
+with the stored tab where the server had the fallback, and React rebuilt the
+route over the difference. The sheet is closed on the server and on the first
+paint, so the wait is invisible.
 
 Every tab has a `Tooltip` with its name, in the bar and in the sheet alike: the
 glyph and the count are all a tab draws, and a narrow desktop window gets the

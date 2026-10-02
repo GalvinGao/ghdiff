@@ -100,6 +100,28 @@ export function availablePullScopes(
   return scopes;
 }
 
+/**
+ * The tabs and the chosen one to draw while the list has not arrived yet, so
+ * the wait has the answer's shape: a skeleton of the tabs that will be there,
+ * under a title that names the tab that will be chosen. Nobody signed in is a
+ * switch with nothing to offer, unless the stack is: whether the pull request
+ * on screen has one is part of the answer still on its way, so the stored
+ * choice is the guess — a reviewer who left the list on This Stack is very
+ * likely reading a stack again. A wrong guess costs one change of shape when
+ * the answer lands, which is what every wait cost before.
+ */
+export function expectedPullScopes(
+  stored: PullScope,
+  signedIn: boolean,
+  current: GitHubPullTarget | undefined
+): { scope: PullScope; tabs: PullScope[] } {
+  const stack = stored === 'stack' && current != null;
+  const tabs: PullScope[] = ['all'];
+  if (signedIn) tabs.push('mine', 'others');
+  if (stack) tabs.push('stack');
+  return { scope: tabs.includes(stored) ? stored : 'all', tabs };
+}
+
 /** The scope that applies: the stored one, or `all` where it cannot. */
 export function effectivePullScope(
   scope: PullScope,

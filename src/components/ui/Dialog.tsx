@@ -60,6 +60,14 @@ export const dialogPrimaryAction: Record<string, string> = {
 // The caller picks, because the caller knows what the window is for. Only a
 // window that is a place to pick something from is a sheet today; a question
 // with two answers is still a card on every screen.
+//
+// A sheet is always as tall as it is allowed to be — iOS's large detent — and
+// a card is as tall as what is in it. A list's sheet opened over a skeleton a
+// third of the screen tall and then shot up to the full height when the answer
+// arrived, which is the whole window moving under a thumb about to tap it. At
+// the full height from the first frame, the wait and the answer are the same
+// window, and a body shorter than it leaves space at the foot rather than
+// moving the top.
 export type DialogPresentation = 'card' | 'sheet';
 
 interface DialogProps {
@@ -146,7 +154,7 @@ export function Dialog({
             // pushed-back page iOS leaves above a full-height sheet; the
             // bottom padding is the home indicator's, on a page that asks for
             // the safe area.
-            'inset-x-0 top-auto bottom-0 mx-auto mt-auto mb-0 max-h-[calc(100dvh-2.5rem)] w-full max-w-[30rem] rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)]'
+            'inset-x-0 top-auto bottom-0 mx-auto mt-auto mb-0 h-[calc(100dvh-2.5rem)] max-h-[calc(100dvh-2.5rem)] w-full max-w-[30rem] rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)]'
           : 'inset-0 m-auto max-h-[85vh] w-[min(30rem,calc(100vw-2rem))] rounded-xl',
         // The title bar's height, stated so that something sticky in the body
         // can stop under the bar rather than behind it: a 28px close button,
@@ -239,10 +247,22 @@ export function Dialog({
           place of the first — the offer going from its question to its answer,
           a row leaving the watch list, a list of pull requests landing where a
           skeleton was. The title bar stays outside this box: it is `sticky` and
-          the height being measured is the body's. */}
-      <AnimatedHeight>
+          the height being measured is the body's.
+
+          A sheet has no height to travel between, because it is always at
+          its full one. It is left out of the box on purpose and not only for
+          want of a need: the box clips with `overflow: hidden` while it
+          travels, which makes it the scroll container of anything sticky
+          inside it, and the list's repository headings — pinned under the
+          bar at `--app-sticky-top` — dropped that far down inside the box,
+          over a row, for every frame a tab change spent travelling. */}
+      {sheet ? (
         <div className={cn('p-3', className)}>{children}</div>
-      </AnimatedHeight>
+      ) : (
+        <AnimatedHeight>
+          <div className={cn('p-3', className)}>{children}</div>
+        </AnimatedHeight>
+      )}
     </dialog>
   );
 }
