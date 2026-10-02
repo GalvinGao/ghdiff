@@ -164,8 +164,6 @@ export interface PullRepoGroup {
 export interface GroupPullsOptions {
   /** The watch list, in the order the reviewer arranged it. */
   order?: readonly WatchedRepo[];
-  /** Leave out the viewer's own pull requests. */
-  hideViewer?: boolean;
 }
 
 /**
@@ -177,12 +175,11 @@ export interface GroupPullsOptions {
 export function groupPullsByRepo(
   pulls: readonly PullSummary[],
   viewer: string | undefined,
-  { order = [], hideViewer = false }: GroupPullsOptions = {}
+  { order = [] }: GroupPullsOptions = {}
 ): PullRepoGroup[] {
   const viewerLogin = viewer?.toLowerCase();
   const byRepo = new Map<string, PullSummary[]>();
   for (const pull of pulls) {
-    if (hideViewer && isViewerPull(pull, viewerLogin)) continue;
     const key = formatWatchedRepo(pull).toLowerCase();
     const existing = byRepo.get(key);
     if (existing == null) byRepo.set(key, [pull]);

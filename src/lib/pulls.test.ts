@@ -142,15 +142,6 @@ describe('groupPullsByRepo', () => {
     );
   });
 
-  it("leaves out the viewer's own pull requests when asked", () => {
-    const groups = groupPullsByRepo(pulls, 'GALVIN', { hideViewer: true });
-    assert.deepEqual(
-      groups[0].authors.map((author) => author.author),
-      ['grace', 'ada']
-    );
-    assert.equal(groups[0].count, 3);
-  });
-
   it('puts the viewer first among the authors', () => {
     const groups = groupPullsByRepo(pulls, 'galvin');
     assert.deepEqual(

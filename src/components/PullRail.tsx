@@ -1,4 +1,5 @@
 import {
+  IconHome,
   IconReload,
   IconSidebarLeft,
   IconSidebarLeftOpen,
@@ -16,19 +17,18 @@ import {
 } from '@/components/PullHoverCard';
 import { PullRequestList } from '@/components/PullRequestList';
 import { isCurrentPull } from '@/components/PullRow';
+import { PullScopeSwitch } from '@/components/PullScopeSwitch';
 import { PullStackBadge } from '@/components/PullStackBadge';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { Button } from '@/components/ui/Button';
+import { buttonClass } from '@/components/ui/buttonClass';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
-import {
-  railCollapsedPreference,
-  showOwnPullsPreference,
-  usePreference,
-} from '@/hooks/preferences';
+import { railCollapsedPreference, usePreference } from '@/hooks/preferences';
 import { useCurrentPull } from '@/hooks/useCurrentPull';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
+import { usePullScope } from '@/hooks/usePullScope';
 import {
   RAIL_TOGGLE_FLIP_KEY,
   RAIL_TRANSITION_EASING,
@@ -43,6 +43,7 @@ import {
   RAIL_WIDTH_PROPERTY,
   useRailWidth,
 } from '@/hooks/useRailWidth';
+import { useRowFit } from '@/hooks/useRowFit';
 import { cn } from '@/lib/cn';
 import { textDirection } from '@/lib/locale';
 import {
@@ -73,6 +74,10 @@ import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
 // `WatchedReposScript` settles the same question in the document head and the
 // rule on `[data-app-rail]` in globals.css keeps that paint empty. The hook's
 // answer arrives after it and agrees with it.
+
+// The header's narrowing steps, in the order it takes them. See the row in
+// `RailContent`; the switch reads `tight`, `lean` and `bare`.
+const HEADER_FIT = ['compact', 'tight', 'lean', 'bare'] as const;
 
 // Wide enough for the squares and their padding, and nothing else to size.
 const COLLAPSED_WIDTH = '2.75rem';
@@ -272,27 +277,59 @@ function RailContent({
   const collapseLabel = collapsed
     ? m.pull_rail_show_the_pull_requests()
     : m.pull_rail_hide_the_pull_requests();
+  // Everything that changes how wide the switch is without the bar moving.
+  const { counts, tabs } = usePullScope(pulls, current);
+  const fitKey = `${tabs.join()}:${String(counts.mine)}:${String(counts.others)}:${String(counts.stack?.length)}`;
+  const fitRef = useRowFit<HTMLDivElement>(HEADER_FIT, fitKey);
   return (
     <>
+      {/* The bar's own name, the list's scope, and the collapse press, in a
+          row that is often narrower than all three: the default width holds
+          them with counts of two digits and not of three. So `useRowFit` takes
+          the steps in `HEADER_FIT` until the row fits. The name gives way to a
+          home glyph first, because a name truncated to one letter is no name
+          and the way home has to stay. Then the tabs take their padding in,
+          then All's count goes — Mine and Others add up to it — and last the
+          other counts go too and the row takes in its own padding. A count
+          that is not drawn is still read out. Measured with three-digit
+          counts: the row ends inside the bar from 200px up. */}
       <div
+        ref={collapsed ? undefined : fitRef}
         className={cn(
-          'border-line flex h-11 shrink-0 items-center border-b',
-          collapsed ? 'justify-center px-1' : 'gap-1 px-2'
+          'group/rail-header border-line flex h-11 shrink-0 items-center border-b',
+          collapsed
+            ? 'justify-center px-1'
+            : 'gap-1 px-2 [&[data-fit~=bare]]:px-1'
         )}
       >
         {!collapsed && (
-          <Link
-            to="/"
-            className="text-ink-faint hover:text-ink min-w-0 truncate px-1 text-xs font-semibold tracking-wide uppercase"
-          >
-            ghdiff
-          </Link>
+          <>
+            <Link
+              to="/"
+              data-fit-truncates=""
+              className="text-ink-faint hover:text-ink mr-auto min-w-0 truncate px-1 text-xs font-semibold tracking-wide uppercase group-[[data-fit~=compact]]/rail-header:hidden"
+            >
+              ghdiff
+            </Link>
+            <Tooltip
+              className="mr-auto hidden group-[[data-fit~=compact]]/rail-header:inline-flex"
+              label="ghdiff"
+            >
+              <Link
+                to="/"
+                aria-label="ghdiff"
+                className={buttonClass({ size: 'icon-sm', variant: 'chrome' })}
+              >
+                <IconHome size={14} />
+              </Link>
+            </Tooltip>
+            {/* The list's scope, in the header of the list it scopes. The
+                narrow bar has no room for it and draws the same scope without
+                it: the squares follow the choice made here. */}
+            <PullScopeSwitch current={current} state={pulls} />
+          </>
         )}
-        <Tooltip
-          className={collapsed ? undefined : 'ml-auto'}
-          label={collapseLabel}
-          side={collapsed ? 'right' : 'bottom'}
-        >
+        <Tooltip label={collapseLabel} side={collapsed ? 'right' : 'bottom'}>
           {/* Marked to fly: the press that toggles the bar moves this very
               button between the wide bar's corner and the narrow bar's centre,
               and a button that teleports out from under the pointer reads as a
@@ -425,12 +462,11 @@ function CollapsedMarks({
   repos: readonly WatchedRepo[];
   state: OpenPullsState;
 }) {
-  const { value: showOwn } = usePreference(showOwnPullsPreference);
+  const { pulls } = usePullScope(state, current);
   const groups = useMemo<CollapsedGroup[]>(() => {
     if (state.data == null) return [];
-    return groupPullsByRepo(state.data.pulls, state.data.viewer, {
+    return groupPullsByRepo(pulls, state.data.viewer, {
       order: repos,
-      hideViewer: !showOwn,
     }).flatMap((group) =>
       group.authors.map((author) => ({
         key: `${group.key}/${author.author}`,
@@ -441,7 +477,7 @@ function CollapsedMarks({
         })),
       }))
     );
-  }, [repos, showOwn, state.data]);
+  }, [pulls, repos, state.data]);
 
   return (
     <div className="py-1">

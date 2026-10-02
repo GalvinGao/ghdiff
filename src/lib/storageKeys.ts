@@ -16,7 +16,12 @@ export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'ghdiff-sidebar-width';
 export const RAIL_WIDTH_STORAGE_KEY = 'ghdiff-rail-width';
 export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
-export const SHOW_OWN_PULLS_STORAGE_KEY = 'ghdiff-show-own-pulls';
+/**
+ * Which pull requests the list draws. The name is from when the one choice was
+ * whether to show the viewer's own, and the key kept it: a browser that hid
+ * them then reads as `others` now rather than as a choice it never made.
+ */
+export const PULL_SCOPE_STORAGE_KEY = 'ghdiff-show-own-pulls';
 /** Every repository's lens settings, in one value keyed by repository. */
 export const REPO_LENSES_STORAGE_KEY = 'ghdiff-repo-lenses';
 /**

@@ -5,9 +5,9 @@ import {
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
+  PULL_SCOPE_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
-  SHOW_OWN_PULLS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   type PreferenceCodec,
   VIEWER_CONTROLS_PREFERENCE,
@@ -23,9 +23,9 @@ const ALL: PreferenceCodec<unknown>[] = [
   CODE_FONT_PREFERENCE,
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
+  PULL_SCOPE_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
-  SHOW_OWN_PULLS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
   WATCH_OFFER_PREFERENCE,
@@ -168,10 +168,20 @@ describe('the left bar and the comment filter', () => {
     assert.equal(RAIL_COLLAPSED_PREFERENCE.decode('1'), undefined);
   });
 
-  it('shows the viewer their own pull requests until told not to', () => {
-    assert.equal(SHOW_OWN_PULLS_PREFERENCE.fallback, true);
-    assert.equal(SHOW_OWN_PULLS_PREFERENCE.decode('false'), false);
-    assert.equal(SHOW_OWN_PULLS_PREFERENCE.decode('"hide"'), undefined);
+  it('shows every pull request until a scope is pressed', () => {
+    assert.equal(PULL_SCOPE_PREFERENCE.fallback, 'all');
+    for (const scope of ['all', 'mine', 'others', 'stack'] as const) {
+      assert.equal(
+        PULL_SCOPE_PREFERENCE.decode(PULL_SCOPE_PREFERENCE.encode(scope) ?? ''),
+        scope
+      );
+    }
+    assert.equal(PULL_SCOPE_PREFERENCE.decode('"hide"'), undefined);
+  });
+
+  it('reads the boolean the scope key held before it held a scope', () => {
+    assert.equal(PULL_SCOPE_PREFERENCE.decode('true'), 'all');
+    assert.equal(PULL_SCOPE_PREFERENCE.decode('false'), 'others');
   });
 
   it('reads the three author filters, as the JSON they were written as', () => {

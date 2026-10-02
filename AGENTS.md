@@ -594,10 +594,10 @@ leave all four stranded on the document element.
 travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
 colour mode, the code font, the token, the watch list, the repositories that
 list has been offered for, the viewer's five controls, the bar's collapse, the
-two pane widths, and the comment author filter — as a key, a fallback, and the
-two directions between the value and the one string a browser can hold.
-`src/hooks/preferences.ts` turns each of those into one `atomWithStorage`, and
-`usePreference` is how a hook reads it.
+two pane widths, the comment author filter, and the pull request list's scope —
+as a key, a fallback, and the two directions between the value and the one
+string a browser can hold. `src/hooks/preferences.ts` turns each of those into
+one `atomWithStorage`, and `usePreference` is how a hook reads it.
 
 Three things follow, and each of them was a rule or a bug before it. The store
 is the owner, so two callers of a setting cannot come to disagree. A `storage`
@@ -644,6 +644,64 @@ something else goes by pull request number, newest first. GitHub has no stack
 object to ask for, so a stack is read off the branches: one open pull request
 whose base branch is another open pull request's head branch is stacked on it.
 Stacks are built inside an author group, so two people never share one chain.
+
+**The list has one scope, and the bar's header is where it is set.**
+`PullScopeSwitch` sits between the name and the collapse button. It is a set of
+tabs with a count each, and one is always chosen: All, Mine and Others share one
+frame, because Mine and Others split All between them, and This Stack sits
+apart, because it is a question about the pull request on screen and is drawn
+only while that pull request has a stack of more than one. All is a tab of its
+own and not the absence of a press: the first version was toggles that undid
+themselves on a second press, and a row of unpressed buttons meaning everything
+was a thing the reviewer had to work out. The tabs are one `tablist`, with the
+arrow keys, Home and End, and a tab with nothing in it is disabled unless it is
+the one chosen. With one tab to offer — signed out, and no stack on screen — the
+switch draws nothing. `src/lib/pullScope.ts` holds the rules, and
+`effectivePullScope` turns a stored scope the moment cannot honour — `stack` on
+the home page, `mine` signed out — into `all` rather than into an empty list.
+The list, the narrow bar and the switch all read that answer through
+`usePullScope`, so the tab chosen can never be one the list is not drawing. The
+narrow bar has no room for the switch and follows it anyway.
+
+On a phone the switch is the `toolbar` of the sheet `PullListButton` opens: a
+row under the title, the way iOS puts a segmented control under a navigation
+title, inside the sticky bar that does not scroll away. It is part of the bar's
+height, which `Dialog` states as `--app-sticky-top`, so the repository headings
+the list pins under the bar pin under the toolbar too. It is part of the drag
+handle as well, and `useSheetDrag` already leaves a press on a button to the
+button. Its tabs are 32px tall.
+
+Every tab has a `Tooltip` with its name, in the bar and in the sheet alike: the
+glyph and the count are all a tab draws, and a narrow desktop window gets the
+sheet as well. A tap on a phone leaves no label on screen, because Tailwind
+applies `hover:` and `group-hover:` only under `(hover: hover)`. The name is
+also in each tab as `sr-only` text, so the tooltip, which is `aria-hidden`, is
+not the only place it is.
+
+GitHub has no glyph for "my pull requests", so Mine and Others are composed from
+octicons: the pull request glyph with a solid person or the outlined pair in its
+lower right corner. All is the pull request glyph alone. The corner is cut out
+of the pull request glyph with a `mask-image`, never with a ring painted in a
+background colour, because the tab behind it changes colour when it is chosen.
+
+**The bar's header measures itself, because what is in it decides whether it
+fits.** The name, four tabs and the collapse press do not fit the default 272px
+once a count has three digits, and a container query answers for the row's width
+and knows nothing of the counts. So `useRowFit` takes the steps in `HEADER_FIT`
+until the row fits and writes the steps taken into `data-fit`, which the classes
+read as `data-fit~=step`. The name gives way to a home glyph first, because a
+name truncated to one letter is no name and the way home has to stay; then the
+tabs take their padding in; then All's count goes, because Mine and Others add
+up to it; and last the other counts go and the row takes in its own padding. A
+count that is not drawn is still in the tab's accessible name. Measured with
+counts of 100: at 480px the row draws everything, at 320px the name is a home
+glyph, at 272px the tabs are tight as well, and the row ends inside the bar down
+to 200px.
+
+The scope is stored under `ghdiff-show-own-pulls`, which held a boolean when the
+one choice was whether to show the viewer's own. Both of its values still read —
+`true` as `all`, `false` as `others` — so a reviewer who hid their own pull
+requests is not shown them again by a deploy.
 
 **A stack is a block, and both bar widths draw it.** A chain of more than one
 pull request sits on a background of its own under `PullStackBadge`, the layers

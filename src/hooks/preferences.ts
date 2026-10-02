@@ -12,10 +12,10 @@ import {
   COLOR_MODE_PREFERENCE,
   COMMENT_AUTHOR_FILTER_PREFERENCE,
   type PreferenceCodec,
+  PULL_SCOPE_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
   REPO_LENSES_PREFERENCE,
-  SHOW_OWN_PULLS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
   WATCH_OFFER_PREFERENCE,
@@ -160,5 +160,5 @@ export const commentAuthorFilterPreference = preference(
 );
 export const sidebarWidthPreference = preference(SIDEBAR_WIDTH_PREFERENCE);
 export const railWidthPreference = preference(RAIL_WIDTH_PREFERENCE);
-export const showOwnPullsPreference = preference(SHOW_OWN_PULLS_PREFERENCE);
+export const pullScopePreference = preference(PULL_SCOPE_PREFERENCE);
 export const repoLensesPreference = preference(REPO_LENSES_PREFERENCE);

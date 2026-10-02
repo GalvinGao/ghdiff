@@ -76,6 +76,15 @@ interface DialogProps {
   eyebrow?: ReactNode;
   /** `card` unless stated. See `DialogPresentation`. */
   presentation?: DialogPresentation;
+  /**
+   * A row under the title, inside the sticky bar, for a control that acts on
+   * the whole body — the way iOS puts a segmented control under a navigation
+   * title. It stays in reach however far the body scrolls, and it is part of
+   * the bar's height, so whatever the body pins under the bar pins under this
+   * too. On a sheet it is part of the drag handle as well, and a press on one
+   * of its controls is that control's and not a drag.
+   */
+  toolbar?: ReactNode;
 }
 
 export function Dialog({
@@ -86,6 +95,7 @@ export function Dialog({
   open,
   presentation = 'card',
   title,
+  toolbar,
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const sheet = presentation === 'sheet';
@@ -143,7 +153,14 @@ export function Dialog({
         // 8px above and below it, and the 1px rule. A sheet adds its grabber
         // above that — 6px of margin and the 5px pill — and gives back 4px of
         // the padding over the button, so the pill sits close to the title.
-        sheet ? '[--app-sticky-top:52px]' : '[--app-sticky-top:45px]'
+        // A toolbar adds the 44px of its own row, which says why below.
+        toolbar == null
+          ? sheet
+            ? '[--app-sticky-top:52px]'
+            : '[--app-sticky-top:45px]'
+          : sheet
+            ? '[--app-sticky-top:96px]'
+            : '[--app-sticky-top:89px]'
       )}
       // Escape fires `cancel`. React state stays the one source of truth for
       // whether this is open, so the default close is replaced by the callback.
@@ -207,6 +224,14 @@ export function Dialog({
             </Button>
           </span>
         </div>
+        {/* 44px: a 32px control in a 2px frame and its 2px padding, which is
+            38, and 6px under it. The title row's own bottom padding is the
+            space above. */}
+        {toolbar != null && (
+          <div className="flex h-11 shrink-0 items-start justify-center px-3">
+            {toolbar}
+          </div>
+        )}
       </div>
       {/* Every dialog travels between its content heights rather than snap
           between them. A dialog is centred by `m-auto`, so a jump moves all

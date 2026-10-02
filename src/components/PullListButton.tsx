@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullRequestList } from '@/components/PullRequestList';
+import { PullScopeSwitch } from '@/components/PullScopeSwitch';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Spinner } from '@/components/ui/Spinner';
 import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useCurrentPull } from '@/hooks/useCurrentPull';
+import { usePullScope } from '@/hooks/usePullScope';
 
 // What the left bar is on a phone.
 //
@@ -30,6 +32,9 @@ export function PullListButton({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const current = useCurrentPull();
+  // Asked here as well as in the switch, because a toolbar row with nothing in
+  // it would still take its height out of the sheet.
+  const { tabs } = usePullScope(pulls, current);
 
   // The same test the bar itself applies: with nothing watched there is no
   // list to open, and a button onto an empty window is a promise this app
@@ -60,6 +65,14 @@ export function PullListButton({ className }: { className?: string }) {
         open={open}
         presentation="sheet"
         title={m.pull_list_button_open_pull_requests()}
+        // Under the title rather than over the list, because the bar is the
+        // part of this sheet that does not scroll away, and the repository
+        // headings in the list pin under whatever height the bar has.
+        toolbar={
+          tabs.length > 1 ? (
+            <PullScopeSwitch current={current} size="touch" state={pulls} />
+          ) : undefined
+        }
       >
         <PullRequestList
           current={current}

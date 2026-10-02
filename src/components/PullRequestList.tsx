@@ -7,17 +7,15 @@ import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
 import { PullStackBadge } from '@/components/PullStackBadge';
-import { Segmented, SegmentedItem } from '@/components/ui/Segmented';
 import { SkeletonBar } from '@/components/ui/SkeletonBar';
-import { showOwnPullsPreference, usePreference } from '@/hooks/preferences';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
+import { usePullScope } from '@/hooks/usePullScope';
 import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
 import { accountAvatarUrl, repoPullsUrl, repoUrl } from '@/lib/githubUrls';
 import {
   formatWatchedRepo,
   groupPullsByRepo,
-  isViewerPull,
   type PullStackNode,
   type WatchedRepo,
 } from '@/lib/pulls';
@@ -51,23 +49,19 @@ export function PullRequestList({
 }: PullRequestListProps) {
   const { data, error, loading } = state;
 
-  const { value: showOwn, setValue: setShowOwn } = usePreference(
-    showOwnPullsPreference
-  );
+  // The switch that sets this is drawn by whoever holds the list — the bar's
+  // header, or the toolbar of the phone's sheet — and both read the same atom.
+  const { pulls, scope, setScope } = usePullScope(state, current);
   const groups = useMemo(() => {
     if (data == null) return [];
-    return groupPullsByRepo(data.pulls, data.viewer, {
-      order: repos,
-      hideViewer: !showOwn,
-    });
-  }, [data, repos, showOwn]);
-  // How many rows the switch below is holding back. With none there is still a
-  // switch, but "no open pull requests" is then a true sentence.
-  const hiddenOwn = useMemo(() => {
-    if (showOwn || data?.viewer == null) return 0;
-    const viewerLogin = data.viewer.toLowerCase();
-    return data.pulls.filter((pull) => isViewerPull(pull, viewerLogin)).length;
-  }, [data, showOwn]);
+    return groupPullsByRepo(pulls, data.viewer, { order: repos });
+  }, [data, pulls, repos]);
+  // A scope can leave nothing to draw while the repositories have rows: a
+  // reviewer who chose their own, and has none open today. The tab for an empty
+  // scope is disabled, so only a stored choice arrives here. "No open pull
+  // requests" would then be a false sentence, so the list says which half is
+  // empty and offers the rest.
+  const scopedAway = scope !== 'all' && (data?.pulls.length ?? 0) > 0;
 
   // One answer either carries the status axes on every row or on none, so this
   // is a question about the list and not about a row.
@@ -92,27 +86,6 @@ export function PullRequestList({
 
   return (
     <>
-      {/* Only with a viewer: signed out, nothing on the list is "mine". */}
-      {hydrated && repos.length > 0 && data?.viewer != null && (
-        <div className="flex items-center gap-2 px-2 pt-2 pb-1">
-          <span className="text-ink-muted min-w-0 truncate text-xs">
-            {m.pull_request_list_my_pull_requests()}
-          </span>
-          <Segmented
-            aria-label={m.pull_request_list_my_pull_requests()}
-            className="border-line bg-surface ml-auto shrink-0 rounded-lg border p-0.5"
-            value={showOwn ? 'show' : 'hide'}
-            onValueChange={(next) => setShowOwn(next === 'show')}
-          >
-            <SegmentedItem className="h-5 px-2" value="show">
-              {m.pull_request_list_show()}
-            </SegmentedItem>
-            <SegmentedItem className="h-5 px-2" value="hide">
-              {m.pull_request_list_hide()}
-            </SegmentedItem>
-          </Segmented>
-        </div>
-      )}
       {!hydrated ? (
         // The watch list is read from browser storage after mount, so until it
         // arrives an empty `repos` is the default and not an answer. Saying
@@ -133,9 +106,18 @@ export function PullRequestList({
         <PullListSkeleton />
       ) : error != null ? (
         <p className="text-removed px-2 py-3 text-sm">{error}</p>
-      ) : groups.length === 0 && hiddenOwn > 0 ? (
+      ) : groups.length === 0 && scopedAway ? (
         <p className="text-ink-muted px-2 py-3 text-sm">
-          {m.pull_request_list_only_your_own_pull_requests_are_open_and_they()}
+          {scope === 'mine'
+            ? m.pull_request_list_you_have_none_open_here()
+            : m.pull_request_list_every_open_one_here_is_yours()}{' '}
+          <button
+            type="button"
+            className="text-ink cursor-pointer underline"
+            onClick={() => setScope('all')}
+          >
+            {m.pull_request_list_show_all()}
+          </button>
         </p>
       ) : groups.length === 0 ? (
         // Every repository failing is not the same as every repository being

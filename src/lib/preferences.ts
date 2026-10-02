@@ -10,14 +10,15 @@ import {
   type RepoLensStore,
 } from './lenses/lenses.ts';
 import { dedupeWatchedRepos, type WatchedRepo } from './pulls.ts';
+import { isPullScope, type PullScope } from './pullScope.ts';
 import {
   CODE_FONT_STORAGE_KEY,
   COLOR_MODE_STORAGE_KEY,
   COMMENT_AUTHOR_FILTER_STORAGE_KEY,
+  PULL_SCOPE_STORAGE_KEY,
   RAIL_COLLAPSED_STORAGE_KEY,
   RAIL_WIDTH_STORAGE_KEY,
   REPO_LENSES_STORAGE_KEY,
-  SHOW_OWN_PULLS_STORAGE_KEY,
   SIDEBAR_WIDTH_STORAGE_KEY,
   VIEWER_CONTROLS_STORAGE_KEY,
   WATCH_OFFER_STORAGE_KEY,
@@ -200,11 +201,21 @@ export const RAIL_COLLAPSED_PREFERENCE = jsonPreference<boolean>(
   (value) => (typeof value === 'boolean' ? value : undefined)
 );
 
-/** Whether the pull request list draws the viewer's own. On until turned off. */
-export const SHOW_OWN_PULLS_PREFERENCE = jsonPreference<boolean>(
-  SHOW_OWN_PULLS_STORAGE_KEY,
-  true,
-  (value) => (typeof value === 'boolean' ? value : undefined)
+/**
+ * Which pull requests the list draws. Everything until a scope is pressed.
+ *
+ * The key held a boolean before it held a scope — whether to draw the viewer's
+ * own — and both of its values still read: `true` was everything and `false`
+ * was everybody else's, which are `all` and `others` here.
+ */
+export const PULL_SCOPE_PREFERENCE = jsonPreference<PullScope>(
+  PULL_SCOPE_STORAGE_KEY,
+  'all',
+  (value) => {
+    if (value === true) return 'all';
+    if (value === false) return 'others';
+    return isPullScope(value) ? value : undefined;
+  }
 );
 
 export const COMMENT_AUTHOR_FILTER_PREFERENCE =
