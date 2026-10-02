@@ -69,6 +69,13 @@ export function PullRequestList({
     return data.pulls.filter((pull) => isViewerPull(pull, viewerLogin)).length;
   }, [data, showOwn]);
 
+  // One answer either carries the status axes on every row or on none, so this
+  // is a question about the list and not about a row.
+  const statusLane = useMemo(
+    () => data?.pulls.some((pull) => pull.status != null) ?? false,
+    [data]
+  );
+
   const failures = data?.failures ?? [];
   // The account to name on the setup page, when every failure shares one. Two
   // accounts failing is a general question, and `undefined` is what asks it.
@@ -238,6 +245,7 @@ export function PullRequestList({
                 <PullStack
                   current={current}
                   nodes={author.stacks}
+                  statusLane={statusLane}
                   onNavigate={onNavigate}
                 />
               </div>
@@ -311,10 +319,12 @@ function PullStack({
   current,
   nodes,
   onNavigate,
+  statusLane,
 }: {
   current?: GitHubPullTarget;
   nodes: readonly PullStackNode[];
   onNavigate?(): void;
+  statusLane: boolean;
 }) {
   return (
     <>
@@ -326,6 +336,7 @@ function PullStack({
               key={node.pull.number}
               current={current}
               pull={node.pull}
+              statusLane={statusLane}
               onNavigate={onNavigate}
             />
           );
@@ -359,6 +370,7 @@ function PullStack({
             <PullChain
               current={current}
               nodes={[node]}
+              statusLane={statusLane}
               onNavigate={onNavigate}
             />
           </div>
@@ -377,21 +389,29 @@ function PullChain({
   current,
   nodes,
   onNavigate,
+  statusLane,
 }: {
   current?: GitHubPullTarget;
   nodes: readonly PullStackNode[];
   onNavigate?(): void;
+  statusLane: boolean;
 }) {
   return (
     <>
       {nodes.map((node) => (
         <div key={node.pull.number}>
-          <PullRow current={current} pull={node.pull} onNavigate={onNavigate} />
+          <PullRow
+            current={current}
+            pull={node.pull}
+            statusLane={statusLane}
+            onNavigate={onNavigate}
+          />
           {node.children.length > 0 && (
             <div className="border-line ml-2.5 border-l pl-0.5">
               <PullChain
                 current={current}
                 nodes={node.children}
+                statusLane={statusLane}
                 onNavigate={onNavigate}
               />
             </div>
