@@ -416,7 +416,7 @@ html[data-watching='no'] [data-app-rail] {
   --app-dialog-ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-dialog[data-app-dialog] {
+dialog[data-app-dialog='card'] {
   opacity: 0;
   transform: scale(0.97);
   transition:
@@ -426,19 +426,19 @@ dialog[data-app-dialog] {
     display var(--app-dialog-enter) allow-discrete;
 }
 
-dialog[data-app-dialog][open] {
+dialog[data-app-dialog='card'][open] {
   opacity: 1;
   transform: scale(1);
 }
 
 @starting-style {
-  dialog[data-app-dialog][open] {
+  dialog[data-app-dialog='card'][open] {
     opacity: 0;
     transform: scale(0.97);
   }
 }
 
-dialog[data-app-dialog]::backdrop {
+dialog[data-app-dialog='card']::backdrop {
   opacity: 0;
   transition:
     opacity var(--app-dialog-enter) var(--app-dialog-ease),
@@ -446,12 +446,12 @@ dialog[data-app-dialog]::backdrop {
     display var(--app-dialog-enter) allow-discrete;
 }
 
-dialog[data-app-dialog][open]::backdrop {
+dialog[data-app-dialog='card'][open]::backdrop {
   opacity: 1;
 }
 
 @starting-style {
-  dialog[data-app-dialog][open]::backdrop {
+  dialog[data-app-dialog='card'][open]::backdrop {
     opacity: 0;
   }
 }
@@ -464,14 +464,137 @@ dialog[data-app-dialog][open]::backdrop {
     --app-dialog-enter: 1ms;
   }
 
-  dialog[data-app-dialog] {
+  dialog[data-app-dialog='card'] {
     transform: none;
   }
 
   @starting-style {
-    dialog[data-app-dialog][open] {
+    dialog[data-app-dialog='card'][open] {
       transform: none;
     }
+  }
+}
+
+/* The sheet: the same window in iOS's shape (`presentation="sheet"` on
+   `Dialog`). It rises from the bottom edge instead of fading in place, and the
+   page behind it steps back — scaled down a little, lowered a little, its
+   corners rounded, on black — which is what tells a reviewer the diff is still
+   there underneath and that this is a layer over it rather than a new screen.
+
+   Longer than the card's entrance, because it travels a whole sheet's height
+   rather than three percent of its size, and on the same curve: that curve is
+   the one iOS's own sheets settle on, which is why the card borrowed it.
+   No fade on the sheet itself; a sheet is opaque all the way up.
+
+   `--sheet-drag` is the swipe, from 0 at rest to 1 at the bottom edge, written
+   on the document element by `useSheetDrag` while a finger is on the sheet. The
+   backdrop and the page both read it, so they come forward together as the
+   sheet goes down, and `data-sheet-dragging` takes every transition off for
+   the length of the gesture. A browser whose `::backdrop` inherits nothing
+   reads the fallback and keeps the backdrop at full strength until the
+   release, which is the only thing lost there. */
+:root {
+  --app-sheet-duration: 420ms;
+}
+
+dialog[data-app-dialog='sheet'] {
+  transform: translateY(100%);
+  transition:
+    transform var(--app-sheet-duration) var(--app-dialog-ease),
+    overlay var(--app-sheet-duration) allow-discrete,
+    display var(--app-sheet-duration) allow-discrete;
+}
+
+dialog[data-app-dialog='sheet'][open] {
+  transform: translateY(0);
+}
+
+@starting-style {
+  dialog[data-app-dialog='sheet'][open] {
+    transform: translateY(100%);
+  }
+}
+
+dialog[data-app-dialog='sheet']::backdrop {
+  opacity: 0;
+  transition:
+    opacity var(--app-sheet-duration) var(--app-dialog-ease),
+    overlay var(--app-sheet-duration) allow-discrete,
+    display var(--app-sheet-duration) allow-discrete;
+}
+
+dialog[data-app-dialog='sheet'][open]::backdrop {
+  opacity: calc(1 - var(--sheet-drag, 0));
+}
+
+@starting-style {
+  dialog[data-app-dialog='sheet'][open]::backdrop {
+    opacity: 0;
+  }
+}
+
+dialog[data-sheet-dragging],
+dialog[data-sheet-dragging]::backdrop {
+  transition: none;
+}
+
+/* The page behind an open sheet. `AppShell` carries the attribute, so it is the
+   whole app — the left bar and the screen beside it — that steps back. The
+   sheet is in the top layer, so it is drawn as a child of the viewport and
+   none of this transform reaches it, although it sits inside this element in
+   the document. `overflow: clip` holds at rest as well as during the step, so
+   the rounded corners have nothing to show through them on the way back, and
+   it is `clip` and not `hidden` because a scroll container here would become
+   the sticky ancestor of every header in the app.
+
+   The black behind it is the document's own background. It travels with the
+   step, so the edges uncover black on the way in and cover it again on the
+   way out rather than flipping at the press. */
+html,
+body {
+  transition: background-color var(--app-sheet-duration) var(--app-dialog-ease);
+}
+
+html:has(dialog[data-app-dialog='sheet'][open]),
+html:has(dialog[data-app-dialog='sheet'][open]) body {
+  background-color: #000;
+}
+
+[data-sheet-host] {
+  overflow: clip;
+  transform-origin: 50% 0;
+  transition:
+    transform var(--app-sheet-duration) var(--app-dialog-ease),
+    border-radius var(--app-sheet-duration) var(--app-dialog-ease);
+}
+
+html:has(dialog[data-app-dialog='sheet'][open]) [data-sheet-host] {
+  --sheet-push: calc(1 - var(--sheet-drag, 0));
+  transform: translateY(calc(0.625rem * var(--sheet-push)))
+    scale(calc(1 - 0.06 * var(--sheet-push)));
+  border-radius: calc(0.75rem * var(--sheet-push));
+}
+
+html[data-sheet-dragging] [data-sheet-host] {
+  transition: none;
+}
+
+/* Under reduced motion the sheet arrives in place and the page stays where it
+   is. The 1 ms is the card's reason again: the discrete properties need a
+   duration to wait for, or `close()` drops the sheet in one frame. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --app-sheet-duration: 1ms;
+  }
+
+  html:has(dialog[data-app-dialog='sheet'][open]) [data-sheet-host] {
+    transform: none;
+    border-radius: 0;
+  }
+
+  html:has(dialog[data-app-dialog='sheet'][open]),
+  html:has(dialog[data-app-dialog='sheet'][open]) body {
+    background-color: var(--app-canvas);
   }
 }
 

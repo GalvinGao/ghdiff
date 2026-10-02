@@ -5,6 +5,7 @@ import { m } from '../../paraglide/messages.js';
 import { getLocale } from '../../paraglide/runtime.js';
 import { AnimatedHeight } from '@/components/ui/AnimatedHeight';
 import { Button } from '@/components/ui/Button';
+import { useSheetDrag } from '@/hooks/useSheetDrag';
 import { cn } from '@/lib/cn';
 import { textDirection } from '@/lib/locale';
 
@@ -46,6 +47,21 @@ export const dialogPrimaryAction: Record<string, string> = {
   [PRIMARY_ATTRIBUTE]: '',
 };
 
+// Two shapes of the same window.
+//
+// `card` is the window centred over the page, which is every dialog on a
+// screen with room around it. `sheet` is iOS's: anchored to the bottom edge,
+// as wide as the screen up to the card's own width, rising from below and
+// pushing the page back behind it, with a grabber that says it can be swiped
+// away and a gesture that does it. On a phone that is the shape a list is
+// expected in — the bottom of the screen is where the thumb already is, and a
+// card floating in the middle of 402px is a card with nowhere to float.
+//
+// The caller picks, because the caller knows what the window is for. Only a
+// window that is a place to pick something from is a sheet today; a question
+// with two answers is still a card on every screen.
+export type DialogPresentation = 'card' | 'sheet';
+
 interface DialogProps {
   children: ReactNode;
   /** Extra classes for the body region, below the title bar. */
@@ -58,6 +74,8 @@ interface DialogProps {
    * something with a name of its own. The accessible name stays `title`.
    */
   eyebrow?: ReactNode;
+  /** `card` unless stated. See `DialogPresentation`. */
+  presentation?: DialogPresentation;
 }
 
 export function Dialog({
@@ -66,9 +84,12 @@ export function Dialog({
   eyebrow,
   onClose,
   open,
+  presentation = 'card',
   title,
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const sheet = presentation === 'sheet';
+  useSheetDrag(ref, sheet && open, onClose);
 
   useEffect(() => {
     const element = ref.current;
@@ -86,6 +107,11 @@ export function Dialog({
       target?.focus();
     } else if (!open && element.open) {
       element.close();
+      // A sheet swiped away was left at the bottom edge by the gesture, which
+      // is where the closed state puts it too, so this changes nothing on
+      // screen. It is cleared here so the next open starts from the
+      // stylesheet's own values.
+      element.style.removeProperty('transform');
     }
   }, [open]);
 
@@ -99,15 +125,25 @@ export function Dialog({
       // and `overlay` transitioned as discrete properties, and the entrance
       // needs `@starting-style`, neither of which is a class this app would
       // want stacked four variants deep on every dialog.
-      data-app-dialog=""
+      data-app-dialog={presentation}
       className={cn(
-        'border-line bg-raised text-ink fixed inset-0 m-auto max-h-[85vh] w-[min(30rem,calc(100vw-2rem))]',
-        'overflow-y-auto overscroll-contain rounded-xl border p-0 shadow-lg',
+        'border-line bg-raised text-ink fixed overflow-y-auto overscroll-contain border p-0 shadow-lg',
+        'backdrop:bg-black/50 backdrop:backdrop-blur-[1px]',
+        sheet
+          ? // `max-w` is stated as well as `w`, because the user agent caps a
+            // modal's width a margin short of the viewport and a sheet runs
+            // edge to edge. The top keeps 2.5rem clear, which is the strip of
+            // pushed-back page iOS leaves above a full-height sheet; the
+            // bottom padding is the home indicator's, on a page that asks for
+            // the safe area.
+            'inset-x-0 top-auto bottom-0 mx-auto mt-auto mb-0 max-h-[calc(100dvh-2.5rem)] w-full max-w-[30rem] rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)]'
+          : 'inset-0 m-auto max-h-[85vh] w-[min(30rem,calc(100vw-2rem))] rounded-xl',
         // The title bar's height, stated so that something sticky in the body
         // can stop under the bar rather than behind it: a 28px close button,
-        // 8px above and below it, and the 1px rule.
-        '[--app-sticky-top:45px]',
-        'backdrop:bg-black/50 backdrop:backdrop-blur-[1px]'
+        // 8px above and below it, and the 1px rule. A sheet adds its grabber
+        // above that — 6px of margin and the 5px pill — and gives back 4px of
+        // the padding over the button, so the pill sits close to the title.
+        sheet ? '[--app-sticky-top:52px]' : '[--app-sticky-top:45px]'
       )}
       // Escape fires `cancel`. React state stays the one source of truth for
       // whether this is open, so the default close is replaced by the callback.
@@ -121,21 +157,56 @@ export function Dialog({
         if (event.target === ref.current) onClose();
       }}
     >
-      <div className="border-line bg-raised sticky top-0 z-[2] flex h-(--app-sticky-top) items-center gap-2 border-b px-3 py-2">
-        <h2 className="text-ink flex items-center gap-2 text-sm font-semibold">
-          {eyebrow}
-          {title}
-        </h2>
-        <Button
-          aria-label={m.dialog_close()}
-          className="ml-auto"
-          size="icon-sm"
-          title={m.dialog_close()}
-          variant="quiet"
-          onClick={onClose}
+      <div
+        // The sheet's title bar is the handle a drag starts from, and it
+        // claims the gesture outright: `touch-action: none` is what keeps the
+        // browser from taking a downward swipe on it for a scroll.
+        data-sheet-handle={sheet ? '' : undefined}
+        className={cn(
+          'border-line bg-raised sticky top-0 z-[2] flex h-(--app-sticky-top) flex-col border-b',
+          sheet && 'cursor-grab touch-none select-none active:cursor-grabbing'
+        )}
+      >
+        {sheet && (
+          // The grabber: the one mark on a sheet that says it moves. It is
+          // drawn and not a control, because the whole bar is the handle.
+          <div
+            aria-hidden
+            className="bg-ink-faint/40 mx-auto mt-1.5 h-[5px] w-9 shrink-0 rounded-full"
+          />
+        )}
+        <div
+          className={cn(
+            'flex min-h-0 flex-1 items-center gap-2 px-3',
+            // A sheet centres its title the way an iOS navigation bar does,
+            // with the close button at the trailing edge. `basis-0 grow` on
+            // both sides is what keeps the title on the true centre whatever
+            // the button's width.
+            sheet ? 'pt-1 pb-2' : 'py-2'
+          )}
         >
-          <IconXSquircle size={14} />
-        </Button>
+          {sheet && <span aria-hidden className="grow basis-0" />}
+          <h2 className="text-ink flex min-w-0 items-center gap-2 text-sm font-semibold">
+            {eyebrow}
+            {title}
+          </h2>
+          <span
+            className={cn(
+              'flex justify-end',
+              sheet ? 'grow basis-0' : 'ms-auto'
+            )}
+          >
+            <Button
+              aria-label={m.dialog_close()}
+              size="icon-sm"
+              title={m.dialog_close()}
+              variant="quiet"
+              onClick={onClose}
+            >
+              <IconXSquircle size={14} />
+            </Button>
+          </span>
+        </div>
       </div>
       {/* Every dialog travels between its content heights rather than snap
           between them. A dialog is centred by `m-auto`, so a jump moves all
