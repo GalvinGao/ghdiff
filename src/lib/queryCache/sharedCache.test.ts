@@ -191,6 +191,10 @@ describe('SharedCache', () => {
   it('writes nothing to disk until the account is confirmed', async () => {
     const store = memoryStore();
     const a = tab('a', busHub(), store);
+    // The order of a page load: the session is asked first, then the rest.
+    await a.ask(() => Promise.resolve({ viewer: undefined }), false, [
+      ...SESSION_QUERY_KEY,
+    ]);
     await a.ask(() => Promise.resolve({ pulls: [] }));
     await settle();
     assert.equal(store.records.size, 0);
@@ -424,12 +428,111 @@ describe('SharedCache', () => {
     const b = tab('b', hub, undefined);
     const session = [...SESSION_QUERY_KEY];
     b.client.setQueryData(session, { viewer: undefined });
+    b.client.setQueryData(KEY, { pulls: ['anonymous'] });
     b.cache.confirm('anonymous');
     a.cache.confirm('user:ada');
     await settle();
-    // Nothing observes the session in this test, so the invalidation marks it
-    // stale rather than fetching; a mounted header would fetch at once.
+    // Every answer goes, the session's own included, so a session query that
+    // then fails leaves nothing of the old account on screen.
+    assert.equal(b.client.getQueryData(session), undefined);
+    assert.equal(b.client.getQueryData(KEY), undefined);
+  });
+
+  it('makes an unconfirmed tab ask again when another tab confirms', async () => {
+    const hub = busHub();
+    const a = tab('a', hub, undefined);
+    const b = tab('b', hub, undefined);
+    const session = [...SESSION_QUERY_KEY];
+    b.client.setQueryData(session, { viewer: undefined });
+    a.cache.confirm('user:ada');
+    await settle();
     assert.equal(b.client.getQueryState(session)?.isInvalidated, true);
+  });
+
+  it('never borrows, broadcasts or stores the session', async () => {
+    const hub = busHub();
+    const store = memoryStore();
+    const a = tab('a', hub, store);
+    const b = tab('b', hub, store);
+    const session = [...SESSION_QUERY_KEY];
+    let asked = 0;
+    const who = () => {
+      asked += 1;
+      return Promise.resolve({ viewer: { login: 'ada' } });
+    };
+    const first = a.ask(who, true, session);
+    const second = b.ask(who, true, session);
+    await Promise.all([first, second]);
+    await settle();
+    assert.equal(asked, 2);
+    assert.equal(
+      hub.sent.some((message) => message.type === 'data'),
+      false
+    );
+    assert.equal(store.records.size, 0);
+  });
+
+  it('asks again for an answer that began before the confirming session', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    const held = gate();
+    let calls = 0;
+    const asked = a.ask(async () => {
+      calls += 1;
+      if (calls === 1) await held.closed;
+      return { pulls: [`answer ${calls}`] };
+    });
+    await settle();
+    // The session is asked after that fetch began, and confirms an account.
+    await a.ask(() => Promise.resolve({ viewer: undefined }), false, [
+      ...SESSION_QUERY_KEY,
+    ]);
+    a.cache.confirm('user:grace');
+    held.open();
+    assert.deepEqual(await asked, { pulls: ['answer 2'] });
+    assert.equal(calls, 2);
+    await settle();
+    assert.deepEqual([...store.records.values()][0]?.data, {
+      pulls: ['answer 2'],
+    });
+  });
+
+  it('publishes nothing for a write sent under an older session', async () => {
+    const hub = busHub();
+    const store = memoryStore();
+    const a = tab('a', hub, store);
+    a.cache.confirm('user:ada');
+    const ticket = a.cache.ticket();
+    a.cache.suspend();
+    a.cache.confirm('anonymous');
+    a.cache.publish(KEY, { review: 'APPROVED' }, true, ticket);
+    await settle();
+    assert.equal(a.client.getQueryData(KEY), undefined);
+    assert.equal(store.records.size, 0);
+    assert.equal(
+      hub.sent.some((message) => message.type === 'data'),
+      false
+    );
+  });
+
+  it('never lands an older read on top of a newer write', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    const held = gate();
+    const asked = a.ask(async () => {
+      await held.closed;
+      return { review: 'COMMENTED' };
+    });
+    await settle();
+    a.cache.publish(KEY, { review: 'APPROVED' }, true, a.cache.ticket());
+    await settle(2);
+    held.open();
+    assert.deepEqual(await asked, { review: 'APPROVED' });
+    await settle();
+    assert.deepEqual([...store.records.values()][0]?.data, {
+      review: 'APPROVED',
+    });
   });
 
   it('refuses an answer fetched under an account this tab does not share', async () => {

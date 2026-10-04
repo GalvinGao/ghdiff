@@ -59,6 +59,8 @@ export const SESSION_QUERY_KEY = ['viewer.get'] as const;
 const SESSION_HASH = queryHash(SESSION_QUERY_KEY);
 
 type PendingRecord = Omit<CacheRecord, 'id' | 'namespace'>;
+/** A record waiting for a confirmation, with the moment its fetch began. */
+type Pending = { record: PendingRecord; startedAt: number };
 
 /**
  * How long a tab that waited on another's lock waits again for that tab's
@@ -117,8 +119,17 @@ export class SharedCache {
    * cancelled its query, and it is never broadcast or written down.
    */
   private generation = 0;
+  /**
+   * When the session fetch began whose answer the current confirmation rests
+   * on. An answer says whose cookie it was at the moment it was asked, so it
+   * vouches for every fetch that began after it and for none that began
+   * before: the cookie may have changed hands in between, and nothing would
+   * have said so.
+   */
+  private sessionStartedAt?: number;
+  private confirmedFrom = 0;
   /** Answers fetched before an account was confirmed, by hash. */
-  private readonly pending = new Map<string, PendingRecord>();
+  private readonly pending = new Map<string, Pending>();
   /**
    * Answers this tab received rather than fetched, by hash, with the time each
    * was fetched. Only these may stand in for a fetch.
@@ -147,6 +158,17 @@ export class SharedCache {
     await this.ready;
     const hash = queryHash(queryKey);
     await this.awaitConfirmation(hash, signal);
+    // The session query asks with this tab's own cookie and nothing else:
+    // another tab's answer to "who is this" may predate a sign-in that this
+    // document is the result of. It is never borrowed, broadcast or stored.
+    if (hash === SESSION_HASH) {
+      this.forced.delete(hash);
+      const generation = this.generation;
+      const startedAt = Date.now();
+      const data = await fetch(signal);
+      if (generation === this.generation) this.sessionStartedAt = startedAt;
+      return data;
+    }
     return await this.coordinator.exclusive(
       hash,
       async (contended) => {
@@ -159,18 +181,50 @@ export class SharedCache {
           );
           if (taken !== undefined) return taken;
         }
-        const generation = this.generation;
-        const data = await fetch(signal);
-        // Fetched under a session that has since ended or changed hands, so it
-        // is not this session's to share.
-        if (generation !== this.generation) return data;
-        // Written before the lock is let go, so a tab that waited on it finds
-        // the record when its turn comes, whatever the channel has delivered.
-        await this.share(queryKey, hash, data, Date.now(), persist);
-        return data;
+        // At most twice: a fetch that began before the session answer the
+        // tab has since confirmed is asked again, once, under that session.
+        for (let attempt = 0; ; attempt += 1) {
+          const generation = this.generation;
+          const startedAt = Date.now();
+          const data = await fetch(signal);
+          // Fetched under a session that has since ended or changed hands, so
+          // it is not this session's to share.
+          if (generation !== this.generation) return data;
+          if (this.namespace != null && startedAt < this.confirmedFrom) {
+            if (attempt === 0) continue;
+            return data;
+          }
+          // A newer answer reached this tab while this one was out — a write
+          // it published, or another tab's fetch — and an older answer must
+          // not land on top of it.
+          const held = this.client.getQueryState<T>(queryKey);
+          if (held?.data !== undefined && held.dataUpdatedAt > startedAt) {
+            return held.data;
+          }
+          // Written before the lock is let go, so a tab that waited on it finds
+          // the record when its turn comes, whatever the channel has delivered.
+          await this.share(
+            queryKey,
+            hash,
+            data,
+            Date.now(),
+            persist,
+            startedAt
+          );
+          return data;
+        }
       },
       signal
     );
+  }
+
+  /**
+   * The session as it stands, for a write to hand back to `publish` when it
+   * lands. A write is a request like any other, and its answer belongs to the
+   * session it was sent under.
+   */
+  ticket(): number {
+    return this.generation;
   }
 
   /**
@@ -247,9 +301,17 @@ export class SharedCache {
    * Puts an answer this tab did not fetch but knows — the result of its own
    * write — into the cache, every other tab, and the store.
    */
-  publish<T>(queryKey: readonly unknown[], data: T, persist: Persist<T>) {
+  publish<T>(
+    queryKey: readonly unknown[],
+    data: T,
+    persist: Persist<T>,
+    ticket?: number
+  ) {
+    // Sent under a session that has since ended or changed hands.
+    if (ticket != null && ticket !== this.generation) return;
     this.client.setQueryData(queryKey, data);
-    void this.share(queryKey, queryHash(queryKey), data, Date.now(), persist);
+    const now = Date.now();
+    void this.share(queryKey, queryHash(queryKey), data, now, persist, now);
   }
 
   /**
@@ -274,9 +336,13 @@ export class SharedCache {
     for (const record of held) {
       if (record.namespace === namespace) this.place(record);
     }
+    this.confirmedFrom = this.sessionStartedAt ?? Date.now();
     this.confirmation.resolve();
     this.confirmation = deferred();
-    const pending = [...this.pending.values()];
+    // Only what began after the confirming session fetch did is vouched for.
+    const pending = [...this.pending.values()]
+      .filter((entry) => entry.startedAt >= this.confirmedFrom)
+      .map((entry) => entry.record);
     this.pending.clear();
     void this.settleStore(namespace, pending);
     this.bus?.post({ type: 'session', tab: this.tab, namespace });
@@ -346,7 +412,8 @@ export class SharedCache {
     hash: string,
     data: T,
     updatedAt: number,
-    persist: Persist<T>
+    persist: Persist<T>,
+    startedAt: number
   ): Promise<void> {
     this.received.delete(hash);
     this.bus?.post({
@@ -372,7 +439,7 @@ export class SharedCache {
       data: stored,
     };
     if (this.namespace == null) {
-      this.pending.set(hash, record);
+      this.pending.set(hash, { record, startedAt });
       return;
     }
     await this.write(this.namespace, record);
@@ -395,6 +462,8 @@ export class SharedCache {
   private hear(message: CacheMessage) {
     switch (message.type) {
       case 'data': {
+        // Never the session's answer: see `fetch`.
+        if (message.hash === SESSION_HASH) return;
         // A sender that has confirmed a different account fetched with a
         // cookie this tab no longer agrees with. One that has not confirmed
         // yet fetched with the cookie every tab shares, which is the case of
@@ -422,10 +491,20 @@ export class SharedCache {
       }
       case 'session':
         // Another tab was told a different account by the same cookie, so the
-        // cookie changed under this one. Writes stop, and the session query
-        // asks again; its answer confirms, and the confirmation resets.
+        // cookie changed under this one. Writes stop and every answer goes,
+        // the session's own included, so a session query that then fails
+        // leaves nothing of the old account on screen.
         if (this.namespace != null && message.namespace !== this.namespace) {
           this.suspend();
+          this.shown = undefined;
+          this.resetAnswers(true);
+          return;
+        }
+        // A tab that has not confirmed yet cannot tell, so it takes the news
+        // as a possible change: what it is fetching now is not vouched for,
+        // and the session query asks again.
+        if (this.namespace == null) {
+          this.generation += 1;
           void this.client.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
         }
         return;

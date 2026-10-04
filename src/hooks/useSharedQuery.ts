@@ -94,21 +94,36 @@ export function useSharedQuery<T>(
 /**
  * Puts the result of this tab's own write where every tab reads it. Without a
  * shared cache it is `setQueryData`, which is all a lone tab needs.
+ *
+ * `ticket` is what `useSessionTicket` gave when the write was sent. A write
+ * that lands after the session ended or changed hands publishes nothing.
  */
 export function usePublish(): <T>(
   queryKey: readonly unknown[],
   data: T,
-  persist: Persist<T>
+  persist: Persist<T>,
+  ticket?: number
 ) => void {
   const shared = useSharedCache();
   const client = useQueryClient();
   return useCallback(
-    <T>(queryKey: readonly unknown[], data: T, persist: Persist<T>) => {
+    <T>(
+      queryKey: readonly unknown[],
+      data: T,
+      persist: Persist<T>,
+      ticket?: number
+    ) => {
       if (shared == null) client.setQueryData(queryKey, data);
-      else shared.publish(queryKey, data, persist);
+      else shared.publish(queryKey, data, persist, ticket);
     },
     [client, shared]
   );
+}
+
+/** The session as it stands, to hand to `publish` when the write lands. */
+export function useSessionTicket(): () => number | undefined {
+  const shared = useSharedCache();
+  return useCallback(() => shared?.ticket(), [shared]);
 }
 
 /**

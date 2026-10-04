@@ -693,6 +693,23 @@ that lands after one is handed back to React Query — which drops it when the
 reset cancelled its query — and is never broadcast or written down under the
 account that came after.
 
+The session query is the one that is never shared at all. It asks with this
+tab's own cookie every time — another tab's answer to "who is this" may predate
+the sign-in this document is the result of — and is never borrowed, broadcast or
+stored. Its answer says whose cookie it was when it was asked, so it vouches for
+the fetches that began after it and for none that began before: `confirmedFrom`
+is that moment, a fetch that began earlier and lands after the confirmation is
+asked once more, and an answer waiting for the confirmation is written down only
+if it began after it. A tab that has not confirmed yet and hears another tab
+confirm takes it as a possible change of account, and asks again.
+
+Two more rules keep an answer from landing where it does not belong. A write is
+a request like any other, so `publish` takes the `ticket` the session had when
+the write was sent, and a write that lands under a later session publishes
+nothing. And a read that lands after a newer answer reached the tab — a write
+this tab published, or another tab's fetch — hands the newer one back instead,
+so an approval is never overwritten by the read that began before it.
+
 Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
 the one thing to raise when a procedure's output changes shape — never the
 commit sha, which would empty every reviewer's cache on every deploy. An answer
