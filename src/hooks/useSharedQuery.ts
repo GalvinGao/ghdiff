@@ -127,18 +127,24 @@ export function useSessionTicket(): () => number | undefined {
 }
 
 /**
- * Refetches a shared query from GitHub, for a reload the reviewer pressed: an
- * answer another tab holds is the one they are asking to replace.
+ * Refetches a shared query from GitHub, for a reload the reviewer pressed or a
+ * write that has just landed: an answer another tab holds is the one being
+ * replaced. A request already in flight is cancelled first, because React
+ * Query hands back the request in flight when a query has no answer yet — and
+ * that one began before the write it would be asked to reflect.
  */
 export function useForcedRefetch(
   queryKey: readonly unknown[],
   refetch: () => Promise<unknown>
-): () => void {
+): () => Promise<void> {
   const shared = useSharedCache();
+  const client = useQueryClient();
   // The key is compared by value, so it travels as the JSON it is hashed by.
   const hash = JSON.stringify(queryKey);
-  return useCallback(() => {
-    shared?.forceNext(JSON.parse(hash) as readonly unknown[]);
-    void refetch();
-  }, [hash, refetch, shared]);
+  return useCallback(async () => {
+    const key = JSON.parse(hash) as readonly unknown[];
+    await client.cancelQueries({ queryKey: key, exact: true });
+    shared?.forceNext(key);
+    await refetch();
+  }, [client, hash, refetch, shared]);
 }

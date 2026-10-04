@@ -669,46 +669,49 @@ why a tab that waited reads the store first, and why it then gives the channel
 `CHANNEL_GRACE_MS` before it fetches after all. A tab that did not wait does
 none of that and costs nothing.
 
-**What is on disk belongs to one account, and the session query says which.**
+**What leaves a tab belongs to one account, and the session query says which.**
 GitHub answers the same question differently for a signed-in reviewer and for
-nobody, so a record is filed under `viewerNamespace` and a tab reads only its
-confirmed account's records. The session query, `SESSION_QUERY_KEY`, is what
-confirms the account, and it is the one query never written to disk — a stale
-answer to "who is this" is the answer the store must not give. Until that
-confirmation, answers wait in memory rather than going to disk under a guess. A
-confirmation of another account than the one on screen resets every answer and
-deletes every record that is not this account's, so the store holds one account
-at a time. A tab that hears another confirm a different account stops writing
-and asks who it is.
+nobody, so a record is filed under `viewerNamespace`, a broadcast names it, and
+a tab reads and takes only its confirmed account's. The session query,
+`SESSION_QUERY_KEY`, is what confirms the account. It asks with this tab's own
+cookie every time — another tab's answer to "who is this" may predate the
+sign-in this document is the result of — and it is never borrowed, broadcast or
+stored. An answer it got across a change of session is asked again, since React
+Query hands an invalidated request already in flight back as it is.
 
-Nothing on disk reaches the screen before that confirmation either. The store's
-records are read at startup and held back, and the confirmation places the ones
-that are its own account's: a stored answer belongs to whoever fetched it, and
-the cookie may be somebody else's by now. A query that has an answer on disk
-waits for the confirmation, at most `CONFIRM_WAIT_MS`, so a reload still draws
-from the store instead of asking GitHub first; the session query never waits,
-since it is what confirms. And a fetch notes the session's `generation` as it
-starts: every suspension and every change of account raises it, so an answer
-that lands after one is handed back to React Query — which drops it when the
-reset cancelled its query — and is never broadcast or written down under the
-account that came after.
+Nothing leaves a tab before that confirmation, to the other tabs or to the disk,
+and nothing reaches it. So every request waits for the confirmation, at most
+`CONFIRM_WAIT_MS`. React runs a child's effects before its parent's, so the
+review screen's queries start before the session query above them, and without
+the wait each would start under a session nobody has vouched for. The wait is
+also what lets a stored answer save a request: the store's records are read at
+startup and held back until the confirmation places its own account's. A wait
+that runs out lets the request go ahead, and its answer stays in this tab alone.
 
-The session query is the one that is never shared at all. It asks with this
-tab's own cookie every time — another tab's answer to "who is this" may predate
-the sign-in this document is the result of — and is never borrowed, broadcast or
-stored. Its answer says whose cookie it was when it was asked, so it vouches for
-the fetches that began after it and for none that began before: `confirmedFrom`
-is that moment, a fetch that began earlier and lands after the confirmation is
-asked once more, and an answer waiting for the confirmation is written down only
-if it began after it. A tab that has not confirmed yet and hears another tab
-confirm takes it as a possible change of account, and asks again.
+The session's answer says whose cookie it was when it was asked, so it vouches
+for the fetches that began after it and for none that began before:
+`confirmedFrom` is that moment. A fetch that began earlier and lands after the
+confirmation is asked again, and an answer this tab already held from before it
+is dropped and asked again at the confirmation. Every suspension and every
+change of account raises the session's `generation`, and a fetch that lands
+under a later one is asked again too — or handed back for React Query to drop,
+when the reset cancelled it — and never shared. A confirmation of another
+account resets every answer and deletes every record that is not this account's,
+so the store holds one account at a time. A confirmed tab that hears another
+confirm a different account drops every answer at once, the session's included;
+an unconfirmed one takes it as a possible change and asks who it is.
 
-Two more rules keep an answer from landing where it does not belong. A write is
-a request like any other, so `publish` takes the `ticket` the session had when
-the write was sent, and a write that lands under a later session publishes
-nothing. And a read that lands after a newer answer reached the tab — a write
-this tab published, or another tab's fetch — hands the newer one back instead,
-so an approval is never overwritten by the read that began before it.
+**Answers are ordered by when their fetch began, never by when they landed.** A
+read that began before a write can land after it, and a fetch another tab began
+earlier can arrive later. `moment()` in `records.ts` is the clock: the wall
+clock to a fraction of a millisecond, never the same value twice in one tab, so
+two fetches that began in the same millisecond still have an order. Each answer
+a tab holds notes its moment — its own fetch's, the broadcast's, or the moment
+of a write it published — and a newer one is never replaced by an older one,
+whether the older one arrives on the channel or lands from this tab's own fetch,
+before its disk write or after it. A write is a request like any other, so
+`publish` takes the `ticket` the session had when the write was sent, and a
+write that lands under a later session publishes nothing.
 
 Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
 the one thing to raise when a procedure's output changes shape — never the

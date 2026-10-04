@@ -19,6 +19,12 @@ export type CacheMessage =
       queryKey: readonly unknown[];
       data: unknown;
       updatedAt: number;
+      /**
+       * When the fetch began. Answers are ordered by it and not by when they
+       * landed: a read that began before a write can land after it. Absent
+       * from an older build's message, which is then ordered by `updatedAt`.
+       */
+      startedAt?: number;
     }
   /** A tab has confirmed whose session the cookie carries. */
   | { type: 'session'; tab: string; namespace: string }

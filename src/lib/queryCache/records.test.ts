@@ -9,6 +9,7 @@ import {
   type CacheRecord,
   isLiveRecord,
   isWithinWindow,
+  moment,
   queryHash,
   recordId,
   viewerNamespace,
@@ -124,5 +125,18 @@ describe('withoutAttachments', () => {
       ]),
       [{ id: 1 }, { id: 2 }]
     );
+  });
+});
+
+describe('moment', () => {
+  it('never gives the same moment twice, however fast it is asked', () => {
+    const moments = Array.from({ length: 1_000 }, () => moment());
+    for (let index = 1; index < moments.length; index += 1) {
+      assert.ok(moments[index] > moments[index - 1]);
+    }
+  });
+
+  it('stays on the wall clock', () => {
+    assert.ok(Math.abs(moment() - Date.now()) < 1_000);
   });
 });

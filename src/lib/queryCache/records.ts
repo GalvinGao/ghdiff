@@ -106,3 +106,22 @@ export function isWithinWindow(
 ): boolean {
   return updatedAt <= now && now - updatedAt < windowMs;
 }
+
+let lastMoment = 0;
+
+/**
+ * A moment on the wall clock, finer than a millisecond and never the same
+ * twice in one tab. Answers are ordered by the moment their fetch began, and
+ * two fetches that began in the same millisecond would otherwise tie — which
+ * is exactly the case where the order matters. Another tab's moments are on
+ * the same clock to within a millisecond, which is all a comparison across
+ * tabs needs.
+ */
+export function moment(): number {
+  const now =
+    typeof performance === 'undefined'
+      ? Date.now()
+      : performance.timeOrigin + performance.now();
+  lastMoment = Math.max(now, lastMoment + 0.001);
+  return lastMoment;
+}

@@ -11,6 +11,7 @@ import { withoutAttachments } from './persist.ts';
 import {
   CACHE_SCHEMA_VERSION,
   type CacheRecord,
+  moment,
   queryHash,
   recordId,
 } from './records.ts';
@@ -23,7 +24,7 @@ function tab(
   name: string,
   hub: ReturnType<typeof busHub>,
   store: ReturnType<typeof memoryStore> | undefined,
-  options: { lease?: boolean; confirmWaitMs?: number } = {}
+  options: { lease?: boolean; confirmWaitMs?: number; account?: string } = {}
 ) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -49,8 +50,12 @@ function tab(
     bus,
     coordinator,
     openStore: () => Promise.resolve(store),
-    confirmWaitMs: options.confirmWaitMs,
+    // Short, so a test that never confirms is not held up by the wait.
+    confirmWaitMs: options.confirmWaitMs ?? 30,
   });
+  // A tab that shares anything has a confirmed account: nothing leaves an
+  // unconfirmed tab, and nothing reaches one.
+  if (options.account != null) cache.confirm(options.account);
   /** Asks the way a mounted query asks: through React Query, through here. */
   const ask = <T>(
     fetch: () => Promise<T>,
@@ -112,8 +117,8 @@ for (const lease of [false, true]) {
     it('ask GitHub once and both get the answer', async () => {
       const hub = busHub();
       const store = memoryStore();
-      const a = tab('a', hub, store, { lease });
-      const b = tab('b', hub, store, { lease });
+      const a = tab('a', hub, store, { lease, account: 'user:ada' });
+      const b = tab('b', hub, store, { lease, account: 'user:ada' });
       let calls = 0;
       const held = gate();
       const fetch = async () => {
@@ -141,8 +146,8 @@ for (const lease of [false, true]) {
 describe('SharedCache', () => {
   it('asks again when the other answer is older than the window', async () => {
     const hub = busHub();
-    const a = tab('a', hub, undefined);
-    const b = tab('b', hub, undefined);
+    const a = tab('a', hub, undefined, { account: 'user:ada' });
+    const b = tab('b', hub, undefined, { account: 'user:ada' });
     const source = counter('answer', 1);
     // B already has the query, so it hears A's answer.
     b.client.setQueryData(KEY, 'old', { updatedAt: 1 });
@@ -160,8 +165,8 @@ describe('SharedCache', () => {
 
   it('asks GitHub after a forced reload, whatever another tab holds', async () => {
     const hub = busHub();
-    const a = tab('a', hub, undefined);
-    const b = tab('b', hub, undefined);
+    const a = tab('a', hub, undefined, { account: 'user:ada' });
+    const b = tab('b', hub, undefined, { account: 'user:ada' });
     const source = counter('answer', 1);
     b.client.setQueryData(KEY, 'old', { updatedAt: 1 });
     await a.ask(source.fetch);
@@ -188,21 +193,29 @@ describe('SharedCache', () => {
     assert.equal(b.client.getQueryCache().find({ queryKey: KEY }), undefined);
   });
 
-  it('writes nothing to disk until the account is confirmed', async () => {
+  it('keeps nothing fetched before the account is confirmed', async () => {
     const store = memoryStore();
-    const a = tab('a', busHub(), store);
-    // The order of a page load: the session is asked first, then the rest.
-    await a.ask(() => Promise.resolve({ viewer: undefined }), false, [
-      ...SESSION_QUERY_KEY,
-    ]);
+    const hub = busHub();
+    const a = tab('a', hub, store);
     await a.ask(() => Promise.resolve({ pulls: [] }));
-    await settle();
-    assert.equal(store.records.size, 0);
     a.cache.confirm('user:ada');
     await settle();
-    const [only] = store.records.values();
-    assert.equal(only?.namespace, 'user:ada');
-    assert.deepEqual(only?.data, { pulls: [] });
+    assert.equal(store.records.size, 0);
+    assert.equal(
+      hub.sent.some((message) => message.type === 'data'),
+      false
+    );
+  });
+
+  it('waits for the confirmation before it asks, and keeps what it gets', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store, { confirmWaitMs: 60_000 });
+    const asked = a.ask(() => Promise.resolve({ pulls: ['after'] }));
+    await settle();
+    a.cache.confirm('user:ada');
+    await asked;
+    await settle();
+    assert.equal([...store.records.values()][0]?.namespace, 'user:ada');
   });
 
   it('never writes the session to disk', async () => {
@@ -474,7 +487,7 @@ describe('SharedCache', () => {
 
   it('asks again for an answer that began before the confirming session', async () => {
     const store = memoryStore();
-    const a = tab('a', busHub(), store);
+    const a = tab('a', busHub(), store, { confirmWaitMs: 1 });
     const held = gate();
     let calls = 0;
     const asked = a.ask(async () => {
@@ -557,22 +570,49 @@ describe('SharedCache', () => {
     assert.equal(b.client.getQueryData(KEY), 'mine');
   });
 
-  it('takes an answer from a tab that has not confirmed yet', async () => {
+  it('takes another tab’s answer for the same account, ordered by its start', async () => {
     const hub = busHub();
-    const early = hub.join();
-    const b = tab('b', hub, undefined);
-    b.cache.confirm('user:ada');
+    const other = hub.join();
+    const b = tab('b', hub, undefined, { account: 'user:ada' });
     b.client.setQueryData(KEY, 'mine', { updatedAt: 1 });
-    early.post({
+    const message = (data: string, startedAt: number) => ({
+      type: 'data' as const,
+      tab: 'a',
+      namespace: 'user:ada',
+      hash: queryHash(KEY),
+      queryKey: KEY,
+      data,
+      updatedAt: Date.now(),
+      startedAt,
+    });
+    const earlier = moment();
+    const later = moment();
+    other.post(message('later', later));
+    await settle();
+    assert.equal(b.client.getQueryData(KEY), 'later');
+    // Began before the answer held, so it is older however late it lands.
+    other.post(message('earlier', earlier));
+    await settle();
+    assert.equal(b.client.getQueryData(KEY), 'later');
+  });
+
+  it('takes nothing from another tab before its own confirmation', async () => {
+    const hub = busHub();
+    const other = hub.join();
+    const b = tab('b', hub, undefined);
+    b.client.setQueryData(KEY, 'mine', { updatedAt: 1 });
+    other.post({
       type: 'data',
       tab: 'a',
+      namespace: 'user:ada',
       hash: queryHash(KEY),
       queryKey: KEY,
       data: 'shared',
       updatedAt: Date.now(),
+      startedAt: moment(),
     });
     await settle();
-    assert.equal(b.client.getQueryData(KEY), 'shared');
+    assert.equal(b.client.getQueryData(KEY), 'mine');
   });
 
   it('finds the record the tab before it wrote, when the message is slow', async () => {
@@ -601,11 +641,69 @@ describe('SharedCache', () => {
     assert.equal(calls, 1);
   });
 
+  it('asks who it is again when the session changes during the asking', async () => {
+    const a = tab('a', busHub(), undefined);
+    const session = [...SESSION_QUERY_KEY];
+    const held = gate();
+    let asked = 0;
+    const answer = a.ask(
+      async () => {
+        asked += 1;
+        if (asked === 1) {
+          await held.closed;
+          return { viewer: { login: 'ada' } };
+        }
+        return { viewer: { login: 'grace' } };
+      },
+      false,
+      session
+    );
+    await settle();
+    a.cache.suspend();
+    held.open();
+    assert.deepEqual(await answer, { viewer: { login: 'grace' } });
+    assert.equal(asked, 2);
+  });
+
+  it('never lands an older read on a write published during its disk write', async () => {
+    const memory = memoryStore();
+    const writing = gate();
+    let puts = 0;
+    const slow = {
+      ...memory,
+      put: async (record: CacheRecord) => {
+        puts += 1;
+        if (puts === 1) await writing.closed;
+        return memory.put(record);
+      },
+    };
+    const a = tab('a', busHub(), slow as typeof memory, {
+      account: 'user:ada',
+    });
+    const asked = a.ask(() => Promise.resolve({ review: 'COMMENTED' }));
+    await until(() => puts === 1);
+    a.cache.publish(KEY, { review: 'APPROVED' }, true, a.cache.ticket());
+    writing.open();
+    assert.deepEqual(await asked, { review: 'APPROVED' });
+  });
+
+  it('drops an answer held from before the first confirmation', async () => {
+    const a = tab('a', busHub(), undefined, { confirmWaitMs: 1 });
+    // The wait runs out and the answer lands unvouched.
+    await a.ask(() => Promise.resolve({ pulls: ['unvouched'] }));
+    await a.ask(() => Promise.resolve({ viewer: undefined }), false, [
+      ...SESSION_QUERY_KEY,
+    ]);
+    a.cache.confirm('user:grace');
+    await settle();
+    assert.equal(a.client.getQueryData(KEY), undefined);
+  });
+
   it('carries a published write to every tab and to disk', async () => {
     const hub = busHub();
     const store = memoryStore();
     const a = tab('a', hub, store);
-    const b = tab('b', hub, store);
+    const b = tab('b', hub, store, { account: 'user:ada' });
     a.cache.confirm('user:ada');
     const key = ['viewedFiles.list', 'acme', 'app', 1];
     b.client.setQueryData(key, { paths: [] }, { updatedAt: 1 });
