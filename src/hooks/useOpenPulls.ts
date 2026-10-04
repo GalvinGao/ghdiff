@@ -1,7 +1,11 @@
-import { keepPreviousData } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 
 import { m } from '../paraglide/messages.js';
-import { useForcedRefetch, useSharedQuery } from './useSharedQuery';
+import {
+  useForcedRefetch,
+  useSharedCache,
+  useSharedQuery,
+} from './useSharedQuery';
 import {
   formatWatchedRepo,
   type OpenPullsData,
@@ -63,6 +67,12 @@ export function useOpenPulls(options: {
   // on screen and asks GitHub nothing.
   const repoKey = repos.map(formatWatchedRepo).toSorted().join(',');
   const queryKey = ['pulls.list', repoKey];
+  const shared = useSharedCache();
+  // The session the rows on screen were fetched under. A change of watch list
+  // keeps them on screen until the new ones arrive, but only within that
+  // session: a sign-out or a change of account resets every answer, and rows
+  // carried across it would be the previous account's private ones.
+  const rowsSession = useRef<number | undefined>(undefined);
 
   const query = useSharedQuery<OpenPullsData>({
     queryKey,
@@ -79,8 +89,15 @@ export function useOpenPulls(options: {
     // query is already asking, so the window is what lets it take the list.
     // The reload in the bar still asks GitHub: it is a forced refetch.
     shareWindowMs: PULLS_STALE_MS,
-    placeholderData: keepPreviousData,
+    placeholderData: (previous) =>
+      previous !== undefined && rowsSession.current === shared?.ticket()
+        ? previous
+        : undefined,
   });
+  const fetched = query.isPlaceholderData ? undefined : query.data;
+  useEffect(() => {
+    if (fetched !== undefined) rowsSession.current = shared?.ticket();
+  }, [fetched, shared]);
 
   const reload = useForcedRefetch(queryKey, query.refetch);
 

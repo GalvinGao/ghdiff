@@ -731,7 +731,10 @@ standing, and write that account's answers straight back. The same happens when
 
 The left bar's list is the answer this was built for. It is on every page of
 every tab, so `useOpenPulls` keeps it for `PULLS_STALE_MS` and a new tab draws
-the rows the last load left before GitHub has been asked.
+the rows the last load left before GitHub has been asked. A change of watch list
+keeps the old rows on screen until the new ones arrive, and only within one
+session: a sign-out or a change of account resets every answer, and rows carried
+across it would be the previous account's private ones.
 
 Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
 the one thing to raise when a procedure's output changes shape — never the
