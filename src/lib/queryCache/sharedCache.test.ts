@@ -23,7 +23,7 @@ function tab(
   name: string,
   hub: ReturnType<typeof busHub>,
   store: ReturnType<typeof memoryStore> | undefined,
-  options: { lease?: boolean } = {}
+  options: { lease?: boolean; confirmWaitMs?: number } = {}
 ) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -49,6 +49,7 @@ function tab(
     bus,
     coordinator,
     openStore: () => Promise.resolve(store),
+    confirmWaitMs: options.confirmWaitMs,
   });
   /** Asks the way a mounted query asks: through React Query, through here. */
   const ask = <T>(
@@ -254,21 +255,55 @@ describe('SharedCache', () => {
     assert.equal([...store.records.values()][0]?.complete, true);
   });
 
-  it('draws a stored answer at once and takes it in place of a fetch', async () => {
+  it('shows nothing from disk before the account is confirmed', async () => {
     const store = memoryStore();
-    const record = storedRecord({});
-    await store.put(record);
+    await store.put(storedRecord({}));
+    const a = tab('a', busHub(), store);
+    await settle();
+    assert.equal(a.client.getQueryData(KEY), undefined);
+  });
+
+  it('draws a stored answer once confirmed and takes it in place of a fetch', async () => {
+    const store = memoryStore();
+    await store.put(storedRecord({}));
     const a = tab('a', busHub(), store);
     const source = counter({ from: 'github' }, 1);
-    assert.deepEqual(await a.ask(source.fetch), { from: 'disk' });
+    // The query asks before the session has answered, which is the order a
+    // page load runs in: it waits for the confirmation, then takes the disk.
+    const asked = a.ask(source.fetch);
+    await settle();
+    a.cache.confirm('user:ada');
+    assert.deepEqual(await asked, { from: 'disk' });
     assert.equal(source.calls, 0);
   });
 
-  it('draws a partial answer but fetches behind it', async () => {
+  it('fetches once the wait for a confirmation runs out', async () => {
+    const store = memoryStore();
+    await store.put(storedRecord({}));
+    const a = tab('a', busHub(), store, { confirmWaitMs: 20 });
+    const source = counter({ from: 'github' }, 1);
+    assert.deepEqual(await a.ask(source.fetch), { from: 'github' });
+    assert.equal(source.calls, 1);
+  });
+
+  it('never makes the session query wait', async () => {
+    const store = memoryStore();
+    await store.put(storedRecord({}));
+    const a = tab('a', busHub(), store, { confirmWaitMs: 60_000 });
+    const answer = await a.ask(
+      () => Promise.resolve({ viewer: undefined }),
+      false,
+      [...SESSION_QUERY_KEY]
+    );
+    assert.deepEqual(answer, { viewer: undefined });
+  });
+
+  it('draws a partial answer once confirmed but fetches behind it', async () => {
     const store = memoryStore();
     await store.put(storedRecord({ complete: false }));
     const a = tab('a', busHub(), store);
     await settle();
+    a.cache.confirm('user:ada');
     assert.deepEqual(a.client.getQueryData(KEY), { from: 'disk' });
     assert.equal(a.client.getQueryState(KEY)?.dataUpdatedAt, 0);
     const source = counter({ from: 'github' }, 1);
@@ -285,17 +320,15 @@ describe('SharedCache', () => {
     assert.equal(store.records.size, 0);
   });
 
-  it('resets and forgets the last account when another one confirms', async () => {
+  it('never shows and then forgets another account the session does not confirm', async () => {
     const store = memoryStore();
     await store.put(storedRecord({}));
     const a = tab('a', busHub(), store);
     await settle();
-    const observer = a.client.getQueryCache().find({ queryKey: KEY });
-    assert.ok(observer, 'the stored answer is on screen');
-    a.cache.confirm('anonymous');
+    a.cache.confirm('user:grace');
     await settle();
-    assert.equal(store.records.size, 0);
     assert.equal(a.client.getQueryData(KEY), undefined);
+    assert.equal(store.records.size, 0);
   });
 
   it('keeps everything when the confirmed account is the stored one', async () => {
@@ -307,6 +340,53 @@ describe('SharedCache', () => {
     await settle();
     assert.equal(store.records.size, 1);
     assert.deepEqual(a.client.getQueryData(KEY), { from: 'disk' });
+  });
+
+  it('neither shares nor keeps an answer that crosses a change of account', async () => {
+    const hub = busHub();
+    const store = memoryStore();
+    const a = tab('a', hub, store);
+    a.cache.confirm('user:ada');
+    await settle();
+    const held = gate();
+    const asked = a.ask(async () => {
+      await held.closed;
+      return { pulls: ['adas'] };
+    });
+    await settle();
+    a.cache.confirm('user:grace');
+    held.open();
+    await asked.catch(() => undefined);
+    await settle();
+    assert.equal(store.records.size, 0);
+    assert.equal(
+      hub.sent.some((message) => message.type === 'data'),
+      false
+    );
+  });
+
+  it('neither shares nor keeps an answer that crosses a sign-out', async () => {
+    const hub = busHub();
+    const store = memoryStore();
+    const a = tab('a', hub, store);
+    a.cache.confirm('user:ada');
+    await settle();
+    const held = gate();
+    const asked = a.ask(async () => {
+      await held.closed;
+      return { pulls: ['adas'] };
+    });
+    await settle();
+    a.cache.suspend();
+    held.open();
+    await asked.catch(() => undefined);
+    a.cache.confirm('anonymous');
+    await settle();
+    assert.equal(store.records.size, 0);
+    assert.equal(
+      hub.sent.some((message) => message.type === 'data'),
+      false
+    );
   });
 
   it('empties the store on sign-out and every tab stops writing', async () => {

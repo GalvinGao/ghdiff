@@ -67,11 +67,21 @@ type PendingRecord = Omit<CacheRecord, 'id' | 'namespace'>;
  */
 const CHANNEL_GRACE_MS = 50;
 
+/**
+ * How long a query with an answer on disk waits for the session to say whose
+ * answer it may show. The session query is a request to this Worker and is
+ * usually back in a few hundred milliseconds; past this the query fetches for
+ * itself, and the stored answer stays where it is.
+ */
+const CONFIRM_WAIT_MS = 3_000;
+
 export interface SharedCacheEnvironment {
   tab: string;
   coordinator: Coordinator;
   bus?: MessageBus;
   openStore(): Promise<CacheStore | undefined>;
+  /** `CONFIRM_WAIT_MS`, unless a test needs a shorter wait. */
+  confirmWaitMs?: number;
 }
 
 export class SharedCache {
@@ -80,16 +90,33 @@ export class SharedCache {
   private readonly client: QueryClient;
   private readonly bus?: MessageBus;
   private store?: CacheStore;
-  /** Settles once the store is open and its records are placed. */
+  /** Settles once the store is open and its records are read. */
   private readonly ready: Promise<void>;
   /** The account this tab has confirmed, or nothing while it has not. */
   private namespace?: string;
   /**
-   * The account whose answers are on screen: the confirmed one, or before that
-   * the one the store held at startup. A confirmation that differs from it is
-   * a change of account, and resets every answer.
+   * The account this tab last confirmed, kept through a suspension. A
+   * confirmation that differs from it is a change of account, and resets every
+   * answer.
    */
   private shown?: string;
+  /**
+   * The records the store held at startup, read and not yet shown. Nothing on
+   * disk reaches the screen before the session says whose it is: a stored
+   * answer belongs to the account that fetched it, and the cookie may belong
+   * to somebody else by now.
+   */
+  private held: CacheRecord[] = [];
+  /** Settles at the next confirmation, for the queries waiting on `held`. */
+  private confirmation = deferred();
+  private readonly confirmWaitMs: number;
+  /**
+   * Raised by every suspension and every change of account. A fetch notes it
+   * as it starts, and an answer that lands under a later one is the previous
+   * session's: it is handed back to React Query, which drops it if the reset
+   * cancelled its query, and it is never broadcast or written down.
+   */
+  private generation = 0;
   /** Answers fetched before an account was confirmed, by hash. */
   private readonly pending = new Map<string, PendingRecord>();
   /**
@@ -106,6 +133,7 @@ export class SharedCache {
     this.tab = environment.tab;
     this.coordinator = environment.coordinator;
     this.bus = environment.bus;
+    this.confirmWaitMs = environment.confirmWaitMs ?? CONFIRM_WAIT_MS;
     if (this.bus != null) {
       this.cleanups.push(this.bus.subscribe((message) => this.hear(message)));
     }
@@ -118,6 +146,7 @@ export class SharedCache {
     const shareWindowMs = options.shareWindowMs ?? SHARE_WINDOW_MS;
     await this.ready;
     const hash = queryHash(queryKey);
+    await this.awaitConfirmation(hash, signal);
     return await this.coordinator.exclusive(
       hash,
       async (contended) => {
@@ -130,7 +159,11 @@ export class SharedCache {
           );
           if (taken !== undefined) return taken;
         }
+        const generation = this.generation;
         const data = await fetch(signal);
+        // Fetched under a session that has since ended or changed hands, so it
+        // is not this session's to share.
+        if (generation !== this.generation) return data;
         // Written before the lock is let go, so a tab that waited on it finds
         // the record when its turn comes, whatever the channel has delivered.
         await this.share(queryKey, hash, data, Date.now(), persist);
@@ -138,6 +171,26 @@ export class SharedCache {
       },
       signal
     );
+  }
+
+  /**
+   * Waits for the session to confirm an account, when the store holds an
+   * answer for this query that the confirmation would put on screen. Without
+   * the wait, the query would ask GitHub the moment it mounts and the stored
+   * answer would arrive too late to save the request. The session query never
+   * waits, since it is the one that confirms, and neither does a query with
+   * nothing stored. A wait that runs out simply lets the query fetch.
+   */
+  private async awaitConfirmation(hash: string, signal: AbortSignal) {
+    if (this.namespace != null || hash === SESSION_HASH) return;
+    if (!this.held.some((record) => record.hash === hash)) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const aborted = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, this.confirmWaitMs);
+      signal.addEventListener('abort', () => resolve(), { once: true });
+    });
+    await Promise.race([this.confirmation.promise, aborted]);
+    clearTimeout(timer);
   }
 
   /**
@@ -210,7 +263,19 @@ export class SharedCache {
     const previous = this.namespace ?? this.shown;
     this.namespace = namespace;
     this.shown = namespace;
-    if (previous != null && previous !== namespace) this.resetAnswers(false);
+    if (previous != null && previous !== namespace) {
+      this.generation += 1;
+      this.resetAnswers(false);
+    }
+    // What the store held at startup reaches the screen now, and only the part
+    // that is this account's. The rest is deleted by `settleStore`.
+    const held = this.held;
+    this.held = [];
+    for (const record of held) {
+      if (record.namespace === namespace) this.place(record);
+    }
+    this.confirmation.resolve();
+    this.confirmation = deferred();
     const pending = [...this.pending.values()];
     this.pending.clear();
     void this.settleStore(namespace, pending);
@@ -224,6 +289,7 @@ export class SharedCache {
    */
   suspend(): void {
     this.namespace = undefined;
+    this.generation += 1;
     this.pending.clear();
   }
 
@@ -236,6 +302,7 @@ export class SharedCache {
   async endSession(): Promise<void> {
     this.suspend();
     this.shown = undefined;
+    this.held = [];
     this.received.clear();
     await this.ready;
     try {
@@ -365,6 +432,7 @@ export class SharedCache {
       case 'signed-out':
         this.suspend();
         this.shown = undefined;
+        this.held = [];
         this.resetAnswers(true);
         return;
       default:
@@ -392,9 +460,10 @@ export class SharedCache {
   }
 
   /**
-   * Opens the store, throws out what may not be read, and places the rest. One
-   * account is ever kept: the confirmed one if a confirmation beat the store
-   * open, and otherwise the account of the newest record.
+   * Opens the store, throws out what may not be read, and keeps the rest until
+   * the session confirms whose they are — or places them at once, when a
+   * confirmation beat the store open. One account is ever kept: the confirmed
+   * one, or until then the account of the newest record.
    */
   private async restore(
     openStore: () => Promise<CacheStore | undefined>
@@ -421,12 +490,15 @@ export class SharedCache {
         newest = record;
       }
     }
-    const namespace = this.namespace ?? newest?.namespace;
-    if (this.namespace == null) this.shown = namespace;
+    const confirmed = this.namespace;
+    const namespace = confirmed ?? newest?.namespace;
+    const kept: CacheRecord[] = [];
     for (const record of live) {
-      if (record.namespace === namespace) this.place(record);
-      else dead.push(record.id);
+      if (record.namespace !== namespace) dead.push(record.id);
+      else if (confirmed != null) this.place(record);
+      else kept.push(record);
     }
+    this.held = kept;
     try {
       await store.remove(dead);
     } catch {
@@ -472,6 +544,15 @@ export class SharedCache {
     if (this.namespace !== namespace) return;
     for (const record of pending) await this.write(namespace, record);
   }
+}
+
+/** A promise with its resolver beside it. */
+function deferred(): { promise: Promise<void>; resolve: () => void } {
+  let resolve = () => undefined as void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
 }
 
 function hasId(value: unknown): value is { id: string } {

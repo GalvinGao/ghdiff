@@ -681,6 +681,18 @@ deletes every record that is not this account's, so the store holds one account
 at a time. A tab that hears another confirm a different account stops writing
 and asks who it is.
 
+Nothing on disk reaches the screen before that confirmation either. The store's
+records are read at startup and held back, and the confirmation places the ones
+that are its own account's: a stored answer belongs to whoever fetched it, and
+the cookie may be somebody else's by now. A query that has an answer on disk
+waits for the confirmation, at most `CONFIRM_WAIT_MS`, so a reload still draws
+from the store instead of asking GitHub first; the session query never waits,
+since it is what confirms. And a fetch notes the session's `generation` as it
+starts: every suspension and every change of account raises it, so an answer
+that lands after one is handed back to React Query — which drops it when the
+reset cancelled its query — and is never broadcast or written down under the
+account that came after.
+
 Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
 the one thing to raise when a procedure's output changes shape — never the
 commit sha, which would empty every reviewer's cache on every deploy. An answer
