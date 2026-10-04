@@ -38,6 +38,9 @@ import {
 // github.com's own **Raw** links, which costs none of them. A caller with a
 // token has five thousand and a private repository to reach, so its file comes
 // from the API, which is the only one of the two that can answer for one.
+//
+// Both answer `If-None-Match`, so a browser that kept the file from last time
+// sends its ETag back and gets a 304 with no body when the file has not moved.
 
 function textResponse(body: string, status: number): Response {
   return new Response(body, {
@@ -89,16 +92,18 @@ function gitHubFile(
   target: GitHubReviewTarget,
   ref: string,
   path: string,
-  token: string | undefined
+  token: string | undefined,
+  ifNoneMatch: string | undefined
 ): Promise<Response> {
   if (token == null) {
-    return githubWebRaw(target.owner, target.repo, ref, path);
+    return githubWebRaw(target.owner, target.repo, ref, path, ifNoneMatch);
   }
   return githubRaw(
     `/repos/${target.owner}/${target.repo}/contents/${encodeRefForPath(
       path
     )}?ref=${encodeURIComponent(ref)}`,
-    token
+    token,
+    ifNoneMatch
   );
 }
 
@@ -143,7 +148,23 @@ const getFile = withEvlog(
       source: token == null ? 'web-raw' : 'api-contents',
     });
     try {
-      const response = await gitHubFile(target, ref, path, token);
+      const response = await gitHubFile(
+        target,
+        ref,
+        path,
+        token,
+        request.headers.get('if-none-match') ?? undefined
+      );
+      const etag = response.headers.get('etag');
+      const headers: Record<string, string> = {
+        'cache-control': 'no-store',
+        'content-type': 'text/plain',
+        ...(etag == null ? {} : { etag }),
+      };
+      if (response.status === 304) {
+        log.set({ outcome: 'unchanged' });
+        return new Response(null, { status: 304, headers });
+      }
       const size = statedSize(response);
       if (size != null && size > MAX_FILE_BYTES) {
         // Nothing here reads the body, so it is cancelled rather than left for
@@ -153,10 +174,7 @@ const getFile = withEvlog(
         return textResponse(FILE_TOO_LARGE(), 413);
       }
       log.set({ outcome: 'ok', size });
-      return new Response(response.body, {
-        status: 200,
-        headers: { 'cache-control': 'no-store', 'content-type': 'text/plain' },
-      });
+      return new Response(response.body, { status: 200, headers });
     } catch (error) {
       if (error instanceof GitHubError) {
         log.set({ outcome: 'error', status: error.status });

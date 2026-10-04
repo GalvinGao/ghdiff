@@ -1,13 +1,20 @@
-// The IndexedDB half of the shared cache: one database, one object store, one
-// record per query per account. Written by hand rather than through a wrapper
-// library, because five promises over `IDBRequest` are all it takes and the
-// Worker's bundle budget is better spent elsewhere.
+// The IndexedDB half of the shared cache: one database, one record per query
+// per account, and beside them the patches and files. Written by hand rather
+// than through a wrapper library, because a few promises over `IDBRequest` are
+// all it takes and the Worker's bundle budget is better spent elsewhere.
+//
+// A patch or a file is a blob: its text in one object store and what is known
+// about it in another. The two are apart so that sweeping and trimming read
+// the small half alone — a startup that read every stored patch to find the
+// expired ones would read tens of megabytes to throw most of them away.
 
-import type { CacheRecord } from './records.ts';
+import type { BlobMeta, CacheRecord } from './records.ts';
 
 const DATABASE = 'ghdiff-cache';
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 const RECORDS = 'records';
+const BLOB_META = 'blobMeta';
+const BLOB_TEXT = 'blobText';
 
 export interface CacheStore {
   get(id: string): Promise<unknown>;
@@ -20,6 +27,13 @@ export interface CacheStore {
    */
   put(record: CacheRecord): Promise<void>;
   remove(ids: readonly string[]): Promise<void>;
+  getBlob(id: string): Promise<{ meta: unknown; text: unknown } | undefined>;
+  putBlob(meta: BlobMeta, text: string): Promise<void>;
+  blobMetas(): Promise<unknown[]>;
+  /** Writes what is known about a blob, and leaves its text alone. */
+  putBlobMeta(meta: BlobMeta): Promise<void>;
+  removeBlobs(ids: readonly string[]): Promise<void>;
+  /** Empties every store: the records and the blobs alike. */
   clear(): Promise<void>;
   close(): void;
 }
@@ -52,8 +66,10 @@ export async function openCacheStore(): Promise<CacheStore | undefined> {
     const request = indexedDB.open(DATABASE, DATABASE_VERSION);
     request.addEventListener('upgradeneeded', () => {
       const db = request.result;
-      if (!db.objectStoreNames.contains(RECORDS)) {
-        db.createObjectStore(RECORDS, { keyPath: 'id' });
+      for (const name of [RECORDS, BLOB_META, BLOB_TEXT]) {
+        if (!db.objectStoreNames.contains(name)) {
+          db.createObjectStore(name, { keyPath: 'id' });
+        }
       }
     });
     database = await settle(request);
@@ -67,6 +83,17 @@ export async function openCacheStore(): Promise<CacheStore | undefined> {
   const write = async (run: (store: IDBObjectStore) => void) => {
     const transaction = database.transaction(RECORDS, 'readwrite');
     run(transaction.objectStore(RECORDS));
+    await finished(transaction);
+  };
+  /** One transaction over both halves of the blobs, so they never disagree. */
+  const writeBlobs = async (
+    run: (meta: IDBObjectStore, text: IDBObjectStore) => void
+  ) => {
+    const transaction = database.transaction(
+      [BLOB_META, BLOB_TEXT],
+      'readwrite'
+    );
+    run(transaction.objectStore(BLOB_META), transaction.objectStore(BLOB_TEXT));
     await finished(transaction);
   };
 
@@ -91,7 +118,42 @@ export async function openCacheStore(): Promise<CacheStore | undefined> {
         : write((store) => {
             for (const id of ids) store.delete(id);
           }),
-    clear: () => write((store) => store.clear()),
+    getBlob: async (id) => {
+      const transaction = database.transaction([BLOB_META, BLOB_TEXT]);
+      const [meta, text] = await Promise.all([
+        settle(transaction.objectStore(BLOB_META).get(id)),
+        settle(transaction.objectStore(BLOB_TEXT).get(id)),
+      ]);
+      if (meta == null || text == null) return undefined;
+      return { meta, text: (text as { text?: unknown }).text };
+    },
+    putBlob: (meta, text) =>
+      writeBlobs((metas, texts) => {
+        metas.put(meta);
+        texts.put({ id: meta.id, text });
+      }),
+    blobMetas: () =>
+      settle(database.transaction(BLOB_META).objectStore(BLOB_META).getAll()),
+    putBlobMeta: (meta) => writeBlobs((metas) => metas.put(meta)),
+    removeBlobs: (ids) =>
+      ids.length === 0
+        ? Promise.resolve()
+        : writeBlobs((metas, texts) => {
+            for (const id of ids) {
+              metas.delete(id);
+              texts.delete(id);
+            }
+          }),
+    clear: async () => {
+      const transaction = database.transaction(
+        [RECORDS, BLOB_META, BLOB_TEXT],
+        'readwrite'
+      );
+      for (const name of [RECORDS, BLOB_META, BLOB_TEXT]) {
+        transaction.objectStore(name).clear();
+      }
+      await finished(transaction);
+    },
     close: () => database.close(),
   };
 }

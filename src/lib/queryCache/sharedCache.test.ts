@@ -832,3 +832,167 @@ describe('SharedCache', () => {
     assert.equal(store.records.size, 1);
   });
 });
+
+describe('SharedCache.fetchText', () => {
+  const KEY_TEXT = ['diff', 'github-pull:acme/app#1'];
+
+  /** A source that answers 304 to the ETag it last gave, and counts asks. */
+  function source(text: string, etag = 'W/"1"') {
+    const asks: (string | undefined)[] = [];
+    return {
+      asks,
+      fetch: async (sent: string | undefined) => {
+        asks.push(sent);
+        await settle(5);
+        return sent === etag
+          ? ({ status: 'unchanged' } as const)
+          : ({ status: 'fresh', text, etag } as const);
+      },
+    };
+  }
+
+  it('keeps a patch and asks GitHub whether it is still current', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    const diff = source('diff --git a b');
+    assert.equal(
+      (await a.cache.fetchText({ key: KEY_TEXT, fetch: diff.fetch })).text,
+      'diff --git a b'
+    );
+    const again = await a.cache.fetchText({ key: KEY_TEXT, fetch: diff.fetch });
+    assert.equal(again.text, 'diff --git a b');
+    assert.deepEqual(diff.asks, [undefined, 'W/"1"']);
+  });
+
+  it('keeps the notice a fallback source gave with the text', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    let asked = 0;
+    const fetch = async (sent: string | undefined) => {
+      asked += 1;
+      return sent == null
+        ? ({ status: 'fresh', text: 'p', etag: 'e', notice: 'cut' } as const)
+        : ({ status: 'unchanged' } as const);
+    };
+    await a.cache.fetchText({ key: KEY_TEXT, fetch });
+    assert.deepEqual(await a.cache.fetchText({ key: KEY_TEXT, fetch }), {
+      text: 'p',
+      notice: 'cut',
+    });
+    assert.equal(asked, 2);
+  });
+
+  it('never keeps an answer that states no ETag', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    await a.cache.fetchText({
+      key: KEY_TEXT,
+      fetch: () => Promise.resolve({ status: 'fresh', text: 'synthesized' }),
+    });
+    assert.equal(store.blobs.size, 0);
+  });
+
+  it('lets a tab that waited take the download without asking', async () => {
+    const store = memoryStore();
+    const hub = busHub();
+    const a = tab('a', hub, store);
+    const b = tab('b', hub, store);
+    a.cache.confirm('user:ada');
+    b.cache.confirm('user:ada');
+    const held = gate();
+    const asks: (string | undefined)[] = [];
+    const fetch = async (sent: string | undefined) => {
+      asks.push(sent);
+      await held.closed;
+      return { status: 'fresh', text: 'diff --git a b', etag: 'e' } as const;
+    };
+    const first = a.cache.fetchText({ key: KEY_TEXT, fetch });
+    await until(() => asks.length === 1);
+    const second = b.cache.fetchText({ key: KEY_TEXT, fetch });
+    await until(() => b.entered() === 1);
+    await settle(5);
+    held.open();
+    assert.equal((await first).text, 'diff --git a b');
+    assert.equal((await second).text, 'diff --git a b');
+    assert.equal(asks.length, 1);
+  });
+
+  it('keeps no download made before the confirmation', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    await a.cache.fetchText({ key: KEY_TEXT, fetch: source('p').fetch });
+    a.cache.confirm('user:ada');
+    await settle();
+    assert.equal(store.blobs.size, 0);
+  });
+
+  it('waits for the confirmation, then sends the stored ETag', async () => {
+    const store = memoryStore();
+    const first = tab('a', busHub(), store);
+    first.cache.confirm('user:ada');
+    const diff = source('diff --git a b');
+    await first.cache.fetchText({ key: KEY_TEXT, fetch: diff.fetch });
+
+    // The next load: the download starts before the session has answered.
+    const next = tab('b', busHub(), store);
+    const asked = next.cache.fetchText({ key: KEY_TEXT, fetch: diff.fetch });
+    await settle();
+    next.cache.confirm('user:ada');
+    assert.equal((await asked).text, 'diff --git a b');
+    assert.deepEqual(diff.asks, [undefined, 'W/"1"']);
+  });
+
+  it('never sends or shows another account’s stored copy', async () => {
+    const store = memoryStore();
+    const first = tab('a', busHub(), store);
+    first.cache.confirm('user:ada');
+    await first.cache.fetchText({ key: KEY_TEXT, fetch: source('adas').fetch });
+
+    const next = tab('b', busHub(), store);
+    const graces = source('graces', 'W/"2"');
+    const asked = next.cache.fetchText({ key: KEY_TEXT, fetch: graces.fetch });
+    await settle();
+    next.cache.confirm('user:grace');
+    assert.equal((await asked).text, 'graces');
+    assert.deepEqual(graces.asks, [undefined]);
+  });
+
+  it('keeps no download that crosses a change of account', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    const held = gate();
+    const asked = a.cache.fetchText({
+      key: KEY_TEXT,
+      fetch: async () => {
+        await held.closed;
+        return { status: 'fresh', text: 'adas', etag: 'e' } as const;
+      },
+    });
+    await settle();
+    a.cache.confirm('user:grace');
+    held.open();
+    await asked;
+    await settle();
+    assert.equal(store.blobs.size, 0);
+  });
+
+  it('empties the blobs on sign-out and on a change of account', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    await a.cache.fetchText({ key: KEY_TEXT, fetch: source('p').fetch });
+    assert.equal(store.blobs.size, 1);
+    a.cache.confirm('user:grace');
+    await settle();
+    assert.equal(store.blobs.size, 0);
+
+    await a.cache.fetchText({ key: KEY_TEXT, fetch: source('q').fetch });
+    assert.equal(store.blobs.size, 1);
+    await a.cache.endSession();
+    assert.equal(store.blobs.size, 0);
+  });
+});

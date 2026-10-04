@@ -31,6 +31,12 @@ import { recordServe } from '@/lib/server/platform';
 //
 // A target is tried three ways, cheapest and most complete first. See the note
 // above githubWebDiff for why the web host leads and the API follows.
+//
+// A browser that kept the patch from last time sends its ETag back as
+// `If-None-Match`. The first two sources pass it to GitHub, and a 304 from
+// either comes back as a 304 with no body: the stored copy is current, and
+// nothing is read or sent twice. A synthesized patch states no ETag, so the
+// browser never keeps one, and never asks the third source that question.
 
 /** Set when the fallback could not carry the whole diff. */
 const SYNTHESIS_NOTICE_HEADER = 'x-ghdiff-notice';
@@ -89,6 +95,13 @@ function streamed(response: Response, notice?: string): Response {
     'cache-control': 'no-store',
     'content-type': 'text/plain',
   };
+  // The source's own ETag, so the browser can ask the same source the same
+  // question next time. A weak one is fine: `If-None-Match` compares weakly.
+  const etag = response.headers.get('etag');
+  if (etag != null) headers.etag = etag;
+  if (response.status === 304) {
+    return new Response(null, { status: 304, headers });
+  }
   if (notice != null) {
     headers[SYNTHESIS_NOTICE_HEADER] = notice;
   }
@@ -129,7 +142,12 @@ const getDiff = withEvlog(
     }
 
     try {
-      const response = await gitHubResponse(target, token, log);
+      const response = await gitHubResponse(
+        target,
+        token,
+        log,
+        request.headers.get('if-none-match') ?? undefined
+      );
       // One serve, counted. `gitHubResponse` returns only when a source
       // answered, so a 404 or a spent quota is not a serve. The write itself
       // happens after this response has gone.
@@ -153,15 +171,18 @@ export const Route = createFileRoute('/api/diff')({
 async function gitHubResponse(
   target: GitHubReviewTarget,
   token: string | undefined,
-  log: ReturnType<typeof requestLog>
+  log: ReturnType<typeof requestLog>,
+  ifNoneMatch: string | undefined
 ): Promise<Response> {
-  log.set({ authenticated: token != null });
+  log.set({ authenticated: token != null, conditional: ifNoneMatch != null });
   const failures: AttemptFailure[] = [];
+  const outcome = (response: Response) =>
+    response.status === 304 ? 'unchanged' : 'ok';
 
   // 1. The web host. No file or line cap, and it streams.
   try {
-    const response = await githubWebDiff(webPath(target), token);
-    log.set({ outcome: 'ok', source: 'web-diff' });
+    const response = await githubWebDiff(webPath(target), token, ifNoneMatch);
+    log.set({ outcome: outcome(response), source: 'web-diff' });
     return streamed(response);
   } catch (error) {
     failures.push(describeFailure('web-diff', error));
@@ -170,8 +191,8 @@ async function gitHubResponse(
   // 2. The API's diff media type. Caps a pull request at 300 files and 20000
   //    lines, but it accepts a token on every repository.
   try {
-    const response = await githubDiff(apiPath(target), token);
-    log.set({ outcome: 'ok', source: 'api-diff' });
+    const response = await githubDiff(apiPath(target), token, ifNoneMatch);
+    log.set({ outcome: outcome(response), source: 'api-diff' });
     return streamed(response);
   } catch (error) {
     failures.push(describeFailure('api-diff', error));

@@ -777,6 +777,26 @@ instead of patching it and publishing the result: two tabs patching the same old
 list at once would each erase the other's comment. The answer reaches every tab
 on the pull request, and each merges it in, the writing tab included.
 
+**A patch and a whole file are kept too, and GitHub says whether they are still
+right.** They are too large for the channel and too large to trust by age, so
+they go to a store of their own, `blobs`, under the same account rules and a
+budget of `BLOB_BUDGET_BYTES`, oldest use first out. The next ask sends the
+stored ETag as `If-None-Match`; `/api/diff` and `/api/file` hand it to GitHub,
+and a 304 comes back as a 304 with no body, which is the stored text confirmed
+and none of the quota spent. Both the web diff host and the raw file host answer
+it, and so does the API. A synthesized patch has no ETag and is never stored. A
+tab that waited on another's download takes the stored text if it is younger
+than the share window, and does not ask GitHub at all. A stored copy is read
+under the confirmed account and no other, so a download that has one waits for
+the confirmation the way a query does, and a download that crosses a change of
+account is never kept.
+
+`patchQueryOptions` finds the cache through `sharedCacheOf(client)`, the client
+its `queryFn` is handed, so the review dialog's prefetch of the next layer is
+stored and checked the same way as the screen's own read, with no hook in reach.
+React Query still holds the text for its five minutes; the blob store is what
+the next load and the other tabs start from.
+
 jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
 the Worker rather than for the browser. Without it every atom would resolve
 against one store held by the module, and a Worker isolate serves many requests

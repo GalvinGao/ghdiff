@@ -131,3 +131,75 @@ export function moment(): number {
   lastMoment = Math.max(now, lastMoment + 0.001);
   return lastMoment;
 }
+
+/**
+ * What is known about a stored patch or file, kept apart from its text. The
+ * ETag is the whole of why the text may be shown again: the next ask sends it
+ * back, and GitHub answers 304 only while the text is still right.
+ */
+export interface BlobMeta {
+  id: string;
+  namespace: string;
+  hash: string;
+  version: number;
+  etag: string;
+  /** What the source could not carry, when it said so. */
+  notice?: string;
+  /** Two bytes a code unit, which is what a stored string costs. */
+  bytes: number;
+  /** When GitHub last said this text was current. */
+  updatedAt: number;
+  /** When a tab last drew it, for trimming the oldest first. */
+  usedAt: number;
+}
+
+/**
+ * How much text the blob store keeps, all blobs together. A long review day
+ * is a few dozen patches and a few hundred files, and most are far smaller
+ * than the 43 MB outlier; past this the oldest-used go first.
+ */
+export const BLOB_BUDGET_BYTES = 96 * 1024 * 1024;
+
+/** The largest one blob may be. A patch past it is fetched every time. */
+export const MAX_BLOB_BYTES = 24 * 1024 * 1024;
+
+export function blobBytes(text: string): number {
+  return text.length * 2;
+}
+
+export function isLiveBlobMeta(value: unknown, now: number): value is BlobMeta {
+  if (typeof value !== 'object' || value == null) return false;
+  const meta = value as Partial<BlobMeta>;
+  return (
+    typeof meta.id === 'string' &&
+    typeof meta.namespace === 'string' &&
+    typeof meta.hash === 'string' &&
+    meta.version === CACHE_SCHEMA_VERSION &&
+    typeof meta.etag === 'string' &&
+    typeof meta.bytes === 'number' &&
+    typeof meta.updatedAt === 'number' &&
+    typeof meta.usedAt === 'number' &&
+    now - meta.updatedAt < CACHE_MAX_AGE_MS
+  );
+}
+
+/**
+ * The blobs to throw out so the rest fit the budget: the least recently used
+ * first, and never the one named by `keep`, which is the blob just written.
+ */
+export function blobsOverBudget(
+  metas: readonly BlobMeta[],
+  budget: number,
+  keep?: string
+): string[] {
+  let total = 0;
+  for (const meta of metas) total += meta.bytes;
+  const drop: string[] = [];
+  for (const meta of [...metas].sort((a, b) => a.usedAt - b.usedAt)) {
+    if (total <= budget) break;
+    if (meta.id === keep) continue;
+    drop.push(meta.id);
+    total -= meta.bytes;
+  }
+  return drop;
+}
