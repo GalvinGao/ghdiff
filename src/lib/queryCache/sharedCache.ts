@@ -459,6 +459,9 @@ export class SharedCache {
               );
             }
             await this.touchBlob(stored.meta, true);
+            // Every await is a moment the session can move in, the store's
+            // own included.
+            if (generation !== this.generation) continue;
             return { text: stored.text, notice: stored.meta.notice };
           }
           // Still waiting on a first confirmation: the text is this tab's
@@ -476,6 +479,7 @@ export class SharedCache {
             // it.
             await this.dropBlob(hash);
           }
+          if (generation !== this.generation) continue;
           return { text: answer.text, notice: answer.notice };
         }
         throw new Error('The session changed while this loaded.');

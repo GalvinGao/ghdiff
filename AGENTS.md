@@ -788,14 +788,14 @@ it, and so does the API. A synthesized patch has no ETag and is never stored. A
 tab that waited on another's download takes the stored text if it is younger
 than the share window, and does not ask GitHub at all. A stored copy is read
 under the confirmed account and no other, and a download waits for the
-confirmation the way every request does. The whole read — the store, then GitHub
-— is asked again when the session moves under it, and never answers with a copy
-or a text from a session that is not the one on screen: a file load runs outside
-React Query, and nothing would cancel it. A newer answer that cannot be kept —
-no ETag, or over `MAX_BLOB_BYTES` — deletes the stored one, so a tab waiting on
-the download never takes the copy it replaced. Every write sweeps the expired
-blobs as well as the ones over budget, because a tab left open past a day keeps
-writing and startup is not the only sweep it gets.
+confirmation the way every request does. The whole read — the store, GitHub, and
+the store again — is asked again when the session moves under it, and never
+answers with a copy or a text from a session that is not the one on screen: a
+file load runs outside React Query, and nothing would cancel it. A newer answer
+that cannot be kept — no ETag, or over `MAX_BLOB_BYTES` — deletes the stored
+one, so a tab waiting on the download never takes the copy it replaced. Every
+write sweeps the expired blobs as well as the ones over budget, because a tab
+left open past a day keeps writing and startup is not the only sweep it gets.
 
 `patchQueryOptions` finds the cache through `sharedCacheOf(client)`, the client
 its `queryFn` is handed, so the review dialog's prefetch of the next layer is

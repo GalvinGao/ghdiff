@@ -1065,6 +1065,77 @@ describe('SharedCache.fetchText', () => {
     assert.deepEqual(asks, ['W/"1"', undefined]);
   });
 
+  it('never answers from a session that moved during a store write', async () => {
+    const memory = memoryStore();
+    const writing = gate();
+    let writes = 0;
+    const slow = {
+      ...memory,
+      putBlob: async (
+        meta: Parameters<typeof memory.putBlob>[0],
+        text: string
+      ) => {
+        writes += 1;
+        if (writes === 1) await writing.closed;
+        return memory.putBlob(meta, text);
+      },
+    };
+    const a = tab('a', busHub(), slow as typeof memory, {
+      account: 'user:ada',
+    });
+    let calls = 0;
+    const asked = a.cache.fetchText({
+      key: KEY_TEXT,
+      fetch: () => {
+        calls += 1;
+        return Promise.resolve({
+          status: 'fresh',
+          text: `answer ${calls}`,
+          etag: `W/"${calls}"`,
+        } as const);
+      },
+    });
+    await until(() => writes === 1);
+    a.cache.confirm('user:grace');
+    writing.open();
+    assert.equal((await asked).text, 'answer 2');
+  });
+
+  it('never answers from a session that moved while a 304 was noted', async () => {
+    const memory = memoryStore();
+    const a0 = tab('a', busHub(), memory, { account: 'user:ada' });
+    await a0.cache.fetchText({ key: KEY_TEXT, fetch: source('adas').fetch });
+    const noting = gate();
+    let notes = 0;
+    const slow = {
+      ...memory,
+      putBlobMeta: async (meta: Parameters<typeof memory.putBlobMeta>[0]) => {
+        notes += 1;
+        if (notes === 1) await noting.closed;
+        return memory.putBlobMeta(meta);
+      },
+    };
+    const a = tab('b', busHub(), slow as typeof memory, {
+      account: 'user:ada',
+    });
+    const asks: (string | undefined)[] = [];
+    const asked = a.cache.fetchText({
+      key: KEY_TEXT,
+      fetch: (sent) => {
+        asks.push(sent);
+        return Promise.resolve(
+          sent === 'W/"1"'
+            ? ({ status: 'unchanged' } as const)
+            : ({ status: 'fresh', text: 'graces', etag: 'W/"2"' } as const)
+        );
+      },
+    });
+    await until(() => notes === 1);
+    a.cache.confirm('user:grace');
+    noting.open();
+    assert.equal((await asked).text, 'graces');
+  });
+
   it('drops the stored copy when a newer answer cannot be kept', async () => {
     const store = memoryStore();
     const a = tab('a', busHub(), store);
