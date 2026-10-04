@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
-import { useSharedCache, useSharedQuery } from './useSharedQuery';
+import { useForcedRefetch, useSharedQuery } from './useSharedQuery';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import { type ReviewTarget, reviewTargetKey } from '@/lib/reviewTarget';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
@@ -95,8 +95,7 @@ export function useViewedFiles(options: {
     },
     enabled: ready && store === 'github',
   });
-  const shared = useSharedCache();
-  const { refetch } = query;
+  const refresh = useForcedRefetch(queryKey, query.refetch);
   const paths = query.data?.paths;
 
   // Presses GitHub has not answered yet, by item id. An answer that lands in
@@ -200,8 +199,7 @@ export function useViewedFiles(options: {
           // the list is asked for again rather than patched here: two tabs
           // patching the same old list at once would each erase the other's
           // mark. The press stays laid over the boxes until the answer lands.
-          shared?.forceNext(JSON.parse(listHash) as readonly unknown[]);
-          await refetch();
+          await refresh();
           inFlightRef.current.delete(itemId);
         } catch (cause) {
           inFlightRef.current.delete(itemId);
@@ -223,17 +221,7 @@ export function useViewedFiles(options: {
         }
       })();
     },
-    [
-      listHash,
-      pathByItemId,
-      pullNumber,
-      pullOwner,
-      pullRepo,
-      refetch,
-      shared,
-      storageKey,
-      store,
-    ]
+    [pathByItemId, pullNumber, pullOwner, pullRepo, refresh, storageKey, store]
   );
 
   const dismissError = useCallback(() => setError(undefined), []);
