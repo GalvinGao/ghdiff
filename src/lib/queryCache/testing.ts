@@ -50,7 +50,11 @@ export function memoryStore(): CacheStore & {
     get: (id) => Promise.resolve(structuredClone(records.get(id))),
     all: () => Promise.resolve([...records.values()].map((r) => ({ ...r }))),
     put: (record) => {
-      records.set(record.id, structuredClone(record));
+      // The same rule as the IndexedDB store: a later-begun fetch is kept.
+      const held = records.get(record.id)?.startedAt ?? -Infinity;
+      if (held <= (record.startedAt ?? -Infinity)) {
+        records.set(record.id, structuredClone(record));
+      }
       return Promise.resolve();
     },
     remove: (ids) => {

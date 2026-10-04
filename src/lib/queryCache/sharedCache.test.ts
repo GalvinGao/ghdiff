@@ -699,6 +699,59 @@ describe('SharedCache', () => {
     assert.equal(a.client.getQueryData(KEY), undefined);
   });
 
+  it('never lets a cancelled read lower a newer answer’s start', async () => {
+    const hub = busHub();
+    const other = hub.join();
+    const a = tab('a', hub, undefined, { account: 'user:ada' });
+    const held = gate();
+    const asked = a.ask(async () => {
+      await held.closed;
+      return { review: 'adas' };
+    });
+    await settle();
+    a.cache.confirm('user:grace');
+    const between = moment();
+    a.cache.publish(KEY, { review: 'APPROVED' }, true, a.cache.ticket());
+    held.open();
+    await asked.catch(() => undefined);
+    // Began after Ada's cancelled read and before the approval.
+    other.post({
+      type: 'data',
+      tab: 'b',
+      namespace: 'user:grace',
+      hash: queryHash(KEY),
+      queryKey: KEY,
+      data: { review: 'COMMENTED' },
+      updatedAt: Date.now(),
+      startedAt: between,
+    });
+    await settle();
+    assert.deepEqual(a.client.getQueryData(KEY), { review: 'APPROVED' });
+  });
+
+  it('keeps the later-begun answer on disk, whichever tab writes last', async () => {
+    const hub = busHub();
+    const store = memoryStore();
+    const a = tab('a', hub, store, { account: 'user:ada' });
+    const b = tab('b', hub, store, { account: 'user:ada', lease: true });
+    // B's read begins first and lands last, under a coordinator that let both
+    // tabs through.
+    const held = gate();
+    const read = b.ask(async () => {
+      await held.closed;
+      return { review: 'COMMENTED' };
+    });
+    await settle();
+    a.cache.publish(KEY, { review: 'APPROVED' }, true, a.cache.ticket());
+    await settle();
+    held.open();
+    await read;
+    await settle();
+    assert.deepEqual([...store.records.values()][0]?.data, {
+      review: 'APPROVED',
+    });
+  });
+
   it('carries a published write to every tab and to disk', async () => {
     const hub = busHub();
     const store = memoryStore();

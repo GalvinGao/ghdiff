@@ -709,9 +709,14 @@ two fetches that began in the same millisecond still have an order. Each answer
 a tab holds notes its moment — its own fetch's, the broadcast's, or the moment
 of a write it published — and a newer one is never replaced by an older one,
 whether the older one arrives on the channel or lands from this tab's own fetch,
-before its disk write or after it. A write is a request like any other, so
-`publish` takes the `ticket` the session had when the write was sent, and a
-write that lands under a later session publishes nothing.
+before its disk write or after it. A read that a reset cancelled notes nothing
+at all, so it cannot lower the moment of an answer that replaced it. The store
+keeps the same order: a record carries its fetch's moment, and a write never
+replaces a record whose fetch began later — the read and the write are one
+IndexedDB transaction, which another tab's write cannot interleave with. A write
+is a request like any other, so `publish` takes the `ticket` the session had
+when the write was sent, and a write that lands under a later session publishes
+nothing.
 
 Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
 the one thing to raise when a procedure's output changes shape — never the

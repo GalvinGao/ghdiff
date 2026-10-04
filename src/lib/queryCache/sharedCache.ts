@@ -214,17 +214,17 @@ export class SharedCache {
             generation !== this.generation ||
             (this.namespace != null && startedAt < this.confirmedFrom);
           if (moved) {
-            // A reset cancelled the query: React Query drops the answer.
-            if (signal.aborted || attempt + 1 >= SESSION_ATTEMPTS) {
-              this.hold(hash, startedAt);
-              return data;
+            // A reset cancelled the query: React Query drops the answer, so
+            // nothing about it is noted either.
+            if (signal.aborted) return data;
+            if (attempt + 1 >= SESSION_ATTEMPTS) {
+              return this.handBack(queryKey, hash, data, startedAt);
             }
             await this.awaitConfirmation(signal);
             continue;
           }
           if (this.namespace == null) {
-            this.hold(hash, startedAt);
-            return data;
+            return this.handBack(queryKey, hash, data, startedAt);
           }
           // A newer answer reached this tab while this one was out — a write
           // it published, or a fetch another tab began later — and an older
@@ -242,19 +242,34 @@ export class SharedCache {
             startedAt
           );
           // And asked once more after the write, which takes time of its own.
-          const later = this.newerThan<T>(queryKey, hash, startedAt);
-          if (later !== undefined) return later;
-          this.hold(hash, startedAt);
-          return data;
+          return this.handBack(queryKey, hash, data, startedAt);
         }
       },
       signal
     );
   }
 
-  /** Notes when the fetch began whose answer this tab now holds. */
+  /**
+   * Notes when the fetch began whose answer this tab now holds. The note only
+   * ever moves forward: an older answer never takes the place of a newer one,
+   * so its start never takes the place of the newer one's either.
+   */
   private hold(hash: string, startedAt: number) {
-    this.heldFrom.set(hash, startedAt);
+    const from = this.heldFrom.get(hash);
+    if (from == null || from < startedAt) this.heldFrom.set(hash, startedAt);
+  }
+
+  /** The answer to hand React Query: this one, unless a newer one is held. */
+  private handBack<T>(
+    queryKey: readonly unknown[],
+    hash: string,
+    data: T,
+    startedAt: number
+  ): T {
+    const newer = this.newerThan<T>(queryKey, hash, startedAt);
+    if (newer !== undefined) return newer;
+    this.hold(hash, startedAt);
+    return data;
   }
 
   /** The answer this tab holds, when its fetch began after `startedAt`. */
@@ -503,6 +518,7 @@ export class SharedCache {
       queryKey: [...queryKey],
       version: CACHE_SCHEMA_VERSION,
       updatedAt,
+      startedAt,
       // Whole when nothing was taken out of it, which is also what a function
       // that had nothing to take out hands back.
       complete: stored === data,

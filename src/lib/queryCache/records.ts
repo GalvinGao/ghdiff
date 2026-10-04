@@ -49,6 +49,12 @@ export interface CacheRecord {
   /** When the tab that fetched the answer received it. */
   updatedAt: number;
   /**
+   * When that fetch began, on `moment()`. The store keeps the record whose
+   * fetch began last, not the one written last: two tabs can write the same
+   * question's answers in either order. Absent from an older build's record.
+   */
+  startedAt?: number;
+  /**
    * False when what was stored is less than what was fetched — an answer with
    * its signed attachment addresses taken out, which must never stand in for a
    * fresh fetch.

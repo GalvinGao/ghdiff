@@ -12,6 +12,12 @@ const RECORDS = 'records';
 export interface CacheStore {
   get(id: string): Promise<unknown>;
   all(): Promise<unknown[]>;
+  /**
+   * Writes a record unless the one stored under its id comes from a fetch
+   * that began later. The read and the write are one transaction, and
+   * IndexedDB runs two read-write transactions over one store one after the
+   * other, so two tabs writing the same question cannot interleave.
+   */
   put(record: CacheRecord): Promise<void>;
   remove(ids: readonly string[]): Promise<void>;
   clear(): Promise<void>;
@@ -69,7 +75,16 @@ export async function openCacheStore(): Promise<CacheStore | undefined> {
       settle(database.transaction(RECORDS).objectStore(RECORDS).get(id)),
     all: () =>
       settle(database.transaction(RECORDS).objectStore(RECORDS).getAll()),
-    put: (record) => write((store) => store.put(record)),
+    put: (record) =>
+      write((store) => {
+        const existing = store.get(record.id);
+        existing.addEventListener('success', () => {
+          const held = existing.result as { startedAt?: unknown } | undefined;
+          const heldFrom =
+            typeof held?.startedAt === 'number' ? held.startedAt : -Infinity;
+          if (heldFrom <= (record.startedAt ?? -Infinity)) store.put(record);
+        });
+      }),
     remove: (ids) =>
       ids.length === 0
         ? Promise.resolve()
