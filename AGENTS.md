@@ -761,6 +761,22 @@ list at once would each erase the other's mark. A verdict is the one write that
 is published as it is — a single value with nothing to merge — and it carries
 the session's `ticket` from the moment it was sent.
 
+A pull request's line comments are shared the same way, and the merge is the
+part to get right. `useReviewComments` seeds its threads from the first answer
+for a diff, and every later one — a comment posted in another tab, a reload —
+goes through `mergeGitHubThreads` in `src/lib/commentMerge.ts`. What only this
+tab knows survives it: an open composer, a message still on its way, a failure
+with the reviewer's text in it, and the issue link a thread holds in memory. A
+thread GitHub already has keeps the key this tab gave it, so its card is not
+mounted again. A message that never reached GitHub is laid after GitHub's own
+messages in that thread, failure and all, rather than lost to a later reply that
+did — and a thread deleted elsewhere stays as this tab drew it while it holds
+such a message, since that text is the reviewer's and nowhere else. After a
+write GitHub took — a post, a reply, a delete — the tab asks for the list afresh
+instead of patching it and publishing the result: two tabs patching the same old
+list at once would each erase the other's comment. The answer reaches every tab
+on the pull request, and each merges it in, the writing tab included.
+
 jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
 the Worker rather than for the browser. Without it every atom would resolve
 against one store held by the module, and a Worker isolate serves many requests

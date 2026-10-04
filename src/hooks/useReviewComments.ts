@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
+import { useForcedRefetch, useSharedQuery } from './useSharedQuery';
 import {
   mergeSignedAttachments,
   type SignedAttachment,
   type SignedAttachments,
 } from '@/lib/attachments';
 import { issueCommentBody } from '@/lib/commentIssue';
+import { mergeGitHubThreads } from '@/lib/commentMerge';
 import {
   commentPayloadRangeFields,
   type CommentMetadata,
@@ -17,6 +19,7 @@ import {
   rangeFromCommentPayload,
 } from '@/lib/comments';
 import { groupCommentThreads, threadComments } from '@/lib/commentThreads';
+import { entriesWithoutAttachments } from '@/lib/queryCache/persist';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import {
   isGitHubTarget,
@@ -152,6 +155,42 @@ function toStoredRows(
   return rows;
 }
 
+/**
+ * One annotation per thread, on the file each thread's path names. A comment
+ * on a path absent from this diff is dropped, which is what happens after a
+ * force push rewrites the branch under it.
+ */
+function threadsByItemId(
+  rows: readonly StoredLocalComment[],
+  itemIdByPath: ReadonlyMap<string, string>
+): Map<string, Annotation[]> {
+  // Grouped first, so a reply lands in its root's card instead of stacking as
+  // a separate annotation on the same line.
+  const byPath = new Map<string, CommentPayload[]>();
+  for (const row of rows) {
+    const list = byPath.get(row.path) ?? [];
+    list.push(row);
+    byPath.set(row.path, list);
+  }
+  const byItemId = new Map<string, Annotation[]>();
+  for (const [path, payloads] of byPath) {
+    const itemId = itemIdByPath.get(path);
+    if (itemId == null) continue;
+    const annotations = byItemId.get(itemId) ?? [];
+    for (const thread of groupCommentThreads(payloads)) {
+      annotations.push(
+        annotationFromThread(
+          thread.key,
+          thread.comments,
+          threadComments(thread)
+        )
+      );
+    }
+    byItemId.set(itemId, annotations);
+  }
+  return byItemId;
+}
+
 export function useReviewComments(options: {
   target: ReviewTarget;
   entries: readonly ReviewFileEntry[];
@@ -211,15 +250,12 @@ export function useReviewComments(options: {
   // Read in an event handler and never while rendering, so neither is state.
   const signedAtRef = useRef(0);
   const renewingRef = useRef(false);
-  // Bumped by every load, so a renewal that answers after the reviewer moved
+  // Bumped by every seed, so a renewal that answers after the reviewer moved
   // to another pull request cannot put that one's addresses over this one's.
   const loadGenerationRef = useRef(0);
-  const [loading, setLoading] = useState(false);
+  // A failure of this tab's own write. A failure to read is the query's.
   const [error, setError] = useState<string | undefined>(undefined);
   const nextKeyRef = useRef(0);
-  // One load at a time. A reload, or a new diff, cancels the request in flight
-  // so a slow answer cannot overwrite a newer one.
-  const controllerRef = useRef<AbortController | null>(null);
 
   const itemIdByPath = useMemo(() => {
     const map = new Map<string, string>();
@@ -287,84 +323,101 @@ export function useReviewComments(options: {
     [update]
   );
 
-  // Load whatever the store already holds, once the diff is parsed.
-  const load = useCallback(async () => {
-    if (!ready) return;
-    loadGenerationRef.current += 1;
-
-    const place = (rows: readonly StoredLocalComment[]) => {
-      // Group first, so a reply lands in its root's card instead of stacking
-      // as a separate annotation on the same line.
-      const byItemId = new Map<string, Annotation[]>();
-      const byPath = new Map<string, CommentPayload[]>();
-      for (const row of rows) {
-        const list = byPath.get(row.path) ?? [];
-        list.push(row);
-        byPath.set(row.path, list);
+  // A pull request's comments are a shared query: kept on disk without their
+  // signed addresses, and carried to every other tab on the same pull request
+  // when one of them posts, answers or deletes.
+  const queryKey = ['comments.list', pullOwner, pullRepo, pullNumber];
+  const listHash = JSON.stringify(queryKey);
+  const query = useSharedQuery<CommentPayload[]>({
+    queryKey,
+    fetch: (signal) => {
+      if (pullOwner == null || pullRepo == null || pullNumber == null) {
+        throw new Error('No pull request to ask about.');
       }
-
-      for (const [path, payloads] of byPath) {
-        const itemId = itemIdByPath.get(path);
-        // A comment on a path absent from this diff is dropped. That happens
-        // after a force push rewrites the branch under the comment.
-        if (itemId == null) continue;
-        const annotations = byItemId.get(itemId) ?? [];
-        for (const thread of groupCommentThreads(payloads)) {
-          annotations.push(
-            annotationFromThread(
-              thread.key,
-              thread.comments,
-              threadComments(thread)
-            )
-          );
-        }
-        byItemId.set(itemId, annotations);
-      }
-      setState((current) => ({ byItemId, revision: current.revision + 1 }));
-    };
-
-    if (store === 'local') {
-      setAttachments(NO_ATTACHMENTS);
-      place(readStoredJson<StoredLocalComment[]>(storageKey, []));
-      return;
-    }
-    if (pullOwner == null || pullRepo == null || pullNumber == null) return;
-
-    controllerRef.current?.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    setLoading(true);
-    setError(undefined);
-
-    try {
-      const comments = await rpc.comments.list(
+      return rpc.comments.list(
         { number: pullNumber, owner: pullOwner, repo: pullRepo },
-        { signal: controller.signal }
+        { signal }
       );
-      signedAtRef.current = Date.now();
-      setAttachments(
-        mergeSignedAttachments(comments.map((comment) => comment.attachments))
-      );
-      place(
-        comments.map((payload) => ({
-          ...payload,
-          key: `github-${payload.githubId ?? nextKeyRef.current++}`,
-        }))
-      );
-    } catch (cause) {
-      if (controller.signal.aborted) return;
-      setError(
-        rpcErrorMessage(cause, m.use_review_comments_could_not_load_comments())
-      );
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
-    }
-  }, [itemIdByPath, pullNumber, pullOwner, pullRepo, ready, storageKey, store]);
+    },
+    enabled: ready && store === 'github',
+    persist: entriesWithoutAttachments,
+  });
+  const comments = query.data;
+  const answeredAt = query.dataUpdatedAt;
+
+  // The diff the threads were last seeded for. A first answer for a diff
+  // replaces whatever was drawn; every later one — another tab's post, this
+  // tab's own refresh after a write, a reload — is merged in, so a composer
+  // with text in it survives it, and a thread this tab already drew keeps the
+  // keys its card is mounted under.
+  const seededRef = useRef<{
+    list: string;
+    itemIdByPath: ReadonlyMap<string, string>;
+    answered: boolean;
+  } | null>(null);
 
   useEffect(() => {
-    void load();
-    return () => controllerRef.current?.abort();
-  }, [load]);
+    if (!ready) return;
+    if (store === 'local') {
+      loadGenerationRef.current += 1;
+      setAttachments(NO_ATTACHMENTS);
+      const byItemId = threadsByItemId(
+        readStoredJson<StoredLocalComment[]>(storageKey, []),
+        itemIdByPath
+      );
+      setState((current) => ({ byItemId, revision: current.revision + 1 }));
+      return;
+    }
+    const seed = seededRef.current;
+    const sameDiff =
+      seed != null &&
+      seed.list === listHash &&
+      seed.itemIdByPath === itemIdByPath;
+    if (comments == null) {
+      if (!sameDiff) {
+        loadGenerationRef.current += 1;
+        setAttachments(NO_ATTACHMENTS);
+        setState((current) => ({
+          byItemId: new Map(),
+          revision: current.revision + 1,
+        }));
+        seededRef.current = { list: listHash, itemIdByPath, answered: false };
+      }
+      return;
+    }
+    const seeding = !sameDiff || !seed.answered;
+
+    signedAtRef.current = answeredAt;
+    setAttachments(
+      mergeSignedAttachments(comments.map((comment) => comment.attachments))
+    );
+    const fromGitHub = threadsByItemId(
+      comments.map((payload) => ({
+        ...payload,
+        key: `github-${payload.githubId ?? nextKeyRef.current++}`,
+      })),
+      itemIdByPath
+    );
+    if (seeding) {
+      loadGenerationRef.current += 1;
+      seededRef.current = { list: listHash, itemIdByPath, answered: true };
+      setState((current) => ({
+        byItemId: fromGitHub,
+        revision: current.revision + 1,
+      }));
+      return;
+    }
+    setState((current) => ({
+      byItemId: mergeGitHubThreads(fromGitHub, current.byItemId),
+      revision: current.revision + 1,
+    }));
+  }, [answeredAt, comments, itemIdByPath, listHash, ready, storageKey, store]);
+
+  // After a write GitHub took, the list is asked for afresh rather than
+  // patched here and published: two tabs patching the same old list at once
+  // would each erase the other's comment. The answer reaches every tab on the
+  // same pull request, and each merges it in, this one included.
+  const reload = useForcedRefetch(queryKey, query.refetch);
 
   const startDraft = useCallback(
     (itemId: string, range: SelectedLineRange) => {
@@ -427,6 +480,7 @@ export function useReviewComments(options: {
           pending: false,
           error: undefined,
         }));
+        void reload();
       } catch (cause) {
         replace(itemId, key, (metadata) => ({
           ...metadata,
@@ -438,7 +492,7 @@ export function useReviewComments(options: {
         }));
       }
     },
-    [pullNumber, pullOwner, pullRepo, replace]
+    [pullNumber, pullOwner, pullRepo, reload, replace]
   );
 
   const postReply = useCallback(
@@ -480,6 +534,7 @@ export function useReviewComments(options: {
           pending: false,
           error: undefined,
         }));
+        void reload();
       } catch (cause) {
         // The text stays in the thread, marked as failed. Throwing it away
         // would lose what the reviewer wrote.
@@ -493,7 +548,7 @@ export function useReviewComments(options: {
         }));
       }
     },
-    [pullNumber, pullOwner, pullRepo, replace]
+    [pullNumber, pullOwner, pullRepo, reload, replace]
   );
 
   /**
@@ -704,6 +759,7 @@ export function useReviewComments(options: {
               repo: pullRepo,
             });
           }
+          void reload();
         } catch {
           setError(
             m.use_review_comments_could_not_delete_that_thread_on_github_reload()
@@ -712,12 +768,8 @@ export function useReviewComments(options: {
       };
       void remove();
     },
-    [pullOwner, pullRepo, replace, state.byItemId, store]
+    [pullOwner, pullRepo, reload, replace, state.byItemId, store]
   );
-
-  const reload = useCallback(() => {
-    void load();
-  }, [load]);
 
   // A thread card is drawn when the viewer scrolls it into the window, which
   // can be long after the list's five minutes, and only a file the browser
@@ -733,7 +785,7 @@ export function useReviewComments(options: {
     const generation = loadGenerationRef.current;
     const renew = async () => {
       try {
-        const comments = await rpc.comments.list({
+        const renewed = await rpc.comments.list({
           number: pullNumber,
           owner: pullOwner,
           repo: pullRepo,
@@ -741,7 +793,7 @@ export function useReviewComments(options: {
         if (generation !== loadGenerationRef.current) return;
         signedAtRef.current = Date.now();
         setAttachments(
-          mergeSignedAttachments(comments.map((comment) => comment.attachments))
+          mergeSignedAttachments(renewed.map((comment) => comment.attachments))
         );
       } catch {
         // A picture that stays broken is the whole of the cost, and the next
@@ -757,8 +809,15 @@ export function useReviewComments(options: {
     store,
     annotationsByItemId: state.byItemId,
     revision: state.revision,
-    loading,
-    error,
+    loading: query.isFetching,
+    error:
+      error ??
+      (query.error == null
+        ? undefined
+        : rpcErrorMessage(
+            query.error,
+            m.use_review_comments_could_not_load_comments()
+          )),
     canCreateIssue,
     startDraft,
     saveDraft,
