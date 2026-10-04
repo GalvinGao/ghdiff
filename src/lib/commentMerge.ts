@@ -19,11 +19,15 @@ import {
 type Annotation = DiffLineAnnotation<CommentMetadata>;
 type ByItemId = ReadonlyMap<string, readonly Annotation[]>;
 
-/** Whether an annotation holds something GitHub has not got. */
+/**
+ * Whether an annotation is this tab's to draw as it is: a composer, a thread
+ * GitHub has not got at all, or one with a message still on its way. A thread
+ * GitHub has, with a message that failed to reach it, is GitHub's copy with
+ * that message laid on the end — see `keepIdentity`.
+ */
 export function isOnlyInThisTab(metadata: CommentMetadata): boolean {
   if (metadata.kind === 'draft') return true;
   if (metadata.pending === true || metadata.creatingIssue === true) return true;
-  if (metadata.error != null) return true;
   return isCommentThread(metadata) && metadata.comments[0].githubId == null;
 }
 
@@ -34,11 +38,14 @@ function rootId(metadata: CommentMetadata): number | undefined {
 /**
  * GitHub's copy of a thread, under the keys this tab already drew it with. A
  * card mounted under one key and handed another is a card mounted again, and
- * the viewer measures every card it mounts. The issue link is carried over
- * too: it is held in memory alone, and GitHub's list does not know it.
+ * the viewer measures every card it mounts. Three things only this tab knows
+ * are carried over: the issue link, held in memory alone; every message that
+ * never reached GitHub, with the reviewer's text in it, after GitHub's own; and
+ * the failure that says so.
  */
 function keepIdentity(annotation: Annotation, held: CommentThread): Annotation {
   const metadata = annotation.metadata;
+  const unsent = held.comments.filter((comment) => comment.githubId == null);
   const keyById = new Map<number, string>();
   for (const comment of held.comments) {
     if (comment.githubId != null) keyById.set(comment.githubId, comment.key);
@@ -48,12 +55,18 @@ function keepIdentity(annotation: Annotation, held: CommentThread): Annotation {
     metadata: {
       ...metadata,
       key: held.key,
-      comments: metadata.comments?.map((comment) => {
-        const key =
-          comment.githubId == null ? undefined : keyById.get(comment.githubId);
-        return key == null ? comment : { ...comment, key };
-      }),
+      comments: [
+        ...(metadata.comments ?? []).map((comment) => {
+          const key =
+            comment.githubId == null
+              ? undefined
+              : keyById.get(comment.githubId);
+          return key == null ? comment : { ...comment, key };
+        }),
+        ...unsent,
+      ],
       ...(held.issue == null ? {} : { issue: held.issue }),
+      ...(held.error == null ? {} : { error: held.error }),
     },
   };
 }

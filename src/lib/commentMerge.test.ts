@@ -46,10 +46,7 @@ describe('isOnlyInThisTab', () => {
       ),
       true
     );
-    assert.equal(
-      isOnlyInThisTab(thread('t', [message(1, 'a')], { error: 'no' }).metadata),
-      true
-    );
+
     assert.equal(
       isOnlyInThisTab(thread('t', [message(undefined, 'a')]).metadata),
       true
@@ -135,6 +132,42 @@ describe('mergeGitHubThreads', () => {
       new Map([['f', [local]]])
     );
     assert.deepEqual(merged.get('f'), [local]);
+  });
+
+  it('keeps a failed reply when a later reply in the thread succeeded', async () => {
+    // The root and the later reply reached GitHub; the earlier reply did not.
+    const local = thread(
+      'draft-1',
+      [message(1, 'gh-1'), message(undefined, 'reply-2'), message(9, 'gh-9')],
+      { error: 'GitHub said no' }
+    );
+    const merged = mergeGitHubThreads(
+      new Map([
+        [
+          'f',
+          [
+            thread('github-1', [
+              message(1, 'github-1'),
+              message(9, 'github-9'),
+            ]),
+          ],
+        ],
+      ]),
+      new Map([['f', [local]]])
+    );
+    const [only] = merged.get('f') ?? [];
+    assert.deepEqual(
+      only?.metadata.comments?.map((comment) => comment.key),
+      ['gh-1', 'gh-9', 'reply-2']
+    );
+    assert.equal(only?.metadata.error, 'GitHub said no');
+  });
+
+  it('treats a thread GitHub has, with a failed message, as GitHub’s', () => {
+    assert.equal(
+      isOnlyInThisTab(thread('t', [message(1, 'a')], { error: 'no' }).metadata),
+      false
+    );
   });
 
   it('keeps a failed post with the reviewer’s text in it', () => {
