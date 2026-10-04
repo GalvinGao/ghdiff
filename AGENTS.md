@@ -751,9 +751,15 @@ A signed attachment address never reaches the disk. `pulls.get` and
 `comments.conversation` are stored through `withoutAttachments`, so a reload
 draws the title and the conversation at once and fetches the signatures behind
 them. A viewed mark made in another tab moves the box here and leaves every fold
-alone: `useViewedFiles` seeds `loaded` once per diff, and a later answer — a
-fetch behind one read from disk, a press elsewhere — moves `viewed` only, with
-the presses still in flight laid over it.
+alone: `useViewedFiles` seeds `loaded` once per diff, and a later answer moves
+`viewed` only, with the presses still in flight laid over it. The marks are
+shared between open tabs and never stored, because the first answer for a diff
+decides what starts folded and a mark GitHub has since dismissed would fold a
+file nobody has read again. A press asks GitHub for the list afresh once it
+lands rather than patching the list it holds: two tabs patching the same old
+list at once would each erase the other's mark. A verdict is the one write that
+is published as it is — a single value with nothing to merge — and it carries
+the session's `ticket` from the moment it was sent.
 
 jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
 the Worker rather than for the browser. Without it every atom would resolve

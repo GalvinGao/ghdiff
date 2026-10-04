@@ -1,9 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
-import { usePublish, useSharedQuery } from './useSharedQuery';
+import { useSharedCache, useSharedQuery } from './useSharedQuery';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import { type ReviewTarget, reviewTargetKey } from '@/lib/reviewTarget';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
@@ -77,8 +76,10 @@ export function useViewedFiles(options: {
     [entries]
   );
 
-  // A pull request's marks are a shared query: kept on disk, and carried to
-  // every other tab on the same pull request the moment one of them presses.
+  // A pull request's marks are a shared query, carried to every other tab on
+  // the same pull request when one of them presses. They are not kept on disk:
+  // the first answer for a diff decides which files start folded, and a mark
+  // GitHub has since dismissed would fold a file nobody has read again.
   const queryKey = ['viewedFiles.list', pullOwner, pullRepo, pullNumber];
   const listHash = JSON.stringify(queryKey);
   const query = useSharedQuery<ViewedFilesData>({
@@ -93,10 +94,9 @@ export function useViewedFiles(options: {
       );
     },
     enabled: ready && store === 'github',
-    persist: true,
   });
-  const client = useQueryClient();
-  const publish = usePublish();
+  const shared = useSharedCache();
+  const { refetch } = query;
   const paths = query.data?.paths;
 
   // Presses GitHub has not answered yet, by item id. An answer that lands in
@@ -196,19 +196,13 @@ export function useViewedFiles(options: {
             repo: pullRepo,
             viewed: next,
           });
+          // GitHub took it, and GitHub's list is the one every tab reads, so
+          // the list is asked for again rather than patched here: two tabs
+          // patching the same old list at once would each erase the other's
+          // mark. The press stays laid over the boxes until the answer lands.
+          shared?.forceNext(JSON.parse(listHash) as readonly unknown[]);
+          await refetch();
           inFlightRef.current.delete(itemId);
-          // GitHub took it, so every tab's list says so now. Built on the
-          // list as the cache holds it, and only when it holds one: a list
-          // that never loaded would tell the other tabs this is the only file
-          // the reviewer has read.
-          const key = JSON.parse(listHash) as readonly unknown[];
-          const current = client.getQueryData<ViewedFilesData>(key);
-          if (current != null) {
-            const updated = new Set(current.paths);
-            if (next) updated.add(path);
-            else updated.delete(path);
-            publish(key, { paths: [...updated] }, true);
-          }
         } catch (cause) {
           inFlightRef.current.delete(itemId);
           // Put the box back. GitHub is the record for a pull request, and a
@@ -230,13 +224,13 @@ export function useViewedFiles(options: {
       })();
     },
     [
-      client,
       listHash,
       pathByItemId,
-      publish,
       pullNumber,
       pullOwner,
       pullRepo,
+      refetch,
+      shared,
       storageKey,
       store,
     ]

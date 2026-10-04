@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
-import { usePublish, useSharedQuery } from './useSharedQuery';
+import { usePublish, useSessionTicket, useSharedQuery } from './useSharedQuery';
 import type {
   ReviewEvent,
   SubmittedReview,
@@ -89,6 +89,7 @@ export function useSubmitReview(options: {
   const latest = mine.data?.review;
   const team = teamQuery.data?.reviews ?? NO_REVIEWS;
   const publish = usePublish();
+  const sessionTicket = useSessionTicket();
   const mineHash = JSON.stringify(mineKey);
 
   const submit = useCallback(
@@ -96,6 +97,9 @@ export function useSubmitReview(options: {
       if (owner == null || repo == null || number == null) return undefined;
       setPending(event);
       setError(undefined);
+      // The verdict belongs to the session it is sent under, which may not be
+      // the one on screen by the time GitHub answers.
+      const ticket = sessionTicket();
       try {
         const review = await rpc.reviews.submit({
           body,
@@ -108,7 +112,12 @@ export function useSubmitReview(options: {
         // The verdict just sent is now the verdict on record, and GitHub has
         // said so in its answer, so nothing is asked again to find that out —
         // in this tab or in any other open on the same pull request.
-        publish(JSON.parse(mineHash) as readonly unknown[], { review }, true);
+        publish(
+          JSON.parse(mineHash) as readonly unknown[],
+          { review },
+          true,
+          ticket
+        );
         return review;
       } catch (cause) {
         // GitHub refuses an approval of your own pull request, and a token
@@ -126,7 +135,7 @@ export function useSubmitReview(options: {
         setPending(undefined);
       }
     },
-    [mineHash, number, owner, publish, repo]
+    [mineHash, number, owner, publish, repo, sessionTicket]
   );
 
   // The verdict on record survives this, because it is a fact about the pull
