@@ -150,6 +150,9 @@ src/
   lib/prePaintScripts.ts   the colour mode and the code font, as source text
   lib/authFetch.ts         every call to this Worker, with one retry behind it
   lib/deployments.ts       where each environment stands, and the Pages alias
+  lib/queryCache/          the cache every tab shares: which tab fetches, the
+                           channel between them, the store, and the account
+                           its records belong to
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
@@ -637,6 +640,96 @@ and could safely be called anywhere; `useOpenPulls` is the one that could not,
 because it is a request to GitHub and mounting it twice asks GitHub twice. So
 the rule stands as it was: call `useAppData()`, and do not call those five hooks
 in a screen.
+
+**A request to GitHub is a shared query, and every tab of the browser shares
+it.** `useSharedQuery` in `src/hooks/useSharedQuery.ts` is React Query with one
+`queryFn` behind it, `SharedCache.fetch` in `src/lib/queryCache/sharedCache.ts`,
+and that is three things that each degrade on their own. A coordinator decides
+which tab fetches a key when several want it; a `BroadcastChannel` carries the
+answer to the others the moment it lands; and an IndexedDB store keeps it for
+the next load, so a new tab draws what the last one had before GitHub has
+answered it.
+
+The coordinator is the strongest the browser offers, picked once by
+`pickCoordinator`. Web Locks is exact, and it needs a secure context as well as
+the API — a self-hosted deployment on plain http across a LAN has no
+`navigator.locks` at all, which is the likely way to land on the next one. The
+soft lease announces a fetch on the channel and has the other tabs wait for its
+release, at most `LEASE_WAIT_MS`; two tabs that announce in the same moment both
+fetch. With no channel either, every tab fetches for itself and still keeps its
+answers on disk. None of them is trusted for correctness: a tab takes another's
+answer only when it is younger than the query's share window and arrived without
+this tab asking, so a coordinator that lets two tabs through costs a request,
+never a wrong answer.
+
+The browser grants a lock and delivers a message on two separate queues, so a
+tab that waited on a lock can be granted it before the answer it waited for has
+arrived. That is why a fetch writes its record **before** it lets the lock go,
+why a tab that waited reads the store first, and why it then gives the channel
+`CHANNEL_GRACE_MS` before it fetches after all. A tab that did not wait does
+none of that and costs nothing.
+
+**What leaves a tab belongs to one account, and the session query says which.**
+GitHub answers the same question differently for a signed-in reviewer and for
+nobody, so a record is filed under `viewerNamespace`, a broadcast names it, and
+a tab reads and takes only its confirmed account's. The session query,
+`SESSION_QUERY_KEY`, is what confirms the account. It asks with this tab's own
+cookie every time — another tab's answer to "who is this" may predate the
+sign-in this document is the result of — and it is never borrowed, broadcast or
+stored. An answer it got across a change of session is asked again, since React
+Query hands an invalidated request already in flight back as it is.
+
+Nothing leaves a tab before that confirmation, to the other tabs or to the disk,
+and nothing reaches it. So every request waits for the confirmation, at most
+`CONFIRM_WAIT_MS`. React runs a child's effects before its parent's, so the
+review screen's queries start before the session query above them, and without
+the wait each would start under a session nobody has vouched for. The wait is
+also what lets a stored answer save a request: the store's records are read at
+startup and held back until the confirmation places its own account's. A wait
+that runs out lets the request go ahead, and its answer stays in this tab alone.
+
+The session's answer says whose cookie it was when it was asked, so it vouches
+for the fetches that began after it and for none that began before:
+`confirmedFrom` is that moment. A fetch that began earlier and lands after the
+confirmation is asked again, and an answer this tab already held from before it
+is dropped and asked again at the confirmation. Every suspension and every
+change of account raises the session's `generation`, and a fetch that lands
+under a later one is asked again too — or handed back for React Query to drop,
+when the reset cancelled it — and never shared. A confirmation of another
+account resets every answer and deletes every record that is not this account's,
+so the store holds one account at a time. A confirmed tab that hears another
+confirm a different account drops every answer at once, the session's included;
+an unconfirmed one takes it as a possible change and asks who it is.
+
+**Answers are ordered by when their fetch began, never by when they landed.** A
+read that began before a write can land after it, and a fetch another tab began
+earlier can arrive later. `moment()` in `records.ts` is the clock: the wall
+clock to a fraction of a millisecond, never the same value twice in one tab, so
+two fetches that began in the same millisecond still have an order. Each answer
+a tab holds notes its moment — its own fetch's, the broadcast's, or the moment
+of a write it published — and a newer one is never replaced by an older one,
+whether the older one arrives on the channel or lands from this tab's own fetch,
+before its disk write or after it. A read that a reset cancelled notes nothing
+at all, so it cannot lower the moment of an answer that replaced it. The store
+keeps the same order: a record carries its fetch's moment, and a write never
+replaces a record whose fetch began later — the read and the write are one
+IndexedDB transaction, which another tab's write cannot interleave with. And a
+stored answer keeps that moment when it comes back into memory, at startup and
+when a tab that waited on the lock reads it, so a delayed broadcast of an older
+fetch cannot replace it either. A write is a request like any other, so
+`publish` takes the `ticket` the session had when the write was sent, and a
+write that lands under a later session publishes nothing.
+
+Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
+the one thing to raise when a procedure's output changes shape — never the
+commit sha, which would empty every reviewer's cache on every deploy. An answer
+may go to disk only in part, through a function such as `withoutAttachments`; a
+record that lost something on the way is marked incomplete, drawn on arrival and
+fetched behind at once, and never taken in place of a fetch. The same function
+answers `undefined` for an answer that must not be kept at all — one that
+carries a failure, which the next load would otherwise show before it had failed
+at anything. The channel carries the whole answer, because a message is not
+storage.
 
 jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
 the Worker rather than for the browser. Without it every atom would resolve
@@ -3125,16 +3218,23 @@ tab synchronization and the read-on-mount contract left to be got right here
 rather than upstream. Everything else in this app is React state or a ref, and
 adding a second store would be the change to argue for.
 
-`@tanstack/react-query` is in the graph for two hooks. In `useDeployments` it is
-a request scheduler rather than a store: a poll that stops, backs off, pauses in
-a hidden tab and never has two requests in flight is what it does without being
-asked. In `useReviewPatch` it is the cache, so a prefetch and the screen that
-reads it share one download. The byte count rides beside the patch under a key
-of its own, since a query reports no progress and the screen may be waiting on a
-download another screen began. `AppShell` makes its client per render, for the
-same reason jotai's `Provider` sits there, and the local command makes one per
-page. Every other request stays a hook of its own; moving one onto the library
-is a change to make deliberately, not in passing.
+`@tanstack/react-query` holds the answers GitHub gives. Most of them go through
+`useSharedQuery`, and the shared cache behind it is written by hand: small
+modules over IndexedDB, `BroadcastChannel` and Web Locks, with no dependency
+added. TanStack's own persister writes the whole client on every change and its
+broadcast package is experimental and knows nothing of a lock, so neither was a
+fit. In `useDeployments` the library is also a request scheduler: a poll that
+stops, backs off, pauses in a hidden tab and never has two requests in flight is
+what it does without being asked. In `useReviewPatch` it is the cache that lets
+a prefetch and the screen that reads it share one download. The byte count rides
+beside the patch under a key of its own, since a query reports no progress and
+the screen may be waiting on a download another screen began. The server makes a
+client per render in `AppShell`, for the same reason jotai's `Provider` sits
+there; the browser makes one per document, because the document is the tab and
+the tab is what the cache is shared between; and the local command makes one per
+page. The browser client's defaults are the ones the hand-written hooks had — no
+retry, no refetch on focus — because a failure from GitHub is usually an answer
+and an anonymous reviewer has sixty requests an hour.
 
 ## PR visual evidence
 

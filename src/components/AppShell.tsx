@@ -1,10 +1,15 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'jotai';
 import { type ReactNode, useState } from 'react';
 
 import { getLocale } from '../paraglide/runtime.js';
 import { AppDataProvider } from '@/components/AppDataProvider';
 import { PullRail } from '@/components/PullRail';
+import {
+  browserQueryCaches,
+  createQueryClient,
+  SharedCacheContext,
+} from '@/hooks/useSharedQuery';
 import { textDirection } from '@/lib/locale';
 
 /**
@@ -26,35 +31,43 @@ import { textDirection } from '@/lib/locale';
  * cannot carry a settings value from one reviewer to the next. Every reader of
  * `src/hooks/preferences.ts` sits under this.
  *
- * The query client is made per render for the same reason, and it holds two
- * things: the deployments the review header polls, and the patch under review,
- * which is a query so the review dialog can prefetch the next one. Every other
- * request in this app is a hook of its own and stays one. The local command
- * mounts no shell and makes a client of its own, for the patch alone.
+ * The query client is made per render on the server for the same reason. In
+ * the browser there is one per document, with the cache every tab shares behind
+ * it — see `@/lib/queryCache/sharedCache` — and the requests to GitHub go
+ * through it: the shared queries, and the patch under review, which is a query
+ * so the review dialog can prefetch the next one. The cache is in context and
+ * never in markup, so the server's render and the first client render still
+ * agree. The local command mounts no shell and makes a client of its own.
  */
 export function AppShell({ children }: { children: ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [{ client, shared }] = useState(() =>
+    typeof window === 'undefined'
+      ? { client: createQueryClient(), shared: null }
+      : browserQueryCaches()
+  );
   return (
     <Provider>
-      <QueryClientProvider client={queryClient}>
-        <AppDataProvider>
-          {/* `data-sheet-host` is what steps back behind an open sheet, and
+      <QueryClientProvider client={client}>
+        <SharedCacheContext.Provider value={shared}>
+          <AppDataProvider>
+            {/* `data-sheet-host` is what steps back behind an open sheet, and
               `bg-canvas` is what it steps back with: the document turns black
               behind it then, and a transparent shell would let that through. */}
-          <div
-            dir="ltr"
-            className="bg-canvas flex min-h-0 flex-1"
-            data-sheet-host=""
-          >
-            <PullRail />
             <div
-              dir={textDirection(getLocale())}
-              className="flex min-h-0 min-w-0 flex-1 flex-col"
+              dir="ltr"
+              className="bg-canvas flex min-h-0 flex-1"
+              data-sheet-host=""
             >
-              {children}
+              <PullRail />
+              <div
+                dir={textDirection(getLocale())}
+                className="flex min-h-0 min-w-0 flex-1 flex-col"
+              >
+                {children}
+              </div>
             </div>
-          </div>
-        </AppDataProvider>
+          </AppDataProvider>
+        </SharedCacheContext.Provider>
       </QueryClientProvider>
     </Provider>
   );
