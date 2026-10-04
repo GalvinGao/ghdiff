@@ -117,6 +117,8 @@
   "pull_request_list_set_up_private_access": "Configura l'accesso privato",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Accesso non effettuato: nessuna riga mostra un quadrato di stato o un indicatore sulle tue pull request. Accedendo vengono mostrati entrambi.",
   "pull_request_list_stack": "Stack",
+  "pull_request_list_compare_stack": "Confronta con {base}",
+  "pull_request_list_compare_stack_title": "Rivedi tutte le modifiche di questo stack come un unico diff rispetto a {base}",
   "pull_request_list_loading_open_pull_requests": "Caricamento delle pull request aperte…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Bozza",

@@ -118,6 +118,8 @@
   "pull_request_list_set_up_private_access": "Налаштувати приватний доступ",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Ви вийшли з облікового запису: жоден рядок не показує квадрат стану чи позначку на ваших пул-реквестах. Після входу з’являться обидва.",
   "pull_request_list_stack": "Стос",
+  "pull_request_list_compare_stack": "Порівняти з {base}",
+  "pull_request_list_compare_stack_title": "Переглянути всі зміни цього стека одним дифом відносно {base}",
   "pull_request_list_loading_open_pull_requests": "Завантаження відкритих пул-реквестів…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Чернетка",

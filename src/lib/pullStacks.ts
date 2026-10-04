@@ -95,3 +95,24 @@ export function countStackNodes(nodes: readonly PullStackNode[]): number {
   for (const node of nodes) total += 1 + countStackNodes(node.children);
   return total;
 }
+
+/**
+ * The range that holds a whole stack as one diff: the branch the stack lands
+ * on, to the head of its last pull request. A compare range is a merge-base
+ * range, so the diff is every change the stack makes and nothing the base
+ * branch gained since the stack left it.
+ *
+ * Absent when the stack branches. Two pull requests on one parent are two
+ * tips, and no one head holds both of them.
+ */
+export function stackCompareRange(
+  root: PullStackNode
+): { base: string; head: string } | undefined {
+  let tip = root;
+  while (tip.children.length > 0) {
+    if (tip.children.length > 1) return undefined;
+    tip = tip.children[0];
+  }
+  if (tip === root) return undefined;
+  return { base: root.pull.baseRef, head: tip.pull.headRef };
+}

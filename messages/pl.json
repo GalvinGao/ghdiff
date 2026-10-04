@@ -118,6 +118,8 @@
   "pull_request_list_set_up_private_access": "Skonfiguruj dostęp do prywatnych repozytoriów",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Wylogowano. Żaden wiersz nie pokazuje kwadratu stanu ani oznaczenia przy Twoich pull requestach. Zalogowanie się udostępnia oba.",
   "pull_request_list_stack": "Stos",
+  "pull_request_list_compare_stack": "Porównaj z {base}",
+  "pull_request_list_compare_stack_title": "Przejrzyj wszystkie zmiany w tym stosie jako jeden diff względem {base}",
   "pull_request_list_loading_open_pull_requests": "Wczytywanie otwartych pull requestów…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Wersja robocza",

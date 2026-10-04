@@ -120,6 +120,8 @@
   "pull_request_list_set_up_private_access": "إعداد الوصول الخاص",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "تم تسجيل الخروج، ولا يعرض أي صف مربع حالة أو علامة على طلبات السحب الخاصة بك. يوفّر تسجيل الدخول كليهما.",
   "pull_request_list_stack": "سلسلة طلبات السحب",
+  "pull_request_list_compare_stack": "مقارنة مع ⁦{base}⁩",
+  "pull_request_list_compare_stack_title": "راجع كل تغييرات هذه الحزمة كفرق واحد مقابل ⁦{base}⁩",
   "pull_request_list_loading_open_pull_requests": "جارٍ تحميل طلبات السحب المفتوحة…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "مسودة",

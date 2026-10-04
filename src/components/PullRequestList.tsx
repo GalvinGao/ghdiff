@@ -19,8 +19,8 @@ import {
   type PullStackNode,
   type WatchedRepo,
 } from '@/lib/pulls';
-import { countStackNodes } from '@/lib/pullStacks';
-import type { GitHubPullTarget } from '@/lib/reviewTarget';
+import { countStackNodes, stackCompareRange } from '@/lib/pullStacks';
+import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
 
 interface PullRequestListProps {
   /** The pull request under review, which the list marks. */
@@ -335,15 +335,16 @@ function PullStack({
                 two read as one quiet line above the rows rather than as a
                 heading over them. The collapsed bar gets the badge and no word:
                 it is the width of one square. */}
-            <div className="flex items-center justify-between gap-2 px-2 pt-0.5">
+            <div className="flex items-center gap-2 px-2 pt-0.5">
               <span className="text-ink-faint text-[10px] leading-none font-medium">
                 {m.pull_request_list_stack()}
               </span>
+              <StackCompareLink root={node} onNavigate={onNavigate} />
               {/* The same badge the collapsed bar puts at the top of this
                   stack's block, marked with the same key, so a toggle flies
                   one badge between the two places (hooks/useRailFlip.ts). */}
               <span
-                className="flex"
+                className="ml-auto flex"
                 data-rail-flip={railStackFlipKey(node.pull)}
               >
                 <PullStackBadge size={size} />
@@ -359,6 +360,46 @@ function PullStack({
         );
       })}
     </>
+  );
+}
+
+/**
+ * The whole stack as one diff, against the branch it lands on. A row opens one
+ * pull request, which is one layer; this is the question a stack's author asks
+ * before the first of them merges — what does all of it do to main.
+ *
+ * It is a review in this app and not a link to github.com: a compare range is
+ * a target ghdiff already reads, so the reviewer keeps the filter, the tree and
+ * the bar. A stack that branches has no one head to compare, and gets nothing.
+ */
+function StackCompareLink({
+  onNavigate,
+  root,
+}: {
+  onNavigate?(): void;
+  root: PullStackNode;
+}) {
+  const range = stackCompareRange(root);
+  if (range == null) return null;
+  return (
+    <Link
+      // The padding is the hit area, and the negative margin gives it back so
+      // the caption row keeps the height it had before the link arrived.
+      className="text-ink-faint hover:text-ink -my-1 min-w-0 truncate rounded px-1 py-1 text-[10px] leading-none font-medium underline-offset-2 hover:underline"
+      params={{
+        _splat: reviewTargetSplat({
+          kind: 'github-compare',
+          owner: root.pull.owner,
+          repo: root.pull.repo,
+          ...range,
+        }),
+      }}
+      title={m.pull_request_list_compare_stack_title({ base: range.base })}
+      to="/$"
+      onClick={onNavigate}
+    >
+      {m.pull_request_list_compare_stack({ base: range.base })}
+    </Link>
   );
 }
 

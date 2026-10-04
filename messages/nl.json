@@ -116,6 +116,8 @@
   "pull_request_list_set_up_private_access": "Privétoegang instellen",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Afgemeld: geen enkele rij toont een statusvierkant of een markering op je eigen pull requests. Na aanmelden worden beide getoond.",
   "pull_request_list_stack": "Stapel",
+  "pull_request_list_compare_stack": "Vergelijken met {base}",
+  "pull_request_list_compare_stack_title": "Bekijk alle wijzigingen in deze stapel als één diff tegen {base}",
   "pull_request_list_loading_open_pull_requests": "Open pull requests laden…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Concept",

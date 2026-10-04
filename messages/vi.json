@@ -115,6 +115,8 @@
   "pull_request_list_set_up_private_access": "Thiết lập quyền truy cập riêng tư",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Đã đăng xuất nên không có hàng nào hiển thị ô trạng thái hoặc dấu hiệu trên pull request của bạn. Đăng nhập sẽ hiển thị cả hai.",
   "pull_request_list_stack": "Ngăn xếp",
+  "pull_request_list_compare_stack": "So sánh với {base}",
+  "pull_request_list_compare_stack_title": "Xem mọi thay đổi trong ngăn xếp này dưới dạng một diff so với {base}",
   "pull_request_list_loading_open_pull_requests": "Đang tải các pull request đang mở…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Bản nháp",

@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import type { PullSummary } from './pulls.ts';
-import { buildPullStacks, countStackNodes } from './pullStacks.ts';
+import {
+  buildPullStacks,
+  countStackNodes,
+  stackCompareRange,
+} from './pullStacks.ts';
 
 function pull(number: number, headRef: string, baseRef: string): PullSummary {
   return {
@@ -95,5 +99,30 @@ describe('buildPullStacks', () => {
   it('returns nothing for nothing', () => {
     assert.deepEqual(buildPullStacks([]), []);
     assert.equal(countStackNodes([]), 0);
+  });
+});
+
+describe('stackCompareRange', () => {
+  it('runs from the base the stack lands on to the head of its last pull request', () => {
+    const [root] = buildPullStacks([
+      pull(1, 'one', 'main'),
+      pull(2, 'two', 'one'),
+      pull(3, 'three', 'two'),
+    ]);
+    assert.deepEqual(stackCompareRange(root), { base: 'main', head: 'three' });
+  });
+
+  it('offers nothing for a stack that branches', () => {
+    const [root] = buildPullStacks([
+      pull(1, 'one', 'main'),
+      pull(2, 'two', 'one'),
+      pull(3, 'three', 'one'),
+    ]);
+    assert.equal(stackCompareRange(root), undefined);
+  });
+
+  it('offers nothing for a pull request that stands alone', () => {
+    const [root] = buildPullStacks([pull(1, 'one', 'main')]);
+    assert.equal(stackCompareRange(root), undefined);
   });
 });

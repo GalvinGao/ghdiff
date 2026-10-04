@@ -115,6 +115,8 @@
   "pull_request_list_set_up_private_access": "设置私有访问权限",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "未登录时，任何行都不会显示状态方块或你自己的拉取请求标记。登录后两者都会显示。",
   "pull_request_list_stack": "堆栈",
+  "pull_request_list_compare_stack": "与 {base} 比较",
+  "pull_request_list_compare_stack_title": "将此堆栈的全部更改作为一个差异，与 {base} 比较",
   "pull_request_list_loading_open_pull_requests": "正在加载开放的拉取请求…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "草稿",

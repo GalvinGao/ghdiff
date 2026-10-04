@@ -115,6 +115,8 @@
   "pull_request_list_set_up_private_access": "Özel erişimi ayarla",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Oturum kapalıyken hiçbir satırda durum karesi veya kendi pull request'lerinizde işaret gösterilmez. Oturum açmak ikisini de sağlar.",
   "pull_request_list_stack": "Yığın",
+  "pull_request_list_compare_stack": "{base} ile karşılaştır",
+  "pull_request_list_compare_stack_title": "Bu yığındaki tüm değişiklikleri {base} karşısında tek bir fark olarak incele",
   "pull_request_list_loading_open_pull_requests": "Açık pull request'ler yükleniyor…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Taslak",

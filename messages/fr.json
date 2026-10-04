@@ -117,6 +117,8 @@
   "pull_request_list_set_up_private_access": "Configurer l’accès privé",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Déconnecté : aucune ligne n’affiche de carré d’état ni de marque sur vos propres pull requests. La connexion fournit les deux.",
   "pull_request_list_stack": "Pile",
+  "pull_request_list_compare_stack": "Comparer avec {base}",
+  "pull_request_list_compare_stack_title": "Relire toutes les modifications de cette pile en un seul diff par rapport à {base}",
   "pull_request_list_loading_open_pull_requests": "Chargement des pull requests ouverts…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Brouillon",

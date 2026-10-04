@@ -116,6 +116,8 @@
   "pull_request_list_set_up_private_access": "Set up private access",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Signed out, no row shows a status square or a mark on your own pull requests. Signing in supplies both.",
   "pull_request_list_stack": "Stack",
+  "pull_request_list_compare_stack": "Compare with {base}",
+  "pull_request_list_compare_stack_title": "Review every change in this stack as one diff against {base}",
   "pull_request_list_loading_open_pull_requests": "Loading open pull requests…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Draft",

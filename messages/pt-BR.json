@@ -116,6 +116,8 @@
   "pull_request_list_set_up_private_access": "Configurar acesso privado",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Você não está conectado. Nenhuma linha mostra um quadrado de status ou uma marca nos seus próprios pull requests. Ao entrar, ambos são exibidos.",
   "pull_request_list_stack": "Pilha",
+  "pull_request_list_compare_stack": "Comparar com {base}",
+  "pull_request_list_compare_stack_title": "Revise todas as alterações desta pilha como um único diff contra {base}",
   "pull_request_list_loading_open_pull_requests": "Carregando pull requests abertos…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Rascunho",

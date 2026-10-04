@@ -116,6 +116,8 @@
   "pull_request_list_set_up_private_access": "निजी पहुँच सेट अप करें",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "आप साइन आउट हैं, इसलिए किसी पंक्ति में स्थिति वर्ग या आपकी अपनी पुल रिक्वेस्ट पर चिह्न नहीं दिखता। साइन इन करने पर दोनों दिखेंगे।",
   "pull_request_list_stack": "स्टैक",
+  "pull_request_list_compare_stack": "{base} से तुलना करें",
+  "pull_request_list_compare_stack_title": "इस स्टैक के सभी बदलावों को {base} के मुकाबले एक diff के रूप में देखें",
   "pull_request_list_loading_open_pull_requests": "खुली पुल रिक्वेस्ट लोड हो रही हैं…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "ड्राफ़्ट",

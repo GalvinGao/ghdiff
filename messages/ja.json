@@ -115,6 +115,8 @@
   "pull_request_list_set_up_private_access": "プライベートアクセスを設定",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "サインアウト中は、どの行にもステータスの四角形や自分のプルリクエストの印は表示されません。サインインすると両方が表示されます。",
   "pull_request_list_stack": "スタック",
+  "pull_request_list_compare_stack": "{base} と比較",
+  "pull_request_list_compare_stack_title": "このスタックのすべての変更を {base} に対する 1 つの差分としてレビュー",
   "pull_request_list_loading_open_pull_requests": "オープン中のプルリクエストを読み込み中…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "下書き",

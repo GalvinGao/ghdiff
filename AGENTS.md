@@ -742,6 +742,17 @@ reader to work out what a background and a layers glyph meant, against an empty
 half-row. The word is `PullRequestList`'s and never `PullStackBadge`'s: the
 collapsed bar is the width of one square, and it draws the badge alone.
 
+**A stack's caption opens the whole stack as one diff.** Beside the word,
+`StackCompareLink` reads **Compare with main** — the base the stack lands on,
+whatever its name — and opens the compare range from that base to the head of
+the stack's last pull request, in ghdiff rather than on github.com. A row opens
+one layer; this answers what all of them do to main before the first one merges.
+The range is a merge-base range, so main's own later commits are not in it.
+`stackCompareRange` in `src/lib/pullStacks.ts` draws nothing for a stack that
+branches: two tips have no one head. The tip's head is read as a branch of the
+base repository; a tip opened from a fork would need `owner:branch`, which
+`PullSummary` does not carry.
+
 **A group boundary is a rule, not a heading.** A heading sits closer to the rows
 under it than the rows sit to each other, which is what a heading is for and why
 it cannot also be the boundary: two authors read as one run. Both lists rule off

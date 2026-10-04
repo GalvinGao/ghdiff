@@ -116,6 +116,8 @@
   "pull_request_list_set_up_private_access": "تنظیم دسترسی خصوصی",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "خارج شده‌اید؛ هیچ ردیفی مربع وضعیت یا نشانی برای درخواست‌های ادغام خودتان نشان نمی‌دهد. با ورود، هر دو نمایش داده می‌شوند.",
   "pull_request_list_stack": "پشته",
+  "pull_request_list_compare_stack": "مقایسه با ⁦{base}⁩",
+  "pull_request_list_compare_stack_title": "همهٔ تغییرات این پشته را به‌صورت یک diff در برابر ⁦{base}⁩ بررسی کنید",
   "pull_request_list_loading_open_pull_requests": "در حال بارگیری درخواست‌های ادغام باز…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "پیش‌نویس",

@@ -115,6 +115,8 @@
   "pull_request_list_set_up_private_access": "Siapkan akses privat",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Belum masuk; tidak ada baris yang menampilkan kotak status atau penanda pada pull request Anda sendiri. Dengan masuk, keduanya akan tersedia.",
   "pull_request_list_stack": "Tumpukan",
+  "pull_request_list_compare_stack": "Bandingkan dengan {base}",
+  "pull_request_list_compare_stack_title": "Tinjau semua perubahan di tumpukan ini sebagai satu diff terhadap {base}",
   "pull_request_list_loading_open_pull_requests": "Memuat pull request terbuka…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Draf",

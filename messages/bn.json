@@ -116,6 +116,8 @@
   "pull_request_list_set_up_private_access": "ব্যক্তিগত অ্যাক্সেস সেট আপ করুন",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "সাইন আউট করা আছে; কোনো সারিতে স্ট্যাটাস বর্গক্ষেত্র বা আপনার নিজের পুল রিকোয়েস্টের চিহ্ন দেখা যাবে না। সাইন ইন করলে দুটিই দেখা যাবে।",
   "pull_request_list_stack": "স্ট্যাক",
+  "pull_request_list_compare_stack": "{base}-এর সঙ্গে তুলনা করুন",
+  "pull_request_list_compare_stack_title": "এই স্ট্যাকের সব পরিবর্তন {base}-এর বিপরীতে একটি diff হিসেবে দেখুন",
   "pull_request_list_loading_open_pull_requests": "খোলা পুল রিকোয়েস্ট লোড হচ্ছে…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "খসড়া",

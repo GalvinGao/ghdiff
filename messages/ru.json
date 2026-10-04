@@ -118,6 +118,8 @@
   "pull_request_list_set_up_private_access": "Настроить доступ к приватным репозиториям",
   "pull_request_list_signed_out_no_row_shows_a_status_square": "Вы вышли из учётной записи: ни в одной строке нет квадрата статуса или отметки для ваших пул-реквестов. Вход добавит и то и другое.",
   "pull_request_list_stack": "Стек",
+  "pull_request_list_compare_stack": "Сравнить с {base}",
+  "pull_request_list_compare_stack_title": "Просмотреть все изменения этого стека одним диффом относительно {base}",
   "pull_request_list_loading_open_pull_requests": "Загрузка открытых пул-реквестов…",
   "pull_row_label": " · {value}",
   "pull_row_draft": "Черновик",
