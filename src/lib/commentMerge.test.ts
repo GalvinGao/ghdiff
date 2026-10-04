@@ -163,6 +163,24 @@ describe('mergeGitHubThreads', () => {
     assert.equal(only?.metadata.error, 'GitHub said no');
   });
 
+  it('keeps a failed reply when its root is deleted elsewhere', () => {
+    const local = thread(
+      'draft-1',
+      [message(1, 'gh-1'), message(undefined, 'reply-2')],
+      { error: 'GitHub said no' }
+    );
+    const merged = mergeGitHubThreads(new Map(), new Map([['f', [local]]]));
+    assert.deepEqual(merged.get('f'), [local]);
+  });
+
+  it('still drops a deleted thread that holds nothing unsent', () => {
+    const merged = mergeGitHubThreads(
+      new Map(),
+      new Map([['f', [thread('draft-1', [message(1, 'gh-1')])]]])
+    );
+    assert.equal(merged.size, 0);
+  });
+
   it('treats a thread GitHub has, with a failed message, as GitHub’s', () => {
     assert.equal(
       isOnlyInThisTab(thread('t', [message(1, 'a')], { error: 'no' }).metadata),

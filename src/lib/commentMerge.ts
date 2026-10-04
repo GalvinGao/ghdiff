@@ -82,6 +82,11 @@ export function mergeGitHubThreads(
   current: ByItemId
 ): Map<string, Annotation[]> {
   const heldByRoot = new Map<number, CommentThread>();
+  /** Where each held thread with unsent text was drawn, by its root. */
+  const unsentByRoot = new Map<
+    number,
+    { itemId: string; annotation: Annotation }
+  >();
   const busyRoots = new Set<number>();
   const onlyHere = new Map<string, Annotation[]>();
 
@@ -96,20 +101,34 @@ export function mergeGitHubThreads(
         if (id != null) busyRoots.add(id);
       } else if (id != null && isCommentThread(metadata)) {
         heldByRoot.set(id, metadata);
+        if (metadata.comments.some((comment) => comment.githubId == null)) {
+          unsentByRoot.set(id, { itemId, annotation });
+        }
       }
     }
   }
 
   const merged = new Map<string, Annotation[]>();
+  const onGitHub = new Set<number>();
   for (const [itemId, list] of fromGitHub) {
     const drawn: Annotation[] = [];
     for (const annotation of list) {
       const id = rootId(annotation.metadata);
+      if (id != null) onGitHub.add(id);
       if (id != null && busyRoots.has(id)) continue;
       const held = id == null ? undefined : heldByRoot.get(id);
       drawn.push(held == null ? annotation : keepIdentity(annotation, held));
     }
     if (drawn.length > 0) merged.set(itemId, drawn);
+  }
+  // A thread whose root GitHub no longer lists — deleted elsewhere — goes,
+  // unless this tab holds text in it that never reached GitHub. That text is
+  // the reviewer's and nowhere else, so the thread stays as this tab drew it.
+  for (const [id, { itemId, annotation }] of unsentByRoot) {
+    if (onGitHub.has(id)) continue;
+    const kept = onlyHere.get(itemId) ?? [];
+    kept.push(annotation);
+    onlyHere.set(itemId, kept);
   }
   for (const [itemId, list] of onlyHere) {
     merged.set(itemId, [...(merged.get(itemId) ?? []), ...list]);

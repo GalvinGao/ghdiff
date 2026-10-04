@@ -770,11 +770,12 @@ with the reviewer's text in it, and the issue link a thread holds in memory. A
 thread GitHub already has keeps the key this tab gave it, so its card is not
 mounted again. A message that never reached GitHub is laid after GitHub's own
 messages in that thread, failure and all, rather than lost to a later reply that
-did. After a write GitHub took — a post, a reply, a delete — the tab asks for
-the list afresh instead of patching it and publishing the result: two tabs
-patching the same old list at once would each erase the other's comment. The
-answer reaches every tab on the pull request, and each merges it in, the writing
-tab included.
+did — and a thread deleted elsewhere stays as this tab drew it while it holds
+such a message, since that text is the reviewer's and nowhere else. After a
+write GitHub took — a post, a reply, a delete — the tab asks for the list afresh
+instead of patching it and publishing the result: two tabs patching the same old
+list at once would each erase the other's comment. The answer reaches every tab
+on the pull request, and each merges it in, the writing tab included.
 
 jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
 the Worker rather than for the browser. Without it every atom would resolve
