@@ -73,6 +73,12 @@ export function useOpenPulls(options: {
     // would draw a rate limit from an hour ago before GitHub had been asked.
     persist: (answer) => (answer.failures.length === 0 ? answer : undefined),
     staleTime: PULLS_STALE_MS,
+    // A list another tab fetched, or the last load left, stands in for a fetch
+    // for as long as it would count as fresh here. A stored list reaches the
+    // query only once the session has confirmed whose it is, by which time the
+    // query is already asking, so the window is what lets it take the list.
+    // The reload in the bar still asks GitHub: it is a forced refetch.
+    shareWindowMs: PULLS_STALE_MS,
     placeholderData: keepPreviousData,
   });
 

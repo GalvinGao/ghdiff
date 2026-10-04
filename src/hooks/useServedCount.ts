@@ -21,6 +21,7 @@ export function useServedCount(): number | undefined {
     fetch: (signal) => rpc.stats.served(undefined, { signal }),
     persist: true,
     staleTime: SERVED_STALE_MS,
+    shareWindowMs: SERVED_STALE_MS,
   });
   return query.data?.count;
 }
