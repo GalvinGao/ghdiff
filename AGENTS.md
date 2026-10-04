@@ -636,10 +636,11 @@ key through `readStoredJson`.
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
 `useCodeFont`, `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and
 `useOpenPulls` once, above the bar and the page. Four of those now read an atom
-and could safely be called anywhere; `useOpenPulls` is the one that could not,
-because it is a request to GitHub and mounting it twice asks GitHub twice. So
-the rule stands as it was: call `useAppData()`, and do not call those five hooks
-in a screen.
+and could safely be called anywhere. `useOpenPulls` and `useGitHubSession` are
+shared queries now, so a second caller would join the first rather than ask
+GitHub again — but it would also read the result through a different object, and
+the rule costs nothing to keep. Call `useAppData()`, and do not call those five
+hooks in a screen.
 
 **A request to GitHub is a shared query, and every tab of the browser shares
 it.** `useSharedQuery` in `src/hooks/useSharedQuery.ts` is React Query with one
@@ -719,6 +720,18 @@ when a tab that waited on the lock reads it, so a delayed broadcast of an older
 fetch cannot replace it either. A write is a request like any other, so
 `publish` takes the `ticket` the session had when the write was sent, and a
 write that lands under a later session publishes nothing.
+
+`useGitHubSession` is where the confirmation comes from, and signing out empties
+the store. The press stops every write at once, and the store is cleared and the
+other tabs told only **after** the Worker has ended the session: a tab told
+earlier would ask who it is, be told the old account by the cookie still
+standing, and write that account's answers straight back. The same happens when
+`withRefresh` ends a session no refresh could mend — `onSessionEnded` in
+`src/lib/authFetch.ts` is how the cache hears it.
+
+The left bar's list is the answer this was built for. It is on every page of
+every tab, so `useOpenPulls` keeps it for `PULLS_STALE_MS` and a new tab draws
+the rows the last load left before GitHub has been asked.
 
 Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
 the one thing to raise when a procedure's output changes shape — never the

@@ -1,6 +1,11 @@
-import { useEffect, useState } from 'react';
-
+import { useSharedQuery } from './useSharedQuery';
 import { rpc } from '@/lib/rpc/client';
+
+/**
+ * How long the figure is drawn from another tab or the last load before it is
+ * asked for again. It is an estimate on purpose, so a minute behind is nothing.
+ */
+const SERVED_STALE_MS = 60_000;
 
 /**
  * How many diffs this deployment has served. It is one number about the app
@@ -11,22 +16,11 @@ import { rpc } from '@/lib/rpc/client';
  * that cannot be read is not a thing that stops them working.
  */
 export function useServedCount(): number | undefined {
-  const [count, setCount] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    let live = true;
-    void (async () => {
-      try {
-        const result = await rpc.stats.served(undefined);
-        if (live) setCount(result.count);
-      } catch {
-        // The footer prints no figure, and that is the whole of it.
-      }
-    })();
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  return count;
+  const query = useSharedQuery({
+    queryKey: ['stats.served'],
+    fetch: (signal) => rpc.stats.served(undefined, { signal }),
+    persist: true,
+    staleTime: SERVED_STALE_MS,
+  });
+  return query.data?.count;
 }

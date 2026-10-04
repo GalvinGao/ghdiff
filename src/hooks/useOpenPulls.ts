@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { keepPreviousData } from '@tanstack/react-query';
 
 import { m } from '../paraglide/messages.js';
+import { useForcedRefetch, useSharedQuery } from './useSharedQuery';
 import {
   formatWatchedRepo,
   type OpenPullsData,
@@ -27,6 +28,14 @@ function reposFromKey(key: string): WatchedRepo[] {
 }
 
 /**
+ * How long a list another tab or the last load left behind is shown without
+ * asking again. The bar is on every page of every tab, so this is the request a
+ * reviewer with several tabs open used to make most often, and half a minute is
+ * well inside how often a pull request's status square changes.
+ */
+const PULLS_STALE_MS = 30_000;
+
+/**
  * The open pull requests of the watched repositories. The left bar is on every
  * page, so this runs for the whole session and one instance feeds every list.
  *
@@ -34,74 +43,55 @@ function reposFromKey(key: string): WatchedRepo[] {
  * storage. Without it the app asks GitHub about no repositories at all, and then
  * asks again a tick later. The credential needs no such wait: it is in a cookie
  * the browser attaches itself.
+ *
+ * The answer is shared by every tab and kept on disk, so a new tab draws the
+ * list the last one had before GitHub has answered it. A change of the watch
+ * list keeps the old rows on screen until the new ones arrive, which is what
+ * the hand-written hook before this one did as well.
  */
 export function useOpenPulls(options: {
   ready: boolean;
   repos: readonly WatchedRepo[];
 }): OpenPullsState {
   const { ready, repos } = options;
-  const [data, setData] = useState<OpenPullsData | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
-  // One request at a time. A reload, or a change of repositories, cancels the
-  // request in flight so a slow answer cannot overwrite a newer one.
-  const controllerRef = useRef<AbortController | null>(null);
 
   // The watch list travels as one comma-joined string and the request is built
   // back out of it. The array's identity changes on every render of whatever
-  // owns it, and a `useCallback` that depended on the array would rebuild, and
-  // re-request, each time. The string compares by value. It is sorted, because
-  // the order is the list's to draw and not GitHub's to answer: a drag in the
-  // watch list reorders the rows on screen and asks GitHub nothing.
+  // owns it, and a key built from the array would ask again each time. The
+  // string compares by value. It is sorted, because the order is the list's to
+  // draw and not GitHub's to answer: a drag in the watch list reorders the rows
+  // on screen and asks GitHub nothing.
   const repoKey = repos.map(formatWatchedRepo).toSorted().join(',');
+  const queryKey = ['pulls.list', repoKey];
 
-  const load = useCallback(async () => {
-    controllerRef.current?.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    setLoading(true);
-    setError(undefined);
+  const query = useSharedQuery<OpenPullsData>({
+    queryKey,
+    fetch: (signal) =>
+      rpc.pulls.list({ repos: reposFromKey(repoKey) }, { signal }),
+    enabled: ready && repoKey.length > 0,
+    // A list with a failure in it is shown, and never kept: the next load
+    // would draw a rate limit from an hour ago before GitHub had been asked.
+    persist: (answer) => (answer.failures.length === 0 ? answer : undefined),
+    staleTime: PULLS_STALE_MS,
+    placeholderData: keepPreviousData,
+  });
 
-    try {
-      setData(
-        await rpc.pulls.list(
-          { repos: reposFromKey(repoKey) },
-          { signal: controller.signal }
-        )
-      );
-    } catch (cause) {
-      if (controller.signal.aborted) return;
-      setError(
-        rpcErrorMessage(cause, m.use_open_pulls_could_not_load_pull_requests())
-      );
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
-    }
-  }, [repoKey]);
+  const reload = useForcedRefetch(queryKey, query.refetch);
 
-  useEffect(() => {
-    if (!ready) return undefined;
-    if (repoKey.length === 0) {
-      setData(EMPTY_DATA);
-      setError(undefined);
-      return undefined;
-    }
-    void load();
-    return () => {
-      controllerRef.current?.abort();
-      // `load` leaves `loading` alone when its request is aborted, because the
-      // request that aborted it owns the flag from then on. Nothing follows
-      // this abort, so the flag is cleared here. Otherwise it stayed true for
-      // good, and the indicator beside the list turned for ever.
-      setLoading(false);
-    };
-  }, [load, ready, repoKey]);
-
-  const reload = useCallback(() => {
-    void load();
-  }, [load]);
-
-  // Before the first answer arrives there is nothing on screen yet, and a list
-  // that says "empty" is wrong. `loading` covers the wait either way.
-  return { data, loading: loading || !ready, error, reload };
+  if (!ready) return { loading: true, reload };
+  if (repoKey.length === 0) return { data: EMPTY_DATA, loading: false, reload };
+  return {
+    data: query.data,
+    // Before the first answer arrives there is nothing on screen yet, and a
+    // list that says "empty" is wrong. `loading` covers the wait either way.
+    loading: query.isFetching,
+    error:
+      query.error == null
+        ? undefined
+        : rpcErrorMessage(
+            query.error,
+            m.use_open_pulls_could_not_load_pull_requests()
+          ),
+    reload,
+  };
 }
