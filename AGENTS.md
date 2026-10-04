@@ -768,8 +768,11 @@ goes through `mergeGitHubThreads` in `src/lib/commentMerge.ts`. What only this
 tab knows survives it: an open composer, a message still on its way, a failure
 with the reviewer's text in it, and the issue link a thread holds in memory. A
 thread GitHub already has keeps the key this tab gave it, so its card is not
-mounted again. A tab's own post goes out to the others through `publish`, and
-the tab that posted it does not merge its own answer back in.
+mounted again. After a write GitHub took — a post, a reply, a delete — the tab
+asks for the list afresh instead of patching it and publishing the result: two
+tabs patching the same old list at once would each erase the other's comment.
+The answer reaches every tab on the pull request, and each merges it in, the
+writing tab included.
 
 jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
 the Worker rather than for the browser. Without it every atom would resolve

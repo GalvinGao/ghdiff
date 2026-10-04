@@ -1,10 +1,9 @@
 import type { DiffLineAnnotation, SelectedLineRange } from '@pierre/diffs';
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
-import { useForcedRefetch, usePublish, useSharedQuery } from './useSharedQuery';
+import { useForcedRefetch, useSharedQuery } from './useSharedQuery';
 import {
   mergeSignedAttachments,
   type SignedAttachment,
@@ -343,22 +342,19 @@ export function useReviewComments(options: {
     enabled: ready && store === 'github',
     persist: entriesWithoutAttachments,
   });
-  const client = useQueryClient();
-  const publish = usePublish();
   const comments = query.data;
   const answeredAt = query.dataUpdatedAt;
 
   // The diff the threads were last seeded for. A first answer for a diff
-  // replaces whatever was drawn; every later one — another tab's post, a
-  // reload — is merged in, so a composer with text in it survives it. The
-  // tab's own post is published as an answer too, and that one is not merged
-  // back: this tab already drew it, under the keys its cards are mounted with.
+  // replaces whatever was drawn; every later one — another tab's post, this
+  // tab's own refresh after a write, a reload — is merged in, so a composer
+  // with text in it survives it, and a thread this tab already drew keeps the
+  // keys its card is mounted under.
   const seededRef = useRef<{
     list: string;
     itemIdByPath: ReadonlyMap<string, string>;
     answered: boolean;
   } | null>(null);
-  const publishedRef = useRef<CommentPayload[] | undefined>(undefined);
 
   useEffect(() => {
     if (!ready) return;
@@ -390,7 +386,6 @@ export function useReviewComments(options: {
       return;
     }
     const seeding = !sameDiff || !seed.answered;
-    if (!seeding && comments === publishedRef.current) return;
 
     signedAtRef.current = answeredAt;
     setAttachments(
@@ -418,21 +413,11 @@ export function useReviewComments(options: {
     }));
   }, [answeredAt, comments, itemIdByPath, listHash, ready, storageKey, store]);
 
-  /**
-   * Tells every other tab what this one just changed on GitHub, by changing
-   * the list the cache holds. Only when the cache holds one: a list that never
-   * loaded would tell the others this is the only comment there is.
-   */
-  const publishComments = useCallback(
-    (change: (current: CommentPayload[]) => CommentPayload[]) => {
-      const key = JSON.parse(listHash) as readonly unknown[];
-      const current = client.getQueryData<CommentPayload[]>(key);
-      if (current == null) return;
-      publish(key, change(current), entriesWithoutAttachments);
-      publishedRef.current = client.getQueryData<CommentPayload[]>(key);
-    },
-    [client, listHash, publish]
-  );
+  // After a write GitHub took, the list is asked for afresh rather than
+  // patched here and published: two tabs patching the same old list at once
+  // would each erase the other's comment. The answer reaches every tab on the
+  // same pull request, and each merges it in, this one included.
+  const reload = useForcedRefetch(queryKey, query.refetch);
 
   const startDraft = useCallback(
     (itemId: string, range: SelectedLineRange) => {
@@ -475,7 +460,6 @@ export function useReviewComments(options: {
           repo: pullRepo,
           ...input,
         });
-        publishComments((current) => [...current, comment]);
         replace(itemId, key, (metadata) => ({
           ...metadata,
           kind: 'thread',
@@ -496,6 +480,7 @@ export function useReviewComments(options: {
           pending: false,
           error: undefined,
         }));
+        void reload();
       } catch (cause) {
         replace(itemId, key, (metadata) => ({
           ...metadata,
@@ -507,7 +492,7 @@ export function useReviewComments(options: {
         }));
       }
     },
-    [publishComments, pullNumber, pullOwner, pullRepo, replace]
+    [pullNumber, pullOwner, pullRepo, reload, replace]
   );
 
   const postReply = useCallback(
@@ -527,7 +512,6 @@ export function useReviewComments(options: {
           repo: pullRepo,
           replyToId,
         });
-        publishComments((current) => [...current, comment]);
         // The optimistic message becomes the real one, in place. Its position
         // is already right: GitHub sorts replies by creation time and this is
         // the newest, so the thread does not reorder under the reader.
@@ -550,6 +534,7 @@ export function useReviewComments(options: {
           pending: false,
           error: undefined,
         }));
+        void reload();
       } catch (cause) {
         // The text stays in the thread, marked as failed. Throwing it away
         // would lose what the reviewer wrote.
@@ -563,7 +548,7 @@ export function useReviewComments(options: {
         }));
       }
     },
-    [publishComments, pullNumber, pullOwner, pullRepo, replace]
+    [pullNumber, pullOwner, pullRepo, reload, replace]
   );
 
   /**
@@ -774,13 +759,7 @@ export function useReviewComments(options: {
               repo: pullRepo,
             });
           }
-          const removed = new Set(githubIds);
-          publishComments((current) =>
-            current.filter(
-              (comment) =>
-                comment.githubId == null || !removed.has(comment.githubId)
-            )
-          );
+          void reload();
         } catch {
           setError(
             m.use_review_comments_could_not_delete_that_thread_on_github_reload()
@@ -789,12 +768,8 @@ export function useReviewComments(options: {
       };
       void remove();
     },
-    [publishComments, pullOwner, pullRepo, replace, state.byItemId, store]
+    [pullOwner, pullRepo, reload, replace, state.byItemId, store]
   );
-
-  // A reload asks GitHub, whatever another tab holds, and its answer is merged
-  // in: a composer open while the reviewer pressed it keeps its text.
-  const reload = useForcedRefetch(queryKey, query.refetch);
 
   // A thread card is drawn when the viewer scrolls it into the window, which
   // can be long after the list's five minutes, and only a file the browser
