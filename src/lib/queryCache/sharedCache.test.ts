@@ -730,12 +730,17 @@ describe('SharedCache', () => {
   });
 
   it('keeps the later-begun answer on disk, whichever tab writes last', async () => {
-    const hub = busHub();
+    // Two channels, so B never hears A's approval and only the store's own
+    // rule can keep B's older read from overwriting it.
     const store = memoryStore();
-    const a = tab('a', hub, store, { account: 'user:ada' });
-    const b = tab('b', hub, store, { account: 'user:ada', lease: true });
-    // B's read begins first and lands last, under a coordinator that let both
-    // tabs through.
+    const a = tab('a', busHub(), store, { account: 'user:ada' });
+    const b = tab('b', busHub(), store, { account: 'user:ada', lease: true });
+    let puts = 0;
+    const counted = store.put;
+    store.put = (record) => {
+      puts += 1;
+      return counted(record);
+    };
     const held = gate();
     const read = b.ask(async () => {
       await held.closed;
@@ -747,9 +752,70 @@ describe('SharedCache', () => {
     held.open();
     await read;
     await settle();
+    assert.equal(puts, 2, 'the older read did try to write');
     assert.deepEqual([...store.records.values()][0]?.data, {
       review: 'APPROVED',
     });
+  });
+
+  it('keeps a restored answer ahead of an older broadcast', async () => {
+    const hub = busHub();
+    const other = hub.join();
+    const store = memoryStore();
+    const earlier = moment();
+    const later = moment();
+    await store.put(
+      storedRecord({ data: { review: 'APPROVED' }, startedAt: later })
+    );
+    const b = tab('b', hub, store);
+    await settle();
+    b.cache.confirm('user:ada');
+    assert.deepEqual(b.client.getQueryData(KEY), { review: 'APPROVED' });
+    other.post({
+      type: 'data',
+      tab: 'a',
+      namespace: 'user:ada',
+      hash: queryHash(KEY),
+      queryKey: KEY,
+      data: { review: 'COMMENTED' },
+      updatedAt: Date.now(),
+      startedAt: earlier,
+    });
+    await settle();
+    assert.deepEqual(b.client.getQueryData(KEY), { review: 'APPROVED' });
+  });
+
+  it('keeps an answer read from the store ahead of an older broadcast', async () => {
+    const hub = busHub();
+    const other = hub.join();
+    const store = memoryStore();
+    const a = tab('a', busHub(), store, { account: 'user:ada' });
+    const b = tab('b', hub, store, { account: 'user:ada' });
+    const earlier = moment();
+    // A holds the lock and writes the record; B waits, then reads it.
+    const held = gate();
+    const first = a.ask(async () => {
+      await held.closed;
+      return { review: 'APPROVED' };
+    });
+    await settle();
+    const second = b.ask(() => Promise.resolve({ review: 'unused' }));
+    await until(() => b.entered() === 1);
+    held.open();
+    await first;
+    assert.deepEqual(await second, { review: 'APPROVED' });
+    other.post({
+      type: 'data',
+      tab: 'c',
+      namespace: 'user:ada',
+      hash: queryHash(KEY),
+      queryKey: KEY,
+      data: { review: 'COMMENTED' },
+      updatedAt: Date.now(),
+      startedAt: earlier,
+    });
+    await settle();
+    assert.deepEqual(b.client.getQueryData(KEY), { review: 'APPROVED' });
   });
 
   it('carries a published write to every tab and to disk', async () => {

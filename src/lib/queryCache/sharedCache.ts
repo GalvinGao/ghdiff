@@ -335,8 +335,8 @@ export class SharedCache {
     return this.borrow<T>(queryKey, hash, windowMs);
   }
 
-  /** A whole record of this account's, younger than the window and than the
-      answer this tab holds. */
+  /** A whole record of this account's, younger than the window and begun
+      after the answer this tab holds, noted with its fetch's moment. */
   private async readFresh<T>(
     queryKey: readonly unknown[],
     hash: string,
@@ -355,6 +355,10 @@ export class SharedCache {
     if (!isWithinWindow(record.updatedAt, now, windowMs)) return undefined;
     const held = this.client.getQueryState(queryKey)?.dataUpdatedAt ?? 0;
     if (held >= record.updatedAt) return undefined;
+    const startedAt = record.startedAt ?? 0;
+    const from = this.heldFrom.get(hash);
+    if (from != null && from >= startedAt) return undefined;
+    this.hold(hash, startedAt);
     return record.data as T;
   }
 
@@ -677,9 +681,14 @@ export class SharedCache {
     if (state?.data !== undefined && state.dataUpdatedAt >= record.updatedAt) {
       return;
     }
+    // Ordered by its fetch's moment like any other answer, so a broadcast of
+    // a fetch that began before it cannot replace it. A record from an older
+    // build states none, and anything fetched now is newer.
+    const startedAt = record.startedAt ?? 0;
+    const from = this.heldFrom.get(record.hash);
+    if (state?.data !== undefined && from != null && from >= startedAt) return;
     if (record.complete) this.received.set(record.hash, record.updatedAt);
-    // Vouched for by its account, and older than anything fetched now.
-    this.hold(record.hash, 0);
+    this.hold(record.hash, startedAt);
     this.client.setQueryData(record.queryKey, record.data, {
       updatedAt: record.complete ? record.updatedAt : 0,
     });

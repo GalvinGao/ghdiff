@@ -713,10 +713,12 @@ before its disk write or after it. A read that a reset cancelled notes nothing
 at all, so it cannot lower the moment of an answer that replaced it. The store
 keeps the same order: a record carries its fetch's moment, and a write never
 replaces a record whose fetch began later — the read and the write are one
-IndexedDB transaction, which another tab's write cannot interleave with. A write
-is a request like any other, so `publish` takes the `ticket` the session had
-when the write was sent, and a write that lands under a later session publishes
-nothing.
+IndexedDB transaction, which another tab's write cannot interleave with. And a
+stored answer keeps that moment when it comes back into memory, at startup and
+when a tab that waited on the lock reads it, so a delayed broadcast of an older
+fetch cannot replace it either. A write is a request like any other, so
+`publish` takes the `ticket` the session had when the write was sent, and a
+write that lands under a later session publishes nothing.
 
 Records expire after `CACHE_MAX_AGE_MS`, a day, and `CACHE_SCHEMA_VERSION` is
 the one thing to raise when a procedure's output changes shape — never the
