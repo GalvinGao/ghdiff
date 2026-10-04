@@ -2,6 +2,7 @@ import type { FileDiffContentsLoader, FileDiffMetadata } from '@pierre/diffs';
 import { useCallback, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
+import { useSharedCache } from './useSharedQuery';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import {
   FILE_TOO_LARGE,
@@ -10,7 +11,12 @@ import {
   patchFitsNewFile,
   splitFileLines,
 } from '@/lib/diffHydration';
-import { type ReviewTarget, reviewTargetQuery } from '@/lib/reviewTarget';
+import type { SharedCache, TextAnswer } from '@/lib/queryCache/sharedCache';
+import {
+  isGitHubTarget,
+  type ReviewTarget,
+  reviewTargetQuery,
+} from '@/lib/reviewTarget';
 import { readStreamedText } from '@/lib/streamText';
 
 // What the viewer calls when a reviewer expands the unmodified lines around a
@@ -50,12 +56,16 @@ export function useDiffFileLoader(options: {
   // A string, not the target: the route's loader re-runs and hands down a new
   // object for the same review.
   const query = reviewTargetQuery(target).toString();
+  // Kept between loads and tabs, and checked with GitHub by its ETag each
+  // time: a file of a pull request's head moves with every push.
+  const shared = useSharedCache();
+  const sharedFiles = isGitHubTarget(target) ? shared : null;
 
   const loadDiffFiles = useCallback<FileDiffContentsLoader>(
     async (fileDiff: FileDiffMetadata) => {
       setLoadingFiles((files) => [...files, fileDiff]);
       try {
-        const contents = await fetchFile(query, fileDiff.name);
+        const contents = await fetchFile(query, fileDiff.name, sharedFiles);
         setError(undefined);
         const newFile = { name: fileDiff.name, contents };
         // A pure rename has no hunks and no old side to rebuild; the library
@@ -88,7 +98,7 @@ export function useDiffFileLoader(options: {
         });
       }
     },
-    [query]
+    [query, sharedFiles]
   );
 
   const dismissError = useCallback(() => setError(undefined), []);
@@ -96,23 +106,48 @@ export function useDiffFileLoader(options: {
   return { loadDiffFiles, loadingFiles, error, dismissError };
 }
 
-async function fetchFile(query: string, path: string): Promise<string> {
-  const response = await fetchWithRefresh(
-    `/api/file?${query}&path=${encodeURIComponent(path)}`,
-    { cache: 'no-store' }
-  );
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(
-      body.trim().length > 0
-        ? body.trim()
-        : m.use_diff_file_loader_request_failed({ status: response.status })
+async function fetchFile(
+  query: string,
+  path: string,
+  shared: SharedCache | null
+): Promise<string> {
+  const download = async (etag: string | undefined): Promise<TextAnswer> => {
+    const response = await fetchWithRefresh(
+      `/api/file?${query}&path=${encodeURIComponent(path)}`,
+      {
+        cache: 'no-store',
+        headers: etag == null ? undefined : { 'if-none-match': etag },
+      }
     );
+    if (response.status === 304) return { status: 'unchanged' };
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(
+        body.trim().length > 0
+          ? body.trim()
+          : m.use_diff_file_loader_request_failed({ status: response.status })
+      );
+    }
+    // Counted on the way in, because the route can only turn away a file whose
+    // size GitHub declared, and a compressed answer declares the wrong one.
+    const text = await readStreamedText(response, {
+      maxBytes: MAX_FILE_BYTES,
+      tooLarge: FILE_TOO_LARGE(),
+    });
+    return {
+      status: 'fresh',
+      text,
+      etag: response.headers.get('etag') ?? undefined,
+    };
+  };
+  if (shared == null) {
+    const answer = await download(undefined);
+    if (answer.status !== 'fresh') throw new Error('Unexpected 304.');
+    return answer.text;
   }
-  // Counted on the way in, because the route can only turn away a file whose
-  // size GitHub declared, and a compressed answer declares the wrong one.
-  return await readStreamedText(response, {
-    maxBytes: MAX_FILE_BYTES,
-    tooLarge: FILE_TOO_LARGE(),
+  const answer = await shared.fetchText({
+    key: ['file', query, path],
+    fetch: download,
   });
+  return answer.text;
 }

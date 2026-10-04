@@ -9,12 +9,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { m } from '../paraglide/messages.js';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
+import { sharedCacheOf, type TextAnswer } from '@/lib/queryCache/sharedCache';
 import {
   buildReviewData,
   EMPTY_REVIEW_DATA,
   type ReviewData,
 } from '@/lib/reviewData';
 import {
+  isGitHubTarget,
   type ReviewTarget,
   reviewTargetKey,
   reviewTargetQuery,
@@ -104,36 +106,62 @@ export function patchQueryOptions(target: ReviewTarget) {
     queryFn: async ({ client, signal }): Promise<PatchResponse> => {
       const bytesKey = patchBytesKey(cacheKey);
       client.setQueryData(bytesKey, 0);
-      const response = await fetchWithRefresh(`/api/diff?${query}`, {
-        cache: 'no-store',
-        signal,
-      });
-      // Read a chunk at a time so the wait has a figure on it. A patch of tens
-      // of megabytes is a long stare at one sentence, and the count of what
-      // has arrived is the only honest thing there is to say about it: nothing
-      // on the wire states a total. The label is what decides whether this
-      // reaches React, so a chunk that does not move the figure costs no
-      // render.
-      const body = await readStreamedText(response, {
-        onBytes: (read) => {
-          const shown = client.getQueryData<number>(bytesKey) ?? 0;
-          if (formatBytes(shown) !== formatBytes(read)) {
-            client.setQueryData(bytesKey, read);
-          }
-        },
-      });
-      if (!response.ok) {
-        throw new PatchRequestError(
-          body.trim().length > 0
-            ? body.trim()
-            : m.use_review_patch_request_failed({ status: response.status }),
-          response.status
-        );
-      }
-      return {
-        body,
-        notice: response.headers.get(NOTICE_HEADER) ?? undefined,
+      // One ask of the route. With `etag` it may answer 304, which says the
+      // copy the shared cache holds is still the patch.
+      const download = async (
+        etag: string | undefined
+      ): Promise<TextAnswer> => {
+        const response = await fetchWithRefresh(`/api/diff?${query}`, {
+          cache: 'no-store',
+          signal,
+          headers: etag == null ? undefined : { 'if-none-match': etag },
+        });
+        if (response.status === 304) return { status: 'unchanged' };
+        // Read a chunk at a time so the wait has a figure on it. A patch of
+        // tens of megabytes is a long stare at one sentence, and the count of
+        // what has arrived is the only honest thing there is to say about it:
+        // nothing on the wire states a total. The label is what decides
+        // whether this reaches React, so a chunk that does not move the figure
+        // costs no render.
+        const body = await readStreamedText(response, {
+          onBytes: (read) => {
+            const shown = client.getQueryData<number>(bytesKey) ?? 0;
+            if (formatBytes(shown) !== formatBytes(read)) {
+              client.setQueryData(bytesKey, read);
+            }
+          },
+        });
+        if (!response.ok) {
+          throw new PatchRequestError(
+            body.trim().length > 0
+              ? body.trim()
+              : m.use_review_patch_request_failed({ status: response.status }),
+            response.status
+          );
+        }
+        return {
+          status: 'fresh',
+          text: body,
+          etag: response.headers.get('etag') ?? undefined,
+          notice: response.headers.get(NOTICE_HEADER) ?? undefined,
+        };
       };
+
+      // A local diff moves under the reader and states no ETag, so only a
+      // patch from GitHub goes through the cache every tab shares — found by
+      // the client this query runs in, which is how a prefetch reaches it too.
+      const shared = isGitHubTarget(target) ? sharedCacheOf(client) : undefined;
+      if (shared == null) {
+        const answer = await download(undefined);
+        if (answer.status !== 'fresh') throw new Error('Unexpected 304.');
+        return { body: answer.text, notice: answer.notice };
+      }
+      const answer = await shared.fetchText({
+        key: ['diff', cacheKey],
+        signal,
+        fetch: download,
+      });
+      return { body: answer.text, notice: answer.notice };
     },
     staleTime: PATCH_FRESH_MS,
     gcTime: PATCH_FRESH_MS,

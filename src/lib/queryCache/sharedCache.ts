@@ -22,10 +22,16 @@ import {
   type MessageBus,
 } from './messages.ts';
 import {
+  BLOB_BUDGET_BYTES,
+  type BlobMeta,
+  blobBytes,
+  blobsOverBudget,
   CACHE_SCHEMA_VERSION,
   type CacheRecord,
+  isLiveBlobMeta,
   isLiveRecord,
   isWithinWindow,
+  MAX_BLOB_BYTES,
   moment,
   queryHash,
   recordId,
@@ -61,6 +67,26 @@ export const SESSION_QUERY_KEY = ['viewer.get'] as const;
 const SESSION_HASH = queryHash(SESSION_QUERY_KEY);
 
 type PendingRecord = Omit<CacheRecord, 'id' | 'namespace'>;
+type PendingBlob = {
+  meta: Omit<BlobMeta, 'id' | 'namespace'>;
+  text: string;
+};
+
+/**
+ * What a source said about a patch or a file. `unchanged` is GitHub's 304: the
+ * ETag the cache sent still names the text it holds.
+ */
+export type TextAnswer =
+  | { status: 'fresh'; text: string; etag?: string; notice?: string }
+  | { status: 'unchanged' };
+
+export interface SharedText {
+  key: readonly unknown[];
+  signal?: AbortSignal;
+  /** Asks the source, sending `etag` as `If-None-Match` when there is one. */
+  fetch: (etag: string | undefined) => Promise<TextAnswer>;
+  shareWindowMs?: number;
+}
 
 /**
  * How long a tab that waited on another's lock waits again for that tab's
@@ -88,6 +114,18 @@ export interface SharedCacheEnvironment {
   openStore(): Promise<CacheStore | undefined>;
   /** `CONFIRM_WAIT_MS`, unless a test needs a shorter wait. */
   confirmWaitMs?: number;
+}
+
+/** The shared cache behind each query client, for code that holds a client. */
+const cacheByClient = new WeakMap<QueryClient, SharedCache>();
+
+/**
+ * The shared cache a query client stands in front of, or nothing: on the
+ * server, and under the `ghdiff` command. A `queryFn` is handed its client, so
+ * this is how one reaches the cache without a hook — a prefetch included.
+ */
+export function sharedCacheOf(client: QueryClient): SharedCache | undefined {
+  return cacheByClient.get(client);
 }
 
 export class SharedCache {
@@ -150,6 +188,7 @@ export class SharedCache {
 
   constructor(client: QueryClient, environment: SharedCacheEnvironment) {
     this.client = client;
+    cacheByClient.set(client, this);
     this.tab = environment.tab;
     this.coordinator = environment.coordinator;
     this.bus = environment.bus;
@@ -360,6 +399,182 @@ export class SharedCache {
     if (from != null && from >= startedAt) return undefined;
     this.hold(hash, startedAt);
     return record.data as T;
+  }
+
+  /**
+   * A patch or a whole file, which is too large for the channel and too large
+   * to trust by its age. The store keeps it with the ETag its source gave, and
+   * the next ask sends that ETag back: a 304 is the stored text confirmed, with
+   * no body read and none of the quota spent. A tab that waited on another's
+   * download takes what that tab stored, if it is young enough, without asking
+   * at all.
+   */
+  async fetchText(options: SharedText): Promise<{
+    text: string;
+    notice?: string;
+  }> {
+    const { fetch, key, signal } = options;
+    const shareWindowMs = options.shareWindowMs ?? SHARE_WINDOW_MS;
+    await this.ready;
+    const hash = queryHash(key);
+    // A stored copy is read under the confirmed account and no other, so a
+    // download waits for the confirmation the way a query does.
+    await this.awaitConfirmation(signal);
+    return await this.coordinator.exclusive(
+      hash,
+      async (contended) => {
+        // The whole read is asked again when the session moves under it, and
+        // never answered from a session that is not the one on screen: a file
+        // load runs outside React Query, and nothing would cancel it.
+        for (let attempt = 0; attempt < SESSION_ATTEMPTS; attempt += 1) {
+          if (attempt > 0) await this.awaitConfirmation(signal);
+          signal?.throwIfAborted();
+          const generation = this.generation;
+          const namespace = this.namespace;
+          const stored =
+            namespace == null
+              ? undefined
+              : await this.readBlob(namespace, hash);
+          if (generation !== this.generation) continue;
+          if (
+            stored != null &&
+            contended &&
+            isWithinWindow(stored.meta.updatedAt, Date.now(), shareWindowMs)
+          ) {
+            void this.touchBlob(stored.meta, false);
+            return { text: stored.text, notice: stored.meta.notice };
+          }
+          const startedAt = moment();
+          const answer = await fetch(stored?.meta.etag);
+          // Asked again when the session moved under it — a change, or a
+          // confirmation whose session fetch began after this one did.
+          const moved =
+            generation !== this.generation ||
+            (this.namespace != null && startedAt < this.confirmedFrom);
+          if (moved) continue;
+          if (answer.status === 'unchanged') {
+            if (stored == null) {
+              throw new Error(
+                'GitHub confirmed a copy this tab does not hold.'
+              );
+            }
+            await this.touchBlob(stored.meta, true);
+            // Every await is a moment the session can move in, the store's
+            // own included.
+            if (generation !== this.generation) continue;
+            return { text: stored.text, notice: stored.meta.notice };
+          }
+          // Still waiting on a first confirmation: the text is this tab's
+          // alone, and nothing is kept.
+          if (this.namespace == null) {
+            return { text: answer.text, notice: answer.notice };
+          }
+          const keepable =
+            answer.etag != null && blobBytes(answer.text) <= MAX_BLOB_BYTES;
+          if (keepable && answer.etag != null) {
+            await this.keepBlob(hash, answer.text, answer.etag, answer.notice);
+          } else {
+            // A newer answer that cannot be kept still makes the stored copy
+            // the old one, and a tab waiting on this download must not take
+            // it.
+            await this.dropBlob(hash);
+          }
+          if (generation !== this.generation) continue;
+          return { text: answer.text, notice: answer.notice };
+        }
+        throw new Error('The session changed while this loaded.');
+      },
+      signal
+    );
+  }
+
+  private async readBlob(
+    namespace: string,
+    hash: string
+  ): Promise<{ meta: BlobMeta; text: string } | undefined> {
+    const store = this.store;
+    if (store == null) return undefined;
+    try {
+      const blob = await store.getBlob(recordId(namespace, hash));
+      if (blob == null || typeof blob.text !== 'string') return undefined;
+      if (!isLiveBlobMeta(blob.meta, Date.now())) return undefined;
+      return { meta: blob.meta, text: blob.text };
+    } catch {
+      return undefined;
+    }
+  }
+
+  /** Marks a blob used, and confirmed by GitHub when `confirmed`. */
+  private async touchBlob(meta: BlobMeta, confirmed: boolean) {
+    const now = Date.now();
+    try {
+      await this.store?.putBlobMeta({
+        ...meta,
+        usedAt: now,
+        ...(confirmed ? { updatedAt: now } : {}),
+      });
+    } catch {
+      // The next ask sends the same ETag, which is right either way.
+    }
+  }
+
+  private async dropBlob(hash: string) {
+    const namespace = this.namespace;
+    if (namespace == null) return;
+    try {
+      await this.store?.removeBlobs([recordId(namespace, hash)]);
+    } catch {
+      // Left to expire; its ETag no longer matches, so it is never shown.
+    }
+  }
+
+  private async keepBlob(
+    hash: string,
+    text: string,
+    etag: string,
+    notice: string | undefined
+  ) {
+    const namespace = this.namespace;
+    if (namespace == null) return;
+    const bytes = blobBytes(text);
+    const now = Date.now();
+    const blob: PendingBlob = {
+      meta: {
+        hash,
+        version: CACHE_SCHEMA_VERSION,
+        etag,
+        bytes,
+        updatedAt: now,
+        usedAt: now,
+        ...(notice == null ? {} : { notice }),
+      },
+      text,
+    };
+    await this.writeBlob(namespace, blob);
+  }
+
+  private async writeBlob(namespace: string, blob: PendingBlob) {
+    const store = this.store;
+    if (store == null) return;
+    const id = recordId(namespace, blob.meta.hash);
+    try {
+      await store.putBlob({ ...blob.meta, id, namespace }, blob.text);
+      // Expired blobs go as well as the ones over budget: a tab open past a
+      // day keeps writing, and startup is not the only sweep it gets.
+      const now = Date.now();
+      const live: BlobMeta[] = [];
+      const expired: string[] = [];
+      for (const value of await store.blobMetas()) {
+        if (isLiveBlobMeta(value, now)) live.push(value);
+        else if (hasId(value)) expired.push(value.id);
+      }
+      await store.removeBlobs([
+        ...expired,
+        ...blobsOverBudget(live, BLOB_BUDGET_BYTES, id),
+      ]);
+    } catch {
+      // A full disk costs the next load one download, and nothing on this one.
+    }
   }
 
   /** Makes the next fetch of `queryKey` ask GitHub, whatever other tabs hold. */
@@ -649,11 +864,21 @@ export class SharedCache {
       if (isLiveRecord(value, now)) live.push(value);
       else if (hasId(value)) dead.push(value.id);
     }
-    let newest: CacheRecord | undefined;
-    for (const record of live) {
-      if (newest == null || record.updatedAt > newest.updatedAt) {
-        newest = record;
-      }
+    let metas: unknown[] = [];
+    try {
+      metas = await store.blobMetas();
+    } catch {
+      // The blobs are swept on the next load instead.
+    }
+    const liveBlobs: BlobMeta[] = [];
+    const deadBlobs: string[] = [];
+    for (const meta of metas) {
+      if (isLiveBlobMeta(meta, now)) liveBlobs.push(meta);
+      else if (hasId(meta)) deadBlobs.push(meta.id);
+    }
+    let newest: { namespace: string; updatedAt: number } | undefined;
+    for (const entry of [...live, ...liveBlobs]) {
+      if (newest == null || entry.updatedAt > newest.updatedAt) newest = entry;
     }
     const confirmed = this.namespace;
     const namespace = confirmed ?? newest?.namespace;
@@ -664,8 +889,12 @@ export class SharedCache {
       else kept.push(record);
     }
     this.held = kept;
+    for (const meta of liveBlobs) {
+      if (meta.namespace !== namespace) deadBlobs.push(meta.id);
+    }
     try {
       await store.remove(dead);
+      await store.removeBlobs(deadBlobs);
     } catch {
       // Left for the next load to throw out.
     }
@@ -694,20 +923,21 @@ export class SharedCache {
     });
   }
 
-  /** Deletes every other account's records. */
+  /** Deletes every other account's records and blobs. */
   private async settleStore(namespace: string) {
     await this.ready;
     const store = this.store;
     if (store == null) return;
+    const others = (values: unknown[]) =>
+      values
+        .filter(hasId)
+        .filter(
+          (value) => (value as { namespace?: unknown }).namespace !== namespace
+        )
+        .map((value) => value.id);
     try {
-      const values = await store.all();
-      const others: string[] = [];
-      for (const value of values) {
-        if (!hasId(value)) continue;
-        const owner = (value as { namespace?: unknown }).namespace;
-        if (owner !== namespace) others.push(value.id);
-      }
-      await store.remove(others);
+      await store.remove(others(await store.all()));
+      await store.removeBlobs(others(await store.blobMetas()));
     } catch {
       // The next confirmation tries again.
     }

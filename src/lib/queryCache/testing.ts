@@ -2,7 +2,7 @@
 // file. Nothing outside a test imports this.
 
 import type { CacheMessage, MessageBus } from './messages.ts';
-import type { CacheRecord } from './records.ts';
+import type { BlobMeta, CacheRecord } from './records.ts';
 import type { CacheStore } from './store.ts';
 
 /**
@@ -43,10 +43,29 @@ export function busHub(): { join(): MessageBus; sent: CacheMessage[] } {
 /** A store held in a map, shared by every tab that opens it. */
 export function memoryStore(): CacheStore & {
   records: Map<string, CacheRecord>;
+  blobs: Map<string, { meta: BlobMeta; text: string }>;
 } {
   const records = new Map<string, CacheRecord>();
+  const blobs = new Map<string, { meta: BlobMeta; text: string }>();
   return {
     records,
+    blobs,
+    getBlob: (id) => Promise.resolve(structuredClone(blobs.get(id))),
+    putBlob: (meta, text) => {
+      blobs.set(meta.id, { meta: structuredClone(meta), text });
+      return Promise.resolve();
+    },
+    blobMetas: () =>
+      Promise.resolve([...blobs.values()].map((blob) => ({ ...blob.meta }))),
+    putBlobMeta: (meta) => {
+      const blob = blobs.get(meta.id);
+      if (blob != null) blob.meta = structuredClone(meta);
+      return Promise.resolve();
+    },
+    removeBlobs: (ids) => {
+      for (const id of ids) blobs.delete(id);
+      return Promise.resolve();
+    },
     get: (id) => Promise.resolve(structuredClone(records.get(id))),
     all: () => Promise.resolve([...records.values()].map((r) => ({ ...r }))),
     put: (record) => {
@@ -63,6 +82,7 @@ export function memoryStore(): CacheStore & {
     },
     clear: () => {
       records.clear();
+      blobs.clear();
       return Promise.resolve();
     },
     close: () => undefined,

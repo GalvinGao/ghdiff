@@ -244,19 +244,32 @@ export async function githubGraphQL<T>(
 }
 
 /**
+ * The header that asks GitHub to answer 304 and no body when the caller's copy
+ * is still current. Every host that serves a patch or a file honours it — the
+ * API, the web diff host and the raw host — and a 304 from the API spends none
+ * of the rate limit.
+ */
+function conditional(ifNoneMatch: string | undefined): Record<string, string> {
+  return ifNoneMatch == null ? {} : { 'if-none-match': ifNoneMatch };
+}
+
+/**
  * GET a resource GitHub answers with plain bytes. Returns the response itself
  * rather than its text, so the body can stream: a patch runs to tens of
- * megabytes and a source file is not much smaller.
+ * megabytes and a source file is not much smaller. A 304 is returned as it is,
+ * for the caller that sent `ifNoneMatch`.
  */
 async function githubStream(
   path: string,
   token: string | undefined,
-  accept: string
+  accept: string,
+  ifNoneMatch?: string
 ): Promise<Response> {
   const response = await fetch(`${GITHUB_API_ROOT}${path}`, {
     cache: 'no-store',
-    headers: headers(token, accept),
+    headers: { ...headers(token, accept), ...conditional(ifNoneMatch) },
   });
+  if (response.status === 304) return response;
   if (!response.ok) {
     throw new GitHubError(
       rateLimitedStatus(response.status, response.headers),
@@ -269,9 +282,10 @@ async function githubStream(
 /** GET a unified diff. */
 export function githubDiff(
   path: string,
-  token: string | undefined
+  token: string | undefined,
+  ifNoneMatch?: string
 ): Promise<Response> {
-  return githubStream(path, token, DIFF_MEDIA_TYPE);
+  return githubStream(path, token, DIFF_MEDIA_TYPE, ifNoneMatch);
 }
 
 /**
@@ -280,9 +294,10 @@ export function githubDiff(
  */
 export function githubRaw(
   path: string,
-  token: string | undefined
+  token: string | undefined,
+  ifNoneMatch?: string
 ): Promise<Response> {
-  return githubStream(path, token, RAW_MEDIA_TYPE);
+  return githubStream(path, token, RAW_MEDIA_TYPE, ifNoneMatch);
 }
 
 export interface GitHubUser {
@@ -390,11 +405,15 @@ export interface GitHubDiffTargetPath {
 /** Fetches the web `.diff` URL. Throws GitHubError on a non-2xx response. */
 export async function githubWebDiff(
   webPath: string,
-  token: string | undefined
+  token: string | undefined,
+  ifNoneMatch?: string
 ): Promise<Response> {
+  // The header survives the redirect to the signed host, which is the one that
+  // compares it: fetch drops only the authorization across origins.
   const webHeaders: Record<string, string> = {
     accept: 'text/plain',
     'user-agent': USER_AGENT,
+    ...conditional(ifNoneMatch),
   };
   if (token != null) {
     webHeaders.authorization = `Bearer ${token}`;
@@ -404,6 +423,7 @@ export async function githubWebDiff(
     headers: webHeaders,
     redirect: 'follow',
   });
+  if (response.status === 304) return response;
   if (!response.ok) {
     throw new GitHubError(
       rateLimitedStatus(response.status, response.headers),
@@ -431,16 +451,22 @@ export async function githubWebRaw(
   owner: string,
   repo: string,
   ref: string,
-  path: string
+  path: string,
+  ifNoneMatch?: string
 ): Promise<Response> {
   const url = `${GITHUB_RAW_HOST}/${owner}/${repo}/${encodeRefForPath(
     ref
   )}/${encodeRefForPath(path)}`;
   const response = await fetch(url, {
     cache: 'no-store',
-    headers: { accept: 'text/plain', 'user-agent': USER_AGENT },
+    headers: {
+      accept: 'text/plain',
+      'user-agent': USER_AGENT,
+      ...conditional(ifNoneMatch),
+    },
     redirect: 'follow',
   });
+  if (response.status === 304) return response;
   if (!response.ok) {
     throw new GitHubError(
       rateLimitedStatus(response.status, response.headers),

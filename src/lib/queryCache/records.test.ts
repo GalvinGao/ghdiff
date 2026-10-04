@@ -4,9 +4,11 @@ import { describe, it } from 'node:test';
 import { entriesWithoutAttachments, withoutAttachments } from './persist.ts';
 import {
   ANONYMOUS_NAMESPACE,
+  blobsOverBudget,
   CACHE_MAX_AGE_MS,
   CACHE_SCHEMA_VERSION,
   type CacheRecord,
+  isLiveBlobMeta,
   isLiveRecord,
   isWithinWindow,
   moment,
@@ -138,5 +140,61 @@ describe('moment', () => {
 
   it('stays on the wall clock', () => {
     assert.ok(Math.abs(moment() - Date.now()) < 1_000);
+  });
+});
+
+describe('blobsOverBudget', () => {
+  const meta = (id: string, bytes: number, usedAt: number) => ({
+    id,
+    namespace: 'user:ada',
+    hash: id,
+    version: CACHE_SCHEMA_VERSION,
+    etag: 'e',
+    bytes,
+    updatedAt: usedAt,
+    usedAt,
+  });
+
+  it('throws out the least recently used until the rest fit', () => {
+    assert.deepEqual(
+      blobsOverBudget(
+        [meta('new', 40, 3), meta('old', 40, 1), meta('mid', 40, 2)],
+        80
+      ),
+      ['old']
+    );
+  });
+
+  it('never throws out the one just written', () => {
+    assert.deepEqual(
+      blobsOverBudget([meta('just', 100, 1), meta('other', 10, 2)], 50, 'just'),
+      ['other']
+    );
+  });
+
+  it('throws out nothing under the budget', () => {
+    assert.deepEqual(blobsOverBudget([meta('a', 10, 1)], 50), []);
+  });
+});
+
+describe('isLiveBlobMeta', () => {
+  it('refuses a blob a day old or from an older build', () => {
+    const base = {
+      id: 'i',
+      namespace: 'n',
+      hash: 'h',
+      version: CACHE_SCHEMA_VERSION,
+      etag: 'e',
+      bytes: 1,
+      updatedAt: NOW - 1,
+      usedAt: NOW - 1,
+    };
+    assert.equal(isLiveBlobMeta(base, NOW), true);
+    assert.equal(
+      isLiveBlobMeta({ ...base, updatedAt: NOW - CACHE_MAX_AGE_MS }, NOW),
+      false
+    );
+    assert.equal(isLiveBlobMeta({ ...base, version: 0 }, NOW), false);
+    assert.equal(isLiveBlobMeta({ ...base, etag: undefined }, NOW), false);
   });
 });
