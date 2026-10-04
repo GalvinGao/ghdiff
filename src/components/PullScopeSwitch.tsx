@@ -334,6 +334,16 @@ function OthersGlyph() {
   return <ComposedGlyph badge={PeopleIcon} />;
 }
 
+/**
+ * The pull request glyph with the stack in its corner: the list of pull
+ * requests and the stacks they make, which is what `PullListButton` opens. It
+ * is composed here, beside Mine and Others, so the three corners are cut by one
+ * rule and cannot come to differ.
+ */
+export function PullListGlyph() {
+  return <ComposedGlyph badge={StackIcon} />;
+}
+
 // All and the stack have no badge, and so no box wider than the glyph: centred
 // in the same height as the other two, they sit on one line with them.
 function SingleGlyph({

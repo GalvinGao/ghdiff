@@ -7,7 +7,11 @@ import { cn } from '@/lib/cn';
 // A button that holds a state says so. `data-[state=open]` is what Radix writes
 // on the trigger of an open menu, and `aria-pressed` is what a toggle carries,
 // so every menu trigger and every toggle in this app shows its state without
-// each caller having to remember to style it.
+// each caller having to remember to style it. `chrome` reads `aria-expanded`
+// as well: the header's file list button is a disclosure, and on a phone that
+// list covers the diff, so the press that took it away has to look pressed.
+// `quiet` does not, because a file's own chevron is expanded far more often
+// than not, and a row of filled chevrons down the diff would say nothing.
 //
 // These are classes and nothing else, so a Link takes them as readily as a
 // Button does.
@@ -40,6 +44,7 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   chrome: [
     'border-transparent bg-transparent text-ink-muted hover:bg-raised hover:text-ink',
     'aria-pressed:bg-raised aria-pressed:text-ink',
+    'aria-expanded:bg-raised aria-expanded:text-ink',
     'data-[state=open]:bg-raised data-[state=open]:text-ink',
   ].join(' '),
 };

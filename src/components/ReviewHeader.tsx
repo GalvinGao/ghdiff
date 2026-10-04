@@ -107,7 +107,7 @@ interface ReviewHeaderProps {
   codeFont: CodeFontState;
   colorMode: ColorModeState;
   controls: ViewerControls;
-  /** True while the file list covers the diff. Phone layout only. */
+  /** True while the file list covers the diff. The phone layout reads it. */
   filesOpen?: boolean;
   onControlsChange(next: ViewerControls): void;
   /**
@@ -122,8 +122,11 @@ interface ReviewHeaderProps {
     /** Absent for a lens with nothing to set, which draws no gear. */
     onOpenSettings?(): void;
   }[];
-  /** Shows and hides the file list. Absent on every screen wide enough to
-      draw the list beside the diff. */
+  /**
+   * Shows and hides the file list on a phone. Absent while there is no list to
+   * show — the diff has not arrived — which draws the control disabled rather
+   * than not at all, so the row does not shift when the diff lands.
+   */
   onToggleFiles?(): void;
   /** Called once a verdict lands, so the caller can reload what changed. */
   onReviewSubmitted?(): void;
@@ -199,29 +202,31 @@ export function ReviewHeader({
       {/* The two leftmost controls on a phone, in the order they open onto
           more of the app: every pull request, then every file of this one.
           Both are absent on a wider screen, which draws the bar and the file
-          list as columns instead. */}
+          list as columns instead — and absent by CSS, never by `useIsPhone`:
+          the server answers that hook with the wide layout, so a control gated
+          on it was missing from the phone's first paint and arrived only once
+          the review route had hydrated. */}
       <PullListButton className="phone:hidden shrink-0" />
-      {onToggleFiles != null && (
-        <Button
-          aria-expanded={filesOpen}
-          aria-label={
-            filesOpen
-              ? m.review_header_hide_the_file_list()
-              : m.review_header_show_the_file_list()
-          }
-          className="phone:hidden shrink-0"
-          size="icon"
-          title={
-            filesOpen
-              ? m.review_header_hide_the_file_list()
-              : m.review_header_show_the_file_list()
-          }
-          variant="chrome"
-          onClick={onToggleFiles}
-        >
-          <IconFileTree size={15} />
-        </Button>
-      )}
+      <Button
+        aria-expanded={filesOpen}
+        aria-label={
+          filesOpen
+            ? m.review_header_hide_the_file_list()
+            : m.review_header_show_the_file_list()
+        }
+        className="phone:hidden shrink-0"
+        disabled={onToggleFiles == null}
+        size="icon"
+        title={
+          filesOpen
+            ? m.review_header_hide_the_file_list()
+            : m.review_header_show_the_file_list()
+        }
+        variant="chrome"
+        onClick={onToggleFiles}
+      >
+        <IconFileTree size={15} />
+      </Button>
       {showBrand && (
         <Link
           to="/"

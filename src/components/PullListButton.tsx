@@ -1,10 +1,14 @@
-import { IconReload, IconSidebarLeftOpen } from '@pierre/icons';
+import { IconReload } from '@pierre/icons';
 import { useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullRequestList } from '@/components/PullRequestList';
-import { pullScopeLabel, PullScopeSwitch } from '@/components/PullScopeSwitch';
+import {
+  PullListGlyph,
+  pullScopeLabel,
+  PullScopeSwitch,
+} from '@/components/PullScopeSwitch';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Spinner } from '@/components/ui/Spinner';
@@ -66,7 +70,10 @@ export function PullListButton({ className }: { className?: string }) {
         variant="chrome"
         onClick={() => setOpen(true)}
       >
-        <IconSidebarLeftOpen size={15} />
+        {/* What the sheet holds rather than where it comes from. A sidebar
+            glyph named the bar, and a phone has no bar: the window is the pull
+            requests and the stacks they make. */}
+        <PullListGlyph />
       </Button>
 
       {/* A sheet, because this is the left bar brought up from below: a list

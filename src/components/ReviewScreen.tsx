@@ -854,12 +854,12 @@ export function ReviewScreen({
         codeFont={codeFont}
         colorMode={colorMode}
         controls={controls}
-        // The file list is a column of its own on every wider screen, which
-        // needs no control to show it. Handing these down only on a phone is
-        // what keeps that button off a screen that has no use for it.
-        filesOpen={isPhone ? filesOpen : undefined}
+        // The header hides this control on every wider screen by CSS, where
+        // the file list is a column of its own. Before the diff there is no
+        // list to show, so the control is drawn disabled until there is.
+        filesOpen={isPhone && filesOpen}
         onToggleFiles={
-          isPhone ? () => setFilesOpen((open) => !open) : undefined
+          diffReady ? () => setFilesOpen((open) => !open) : undefined
         }
         onControlsChange={setControls}
         lenses={headerLenses}
