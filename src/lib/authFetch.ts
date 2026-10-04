@@ -35,6 +35,20 @@ function refreshOnce(): Promise<boolean> {
 /** The sign-out in flight, so several failed retries end the session once. */
 let ending: Promise<void> | null = null;
 
+/** Who has to hear that a session ended here, once the Worker has ended it. */
+const sessionEndedListeners = new Set<() => void>();
+
+/**
+ * Calls `listener` each time this module ends a session the refresh could not
+ * mend. The shared cache is the one listener: what it holds for the account is
+ * on disk, and the session ending outside any hook is no reason for it to stay
+ * there. Returns the way to stop listening.
+ */
+export function onSessionEnded(listener: () => void): () => void {
+  sessionEndedListeners.add(listener);
+  return () => sessionEndedListeners.delete(listener);
+}
+
 /**
  * Ends a session the refresh could not mend.
  *
@@ -56,6 +70,10 @@ function endSession(): Promise<void> {
   ending ??= fetch('/api/auth/signout', { method: 'POST' })
     .then(() => undefined)
     .catch(() => undefined)
+    .then(() => {
+      for (const listener of sessionEndedListeners) listener();
+      return undefined;
+    })
     .finally(() => {
       ending = null;
     });
