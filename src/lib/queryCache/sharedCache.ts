@@ -423,38 +423,62 @@ export class SharedCache {
     return await this.coordinator.exclusive(
       hash,
       async (contended) => {
-        const namespace = this.namespace;
-        const stored =
-          namespace == null ? undefined : await this.readBlob(namespace, hash);
-        const now = Date.now();
-        if (
-          stored != null &&
-          contended &&
-          isWithinWindow(stored.meta.updatedAt, now, shareWindowMs)
-        ) {
-          void this.touchBlob(stored.meta, false);
-          return { text: stored.text, notice: stored.meta.notice };
-        }
-        const generation = this.generation;
-        const startedAt = moment();
-        const answer = await fetch(stored?.meta.etag);
-        if (answer.status === 'unchanged') {
-          if (stored == null) {
-            throw new Error('GitHub confirmed a copy this tab does not hold.');
+        // The whole read is asked again when the session moves under it, and
+        // never answered from a session that is not the one on screen: a file
+        // load runs outside React Query, and nothing would cancel it.
+        for (let attempt = 0; attempt < SESSION_ATTEMPTS; attempt += 1) {
+          if (attempt > 0) await this.awaitConfirmation(signal);
+          signal?.throwIfAborted();
+          const generation = this.generation;
+          const namespace = this.namespace;
+          const stored =
+            namespace == null
+              ? undefined
+              : await this.readBlob(namespace, hash);
+          if (generation !== this.generation) continue;
+          if (
+            stored != null &&
+            contended &&
+            isWithinWindow(stored.meta.updatedAt, Date.now(), shareWindowMs)
+          ) {
+            void this.touchBlob(stored.meta, false);
+            return { text: stored.text, notice: stored.meta.notice };
           }
-          await this.touchBlob(stored.meta, true);
-          return { text: stored.text, notice: stored.meta.notice };
+          const startedAt = moment();
+          const answer = await fetch(stored?.meta.etag);
+          // Asked again when the session moved under it — a change, or a
+          // confirmation whose session fetch began after this one did.
+          const moved =
+            generation !== this.generation ||
+            (this.namespace != null && startedAt < this.confirmedFrom);
+          if (moved) continue;
+          if (answer.status === 'unchanged') {
+            if (stored == null) {
+              throw new Error(
+                'GitHub confirmed a copy this tab does not hold.'
+              );
+            }
+            await this.touchBlob(stored.meta, true);
+            return { text: stored.text, notice: stored.meta.notice };
+          }
+          // Still waiting on a first confirmation: the text is this tab's
+          // alone, and nothing is kept.
+          if (this.namespace == null) {
+            return { text: answer.text, notice: answer.notice };
+          }
+          const keepable =
+            answer.etag != null && blobBytes(answer.text) <= MAX_BLOB_BYTES;
+          if (keepable && answer.etag != null) {
+            await this.keepBlob(hash, answer.text, answer.etag, answer.notice);
+          } else {
+            // A newer answer that cannot be kept still makes the stored copy
+            // the old one, and a tab waiting on this download must not take
+            // it.
+            await this.dropBlob(hash);
+          }
+          return { text: answer.text, notice: answer.notice };
         }
-        // Kept only when the session that asked is still the one on screen:
-        // a download that crossed a change of account is not the next one's.
-        const vouched =
-          generation === this.generation &&
-          this.namespace != null &&
-          startedAt >= this.confirmedFrom;
-        if (answer.etag != null && vouched) {
-          await this.keepBlob(hash, answer.text, answer.etag, answer.notice);
-        }
-        return { text: answer.text, notice: answer.notice };
+        throw new Error('The session changed while this loaded.');
       },
       signal
     );
@@ -490,6 +514,16 @@ export class SharedCache {
     }
   }
 
+  private async dropBlob(hash: string) {
+    const namespace = this.namespace;
+    if (namespace == null) return;
+    try {
+      await this.store?.removeBlobs([recordId(namespace, hash)]);
+    } catch {
+      // Left to expire; its ETag no longer matches, so it is never shown.
+    }
+  }
+
   private async keepBlob(
     hash: string,
     text: string,
@@ -499,7 +533,6 @@ export class SharedCache {
     const namespace = this.namespace;
     if (namespace == null) return;
     const bytes = blobBytes(text);
-    if (bytes > MAX_BLOB_BYTES) return;
     const now = Date.now();
     const blob: PendingBlob = {
       meta: {
@@ -522,10 +555,19 @@ export class SharedCache {
     const id = recordId(namespace, blob.meta.hash);
     try {
       await store.putBlob({ ...blob.meta, id, namespace }, blob.text);
-      const metas = (await store.blobMetas()).filter((value) =>
-        isLiveBlobMeta(value, Date.now())
-      );
-      await store.removeBlobs(blobsOverBudget(metas, BLOB_BUDGET_BYTES, id));
+      // Expired blobs go as well as the ones over budget: a tab open past a
+      // day keeps writing, and startup is not the only sweep it gets.
+      const now = Date.now();
+      const live: BlobMeta[] = [];
+      const expired: string[] = [];
+      for (const value of await store.blobMetas()) {
+        if (isLiveBlobMeta(value, now)) live.push(value);
+        else if (hasId(value)) expired.push(value.id);
+      }
+      await store.removeBlobs([
+        ...expired,
+        ...blobsOverBudget(live, BLOB_BUDGET_BYTES, id),
+      ]);
     } catch {
       // A full disk costs the next load one download, and nothing on this one.
     }

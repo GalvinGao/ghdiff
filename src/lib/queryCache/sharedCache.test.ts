@@ -960,24 +960,145 @@ describe('SharedCache.fetchText', () => {
     assert.deepEqual(graces.asks, [undefined]);
   });
 
-  it('keeps no download that crosses a change of account', async () => {
+  it('asks again for a download that crosses a change of account', async () => {
     const store = memoryStore();
     const a = tab('a', busHub(), store);
     a.cache.confirm('user:ada');
     const held = gate();
+    let calls = 0;
     const asked = a.cache.fetchText({
       key: KEY_TEXT,
       fetch: async () => {
-        await held.closed;
-        return { status: 'fresh', text: 'adas', etag: 'e' } as const;
+        calls += 1;
+        if (calls === 1) await held.closed;
+        return { status: 'fresh', text: `answer ${calls}`, etag: 'e' } as const;
       },
     });
     await settle();
     a.cache.confirm('user:grace');
     held.open();
-    await asked;
+    // Never the text the account before asked for.
+    assert.equal((await asked).text, 'answer 2');
     await settle();
+    assert.deepEqual(
+      [...store.blobs.values()].map((blob) => blob.meta.namespace),
+      ['user:grace']
+    );
+  });
+
+  it('asks again for a download that began before the first confirmation', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store, { confirmWaitMs: 1 });
+    const held = gate();
+    let calls = 0;
+    const asked = a.cache.fetchText({
+      key: KEY_TEXT,
+      fetch: async () => {
+        calls += 1;
+        if (calls === 1) await held.closed;
+        return { status: 'fresh', text: `answer ${calls}`, etag: 'e' } as const;
+      },
+    });
+    await settle();
+    // The session is asked after the download began, and names Grace.
+    await a.ask(() => Promise.resolve({ viewer: undefined }), false, [
+      ...SESSION_QUERY_KEY,
+    ]);
+    a.cache.confirm('user:grace');
+    held.open();
+    assert.equal((await asked).text, 'answer 2');
+    await settle();
+    assert.deepEqual(
+      [...store.blobs.values()].map((blob) => blob.text),
+      ['answer 2']
+    );
+  });
+
+  it('never uses a copy read across a change of account', async () => {
+    const memory = memoryStore();
+    const first = tab('a', busHub(), memory);
+    first.cache.confirm('user:ada');
+    await first.cache.fetchText({ key: KEY_TEXT, fetch: source('adas').fetch });
+
+    // A store whose read is held open until the account has changed.
+    const reading = gate();
+    const slow = {
+      ...memory,
+      getBlob: async (id: string) => {
+        await reading.closed;
+        return memory.getBlob(id);
+      },
+    };
+    const next = tab('b', busHub(), slow as typeof memory);
+    next.cache.confirm('user:ada');
+    const graces = source('graces', 'W/"2"');
+    const asked = next.cache.fetchText({ key: KEY_TEXT, fetch: graces.fetch });
+    await settle();
+    next.cache.confirm('user:grace');
+    reading.open();
+    assert.equal((await asked).text, 'graces');
+    assert.deepEqual(graces.asks, [undefined]);
+  });
+
+  it('never answers with the old account’s copy when a 304 lands after a switch', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    await a.cache.fetchText({ key: KEY_TEXT, fetch: source('adas').fetch });
+    const held = gate();
+    const asks: (string | undefined)[] = [];
+    const asked = a.cache.fetchText({
+      key: KEY_TEXT,
+      fetch: async (sent) => {
+        asks.push(sent);
+        if (asks.length === 1) {
+          await held.closed;
+          return { status: 'unchanged' } as const;
+        }
+        return { status: 'fresh', text: 'graces', etag: 'W/"2"' } as const;
+      },
+    });
+    await settle();
+    a.cache.confirm('user:grace');
+    held.open();
+    assert.equal((await asked).text, 'graces');
+    assert.deepEqual(asks, ['W/"1"', undefined]);
+  });
+
+  it('drops the stored copy when a newer answer cannot be kept', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    await a.cache.fetchText({ key: KEY_TEXT, fetch: source('old').fetch });
+    assert.equal(store.blobs.size, 1);
+    await a.cache.fetchText({
+      key: KEY_TEXT,
+      fetch: () => Promise.resolve({ status: 'fresh', text: 'synthesized' }),
+    });
     assert.equal(store.blobs.size, 0);
+  });
+
+  it('sweeps expired blobs on every write, not only at startup', async () => {
+    const store = memoryStore();
+    const a = tab('a', busHub(), store);
+    a.cache.confirm('user:ada');
+    await settle();
+    store.blobs.set('stale', {
+      meta: {
+        id: 'stale',
+        namespace: 'user:ada',
+        hash: 'stale',
+        version: CACHE_SCHEMA_VERSION,
+        etag: 'e',
+        bytes: 10,
+        updatedAt: 0,
+        usedAt: 0,
+      },
+      text: 'old',
+    });
+    await a.cache.fetchText({ key: KEY_TEXT, fetch: source('new').fetch });
+    assert.deepEqual([...store.blobs.keys()].includes('stale'), false);
+    assert.equal(store.blobs.size, 1);
   });
 
   it('empties the blobs on sign-out and on a change of account', async () => {
