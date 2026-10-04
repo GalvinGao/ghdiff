@@ -52,6 +52,7 @@ import type { PullState } from '@/lib/pulls';
 import {
   describeSubmittedReview,
   isOwnPullRequest,
+  type ReviewEvent,
   reviewVerdict,
 } from '@/lib/reviewDecision';
 import {
@@ -59,6 +60,7 @@ import {
   isGitHubTarget,
   type ReviewTarget,
 } from '@/lib/reviewTarget';
+import type { StackPosition } from '@/lib/stackReview';
 import type { ViewerControls } from '@/lib/viewerControls';
 
 /** The label wears this whether or not there is a page for it to link to. */
@@ -129,7 +131,7 @@ interface ReviewHeaderProps {
    */
   onToggleFiles?(): void;
   /** Called once a verdict lands, so the caller can reload what changed. */
-  onReviewSubmitted?(): void;
+  onReviewSubmitted?(event: ReviewEvent): void;
   /** Absent unless the target is a pull request. */
   pull?: PullDetailsState;
   /** Absent unless the target is a pull request, which is the only one to
@@ -137,6 +139,8 @@ interface ReviewHeaderProps {
   review?: SubmitReviewState;
   /** True when the left bar is not on screen and the way home has to be here. */
   showBrand?: boolean;
+  /** Where the pull request sits in its stack, when it is in one. */
+  stack?: StackPosition;
   /**
    * What is under review. The row reads its name, its link and whether there is
    * a GitHub account to offer off this one value, so a local diff draws none of
@@ -171,6 +175,7 @@ export function ReviewHeader({
   pull,
   review,
   showBrand = false,
+  stack,
   target,
   session,
   untracked,
@@ -283,6 +288,7 @@ export function ReviewHeader({
                 session.viewer?.login
               )}
               review={review}
+              stack={stack}
               targetLabel={targetLabel}
               onClose={() => setReviewing(false)}
               onSubmitted={onReviewSubmitted}

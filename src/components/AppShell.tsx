@@ -26,11 +26,11 @@ import { textDirection } from '@/lib/locale';
  * cannot carry a settings value from one reviewer to the next. Every reader of
  * `src/hooks/preferences.ts` sits under this.
  *
- * The query client is made per render for the same reason, and it holds one
- * thing: the deployments the review header polls. Every other request in this
- * app is a hook of its own and stays one. The local command mounts no shell and
- * no client, and it draws no deployment menu either — there is no GitHub for it
- * to ask.
+ * The query client is made per render for the same reason, and it holds two
+ * things: the deployments the review header polls, and the patch under review,
+ * which is a query so the review dialog can prefetch the next one. Every other
+ * request in this app is a hook of its own and stays one. The local command
+ * mounts no shell and makes a client of its own, for the patch alone.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());

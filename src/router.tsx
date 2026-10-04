@@ -11,8 +11,9 @@ export function getRouter() {
     routeTree,
     // The review route's chunk carries the whole diff viewer, so a pointer
     // resting on a row in the switcher starts that download before the click.
-    // The patch itself is not preloaded: the loader only reads the URL, and
-    // `useReviewPatch` fetches once the screen mounts.
+    // The patch itself is not preloaded here: the loader only reads the URL,
+    // and `useReviewPatch` fetches once the screen mounts — unless the review
+    // dialog already prefetched it for Approve and next.
     defaultPreload: 'intent',
     defaultNotFoundComponent: NotFound,
     defaultErrorComponent: RouteError,

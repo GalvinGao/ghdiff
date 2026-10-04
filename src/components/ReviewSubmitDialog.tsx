@@ -1,5 +1,6 @@
 import { ParaglideMessage } from '@inlang/paraglide-js-react';
-import { IconXSquircle } from '@pierre/icons';
+import { IconLayers, IconXSquircle } from '@pierre/icons';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -8,6 +9,7 @@ import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { VERDICT_COLOR, VERDICT_ICON } from '@/components/reviewVerdictStyle';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { patchQueryOptions } from '@/hooks/useReviewPatch';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { cn } from '@/lib/cn';
 import { describeAge } from '@/lib/pullDetails';
@@ -20,6 +22,7 @@ import {
   reviewVerdict,
   type TeamReview,
 } from '@/lib/reviewDecision';
+import { type StackPosition, stackPullTarget } from '@/lib/stackReview';
 
 const reviewMarkup = {
   strong: ({ children }: { children?: ReactNode }) => (
@@ -69,13 +72,17 @@ export function ReviewSubmitDialog({
   open,
   ownPullRequest,
   review,
+  stack,
   targetLabel,
 }: {
   id: string;
   onOpenChange(open: boolean): void;
   onClose(): void;
-  /** Called once GitHub has recorded a verdict, so the caller can reload. */
-  onSubmitted?(): void;
+  /**
+   * Called once GitHub has recorded a verdict, so the caller can reload — and,
+   * for an approval inside a stack, go on to the next layer.
+   */
+  onSubmitted?(event: ReviewEvent): void;
   open: boolean;
   /**
    * Whether the reviewer opened this pull request. GitHub takes a comment from
@@ -84,6 +91,11 @@ export function ReviewSubmitDialog({
    */
   ownPullRequest: boolean;
   review: SubmitReviewState;
+  /**
+   * Where this pull request sits in its stack, when it is in one. Approve then
+   * goes on to the next layer, and the dialog says which one before the press.
+   */
+  stack?: StackPosition;
   /** `owner/repo #number`, so the dialog says what it is about to decide. */
   targetLabel: string;
 }) {
@@ -143,6 +155,20 @@ export function ReviewSubmitDialog({
     reset();
   }, [open, reset]);
 
+  // Approve and next is about to open the next layer, so its patch starts
+  // downloading now: opening this is the reviewer saying they have read this
+  // one. Not on your own pull request, where Approve is not offered.
+  // React Query holds it, so the next screen's own query finds the answer —
+  // or the download still on its way — under the same key.
+  const queryClient = useQueryClient();
+  const nextPull = ownPullRequest ? undefined : stack?.next;
+  useEffect(() => {
+    if (!open || nextPull == null) return;
+    void queryClient.prefetchQuery(
+      patchQueryOptions(stackPullTarget(nextPull))
+    );
+  }, [nextPull, open, queryClient]);
+
   const busy = pending != null;
 
   // Whichever fact explains the grey buttons, and only one shows. Ownership
@@ -197,6 +223,14 @@ export function ReviewSubmitDialog({
             markup={reviewMarkup}
           />
         </p>
+
+        {/* Inside a stack, Approve also opens the next layer, so the dialog
+          names that layer before the press rather than after it. On the last
+          one it says why Approve does not move, because a reviewer who has
+          pressed it three times expects a fourth to. Not on your own pull
+          request: Approve is not offered there, and a line about where it
+          goes would describe a button that cannot be pressed. */}
+        {stack != null && !ownPullRequest && <StackLine stack={stack} />}
 
         {/* Why the button that opened this says `Approved` rather than `Review`.
           GitHub keeps every review and follows the newest, so a second one is
@@ -256,16 +290,25 @@ export function ReviewSubmitDialog({
                 event: spec.event,
                 ownPullRequest,
               });
+              const next = spec.event === 'APPROVE' ? stack?.next : undefined;
+              // A block explains a grey button, and outranks the note about
+              // where an available one goes.
               const tip =
-                block == null ? undefined : blockTip(spec.event, block);
+                block != null
+                  ? blockTip(spec.event, block)
+                  : next != null
+                    ? m.review_stack_approve_tip({ number: next.number })
+                    : undefined;
+              const label =
+                next == null
+                  ? spec.label
+                  : m.review_decision_approve_and_next();
               const button = (
                 <Button
                   // The reason joins the label rather than replacing it. The
                   // tooltip's own text is `aria-hidden`, so without this a screen
                   // reader is told the button is unavailable and never why.
-                  aria-label={
-                    tip == null ? undefined : `${spec.label} — ${tip}`
-                  }
+                  aria-label={tip == null ? undefined : `${label} — ${tip}`}
                   disabled={busy || block != null}
                   size="sm"
                   variant={VARIANT[spec.event]}
@@ -275,12 +318,12 @@ export function ReviewSubmitDialog({
                       // A failure keeps the dialog open, with GitHub's reason in
                       // it and the words the reviewer wrote still in the box.
                       if (result == null) return;
-                      onSubmitted?.();
+                      onSubmitted?.(spec.event);
                       onClose();
                     })();
                   }}
                 >
-                  {pending === spec.event ? spec.pendingLabel : spec.label}
+                  {pending === spec.event ? spec.pendingLabel : label}
                 </Button>
               );
               // `Tooltip` hovers on its own wrapper, not on the control inside
@@ -299,6 +342,40 @@ export function ReviewSubmitDialog({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Where this layer sits in its stack, and where Approve goes from it: the next
+ * layer by number and title, or the reason it goes nowhere. The title is the
+ * part that truncates, since the number already names the layer.
+ */
+function StackLine({ stack }: { stack: StackPosition }) {
+  const { next } = stack;
+  return (
+    <p className="text-ink-muted mt-2 flex min-w-0 items-center gap-1.5 text-xs">
+      <IconLayers
+        aria-hidden="true"
+        className="text-ink-faint shrink-0"
+        size={12}
+      />
+      <span className="shrink-0">
+        {m.review_stack_position({
+          position: stack.position,
+          total: stack.total,
+        })}
+      </span>
+      <span aria-hidden="true" className="text-ink-faint shrink-0">
+        ·
+      </span>
+      {next == null ? (
+        <span className="min-w-0">{m.review_stack_last()}</span>
+      ) : (
+        <span className="min-w-0 truncate" title={next.title}>
+          {m.review_stack_next({ number: next.number, title: next.title })}
+        </span>
+      )}
+    </p>
   );
 }
 

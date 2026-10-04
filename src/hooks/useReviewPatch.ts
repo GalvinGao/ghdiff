@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  queryOptions,
+  skipToken,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { fetchWithRefresh } from '@/lib/authFetch';
@@ -43,6 +49,104 @@ export interface ReviewPatchState {
 const NOTICE_HEADER = 'x-ghdiff-notice';
 
 /**
+ * How long a patch counts as current, and how long one nobody is reading is
+ * kept. One figure for both, because the case they serve is one case: Approve
+ * and next prefetches the next layer when the review dialog opens, and the
+ * reviewer may write a note for minutes before the press. Past that the branch
+ * may have moved, so a screen opened later asks again — and a patch runs to
+ * tens of megabytes, so nothing is held longer than it is useful.
+ */
+const PATCH_FRESH_MS = 5 * 60_000;
+
+/** The patch as the route answered it: its text, and its notice if any. */
+interface PatchResponse {
+  body: string;
+  notice?: string;
+}
+
+/** A failure the route answered, with the status the panel decides on. */
+class PatchRequestError extends Error {
+  readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+function patchQueryKey(cacheKey: string) {
+  return ['patch', cacheKey] as const;
+}
+
+/**
+ * The bytes read so far, written beside the patch while it downloads. A key of
+ * its own rather than a field of the patch's state, because a query has no
+ * progress of its own to report — and a prefetch started by another screen is
+ * still the download this one is waiting on, so the count has to live where
+ * both can reach it.
+ */
+function patchBytesKey(cacheKey: string) {
+  return ['patch', cacheKey, 'bytes'] as const;
+}
+
+/**
+ * The query for one target's patch: what `useReviewPatch` reads, and what a
+ * screen about to open that target prefetches.
+ *
+ * The text is cached and the parse is not. Parsing is one synchronous pass
+ * over the whole patch, so a prefetch that parsed would freeze the tab under a
+ * reviewer still typing their note; the screen that reads the patch parses it.
+ */
+export function patchQueryOptions(target: ReviewTarget) {
+  const cacheKey = reviewTargetKey(target);
+  const query = reviewTargetQuery(target).toString();
+  return queryOptions({
+    queryKey: patchQueryKey(cacheKey),
+    queryFn: async ({ client, signal }): Promise<PatchResponse> => {
+      const bytesKey = patchBytesKey(cacheKey);
+      client.setQueryData(bytesKey, 0);
+      const response = await fetchWithRefresh(`/api/diff?${query}`, {
+        cache: 'no-store',
+        signal,
+      });
+      // Read a chunk at a time so the wait has a figure on it. A patch of tens
+      // of megabytes is a long stare at one sentence, and the count of what
+      // has arrived is the only honest thing there is to say about it: nothing
+      // on the wire states a total. The label is what decides whether this
+      // reaches React, so a chunk that does not move the figure costs no
+      // render.
+      const body = await readStreamedText(response, {
+        onBytes: (read) => {
+          const shown = client.getQueryData<number>(bytesKey) ?? 0;
+          if (formatBytes(shown) !== formatBytes(read)) {
+            client.setQueryData(bytesKey, read);
+          }
+        },
+      });
+      if (!response.ok) {
+        throw new PatchRequestError(
+          body.trim().length > 0
+            ? body.trim()
+            : m.use_review_patch_request_failed({ status: response.status }),
+          response.status
+        );
+      }
+      return {
+        body,
+        notice: response.headers.get(NOTICE_HEADER) ?? undefined,
+      };
+    },
+    staleTime: PATCH_FRESH_MS,
+    gcTime: PATCH_FRESH_MS,
+    // A patch under review must not change under the reviewer, so nothing but
+    // a new screen or the panel's own retry asks again. And a failure is an
+    // answer — a 404 or a spent quota — that a second ask gets again.
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+  });
+}
+
+/**
  * Fetches the patch for a target and parses it into review data.
  *
  * ghdiff loads the whole patch before it renders, unlike diffs-hub, which
@@ -59,15 +163,7 @@ export function useReviewPatch(options: {
   untracked?: readonly string[];
 }): ReviewPatchState {
   const { target, untracked } = options;
-  const [data, setData] = useState<ReviewData>(EMPTY_REVIEW_DATA);
-  const [state, setState] = useState<PatchLoadState>('fetching');
-  const [error, setError] = useState<string | undefined>(undefined);
-  const [status, setStatus] = useState<number | undefined>(undefined);
-  const [notice, setNotice] = useState<string | undefined>(undefined);
-  const [bytes, setBytes] = useState<number | undefined>(undefined);
-  const controllerRef = useRef<AbortController | null>(null);
-
-  const query = reviewTargetQuery(target).toString();
+  const queryClient = useQueryClient();
   const cacheKey = reviewTargetKey(target);
   // The array is the dependency: the sole caller reads it once at module scope,
   // so its identity is stable, and joining it to a string first would allocate
@@ -81,75 +177,67 @@ export function useReviewPatch(options: {
     [untracked]
   );
 
-  const load = useCallback(async () => {
-    controllerRef.current?.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    setData(EMPTY_REVIEW_DATA);
-    setError(undefined);
-    setStatus(undefined);
-    setNotice(undefined);
-    setBytes(undefined);
-    setState('fetching');
+  // A fresh options object each render is free: the query is found by its
+  // key, which is made of strings, so a target object rebuilt by the route
+  // asks for nothing again.
+  const patch = useQuery(patchQueryOptions(target));
+  const { data: bytes } = useQuery<number>({
+    queryKey: patchBytesKey(cacheKey),
+    queryFn: skipToken,
+  });
 
-    try {
-      const response = await fetchWithRefresh(`/api/diff?${query}`, {
-        cache: 'no-store',
-        signal: controller.signal,
-      });
-      setNotice(response.headers.get(NOTICE_HEADER) ?? undefined);
-      // Read a chunk at a time so the wait has a figure on it. A patch of tens
-      // of megabytes is a long stare at one sentence, and the count of what has
-      // arrived is the only honest thing there is to say about it: nothing on
-      // the wire states a total. The label is what decides whether this reaches
-      // React, so a chunk that does not move the figure costs no render.
-      const body = await readStreamedText(response, {
-        onBytes: (read) => {
-          if (controller.signal.aborted) return;
-          setBytes((shown) =>
-            shown != null && formatBytes(shown) === formatBytes(read)
-              ? shown
-              : read
-          );
-        },
-      });
-      if (!response.ok) {
-        setStatus(response.status);
-        throw new Error(
-          body.trim().length > 0
-            ? body.trim()
-            : m.use_review_patch_request_failed({ status: response.status })
-        );
-      }
-      if (controller.signal.aborted) return;
-
-      setState('parsing');
-      // Yield once so the browser paints the parsing state before the patch
-      // parse takes the main thread.
-      await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
-      if (controller.signal.aborted) return;
-
-      setData(buildReviewData(body, cacheKey, untrackedPaths));
-      setState('ready');
-    } catch (cause) {
-      if (controller.signal.aborted) return;
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : m.use_review_patch_could_not_load_that_diff()
-      );
-      setState('error');
-    }
-  }, [cacheKey, query, untrackedPaths]);
-
+  // The parse of the answer on screen, kept with the answer it was made from:
+  // an answer with no parse beside it yet is a patch still being parsed.
+  const [parsed, setParsed] = useState<{
+    from: PatchResponse;
+    data: ReviewData;
+  } | null>(null);
+  const response = patch.data;
   useEffect(() => {
-    void load();
-    return () => controllerRef.current?.abort();
-  }, [load]);
+    if (response == null) return undefined;
+    // Yield once so the browser paints the parsing state before the patch
+    // parse takes the main thread.
+    const timer = window.setTimeout(() => {
+      setParsed({
+        from: response,
+        data: buildReviewData(response.body, cacheKey, untrackedPaths),
+      });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [cacheKey, response, untrackedPaths]);
 
+  // Reset rather than refetch: an errored query that refetches keeps its
+  // error until the answer lands, and the panel has to go back to the wait.
   const retry = useCallback(() => {
-    void load();
-  }, [load]);
+    void queryClient.resetQueries({
+      queryKey: patchQueryKey(cacheKey),
+      exact: true,
+    });
+  }, [cacheKey, queryClient]);
 
-  return { data, state, error, status, notice, bytes, retry };
+  const ready = response != null && parsed?.from === response;
+  const state: PatchLoadState =
+    patch.status === 'error'
+      ? 'error'
+      : response == null
+        ? 'fetching'
+        : ready
+          ? 'ready'
+          : 'parsing';
+  const { error } = patch;
+  return {
+    data: ready ? parsed.data : EMPTY_REVIEW_DATA,
+    state,
+    error:
+      error == null
+        ? undefined
+        : error instanceof Error
+          ? error.message
+          : m.use_review_patch_could_not_load_that_diff(),
+    status: error instanceof PatchRequestError ? error.status : undefined,
+    notice: response?.notice,
+    bytes:
+      state === 'fetching' && bytes != null && bytes > 0 ? bytes : undefined,
+    retry,
+  };
 }

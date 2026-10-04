@@ -869,6 +869,38 @@ at the right edge of each row, where their arrival moves nothing. `VERDICT_ICON`
 and `VERDICT_COLOR` in `src/components/reviewVerdictStyle.ts` are shared with
 the header's button, so an approval is one glyph in one green in both places.
 
+**Inside a stack, Approve is Approve and next.** A stack is reviewed in order,
+so an approval ends one layer and starts the next, and the dialog makes that one
+press. `stackPosition` in `src/lib/stackReview.ts` reads the place off the same
+list the left bar draws — `flattenStacks` order, so the next layer is the row
+under this one — which means a repository nobody watches has no stack here and
+Approve behaves as it always did. The dialog names the next layer before the
+press, by number and title, and on the last one it says why Approve stays put: a
+reviewer who has pressed it three times expects a fourth to move. Request
+changes and Comment never move, and a failure keeps the dialog open as before.
+The line is not drawn on your own pull request, where Approve is not offered.
+
+The screen is keyed by target, so the screen that pressed is gone before it
+could say the verdict landed. `useStackHandoff` is a jotai atom that carries the
+one fact across the navigation, and the screen it names takes it on mount and
+shows a `Toast`; the last layer sets the same toast on itself. Nothing is
+stored, because a reload is a new visit.
+
+**And the next layer's patch is already downloading.** The patch is a React
+Query query, `patchQueryOptions` in `src/hooks/useReviewPatch.ts`, keyed by
+`reviewTargetKey`. The dialog opening on a stack prefetches the next layer's,
+and that screen's own query finds the answer — or the download still on its way
+— under the same key. The dialog and not the screen is the trigger, because a
+patch fetched when a twenty-minute read began is twenty minutes old. A patch is
+fresh and kept for five minutes, one figure for both: long enough for a note to
+be written between the open and the press, short enough that the branch has not
+moved under it, and short enough that tens of megabytes are not held for
+nothing. It never refetches on focus or reconnect, since a diff must not change
+under its reader, and never retries, since a 404 or a spent quota is an answer.
+Only the text is cached: parsing a prefetch would freeze the tab under a
+reviewer still typing a note, so the screen that reads the patch parses it. A
+prefetch is a serve to the footer's counter whether or not it is read.
+
 **The deployments sit first in the header's right group, and arrive last.**
 `DeploymentMenu` reads GitHub's Deployments API and nothing else. That is where
 GitHub's own **View deployment** button reads from, and it is provider-neutral:
@@ -1341,10 +1373,10 @@ counts compressed bytes while the stream yields decoded ones. A bar filling
 against an invented denominator would be a lie that runs past 100.
 
 What reaches React is decided by the label, not the chunk: `formatBytes` is
-compared before `setBytes`, which turned those 1,654 reports into about 450
-renders of a four-line panel. The figure is `tabular-nums`, or 9.9 MB becoming
-10.0 MB shifts every digit beside it and the number reads as the page redrawing
-rather than as the download moving. It is shown only while `state` is
+compared before the count is written, which turned those 1,654 reports into
+about 450 renders of a four-line panel. The figure is `tabular-nums`, or 9.9 MB
+becoming 10.0 MB shifts every digit beside it and the number reads as the page
+redrawing rather than as the download moving. It is shown only while `state` is
 `'fetching'`: the parse and the highlighters are not measured in bytes, and a
 figure left on screen through them would read as a download that had stalled.
 
@@ -2604,14 +2636,14 @@ than by a guard at each call site.
 for this called for a `capabilities` procedure on the RPC contract, so that a
 dozen components could stop inferring their situation from a broken request.
 What it turned out to need is a host that does not draw what it cannot serve.
-`cli/web/main.tsx` mounts `ReviewScreen` under the worker pool and a jotai
-store, and mounts no `AppShell` and no `AppDataProvider` — so there is no left
-bar, no watch list, no account menu, no `/setup`, no served counter, and **not
-one request to GitHub or to the RPC handler**. `LocalAppData` supplies the three
-GitHub-shaped fields of `AppData` inert, and every one of those states is one
-the app already answers: an empty hydrated watch list is what `PullRail` and
-`PullListButton` already draw nothing for, and a session with no viewer is the
-signed-out case. Two fields are real, because they are settings rather than
+`cli/web/main.tsx` mounts `ReviewScreen` under the worker pool, a jotai store
+and a query client, and mounts no `AppShell` and no `AppDataProvider` — so there
+is no left bar, no watch list, no account menu, no `/setup`, no served counter,
+and **not one request to GitHub or to the RPC handler**. `LocalAppData` supplies
+the three GitHub-shaped fields of `AppData` inert, and every one of those states
+is one the app already answers: an empty hydrated watch list is what `PullRail`
+and `PullListButton` already draw nothing for, and a session with no viewer is
+the signed-out case. Two fields are real, because they are settings rather than
 questions for GitHub — the colour mode and the code font are the same choice
 wherever the diff came from, under the same keys, shared with every other ghdiff
 tab.
@@ -3093,12 +3125,16 @@ tab synchronization and the read-on-mount contract left to be got right here
 rather than upstream. Everything else in this app is React state or a ref, and
 adding a second store would be the change to argue for.
 
-`@tanstack/react-query` is in the graph for one hook, `useDeployments`, and it
-is a request scheduler there rather than a store: a poll that stops, backs off,
-pauses in a hidden tab and never has two requests in flight is what it does
-without being asked. `AppShell` makes its client per render, for the same reason
-jotai's `Provider` sits there. Every other request stays a hook of its own;
-moving one onto the library is a change to make deliberately, not in passing.
+`@tanstack/react-query` is in the graph for two hooks. In `useDeployments` it is
+a request scheduler rather than a store: a poll that stops, backs off, pauses in
+a hidden tab and never has two requests in flight is what it does without being
+asked. In `useReviewPatch` it is the cache, so a prefetch and the screen that
+reads it share one download. The byte count rides beside the patch under a key
+of its own, since a query reports no progress and the screen may be waiting on a
+download another screen began. `AppShell` makes its client per render, for the
+same reason jotai's `Provider` sits there, and the local command makes one per
+page. Every other request stays a hook of its own; moving one onto the library
+is a change to make deliberately, not in passing.
 
 ## PR visual evidence
 

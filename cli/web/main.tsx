@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   createRootRoute,
   createRoute,
@@ -28,8 +29,8 @@ import type { LocalDiffTarget } from '@/lib/reviewTarget';
 // The ghdiff review surface, mounted against a diff on this machine.
 //
 // This is the whole of what the `ghdiff` command's client is: the same
-// `ReviewScreen` the hosted app renders, under the same worker pool and the
-// same jotai store, over a target whose diff comes from `git` instead of from
+// `ReviewScreen` the hosted app renders, under the same worker pool, the same
+// jotai store and a query client of its own, over a target whose diff comes from `git` instead of from
 // GitHub. Nothing below this file knows the difference, because there is none
 // to know — a patch is a patch.
 //
@@ -95,15 +96,21 @@ const { target, untracked } = readBootstrap();
 const token = claimToken();
 if (token != null) installTokenHeader(token);
 
+// The patch is a query, as it is on the hosted side. One run is one page and
+// one target, so a client made once for the page is the whole of its scope.
+const queryClient = new QueryClient();
+
 const rootRoute = createRootRoute({
   component: () => (
     <WorkerPoolProvider>
       <Provider>
-        <LocalAppData>
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <Outlet />
-          </div>
-        </LocalAppData>
+        <QueryClientProvider client={queryClient}>
+          <LocalAppData>
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+              <Outlet />
+            </div>
+          </LocalAppData>
+        </QueryClientProvider>
       </Provider>
     </WorkerPoolProvider>
   ),

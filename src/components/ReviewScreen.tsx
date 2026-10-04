@@ -7,6 +7,7 @@ import {
 } from '@pierre/diffs';
 import type { CodeViewHandle } from '@pierre/diffs/react';
 import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
+import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
@@ -47,6 +48,7 @@ import {
   SIDEBAR_WIDTH_PROPERTY,
   useSidebarWidth,
 } from '@/hooks/useSidebarWidth';
+import { useStackHandoff } from '@/hooks/useStackHandoff';
 import { useSubmitReview } from '@/hooks/useSubmitReview';
 import { useViewedFiles } from '@/hooks/useViewedFiles';
 import { useWorkerPoolReady } from '@/hooks/useWorkerPoolReady';
@@ -65,6 +67,7 @@ import {
   addConversationAuthors,
   filterConversation,
 } from '@/lib/pullConversation';
+import type { ReviewEvent } from '@/lib/reviewDecision';
 import {
   applyReviewFilter,
   availableStatuses,
@@ -76,7 +79,10 @@ import {
   isGitHubTarget,
   repoNameFromRoot,
   type ReviewTarget,
+  reviewTargetKey,
+  reviewTargetSplat,
 } from '@/lib/reviewTarget';
+import { stackPosition, stackPullTarget } from '@/lib/stackReview';
 import { buildTreeStatIndex } from '@/lib/treeStats';
 import { defaultViewerControls } from '@/lib/viewerControls';
 
@@ -204,6 +210,63 @@ export function ReviewScreen({
     owner: pullTarget?.owner,
     repo: pullTarget?.repo,
   });
+  const navigate = useNavigate();
+  // Where this pull request sits in its stack. Read off the same list the left
+  // bar draws, so the layer Approve goes on to is the row under this one there.
+  const stack = useMemo(
+    () => stackPosition(openPulls.data?.pulls ?? [], pullTarget),
+    [openPulls.data, pullTarget]
+  );
+  // What the last approval in the stack did, for the toast that reports it:
+  // handed over by the screen before when it opened this one, or set here when
+  // this one was the last layer and Approve stayed put.
+  const [handoff, setHandoff] = useStackHandoff();
+  const targetKey = reviewTargetKey(target);
+  const [stackToast, setStackToast] = useState<{
+    approved: number;
+    next?: { number: number; position: number; total: number };
+  } | null>(() =>
+    handoff?.on === targetKey
+      ? {
+          approved: handoff.approved,
+          next: {
+            number: handoff.number,
+            position: handoff.position,
+            total: handoff.total,
+          },
+        }
+      : null
+  );
+  // Taken once, on arrival. A handoff this screen was not meant for is stale
+  // by now, and one left in the atom would be reported on the next visit.
+  useEffect(() => {
+    setHandoff(null);
+  }, [setHandoff]);
+  const onReviewSubmitted = (event: ReviewEvent) => {
+    // A verdict changes the review half of the square the left bar draws on
+    // every row, so the list it came from is asked again — and it is a new
+    // entry in the conversation, so that is asked again too.
+    openPulls.reload();
+    conversation.reload();
+    if (event !== 'APPROVE' || stack == null || pullTarget == null) return;
+    const { next } = stack;
+    if (next == null) {
+      setStackToast({ approved: pullTarget.number });
+      return;
+    }
+    const nextTarget = stackPullTarget(next);
+    setHandoff({
+      approved: pullTarget.number,
+      on: reviewTargetKey(nextTarget),
+      number: next.number,
+      position: stack.position + 1,
+      total: stack.total,
+    });
+    void navigate({
+      to: '/$',
+      params: { _splat: reviewTargetSplat(nextTarget) },
+    });
+  };
   // Only reached when a reviewer expands a hunk's unmodified lines, so it costs
   // nothing on a review nobody expands.
   const files = useDiffFileLoader({ target });
@@ -869,14 +932,9 @@ export function ReviewScreen({
         // is away, so a review always has a route out of itself.
         showBrand={watched.hydrated && watched.repos.length === 0}
         review={pullTarget == null ? undefined : review}
+        stack={stack}
         target={target}
-        // A verdict changes the review half of the square the left bar draws on
-        // every row, so the list it came from is asked again — and it is a new
-        // entry in the conversation, so that is asked again too.
-        onReviewSubmitted={() => {
-          openPulls.reload();
-          conversation.reload();
-        }}
+        onReviewSubmitted={onReviewSubmitted}
         session={session}
         untracked={
           untrackedCount === 0
@@ -1062,6 +1120,19 @@ export function ReviewScreen({
           onDismiss={() => setLocalizationBeforeOff(null)}
         >
           {m.lens_disabled({ name: LENSES.localization.label })}
+        </Toast>
+      )}
+
+      {stackToast != null && (
+        <Toast onDismiss={() => setStackToast(null)}>
+          {stackToast.next == null
+            ? m.review_stack_approved_last({ approved: stackToast.approved })
+            : m.review_stack_approved_next({
+                approved: stackToast.approved,
+                number: stackToast.next.number,
+                position: stackToast.next.position,
+                total: stackToast.next.total,
+              })}
         </Toast>
       )}
 
