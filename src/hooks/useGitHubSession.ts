@@ -2,8 +2,11 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
+import { useSharedCache, useSharedQuery } from './useSharedQuery';
 import { AUTH_ERROR_PARAM, authFailureMessage } from '@/lib/githubApp';
 import { heldLegacyToken } from '@/lib/legacyToken';
+import { viewerNamespace } from '@/lib/queryCache/records';
+import { SESSION_QUERY_KEY } from '@/lib/queryCache/sharedCache';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { LEGACY_GITHUB_TOKEN_STORAGE_KEY } from '@/lib/storageKeys';
 import type { GitHubViewer } from '@/lib/viewer';
@@ -46,41 +49,40 @@ export interface GitHubSessionState {
  * is about to be replaced.
  */
 export function useGitHubSession(): GitHubSessionState {
-  const [viewer, setViewer] = useState<GitHubViewer | undefined>(undefined);
-  const [canSignOut, setCanSignOut] = useState(false);
-  const [viewerError, setViewerError] = useState<string | undefined>(undefined);
-  const [checking, setChecking] = useState(true);
   const [authError, setAuthError] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
+  const shared = useSharedCache();
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const check = async () => {
-      try {
-        const result = await rpc.viewer.get(undefined, {
-          signal: controller.signal,
-        });
-        setViewer(result.viewer);
-        setCanSignOut(result.fromSession === true);
-        setViewerError(undefined);
-      } catch (cause) {
-        if (controller.signal.aborted) return;
-        setViewer(undefined);
-        setCanSignOut(false);
-        setViewerError(
-          rpcErrorMessage(
-            cause,
-            m.use_git_hub_session_could_not_check_who_you_are_signed_in()
-          )
+  // A shared query that the cache never shares: it always asks with this
+  // tab's own cookie, and its answer is never borrowed, broadcast or written
+  // to disk. What it does share is the confirmation — see `SESSION_QUERY_KEY`.
+  const query = useSharedQuery({
+    queryKey: SESSION_QUERY_KEY,
+    fetch: (signal) => rpc.viewer.get(undefined, { signal }),
+  });
+  const result = query.data;
+  const viewer = result?.viewer;
+  const canSignOut = result?.fromSession === true;
+  const viewerError =
+    query.error == null
+      ? undefined
+      : rpcErrorMessage(
+          query.error,
+          m.use_git_hub_session_could_not_check_who_you_are_signed_in()
         );
-      } finally {
-        if (!controller.signal.aborted) setChecking(false);
-      }
-    };
+  // Pending until the first answer or the first failure, and again after the
+  // cache resets for a change of account. The server renders it true as well,
+  // so the first client render agrees.
+  const checking = query.isPending;
 
-    void check();
-    return () => controller.abort();
-  }, []);
+  // The answer is what the shared cache files every other answer under. Until
+  // it lands nothing is written to disk, and an answer naming another account
+  // than the one on screen resets every answer this tab holds.
+  const login = viewer?.login;
+  const answered = result != null;
+  useEffect(() => {
+    if (answered) shared?.confirm(viewerNamespace(login));
+  }, [answered, login, shared]);
 
   // A failed sign-in has nowhere to draw a panel — the callback is a redirect —
   // so the reason arrives on the address instead. It is read once and taken back
@@ -160,16 +162,22 @@ export function useGitHubSession(): GitHubSessionState {
 
   const signOut = useCallback(() => {
     const leave = async () => {
+      // Nothing more is written to disk from the moment of the press, and the
+      // disk is emptied once the Worker has ended the session — not before, or
+      // another tab could ask who it is in between, be told the old account by
+      // the cookie still standing, and write its answers straight back.
+      shared?.suspend();
       try {
         await fetch('/api/auth/signout', { method: 'POST' });
       } catch {
         // The cookie is gone or it is not, and either way the reviewer asked to
         // leave. Landing them on the home page is the answer to both.
       }
+      await shared?.endSession();
       window.location.assign('/');
     };
     void leave();
-  }, []);
+  }, [shared]);
 
   return {
     signedIn: viewer != null,
