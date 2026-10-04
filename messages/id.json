@@ -499,7 +499,7 @@
   "watch_offer_added_phone": "Pull request terbukanya kini ada di daftar pull request di kiri atas.",
   "watch_offer_added_wide": "Pull request terbukanya kini ada di bilah sebelah kiri.",
   "watch_offer_more_phone": "Untuk memantau lebih banyak repositori, buka daftar itu dan gunakan {#strong}{label}{/strong}, atau buka halaman beranda ghdiff.",
-  "watch_offer_more_wide": "Untuk memantau lebih banyak repositori, gunakan {#strong}{label}{/strong} di bagian bawah bilah, atau buka halaman beranda ghdiff.",
+  "watch_offer_more_wide": "Untuk memantau lebih banyak repositori, gunakan {#strong}{label}{/strong} di bagian atas bilah, atau buka halaman beranda ghdiff.",
   "watch_offer_preview_phone": "Lihat pull request terbukanya di daftar pull request di kiri atas, masing-masing dengan status ulasan dan pemeriksaannya. Berpindahlah di antaranya tanpa kembali ke GitHub.",
   "watch_offer_preview_wide": "Lihat pull request terbukanya di bilah sebelah kiri, masing-masing dengan status ulasan dan pemeriksaannya. Berpindahlah di antaranya tanpa kembali ke GitHub.",
   "watch_offer_action": "Pantau {subject}",

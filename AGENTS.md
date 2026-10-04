@@ -412,7 +412,7 @@ buttons.
 `max-phone:hidden` and `PullListButton` stands in for it, so "the bar on the
 left" is false on the one screen that has no bar — a phone opens the same list
 from the leftmost control in the review header, and the **Watched repos** button
-sits at the foot of that window instead of at the foot of a bar. The offer names
+sits at the head of that window instead of at the head of a bar. The offer names
 the place twice, so complete phone and desktop catalog messages state both
 readings and `useIsPhone` picks between them. A second caller of that hook costs
 nothing: it is a media query and not a request.
@@ -472,10 +472,17 @@ page breaking. A drag must not travel: `usePaneWidth` repaints the custom
 property on every pointermove, and a transition would leave the bar behind the
 pointer. `PaneResizeHandle` carries `data-resizing` for the length of a drag and
 is a child of the bar, so `has-[[data-resizing]]:transition-none` is the whole
-test. The footer row clips for the same 200 ms: both buttons in it are
-`shrink-0`, and a row narrower than the two of them would put them over the
-diff. The list and the header need nothing — one scrolls and the other
+test. The toolbar row under the header clips for the same 200 ms: both buttons
+in it are `shrink-0`, and a row narrower than the two of them would put them
+over the diff. The list and the header need nothing — one scrolls and the other
 truncates.
+
+**The watch list and the reload sit at the top of the bar, not at its foot.**
+They act on the list as a whole, and the top of the list is where a reviewer
+starts to read it, so they are a second `h-9` row under the header and above the
+rows. The phone sheet puts the same two controls above its list for the same
+reason. The watch offer names that place in its sentence, so moving the row
+means moving the words in every catalog with it.
 
 **A row on a card hovers to `surface`, not to `raised`.** A card is `raised`
 itself, so `hover:bg-raised` on a row inside one is the colour already under it
@@ -2509,12 +2516,12 @@ has a total wider than either of them, and a fixed width would spill. The right
 padding belongs to each tab rather than the strip, because the filter bar runs
 to the edge and the totals stop where the tree's figures stop.
 
-**Both feet are one rule.** The foot of the left bar and the foot of the review
-sidebar meet at the seam between the two panes, so both state `h-9` and neither
-takes its height from what is inside it. A strip padded around its button
-measured 36px and the border took it to 37, against the 36 an `h-9` strip counts
-its border inside — and the rule stepped by a pixel where the panes met. The two
-headers hold the line the same way: `h-11` on each, stated twice.
+**A strip states its height.** The review sidebar's foot and the left bar's
+toolbar row both state `h-9` and neither takes its height from what is inside
+it. A strip padded around its button measured 36px and the border took it to 37,
+against the 36 an `h-9` strip counts its border inside. The two headers hold the
+line across the seam between the panes the same way: `h-11` on each, stated
+twice.
 
 ## The command
 

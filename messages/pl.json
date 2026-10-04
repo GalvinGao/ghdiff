@@ -546,7 +546,7 @@
   "watch_offer_added_phone": "Otwarte pull requesty tego repozytorium są teraz na liście pull requestów w lewym górnym rogu.",
   "watch_offer_added_wide": "Otwarte pull requesty tego repozytorium są teraz na pasku po lewej.",
   "watch_offer_more_phone": "Aby obserwować więcej repozytoriów, otwórz tę listę i użyj {#strong}{label}{/strong} albo przejdź na stronę główną ghdiff.",
-  "watch_offer_more_wide": "Aby obserwować więcej repozytoriów, użyj {#strong}{label}{/strong} na dole paska albo przejdź na stronę główną ghdiff.",
+  "watch_offer_more_wide": "Aby obserwować więcej repozytoriów, użyj {#strong}{label}{/strong} na górze paska albo przejdź na stronę główną ghdiff.",
   "watch_offer_preview_phone": "Zobacz otwarte pull requesty tego repozytorium na liście w lewym górnym rogu, wraz z ich recenzjami i wynikami kontroli. Przechodź między nimi bez powrotu do GitHub.",
   "watch_offer_preview_wide": "Zobacz otwarte pull requesty tego repozytorium na pasku po lewej, wraz z ich recenzjami i wynikami kontroli. Przechodź między nimi bez powrotu do GitHub.",
   "watch_offer_action": "Dodaj {subject} do obserwowanych repozytoriów",

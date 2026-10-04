@@ -503,7 +503,7 @@
   "watch_offer_added_phone": "Bu deponun açık pull request'leri artık sol üstteki pull request listesinde.",
   "watch_offer_added_wide": "Bu deponun açık pull request'leri artık soldaki çubukta.",
   "watch_offer_more_phone": "Daha fazla depoyu izleme listesine eklemek için bu listeyi açıp {#strong}{label}{/strong} seçeneğini kullanın veya ghdiff ana sayfasına gidin.",
-  "watch_offer_more_wide": "Daha fazla depoyu izleme listesine eklemek için çubuğun altındaki {#strong}{label}{/strong} seçeneğini kullanın veya ghdiff ana sayfasına gidin.",
+  "watch_offer_more_wide": "Daha fazla depoyu izleme listesine eklemek için çubuğun üstündeki {#strong}{label}{/strong} seçeneğini kullanın veya ghdiff ana sayfasına gidin.",
   "watch_offer_preview_phone": "Açık pull request'lerini sol üstteki pull request listesinde, her birinin inceleme durumu ve kontrolleriyle birlikte görün. GitHub'a dönmeden aralarında geçiş yapın.",
   "watch_offer_preview_wide": "Açık pull request'lerini soldaki çubukta, her birinin inceleme durumu ve kontrolleriyle birlikte görün. GitHub'a dönmeden aralarında geçiş yapın.",
   "watch_offer_action": "{subject} öğesini izleme listesine ekle",

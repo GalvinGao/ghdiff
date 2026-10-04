@@ -507,7 +507,7 @@
   "watch_offer_added_phone": "其未关闭的拉取请求现已显示在左上角的拉取请求列表中。",
   "watch_offer_added_wide": "其未关闭的拉取请求现已显示在左侧栏中。",
   "watch_offer_more_phone": "要将更多仓库添加到关注列表，打开该列表并使用 {#strong}{label}{/strong}，或前往 ghdiff 首页。",
-  "watch_offer_more_wide": "要将更多仓库添加到关注列表，使用栏底的 {#strong}{label}{/strong}，或前往 ghdiff 首页。",
+  "watch_offer_more_wide": "要将更多仓库添加到关注列表，使用栏顶的 {#strong}{label}{/strong}，或前往 ghdiff 首页。",
   "watch_offer_preview_phone": "在左上角的拉取请求列表中查看其未关闭的拉取请求；每项都显示审查状态和自动检查结果。无需返回 GitHub 即可在它们之间切换。",
   "watch_offer_preview_wide": "在左侧栏中查看其未关闭的拉取请求；每项都显示审查状态和自动检查结果。无需返回 GitHub 即可在它们之间切换。",
   "watch_offer_action": "将 {subject} 添加到关注列表",

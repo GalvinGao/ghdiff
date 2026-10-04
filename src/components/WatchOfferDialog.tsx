@@ -233,7 +233,7 @@ export function WatchOfferDialog({
           </p>
           {/* The way back to the editor is in the same two places the list is,
               so this sentence follows the screen as well: on a phone the
-              button sits at the foot of that list rather than at the foot of
+              button sits at the head of that list rather than at the head of
               a bar that is not drawn. */}
           <p className="text-ink-faint mt-2 text-xs">
             <ParaglideMessage

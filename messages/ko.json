@@ -498,7 +498,7 @@
   "watch_offer_added_phone": "이제 열린 풀 리퀘스트가 왼쪽 상단의 풀 리퀘스트 목록에 표시돼요.",
   "watch_offer_added_wide": "이제 열린 풀 리퀘스트가 왼쪽 막대에 표시돼요.",
   "watch_offer_more_phone": "더 많은 저장소를 관심 목록에 추가하려면 해당 목록을 열고 {#strong}{label}{/strong}를 사용하거나 ghdiff 홈 페이지로 가세요.",
-  "watch_offer_more_wide": "더 많은 저장소를 관심 목록에 추가하려면 막대 하단의 {#strong}{label}{/strong}를 사용하거나 ghdiff 홈 페이지로 가세요.",
+  "watch_offer_more_wide": "더 많은 저장소를 관심 목록에 추가하려면 막대 상단의 {#strong}{label}{/strong}를 사용하거나 ghdiff 홈 페이지로 가세요.",
   "watch_offer_preview_phone": "왼쪽 상단의 풀 리퀘스트 목록에서 열린 풀 리퀘스트와 각각의 검토 및 자동 검사를 확인하세요. GitHub로 돌아가지 않고 이동할 수 있어요.",
   "watch_offer_preview_wide": "왼쪽 막대에서 열린 풀 리퀘스트와 각각의 검토 및 자동 검사를 확인하세요. GitHub로 돌아가지 않고 이동할 수 있어요.",
   "watch_offer_action": "{subject} 관심 목록에 추가",

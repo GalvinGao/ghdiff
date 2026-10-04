@@ -512,7 +512,7 @@
   "watch_offer_added_phone": "Die offenen Pull Requests des Repositorys sind jetzt oben links in der Pull-Request-Liste.",
   "watch_offer_added_wide": "Die offenen Pull Requests des Repositorys sind jetzt in der Leiste links.",
   "watch_offer_more_phone": "Um weitere Repositorys zu beobachten, öffne diese Liste und verwende {#strong}{label}{/strong}, oder gehe zur ghdiff-Startseite.",
-  "watch_offer_more_wide": "Um weitere Repositorys zu beobachten, verwende unten in der Leiste {#strong}{label}{/strong}, oder gehe zur ghdiff-Startseite.",
+  "watch_offer_more_wide": "Um weitere Repositorys zu beobachten, verwende oben in der Leiste {#strong}{label}{/strong}, oder gehe zur ghdiff-Startseite.",
   "watch_offer_preview_phone": "Sieh die offenen Pull Requests des Repositorys oben links in der Pull-Request-Liste, jeweils mit ihrem Review und ihren Checks. Wechsle zwischen ihnen, ohne zu GitHub zurückzukehren.",
   "watch_offer_preview_wide": "Sieh die offenen Pull Requests des Repositorys in der Leiste links, jeweils mit ihrem Review und ihren Checks. Wechsle zwischen ihnen, ohne zu GitHub zurückzukehren.",
   "watch_offer_action": "{subject} beobachten",

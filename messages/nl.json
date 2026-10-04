@@ -512,7 +512,7 @@
   "watch_offer_added_phone": "De open pull requests staan nu in de pull-requestlijst linksboven.",
   "watch_offer_added_wide": "De open pull requests staan nu in de balk links.",
   "watch_offer_more_phone": "Open die lijst en gebruik {#strong}{label}{/strong} om meer repositories te volgen, of ga naar de ghdiff-startpagina.",
-  "watch_offer_more_wide": "Gebruik {#strong}{label}{/strong} onderaan de balk om meer repositories te volgen, of ga naar de ghdiff-startpagina.",
+  "watch_offer_more_wide": "Gebruik {#strong}{label}{/strong} bovenaan de balk om meer repositories te volgen, of ga naar de ghdiff-startpagina.",
   "watch_offer_preview_phone": "Bekijk de open pull requests in de pull-requestlijst linksboven, elk met de review en de controles. Wissel ertussen zonder terug te gaan naar GitHub.",
   "watch_offer_preview_wide": "Bekijk de open pull requests in de balk links, elk met de review en de controles. Wissel ertussen zonder terug te gaan naar GitHub.",
   "watch_offer_action": "{subject} volgen",

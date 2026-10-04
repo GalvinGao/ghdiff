@@ -507,7 +507,7 @@
   "watch_offer_added_phone": "オープン中のプルリクエストが、左上のプルリクエスト一覧に表示されます。",
   "watch_offer_added_wide": "オープン中のプルリクエストが、左側のバーに表示されます。",
   "watch_offer_more_phone": "さらにリポジトリをウォッチするには、その一覧を開いて {#strong}{label}{/strong} を使用するか、ghdiff のホームページに移動してください。",
-  "watch_offer_more_wide": "さらにリポジトリをウォッチするには、バーの下部にある {#strong}{label}{/strong} を使用するか、ghdiff のホームページに移動してください。",
+  "watch_offer_more_wide": "さらにリポジトリをウォッチするには、バーの上部にある {#strong}{label}{/strong} を使用するか、ghdiff のホームページに移動してください。",
   "watch_offer_preview_phone": "左上のプルリクエスト一覧で、各プルリクエストのレビューとチェックを確認できます。GitHub に戻らずに移動できます。",
   "watch_offer_preview_wide": "左側のバーで、各プルリクエストのレビューとチェックを確認できます。GitHub に戻らずに移動できます。",
   "watch_offer_action": "{subject} をウォッチ",

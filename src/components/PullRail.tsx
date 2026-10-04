@@ -258,7 +258,7 @@ interface RailContentProps {
 }
 
 /**
- * Everything inside the bar: the header, the list, and the footer. One
+ * Everything inside the bar: the header, the toolbar, and the list. One
  * component rather than markup inline in `PullRail`, because the ghost is a
  * second rendering of exactly this, and a copy that drifted from the original
  * would crossfade into a layout the bar never shows.
@@ -350,6 +350,47 @@ function RailContent({
         </Tooltip>
       </div>
 
+      {/* The watch list and the reload, in a row under the header rather
+          than at the foot of the bar: they are about the list as a whole, and
+          the top of the list is where a reviewer reads it from.
+          `overflow-hidden` for the 200 ms the bar spends between its two
+          widths. Both buttons in it are `shrink-0`, so a row narrower than the
+          two of them puts them outside the bar and over the diff. The rows
+          around it clip already: the list scrolls, and the header's own name
+          truncates. */}
+      {!collapsed && (
+        <div className="border-line flex h-9 shrink-0 items-center gap-1 overflow-hidden border-b px-1">
+          <Button
+            className="min-w-0"
+            size="sm"
+            variant="chrome"
+            onClick={onEdit}
+          >
+            <span className="truncate">{m.pull_rail_watched_repos()}</span>
+          </Button>
+          <Button
+            aria-label={m.pull_rail_reload_the_pull_requests()}
+            className="ml-auto"
+            disabled={pulls.loading}
+            size="icon-sm"
+            title={m.pull_rail_reload_the_pull_requests()}
+            variant="chrome"
+            onClick={pulls.reload}
+          >
+            {/* `Spinner` is the app's one turning glyph, so a reload that is
+                under way looks the same here as beside a list. */}
+            {pulls.loading ? (
+              <Spinner
+                label={m.pull_rail_loading_the_pull_requests()}
+                size={14}
+              />
+            ) : (
+              <IconReload size={14} />
+            )}
+          </Button>
+        </div>
+      )}
+
       {/* `overflow-x-hidden` on the live region: a square's flight starts as a
           transform reaching to where the other layout held it, and a transform
           extends scrollable overflow — without this the flight itself would
@@ -388,50 +429,6 @@ function RailContent({
           )}
         </div>
       </div>
-
-      {/* `overflow-hidden` on the row below, for the 200 ms the bar spends
-          between its two widths. Both buttons in it are `shrink-0`, so a row
-          narrower than the two of them puts them outside the bar and over the
-          diff. The rows above clip already: the list scrolls, and the
-          header's own name truncates. */}
-      {!collapsed && (
-        // The foot of this bar and the foot of the review sidebar are one
-        // rule across the screen, so this strip states the same height the
-        // sidebar's strip states. `p-1` around a 28px button measured 36px
-        // and the border took it to 37, a pixel taller than the sidebar's
-        // `h-9` — which counts its own border — so the rule stepped at the
-        // seam between the two panes.
-        <div className="border-line flex h-9 shrink-0 items-center gap-1 overflow-hidden border-t px-1">
-          <Button
-            className="min-w-0"
-            size="sm"
-            variant="chrome"
-            onClick={onEdit}
-          >
-            <span className="truncate">{m.pull_rail_watched_repos()}</span>
-          </Button>
-          <Button
-            aria-label={m.pull_rail_reload_the_pull_requests()}
-            className="ml-auto"
-            disabled={pulls.loading}
-            size="icon-sm"
-            title={m.pull_rail_reload_the_pull_requests()}
-            variant="chrome"
-            onClick={pulls.reload}
-          >
-            {/* `Spinner` is the app's one turning glyph, so a reload that is
-                under way looks the same here as beside a list. */}
-            {pulls.loading ? (
-              <Spinner
-                label={m.pull_rail_loading_the_pull_requests()}
-                size={14}
-              />
-            ) : (
-              <IconReload size={14} />
-            )}
-          </Button>
-        </div>
-      )}
     </>
   );
 }

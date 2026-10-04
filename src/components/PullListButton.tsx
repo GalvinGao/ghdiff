@@ -91,20 +91,11 @@ export function PullListButton({ className }: { className?: string }) {
             ) : undefined
           }
         >
-          <PullRequestList
-            current={current}
-            hydrated={watched.hydrated}
-            repos={watched.repos}
-            state={pulls}
-            // A row taps through to a review, and the window it was tapped in
-            // has to go with it: the dialog sits in the top layer, above the
-            // diff the reviewer just asked for.
-            onNavigate={() => setOpen(false)}
-          />
-          {/* The foot of the bar, which the list needs as much here: the watch
-              list is what fills it, and a reviewer looking at an answer they did
-              not expect wants the way to change it in the same window. */}
-          <div className="border-line mt-1 flex items-center gap-1 border-t px-1 pt-1">
+          {/* The bar's own toolbar, which the list needs as much here: the
+              watch list is what fills it, and a reviewer looking at an answer
+              they did not expect wants the way to change it in the same window.
+              Above the list, as in the bar. */}
+          <div className="border-line mb-1 flex items-center gap-1 border-b px-1 pb-1">
             <Button
               className="min-w-0"
               size="sm"
@@ -134,6 +125,16 @@ export function PullListButton({ className }: { className?: string }) {
               )}
             </Button>
           </div>
+          <PullRequestList
+            current={current}
+            hydrated={watched.hydrated}
+            repos={watched.repos}
+            state={pulls}
+            // A row taps through to a review, and the window it was tapped in
+            // has to go with it: the dialog sits in the top layer, above the
+            // diff the reviewer just asked for.
+            onNavigate={() => setOpen(false)}
+          />
         </Dialog>
       )}
 

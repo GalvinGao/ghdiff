@@ -513,7 +513,7 @@
   "watch_offer_added_phone": "Le pull request aperte del repository sono ora nell'elenco delle pull request in alto a sinistra.",
   "watch_offer_added_wide": "Le pull request aperte del repository sono ora nella barra a sinistra.",
   "watch_offer_more_phone": "Per aggiungere altri repository all'elenco, apri l'elenco e usa {#strong}{label}{/strong}, oppure vai alla home page di ghdiff.",
-  "watch_offer_more_wide": "Per aggiungere altri repository all'elenco, usa {#strong}{label}{/strong} in fondo alla barra oppure vai alla home page di ghdiff.",
+  "watch_offer_more_wide": "Per aggiungere altri repository all'elenco, usa {#strong}{label}{/strong} in cima alla barra oppure vai alla home page di ghdiff.",
   "watch_offer_preview_phone": "Visualizza le pull request aperte del repository nell'elenco in alto a sinistra, ciascuna con la relativa revisione e i relativi controlli. Passa dall'una all'altra senza tornare su GitHub.",
   "watch_offer_preview_wide": "Visualizza le pull request aperte del repository nella barra a sinistra, ciascuna con la relativa revisione e i relativi controlli. Passa dall'una all'altra senza tornare su GitHub.",
   "watch_offer_action": "Aggiungi {subject} all'elenco",

@@ -508,7 +508,7 @@
   "watch_offer_added_phone": "Các pull request đang mở của kho mã này hiện có trong danh sách pull request ở góc trên bên trái.",
   "watch_offer_added_wide": "Các pull request đang mở của kho mã này hiện có trong thanh bên trái.",
   "watch_offer_more_phone": "Để theo dõi thêm kho mã, hãy mở danh sách đó và dùng {#strong}{label}{/strong}, hoặc đến trang chủ ghdiff.",
-  "watch_offer_more_wide": "Để theo dõi thêm kho mã, hãy dùng {#strong}{label}{/strong} ở cuối thanh hoặc đến trang chủ ghdiff.",
+  "watch_offer_more_wide": "Để theo dõi thêm kho mã, hãy dùng {#strong}{label}{/strong} ở đầu thanh hoặc đến trang chủ ghdiff.",
   "watch_offer_preview_phone": "Xem các pull request đang mở trong danh sách pull request ở góc trên bên trái, mỗi mục có trạng thái đánh giá và các kiểm tra. Chuyển giữa chúng mà không cần quay lại GitHub.",
   "watch_offer_preview_wide": "Xem các pull request đang mở trong thanh bên trái, mỗi mục có trạng thái đánh giá và các kiểm tra. Chuyển giữa chúng mà không cần quay lại GitHub.",
   "watch_offer_action": "Theo dõi {subject}",
