@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback } from 'react';
 
 import { m } from '../paraglide/messages.js';
+import { useSharedQuery } from './useSharedQuery';
 import type { PullDetails } from '@/lib/pullDetails';
+import { withoutAttachments } from '@/lib/queryCache/persist';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 
 export interface PullDetailsState {
@@ -28,6 +30,10 @@ const RENEW_MARGIN_MS = 30_000;
  *
  * The hook depends on the three parts of the pull request rather than on the
  * target object, whose identity changes with every read of the RSC payload.
+ *
+ * The answer is shared between tabs and kept on disk without its signed
+ * attachment addresses, so a reload draws the title at once and fetches the
+ * whole answer behind it. See `@/lib/queryCache/persist`.
  */
 export function usePullDetails(options: {
   number?: number;
@@ -35,69 +41,44 @@ export function usePullDetails(options: {
   repo?: string;
 }): PullDetailsState {
   const { number, owner, repo } = options;
-  const [data, setData] = useState<PullDetails | undefined>(undefined);
-  const [error, setError] = useState<string | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-  const controllerRef = useRef<AbortController | null>(null);
-  // When the answer on screen arrived, and whether one is on its way. Both are
-  // read in an event handler and never while rendering, so neither is state.
-  const receivedAtRef = useRef(0);
-  const inFlightRef = useRef(false);
-
-  const load = useCallback(async () => {
-    if (owner == null || repo == null || number == null) return;
-    controllerRef.current?.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    inFlightRef.current = true;
-    setLoading(true);
-    setError(undefined);
-
-    try {
-      const details = await rpc.pulls.get(
-        { number, owner, repo },
-        { signal: controller.signal }
-      );
-      receivedAtRef.current = Date.now();
-      setData(details);
-    } catch (cause) {
-      if (controller.signal.aborted) return;
-      setError(
-        rpcErrorMessage(
-          cause,
-          m.use_pull_details_could_not_load_this_pull_request()
-        )
-      );
-    } finally {
-      if (!controller.signal.aborted) {
-        inFlightRef.current = false;
-        setLoading(false);
+  const query = useSharedQuery<PullDetails>({
+    queryKey: ['pulls.get', owner, repo, number],
+    fetch: (signal) => {
+      if (owner == null || repo == null || number == null) {
+        throw new Error('No pull request to ask about.');
       }
-    }
-  }, [number, owner, repo]);
+      return rpc.pulls.get({ number, owner, repo }, { signal });
+    },
+    enabled: owner != null && repo != null && number != null,
+    persist: withoutAttachments,
+  });
 
   // The card is unmounted while it is closed, so a picture is first asked for
   // when the reviewer opens it, which can be long after its five minutes. The
   // browser keeps a file it did load for a month, so only a file never loaded
   // in time fails, and the failure is what asks for a new signature.
-  const lifetimeMs = data?.attachments?.lifetimeMs;
+  //
+  // The age is counted from `dataUpdatedAt`, the moment the answer reached this
+  // tab or the one that shared it. An answer from disk carries no signatures,
+  // so it has no lifetime to count against.
+  const lifetimeMs = query.data?.attachments?.lifetimeMs;
+  const { dataUpdatedAt, isFetching, refetch } = query;
   const renewAttachments = useCallback(() => {
-    if (lifetimeMs == null || inFlightRef.current) return;
-    if (Date.now() - receivedAtRef.current < lifetimeMs - RENEW_MARGIN_MS) {
-      return;
-    }
-    void load();
-  }, [lifetimeMs, load]);
+    if (lifetimeMs == null || isFetching) return;
+    if (Date.now() - dataUpdatedAt < lifetimeMs - RENEW_MARGIN_MS) return;
+    void refetch();
+  }, [dataUpdatedAt, isFetching, lifetimeMs, refetch]);
 
-  useEffect(() => {
-    if (owner == null || repo == null || number == null) {
-      setData(undefined);
-      setError(undefined);
-      return undefined;
-    }
-    void load();
-    return () => controllerRef.current?.abort();
-  }, [load, number, owner, repo]);
-
-  return { data, error, loading, renewAttachments };
+  return {
+    data: query.data,
+    error:
+      query.error == null
+        ? undefined
+        : rpcErrorMessage(
+            query.error,
+            m.use_pull_details_could_not_load_this_pull_request()
+          ),
+    loading: query.isFetching,
+    renewAttachments,
+  };
 }

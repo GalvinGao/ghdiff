@@ -1,7 +1,7 @@
 import { ORPCError } from '@orpc/client';
-import { useQuery } from '@tanstack/react-query';
 import { useRef } from 'react';
 
+import { useSharedQuery } from './useSharedQuery';
 import { type DeploymentsData, deploymentsInFlight } from '@/lib/deployments';
 import type { GitHubReviewTarget } from '@/lib/reviewTarget';
 import { rpc } from '@/lib/rpc/client';
@@ -32,6 +32,12 @@ const MAX_BACKOFF = 8;
  * failure, and an answer that stays on screen through the failure. Written by
  * hand that is four timers and a generation counter.
  *
+ * Every tab on the same diff polls through one shared query, so the tab whose
+ * turn comes second within a poll takes the answer the first one broadcast. The
+ * share window is a little under the poll, which is what makes two tabs side
+ * by side one request per poll rather than two. Nothing is written to disk: a
+ * build's state from the last load is the one answer here certain to be wrong.
+ *
  * A caller with no token is asked once and never polled. Each of its reads
  * costs up to five of sixty anonymous requests an hour, and the comments and
  * the pull request list need the rest.
@@ -49,7 +55,7 @@ export function useDeployments(options: {
   // the scheduler only, never while rendering.
   const pollRef = useRef<{ head?: string; since: number } | null>(null);
 
-  return useQuery<DeploymentsData>({
+  return useSharedQuery<DeploymentsData>({
     // Strings, not the target: the target object is rebuilt on every read of
     // the route, and a key that changed with it would refetch on every render.
     queryKey: [
@@ -59,7 +65,7 @@ export function useDeployments(options: {
       source == null ? undefined : sourceKey(source),
       signedIn,
     ],
-    queryFn: ({ signal }) => {
+    fetch: (signal) => {
       if (target == null || source == null) {
         throw new Error('No target to ask about.');
       }
@@ -69,6 +75,7 @@ export function useDeployments(options: {
       );
     },
     enabled: target != null && !checking,
+    shareWindowMs: POLL_MS - 1_000,
     staleTime: signedIn ? 0 : Infinity,
     refetchOnWindowFocus: signedIn,
     // A refusal is an answer, and asking again gets the same one.
