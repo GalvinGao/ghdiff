@@ -747,6 +747,14 @@ carries a failure, which the next load would otherwise show before it had failed
 at anything. The channel carries the whole answer, because a message is not
 storage.
 
+A signed attachment address never reaches the disk. `pulls.get` and
+`comments.conversation` are stored through `withoutAttachments`, so a reload
+draws the title and the conversation at once and fetches the signatures behind
+them. A viewed mark made in another tab moves the box here and leaves every fold
+alone: `useViewedFiles` seeds `loaded` once per diff, and a later answer — a
+fetch behind one read from disk, a press elsewhere — moves `viewed` only, with
+the presses still in flight laid over it.
+
 jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
 the Worker rather than for the browser. Without it every atom would resolve
 against one store held by the module, and a Worker isolate serves many requests
@@ -1065,8 +1073,10 @@ build of the head — for ten minutes per head at most, backing off on failure,
 and not at all while the tab is hidden. A pull request with no deployments is
 never polled: most repositories deploy nothing, and every one of them has checks
 that run. The schedule, the single request in flight, the retry and the answer
-kept through a failure are all the library's, which is the whole reason it is in
-the graph.
+kept through a failure are all the library's. The share window is a little under
+the poll, so two tabs on the same diff make one request per poll between them,
+and nothing about a build is written to disk: last load's state of a build is
+the one answer here certain to be wrong.
 
 A caller with no token is asked once and never polled. GraphQL refuses it, so
 the server reads REST instead — the head, its deployments, and one status per

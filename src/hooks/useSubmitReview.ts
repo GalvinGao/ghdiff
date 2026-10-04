@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
+import { usePublish, useSharedQuery } from './useSharedQuery';
 import type {
   ReviewEvent,
   SubmittedReview,
@@ -42,6 +43,8 @@ export interface SubmitReviewState {
   reset(): void;
 }
 
+const NO_REVIEWS: TeamReview[] = [];
+
 export function useSubmitReview(options: {
   number?: number;
   owner?: string;
@@ -53,39 +56,40 @@ export function useSubmitReview(options: {
   const [submitted, setSubmitted] = useState<SubmittedReview | undefined>(
     undefined
   );
-  const [latest, setLatest] = useState<SubmittedReview | undefined>(undefined);
-  const [team, setTeam] = useState<TeamReview[]>([]);
 
   // What GitHub already has. It is one extra fact about a pull request whose
   // diff is the screen, so a failure to read it is reported nowhere: the header
   // goes on offering a first review, which is what it would have said anyway.
-  useEffect(() => {
-    setLatest(undefined);
-    setTeam([]);
-    if (owner == null || repo == null || number == null) return undefined;
-    const controller = new AbortController();
-    const pull = { number, owner, repo };
-    const request = { signal: controller.signal };
-    void (async () => {
-      try {
-        const answer = await rpc.reviews.mine(pull, request);
-        if (!controller.signal.aborted) setLatest(answer.review);
-      } catch {
-        // Nothing to say. See above.
-      }
-    })();
-    // The same holds for the team's verdicts: the dialog lists none, which is
-    // what it would list for a pull request nobody else has reviewed.
-    void (async () => {
-      try {
-        const answer = await rpc.reviews.team(pull, request);
-        if (!controller.signal.aborted) setTeam(answer.reviews);
-      } catch {
-        // Nothing to say. See above.
-      }
-    })();
-    return () => controller.abort();
-  }, [number, owner, repo]);
+  // The same holds for the team's verdicts: the dialog lists none, which is
+  // what it would list for a pull request nobody else has reviewed.
+  //
+  // Both are shared between tabs and kept on disk. Neither carries a signed
+  // address, and a verdict a reviewer gave in one tab is a verdict the header
+  // of every other tab on the same pull request should say.
+  const enabled = owner != null && repo != null && number != null;
+  const pullRef = () => {
+    if (owner == null || repo == null || number == null) {
+      throw new Error('No pull request to ask about.');
+    }
+    return { number, owner, repo };
+  };
+  const mineKey = ['reviews.mine', owner, repo, number];
+  const mine = useSharedQuery({
+    queryKey: mineKey,
+    fetch: (signal) => rpc.reviews.mine(pullRef(), { signal }),
+    enabled,
+    persist: true,
+  });
+  const teamQuery = useSharedQuery({
+    queryKey: ['reviews.team', owner, repo, number],
+    fetch: (signal) => rpc.reviews.team(pullRef(), { signal }),
+    enabled,
+    persist: true,
+  });
+  const latest = mine.data?.review;
+  const team = teamQuery.data?.reviews ?? NO_REVIEWS;
+  const publish = usePublish();
+  const mineHash = JSON.stringify(mineKey);
 
   const submit = useCallback(
     async (event: ReviewEvent, body: string) => {
@@ -102,8 +106,9 @@ export function useSubmitReview(options: {
         });
         setSubmitted(review);
         // The verdict just sent is now the verdict on record, and GitHub has
-        // said so in its answer, so nothing is asked again to find that out.
-        setLatest(review);
+        // said so in its answer, so nothing is asked again to find that out —
+        // in this tab or in any other open on the same pull request.
+        publish(JSON.parse(mineHash) as readonly unknown[], { review }, true);
         return review;
       } catch (cause) {
         // GitHub refuses an approval of your own pull request, and a token
@@ -121,7 +126,7 @@ export function useSubmitReview(options: {
         setPending(undefined);
       }
     },
-    [number, owner, repo]
+    [mineHash, number, owner, publish, repo]
   );
 
   // The verdict on record survives this, because it is a fact about the pull

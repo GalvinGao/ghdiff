@@ -1,11 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
+import { usePublish, useSharedQuery } from './useSharedQuery';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import { type ReviewTarget, reviewTargetKey } from '@/lib/reviewTarget';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { localViewedFilesStorageKey } from '@/lib/storageKeys';
+import type { ViewedFilesData } from '@/lib/viewedFiles';
 
 // Which files the reviewer has already read, and where that fact is kept.
 //
@@ -56,9 +59,6 @@ export function useViewedFiles(options: {
   const [viewed, setViewedFiles] = useState<ReadonlySet<string>>(NO_FILES);
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(NO_FILES);
   const [error, setError] = useState<string | undefined>(undefined);
-  // One load at a time. A new target cancels the request in flight, so a slow
-  // answer cannot overwrite a newer one.
-  const controllerRef = useRef<AbortController | null>(null);
 
   // GitHub names a file by its path; this app names it by its item id, which
   // carries a commit prefix when one patch file holds several commits. Both
@@ -77,53 +77,88 @@ export function useViewedFiles(options: {
     [entries]
   );
 
-  const load = useCallback(async () => {
-    if (!ready) return;
+  // A pull request's marks are a shared query: kept on disk, and carried to
+  // every other tab on the same pull request the moment one of them presses.
+  const queryKey = ['viewedFiles.list', pullOwner, pullRepo, pullNumber];
+  const listHash = JSON.stringify(queryKey);
+  const query = useSharedQuery<ViewedFilesData>({
+    queryKey,
+    fetch: (signal) => {
+      if (pullOwner == null || pullRepo == null || pullNumber == null) {
+        throw new Error('No pull request to ask about.');
+      }
+      return rpc.viewedFiles.list(
+        { number: pullNumber, owner: pullOwner, repo: pullRepo },
+        { signal }
+      );
+    },
+    enabled: ready && store === 'github',
+    persist: true,
+  });
+  const client = useQueryClient();
+  const publish = usePublish();
+  const paths = query.data?.paths;
 
+  // Presses GitHub has not answered yet, by item id. An answer that lands in
+  // the meantime — another tab's press, or this tab's own earlier one — is
+  // drawn with these laid over it, so a box the reviewer has just ticked does
+  // not untick itself while its own request is still out.
+  const inFlightRef = useRef(new Map<string, boolean>());
+  // The target and the diff the marks were last seeded for. `loaded` is what
+  // the screen folds from, so it changes once per diff and not once per
+  // answer: a later answer — a fetch behind one read from disk, a press in
+  // another tab — moves the boxes, and leaves every fold the reviewer set.
+  const seededRef = useRef<{
+    list: string;
+    itemIdByPath: ReadonlyMap<string, string>;
+    answered: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!ready) return;
     if (store === 'local') {
       const stored = new Set(readStoredJson<string[]>(storageKey, []));
       setViewedFiles(stored);
       setLoaded(stored);
       return;
     }
-    if (pullOwner == null || pullRepo == null || pullNumber == null) return;
-
-    controllerRef.current?.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
-    // Empty first, so the marks of the pull request being left cannot sit on
-    // the file headers of the one arriving. A fresh set and not `NO_FILES`,
-    // because the screen watches this value's identity to know a read landed.
-    setViewedFiles(NO_FILES);
-    setLoaded(new Set());
-
-    try {
-      const answer = await rpc.viewedFiles.list(
-        { number: pullNumber, owner: pullOwner, repo: pullRepo },
-        { signal: controller.signal }
-      );
-      if (controller.signal.aborted) return;
-      const next = new Set<string>();
-      for (const path of answer.paths) {
-        const itemId = itemIdByPath.get(path);
-        // A mark on a path this diff does not hold is dropped, the way a
-        // comment on one is. GitHub keeps the mark; this screen cannot show it.
-        if (itemId != null) next.add(itemId);
+    const seed = seededRef.current;
+    const sameDiff =
+      seed != null &&
+      seed.list === listHash &&
+      seed.itemIdByPath === itemIdByPath;
+    if (paths == null) {
+      // Empty first, so the marks of the pull request being left cannot sit
+      // on the file headers of the one arriving. A fresh set and not
+      // `NO_FILES`, because the screen watches this value's identity to know
+      // a read landed. A failed read leaves it so: every box empty is what
+      // the boxes would say for a reviewer who has read nothing, and a press
+      // still reaches GitHub, because a press names only a path.
+      if (!sameDiff) {
+        inFlightRef.current.clear();
+        setViewedFiles(NO_FILES);
+        setLoaded(new Set());
+        seededRef.current = { list: listHash, itemIdByPath, answered: false };
       }
-      setViewedFiles(next);
-      setLoaded(next);
-    } catch {
-      // Nothing to say here. This is one extra fact about a pull request whose
-      // diff is the screen, so a failure leaves every box empty — which is what
-      // the boxes would have said for a reviewer who has read nothing — and a
-      // press still reaches GitHub, because a press names only a path.
+      return;
     }
-  }, [itemIdByPath, pullNumber, pullOwner, pullRepo, ready, storageKey, store]);
-
-  useEffect(() => {
-    void load();
-    return () => controllerRef.current?.abort();
-  }, [load]);
+    const next = new Set<string>();
+    for (const path of paths) {
+      const itemId = itemIdByPath.get(path);
+      // A mark on a path this diff does not hold is dropped, the way a
+      // comment on one is. GitHub keeps the mark; this screen cannot show it.
+      if (itemId != null) next.add(itemId);
+    }
+    for (const [itemId, marked] of inFlightRef.current) {
+      if (marked) next.add(itemId);
+      else next.delete(itemId);
+    }
+    setViewedFiles(next);
+    if (!sameDiff || !seed.answered) {
+      setLoaded(next);
+      seededRef.current = { list: listHash, itemIdByPath, answered: true };
+    }
+  }, [itemIdByPath, listHash, paths, ready, storageKey, store]);
 
   const setViewed = useCallback(
     (itemId: string, next: boolean) => {
@@ -151,6 +186,7 @@ export function useViewedFiles(options: {
         return;
       }
 
+      inFlightRef.current.set(itemId, next);
       void (async () => {
         try {
           await rpc.viewedFiles.set({
@@ -160,7 +196,21 @@ export function useViewedFiles(options: {
             repo: pullRepo,
             viewed: next,
           });
+          inFlightRef.current.delete(itemId);
+          // GitHub took it, so every tab's list says so now. Built on the
+          // list as the cache holds it, and only when it holds one: a list
+          // that never loaded would tell the other tabs this is the only file
+          // the reviewer has read.
+          const key = JSON.parse(listHash) as readonly unknown[];
+          const current = client.getQueryData<ViewedFilesData>(key);
+          if (current != null) {
+            const updated = new Set(current.paths);
+            if (next) updated.add(path);
+            else updated.delete(path);
+            publish(key, { paths: [...updated] }, true);
+          }
         } catch (cause) {
+          inFlightRef.current.delete(itemId);
           // Put the box back. GitHub is the record for a pull request, and a
           // tick it did not take is a tick this app must not go on drawing —
           // the reviewer would come back tomorrow to a file they never read.
@@ -179,7 +229,17 @@ export function useViewedFiles(options: {
         }
       })();
     },
-    [pathByItemId, pullNumber, pullOwner, pullRepo, storageKey, store]
+    [
+      client,
+      listHash,
+      pathByItemId,
+      publish,
+      pullNumber,
+      pullOwner,
+      pullRepo,
+      storageKey,
+      store,
+    ]
   );
 
   const dismissError = useCallback(() => setError(undefined), []);
