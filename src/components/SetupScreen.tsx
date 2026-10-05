@@ -6,11 +6,16 @@ import type { ReactNode } from 'react';
 import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
-import { InstallationRow } from '@/components/InstallationRow';
+import {
+  InstallationRow,
+  InstallationRowSkeleton,
+} from '@/components/InstallationRow';
 import { LanguageMenu } from '@/components/LanguageMenu';
+import { AnimatedHeight } from '@/components/ui/AnimatedHeight';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import {
   Step,
   StepNote,
@@ -103,13 +108,32 @@ export function SetupScreen({
       : wanted != null && reachesAnyRepository(wanted);
 
   const signedIn = session.signedIn;
+  // Two questions are asked of GitHub before this page knows anything, and each
+  // step waits for its own. A signed-out reviewer is told where the App is
+  // installed by nobody, so for them step two is known the moment step one is;
+  // a failed read is an answer too, and it is printed rather than waited on.
+  const appsPending = !apps.answered && apps.error == null;
+  const known = [
+    !session.checking,
+    !session.checking && (!signedIn || !appsPending),
+  ];
   // The first step not done is the current one, so an earlier gap is never
   // skipped past. Step three is never `done`: opening the diff is the thing this
-  // page hands back, and it has no way to learn whether it worked.
+  // page hands back, and it has no way to learn whether it worked. And a step
+  // that waits on an unanswered question is `upcoming` with everything after
+  // it, so the rail never lights a step on a guess — a pulse on **Sign in**
+  // before GitHub has said whether the reviewer already is one is that guess.
   const done = [signedIn, signedIn && installed, false];
+  const firstUnknown = known.indexOf(false);
   const firstUndone = done.findIndex((value) => value !== true);
   const [signIn, install, open] = done.map<StepStatus>((isDone, index) =>
-    isDone ? 'done' : index === firstUndone ? 'current' : 'upcoming'
+    firstUnknown >= 0 && index >= firstUnknown
+      ? 'upcoming'
+      : isDone
+        ? 'done'
+        : index === firstUndone
+          ? 'current'
+          : 'upcoming'
   ) as [StepStatus, StepStatus, StepStatus];
 
   return (
@@ -140,28 +164,37 @@ export function SetupScreen({
               number={1}
               status={signIn}
             >
-              {session.viewer != null ? (
-                <div className={`${CARD} flex items-center gap-2.5`}>
-                  <ViewerAvatar size={22} viewer={session.viewer} />
-                  <span className="text-ink min-w-0 truncate text-sm">
-                    {viewerDisplayName(session.viewer)}
-                  </span>
+              {/* Both answers are a different height from the wait and from
+                  each other, so the step travels to whichever arrives rather
+                  than pushing the two steps under it down in one frame. */}
+              <AnimatedHeight>
+                <div className="flex flex-col">
+                  {session.checking ? (
+                    <SignInSkeleton />
+                  ) : session.viewer != null ? (
+                    <div className={`${CARD} flex items-center gap-2.5`}>
+                      <ViewerAvatar size={22} viewer={session.viewer} />
+                      <span className="text-ink min-w-0 truncate text-sm">
+                        {viewerDisplayName(session.viewer)}
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-ink-muted text-sm">
+                        {m.setup_screen_this_identifies_your_account_to_github_any_comments()}
+                      </p>
+                      <Button
+                        className="mt-2 self-start"
+                        onClick={() => session.signIn()}
+                        variant="solid"
+                      >
+                        <IconBrandGithub aria-hidden="true" size={14} />
+                        {m.setup_screen_sign_in_with_github()}
+                      </Button>
+                    </>
+                  )}
                 </div>
-              ) : (
-                <>
-                  <p className="text-ink-muted text-sm">
-                    {m.setup_screen_this_identifies_your_account_to_github_any_comments()}
-                  </p>
-                  <Button
-                    className="mt-2 self-start"
-                    onClick={() => session.signIn()}
-                    variant="solid"
-                  >
-                    <IconBrandGithub aria-hidden="true" size={14} />
-                    {m.setup_screen_sign_in_with_github()}
-                  </Button>
-                </>
-              )}
+              </AnimatedHeight>
             </Step>
 
             <Step
@@ -177,83 +210,104 @@ export function SetupScreen({
                     )}
               </p>
 
-              {apps.error != null && (
-                <p className="text-removed mt-2 text-sm">{apps.error}</p>
-              )}
+              <AnimatedHeight>
+                <div className="flex flex-col gap-1.5">
+                  {apps.error != null && (
+                    <p className="text-removed mt-2 text-sm">{apps.error}</p>
+                  )}
 
-              {apps.installations.length > 0 && (
-                <div className="mt-2 flex flex-col gap-1.5">
-                  <SectionLabel>
-                    {m.setup_screen_accounts_with_access()}
-                  </SectionLabel>
-                  {apps.installations.map((installation) => (
-                    <InstallationRow
-                      key={installation.id}
-                      className={CARD}
-                      installation={installation}
-                      wanted={account != null && installation === wanted}
+                  {/* The rows are guessed only for a reviewer GitHub may answer with
+                  some: a signed-out one is told about no account at all. The
+                  two buttons are reserved either way, because the install
+                  address arrives with the same answer. */}
+                  {appsPending && (
+                    <InstallationsSkeleton
+                      rows={session.checking || signedIn}
                     />
-                  ))}
-                </div>
-              )}
+                  )}
 
-              {apps.installUrl != null && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {/* A new tab, and a plain anchor. Installing happens on
+                  {apps.installations.length > 0 && (
+                    <div className="mt-2 flex flex-col gap-1.5">
+                      <SectionLabel>
+                        {m.setup_screen_accounts_with_access()}
+                      </SectionLabel>
+                      {apps.installations.map((installation) => (
+                        <InstallationRow
+                          key={installation.id}
+                          className={CARD}
+                          installation={installation}
+                          wanted={account != null && installation === wanted}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {apps.installUrl != null && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {/* A new tab, and a plain anchor. Installing happens on
                       github.com and takes a few presses, and this page has to
                       still be here to come back to — it is the page that says
                       whether it worked. */}
-                  <a
-                    // Filled only on the step that is actually next. Two
-                    // filled controls on one screen is the one thing this
-                    // app's accent rule forbids, and step one's sign-in is
-                    // the other.
-                    className={buttonClass({
-                      variant: install === 'current' ? 'solid' : 'outline',
-                    })}
-                    href={apps.installUrl}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    {apps.installations.length === 0
-                      ? m.setup_screen_install_ghdiff()
-                      : m.setup_screen_install_on_another_account()}
-                    <IconArrowUpRight aria-hidden="true" size={13} />
-                  </a>
-                  {/* Nothing polls for the answer. A reviewer comes back from the
+                      <a
+                        // Filled only on the step that is actually next. Two
+                        // filled controls on one screen is the one thing this
+                        // app's accent rule forbids, and step one's sign-in is
+                        // the other.
+                        className={buttonClass({
+                          variant: install === 'current' ? 'solid' : 'outline',
+                        })}
+                        href={apps.installUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {apps.installations.length === 0
+                          ? m.setup_screen_install_ghdiff()
+                          : m.setup_screen_install_on_another_account()}
+                        <IconArrowUpRight aria-hidden="true" size={13} />
+                      </a>
+                      {/* Nothing polls for the answer. A reviewer comes back from the
                       other tab knowing they have finished, and this is how they
                       say so. */}
-                  <Button
-                    disabled={apps.loading}
-                    onClick={apps.reload}
-                    variant="outline"
-                  >
-                    <IconRefresh aria-hidden="true" size={13} />
-                    {apps.loading
-                      ? m.setup_screen_checking()
-                      : m.setup_screen_check_again()}
-                  </Button>
-                </div>
-              )}
+                      <Button
+                        disabled={apps.loading}
+                        onClick={apps.reload}
+                        variant="outline"
+                      >
+                        <IconRefresh aria-hidden="true" size={13} />
+                        {apps.loading
+                          ? m.setup_screen_checking()
+                          : m.setup_screen_check_again()}
+                      </Button>
+                    </div>
+                  )}
 
-              {account != null && wanted == null && !apps.loading && (
-                <StepNote>
-                  <ParaglideMessage
-                    message={m.setup_not_installed}
-                    inputs={{ account }}
-                    markup={setupMarkup}
-                  />
-                </StepNote>
-              )}
-              {wanted != null && !reachesAnyRepository(wanted) && (
-                <StepNote>
-                  <ParaglideMessage
-                    message={m.setup_no_repositories}
-                    inputs={{ account: account ?? '' }}
-                    markup={setupMarkup}
-                  />
-                </StepNote>
-              )}
+                  {/* Only GitHub's own answer about this reviewer can say the App is
+                  not on an account. Signed out, the list is empty because
+                  nobody was asked, and "not installed" would be a guess. */}
+                  {signedIn &&
+                    apps.answered &&
+                    account != null &&
+                    wanted == null &&
+                    !apps.loading && (
+                      <StepNote>
+                        <ParaglideMessage
+                          message={m.setup_not_installed}
+                          inputs={{ account }}
+                          markup={setupMarkup}
+                        />
+                      </StepNote>
+                    )}
+                  {wanted != null && !reachesAnyRepository(wanted) && (
+                    <StepNote>
+                      <ParaglideMessage
+                        message={m.setup_no_repositories}
+                        inputs={{ account: account ?? '' }}
+                        markup={setupMarkup}
+                      />
+                    </StepNote>
+                  )}
+                </div>
+              </AnimatedHeight>
             </Step>
 
             <Step
@@ -285,13 +339,83 @@ export function SetupScreen({
           </StepRail>
         </div>
 
-        {apps.installUrl == null && !session.checking && (
+        {apps.answered && apps.installUrl == null && (
           <p className="text-ink-faint mt-8 text-xs">
             {m.setup_screen_this_ghdiff_deployment_has_no_github_app_set()}
           </p>
         )}
       </div>
     </main>
+  );
+}
+
+/**
+ * What a skeleton's bars pulse with. Only the bars: the cards and the label
+ * around them are real and stay still, so the page reads as waiting for its
+ * content rather than as fading out.
+ */
+const PULSE = 'animate-pulse motion-reduce:animate-none';
+
+/**
+ * Step one before GitHub has said who this is: the signed-in card's shape, an
+ * avatar and a name. It is a guess at one of the two answers and the box
+ * travels to the other, which is the cheaper miss — the sign-in copy is the
+ * taller of the two, and a skeleton that guessed it would shrink under every
+ * reviewer who is already signed in.
+ */
+function SignInSkeleton() {
+  return (
+    <div className={CARD} role="status">
+      <span className="sr-only">{m.setup_screen_checking()}</span>
+      <div aria-hidden="true" className={`flex items-center gap-2.5 ${PULSE}`}>
+        <SkeletonBar className="size-[22px] shrink-0 rounded-full" />
+        <span className="text-sm">
+          <SkeletonBar className="inline-block h-[0.75em] w-32 align-middle" />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** Varied per row, so the guess does not read as a table. */
+const SKELETON_ROWS: readonly { name: string; reach: string }[] = [
+  { name: 'w-24', reach: 'w-28' },
+  { name: 'w-32', reach: 'w-24' },
+];
+
+/**
+ * Step two before GitHub has said where the App is installed. Each row is the
+ * real row's own skeleton inside the real row's card, so a row that lands where
+ * a placeholder was lands on its pixel; the two buttons are bars the size of a
+ * medium control.
+ */
+function InstallationsSkeleton({ rows }: { rows: boolean }) {
+  return (
+    // The gap is the step body's own, so the rows and the buttons sit as far
+    // apart here as they will once they are two separate children of it.
+    <div className="flex flex-col gap-1.5" role="status">
+      <span className="sr-only">
+        {m.git_hub_account_panel_checking_which_github_accounts_ghdiff_can_read()}
+      </span>
+      {rows && (
+        <div aria-hidden="true" className="mt-2 flex flex-col gap-1.5">
+          <SectionLabel>{m.setup_screen_accounts_with_access()}</SectionLabel>
+          {SKELETON_ROWS.map((widths, index) => (
+            <div key={index} className={CARD}>
+              <InstallationRowSkeleton
+                className={PULSE}
+                nameWidth={widths.name}
+                reachWidth={widths.reach}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+      <div aria-hidden="true" className={`mt-3 flex gap-2 ${PULSE}`}>
+        <SkeletonBar className="h-8 w-32 rounded-md" />
+        <SkeletonBar className="h-8 w-28 rounded-md" />
+      </div>
+    </div>
   );
 }
 

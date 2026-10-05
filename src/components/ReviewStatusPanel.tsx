@@ -77,7 +77,13 @@ export function ReviewStatusPanel({
   status?: number;
   target: ReviewTarget;
 }) {
-  const isError = state === 'error';
+  // A failure is read against whether the reviewer is signed in, and the diff
+  // can fail before GitHub has said whether they are — a 404 is fast. Reading it
+  // then would print the signed-out answer and swap it for the signed-in one a
+  // moment later, so the panel goes on waiting until the session has answered.
+  const isError = state === 'error' && !session.checking;
+  const waiting: Exclude<ReviewLoadState, 'error'> =
+    state === 'error' ? 'fetching' : state;
   // Where the reviewer is, so `/setup` can name the account, and nothing at all
   // for a diff that is not on GitHub. Read off the target rather than passed
   // beside it, so the two cannot disagree.
@@ -110,10 +116,10 @@ export function ReviewStatusPanel({
         />
       )}
       <h2 className="text-ink text-sm font-medium">
-        {isError ? failure.title : COPY[state].title}
+        {isError ? failure.title : COPY[waiting].title}
       </h2>
       <p className="text-ink-muted mt-1 text-sm text-pretty">
-        {isError ? failure.message : COPY[state].message}
+        {isError ? failure.message : COPY[waiting].message}
       </p>
       {/* What has arrived, while it is still arriving. A count and not a
             percentage, because nothing on the wire states a total: the diff

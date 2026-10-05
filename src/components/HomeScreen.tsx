@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { Dialog } from '@/components/ui/Dialog';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import { UserscriptInstall } from '@/components/UserscriptInstall';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
@@ -211,7 +212,19 @@ export function HomeScreen() {
               a middle-click, a right-click and the keyboard all behave the way
               the rest of the web does. */}
           <div className="border-line border-t">
-            {viewer != null ? (
+            {/* Before GitHub has said who this is, either control would be a
+                guess, and the wrong one is a link to sign in shown to somebody
+                who already has. The row keeps its 40px either way. */}
+            {session.checking ? (
+              <div
+                className="flex h-10 animate-pulse items-center justify-center gap-1.5 motion-reduce:animate-none"
+                role="status"
+              >
+                <span className="sr-only">{m.setup_screen_checking()}</span>
+                <SkeletonBar className="size-[18px] shrink-0 rounded-full" />
+                <SkeletonBar className="h-[0.75em] w-28" />
+              </div>
+            ) : viewer != null ? (
               <Button
                 className="h-10 w-full justify-center rounded-none"
                 onClick={() => setEditingAccount(true)}
