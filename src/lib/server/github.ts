@@ -82,7 +82,7 @@ export class GitHubError extends Error {
  * ceiling, access token spent, refresh token live — and the route that asked
  * answers it with 401 before anything is asked of GitHub. The client refreshes
  * on a 401 and on nothing else, so a route that went on anonymously would leave
- * the cookie unmended for the rest of its thirty days: no viewer, Not Found for
+ * the cookie unmended for the rest of its 180 days: no viewer, Not Found for
  * every private diff, and a reviewer told to sign in eight hours after they did.
  * It outranks `GITHUB_TOKEN`, or that reviewer's ninth hour would be spent as
  * the deployment's own account. A session past the ceiling or with no refresh

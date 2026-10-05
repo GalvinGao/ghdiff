@@ -1894,7 +1894,12 @@ not depend on one.
 
 An **absolute lifetime**. The payload carries `issuedAt` and a refresh carries
 it forward unchanged, so `SESSION_MAX_AGE_MS` is a ceiling and not a window that
-rolls. Thirty days, whatever GitHub's six months say.
+rolls. 180 days, inside GitHub's own six months, so the ceiling and not GitHub
+ends a session that is in use. It was thirty, and a month after each sign-in the
+browser dropped the cookie with nothing on screen to say so: the next request
+went to GitHub as nobody, and on ghdiff.com nobody is a Cloudflare address whose
+anonymous quota other Workers have already spent, so the reviewer read "rate
+limit reached" where they should have read "sign in again".
 
 **Refresh reuse treated as theft.** Any failure but one clears the session.
 
@@ -1944,16 +1949,16 @@ the same 401, and `withRefresh` ends the session on that second 401 through
 `/api/auth/signout`, the route that already knows how to end one. It is the one
 place that sees both answers: a 401 after a 204 is the proof the race had no
 winner here, and without that press a cookie no refresh can mend would cost a
-refresh and an error on every load for the rest of its thirty days. The wrong
-guess costs one request; the opposite wrong guess would sign a reviewer out for
-having two tabs open.
+refresh and an error on every load for the rest of its 180 days. The wrong guess
+costs one request; the opposite wrong guess would sign a reviewer out for having
+two tabs open.
 
 **A spent token is answered 401, because nothing else asks for a refresh.**
 `withRefresh` calls the refresh route after a 401 and at no other time, and for
 one deploy no read produced one: `resolveGitHubToken` found the dead token,
 answered with no token, and every read went on anonymously — `viewer.get` said
 nobody was signed in and a private diff came back Not Found, eight hours into a
-sign-in good for thirty days. Only a write reached `requireToken`'s 401, so
+sign-in good for 180 days. Only a write reached `requireToken`'s 401, so
 pressing Approve mended a session a page load could not. `refreshDue` in
 `src/lib/session.ts` names the one state — inside the ceiling, access token
 spent, refresh token live — and the three routes that read the cookie answer it

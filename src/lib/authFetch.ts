@@ -11,7 +11,7 @@
 // spent token with 401 before GitHub is asked, because this is the only place a
 // refresh is ever asked for: a route that went on anonymously instead left the
 // cookie unmended, and for one deploy that is what every read did — the
-// reviewer was signed out from the ninth hour of a session good for thirty days.
+// reviewer was signed out from the ninth hour of a session good for 180 days.
 //
 // One refresh at a time in this tab, however many requests hit 401 at once. Two
 // concurrent refreshes would spend the same single-use refresh token twice and
@@ -58,7 +58,7 @@ export function onSessionEnded(listener: () => void): () => void {
  * time, and it has one failure: a refresh token spent where this browser will
  * never see the result — revoked at github.com, or taken — leaves a cookie no
  * refresh can mend and no route clears, and every load would pay for a refresh
- * and end in an error for the rest of the cookie's thirty days. A 401 on the
+ * and end in an error for the rest of the cookie's 180 days. A 401 on the
  * retry is the proof that the race had no winner here, and this is the one
  * place that sees both answers. `/api/auth/signout` already knows how to end a
  * session, cookie and token both, so the next load is an ordinary signed-out

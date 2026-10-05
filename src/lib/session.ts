@@ -55,12 +55,19 @@ export const SESSION_COOKIE = '__Host-ghdiff-session';
 export const OAUTH_COOKIE = '__Host-ghdiff-oauth';
 
 /**
- * How long a session may live whatever GitHub says. The refresh token is good
- * for six months, and six months is longer than this app has any reason to hold
- * one: a reviewer who has not opened a diff in a month can press the button
- * again. Measured from `issuedAt`.
+ * How long a session may live whatever GitHub says. Measured from `issuedAt`,
+ * which a refresh carries forward, so it is a ceiling and not a window.
+ *
+ * 180 days, just inside the refresh token's own six months (GitHub states 184),
+ * so the ceiling and not GitHub is what ends a session that is used. It was 30
+ * days, and that ended every session a month after its sign-in with nothing on
+ * screen to say so: the browser drops the cookie at its `Max-Age`, the next
+ * request goes to GitHub as nobody, and on ghdiff.com nobody means a Cloudflare
+ * address whose 60 anonymous requests an hour every other Worker on it has
+ * already spent — so a reviewer signed in a month ago read "rate limit reached"
+ * rather than "sign in again".
  */
-export const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+export const SESSION_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
 
 /**
  * How far ahead of its stated expiry an access token counts as spent. GitHub's
@@ -191,7 +198,7 @@ export function sessionLive(payload: SessionPayload, now: number): boolean {
  * for the refresh and sends the request again, and nothing else does. A request
  * that went on anonymously instead would answer with something true and wrong —
  * no viewer, Not Found for a private diff — and the reviewer would be told to
- * sign in eight hours after they did, on a cookie good for thirty days.
+ * sign in eight hours after they did, on a cookie good for 180 days.
  *
  * Every other reading gets no 401. A live token is used. A session past the
  * ceiling, or with no refresh token left, is nobody signed in: there is nothing
