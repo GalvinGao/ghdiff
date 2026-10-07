@@ -19,7 +19,7 @@ import { CommentThreadCard } from '@/components/CommentThreadCard';
 import { applyLineMarks, LINE_MARKS_CSS } from '@/components/diffLineMarks';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { useColorPreviews } from '@/components/diffColorPreviews';
+import { useColorPreviews } from '@/hooks/useColorPreviews';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';

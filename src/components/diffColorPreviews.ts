@@ -1,6 +1,3 @@
-import type { CodeViewOptions } from '@pierre/diffs';
-import { useMemo } from 'react';
-
 import { type ColorValue, findColorValues } from '@/lib/colorValues';
 
 /** The viewer installs this inside each file's shadow root. */
@@ -270,28 +267,4 @@ export function applyColorPreviews(container: HTMLElement): void {
 export function disposeColorPreviews(container: HTMLElement): void {
   controllers.get(container)?.dispose();
   controllers.delete(container);
-}
-
-/** Adds previews before other decorators compute ranges over the source text. */
-export function useColorPreviews<Metadata>(
-  options: CodeViewOptions<Metadata>
-): CodeViewOptions<Metadata> {
-  return useMemo(
-    () => ({
-      ...options,
-      unsafeCSS: (options.unsafeCSS ?? '') + COLOR_PREVIEWS_CSS,
-      onPostRender(...args) {
-        const [node, , phase] = args;
-        if (node != null) {
-          if (phase === 'unmount') disposeColorPreviews(node);
-          else applyColorPreviews(node);
-        }
-        // Preserve every argument, including the item context newer viewers add.
-        if (options.onPostRender != null) {
-          Reflect.apply(options.onPostRender, undefined, args);
-        }
-      },
-    }),
-    [options]
-  );
 }
