@@ -19,6 +19,7 @@ import { CommentThreadCard } from '@/components/CommentThreadCard';
 import { applyLineMarks, LINE_MARKS_CSS } from '@/components/diffLineMarks';
 import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { useColorPreviews } from '@/components/diffColorPreviews';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
@@ -176,12 +177,14 @@ export const ReviewViewer = memo(function ReviewViewer({
     ]
   );
 
+  const colorOptions = useColorPreviews(options);
+
   return (
     <CodeView<CommentMetadata>
       ref={viewerRef}
       containerRef={scrollRef}
       items={items}
-      options={options}
+      options={colorOptions}
       selectedLines={selectedLines}
       onScroll={onScroll}
       onSelectedLinesChange={onSelectedLinesChange}
