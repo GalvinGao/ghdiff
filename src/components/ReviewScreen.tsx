@@ -96,6 +96,42 @@ const ANCHOR_RANGE_ATTEMPTS = 4;
 
 const NO_ITEMS: ReadonlySet<string> = new Set<string>();
 
+/** What the toast after an approval reports. */
+interface ApprovalToast {
+  /** The pull request that was approved. */
+  approved: number;
+  /** Whether its link reached the clipboard. */
+  linkCopied?: boolean;
+  /**
+   * Where Approve went inside a stack: the layer this screen now shows, or the
+   * end of the stack. Absent for a pull request with no stack.
+   */
+  stack?: 'last' | { number: number; position: number; total: number };
+}
+
+/**
+ * The approval in one sentence, and then the link in another. Two messages and
+ * not one per pairing, so the second sentence is written once; the pair joins
+ * through a message of its own, because Chinese and Japanese put no space
+ * between two sentences.
+ */
+function describeApproval(toast: ApprovalToast): string {
+  const { approved, stack } = toast;
+  const verdict =
+    stack == null
+      ? m.review_approved({ approved })
+      : stack === 'last'
+        ? m.review_stack_approved_last({ approved })
+        : m.review_stack_approved_next({ approved, ...stack });
+  if (toast.linkCopied == null) return verdict;
+  return m.review_two_sentences({
+    first: verdict,
+    second: toast.linkCopied
+      ? m.review_link_copied()
+      : m.review_link_not_copied(),
+  });
+}
+
 export function ReviewScreen({
   target,
   untrackedPaths,
@@ -217,46 +253,52 @@ export function ReviewScreen({
     () => stackPosition(openPulls.data?.pulls ?? [], pullTarget),
     [openPulls.data, pullTarget]
   );
-  // What the last approval in the stack did, for the toast that reports it:
-  // handed over by the screen before when it opened this one, or set here when
-  // this one was the last layer and Approve stayed put.
+  // What the last approval did, for the toast that reports it: handed over by
+  // the screen before when it opened this one as the next layer of a stack, or
+  // set here when Approve stayed put.
   const [handoff, setHandoff] = useStackHandoff();
   const targetKey = reviewTargetKey(target);
-  const [stackToast, setStackToast] = useState<{
-    approved: number;
-    next?: { number: number; position: number; total: number };
-  } | null>(() =>
-    handoff?.on === targetKey
-      ? {
-          approved: handoff.approved,
-          next: {
-            number: handoff.number,
-            position: handoff.position,
-            total: handoff.total,
-          },
-        }
-      : null
+  const [approvalToast, setApprovalToast] = useState<ApprovalToast | null>(
+    () =>
+      handoff?.on === targetKey
+        ? {
+            approved: handoff.approved,
+            linkCopied: handoff.linkCopied,
+            stack: {
+              number: handoff.number,
+              position: handoff.position,
+              total: handoff.total,
+            },
+          }
+        : null
   );
   // Taken once, on arrival. A handoff this screen was not meant for is stale
   // by now, and one left in the atom would be reported on the next visit.
   useEffect(() => {
     setHandoff(null);
   }, [setHandoff]);
-  const onReviewSubmitted = (event: ReviewEvent) => {
+  const onReviewSubmitted = (event: ReviewEvent, linkCopied?: boolean) => {
     // A verdict changes the review half of the square the left bar draws on
     // every row, so the list it came from is asked again — and it is a new
     // entry in the conversation, so that is asked again too.
     openPulls.reload();
     conversation.reload();
-    if (event !== 'APPROVE' || stack == null || pullTarget == null) return;
-    const { next } = stack;
-    if (next == null) {
-      setStackToast({ approved: pullTarget.number });
+    if (event !== 'APPROVE' || pullTarget == null) return;
+    // An approval copies its link, and a copy looks exactly like nothing
+    // happening, so every approval gets a toast that says where the link went.
+    const next = stack?.next;
+    if (stack == null || next == null) {
+      setApprovalToast({
+        approved: pullTarget.number,
+        linkCopied,
+        stack: stack == null ? undefined : 'last',
+      });
       return;
     }
     const nextTarget = stackPullTarget(next);
     setHandoff({
       approved: pullTarget.number,
+      linkCopied,
       on: reviewTargetKey(nextTarget),
       number: next.number,
       position: stack.position + 1,
@@ -1123,16 +1165,9 @@ export function ReviewScreen({
         </Toast>
       )}
 
-      {stackToast != null && (
-        <Toast onDismiss={() => setStackToast(null)}>
-          {stackToast.next == null
-            ? m.review_stack_approved_last({ approved: stackToast.approved })
-            : m.review_stack_approved_next({
-                approved: stackToast.approved,
-                number: stackToast.next.number,
-                position: stackToast.next.position,
-                total: stackToast.next.total,
-              })}
+      {approvalToast != null && (
+        <Toast onDismiss={() => setApprovalToast(null)}>
+          {describeApproval(approvalToast)}
         </Toast>
       )}
 

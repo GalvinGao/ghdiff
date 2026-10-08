@@ -10,6 +10,8 @@ import { atom, useAtom } from 'jotai';
 export interface StackHandoff {
   /** The pull request that was approved. */
   approved: number;
+  /** Whether the approval's link reached the clipboard. */
+  linkCopied?: boolean;
   /** `reviewTargetKey` of the screen the approval opened. */
   on: string;
   /** Where that screen sits in the stack. */

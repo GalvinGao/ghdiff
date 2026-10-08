@@ -13,6 +13,10 @@ import { m } from '@/paraglide/messages.js';
 // a row would move the diff under the pointer that made the press. The timer
 // holds while the pointer is on it, so an action on it cannot run out from
 // under the reviewer reaching for it.
+//
+// It is centred by its two insets and `mx-auto`, not by `left-1/2`: a fixed box
+// pinned at the middle has only the right half of the window to wrap in, which
+// on a phone is a column of three words a line.
 
 const TOAST_MS = 8000;
 
@@ -45,7 +49,7 @@ export function Toast({
   return (
     <div
       role="status"
-      className="border-line bg-raised text-ink fixed bottom-4 left-1/2 z-50 flex max-w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 items-center gap-3 rounded-lg border py-2 pr-2 pl-3 text-sm shadow-lg transition-[opacity,translate] duration-200 starting:translate-y-2 starting:opacity-0"
+      className="border-line bg-raised text-ink fixed inset-x-4 bottom-4 z-50 mx-auto flex w-fit max-w-[34rem] items-center gap-3 rounded-lg border py-2 pr-2 pl-3 text-sm shadow-lg transition-[opacity,translate] duration-200 starting:translate-y-2 starting:opacity-0"
       onPointerEnter={hold}
       onPointerLeave={start}
     >
