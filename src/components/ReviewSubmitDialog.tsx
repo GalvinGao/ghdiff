@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { patchQueryOptions } from '@/hooks/useReviewPatch';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
+import { copyWhenReady } from '@/lib/clipboard';
 import { cn } from '@/lib/cn';
 import { describeAge } from '@/lib/pullDetails';
 import {
@@ -80,9 +81,10 @@ export function ReviewSubmitDialog({
   onClose(): void;
   /**
    * Called once GitHub has recorded a verdict, so the caller can reload — and,
-   * for an approval inside a stack, go on to the next layer.
+   * for an approval inside a stack, go on to the next layer. An approval's link
+   * is copied on the way, and `linkCopied` says whether the browser allowed it.
    */
-  onSubmitted?(event: ReviewEvent): void;
+  onSubmitted?(event: ReviewEvent, linkCopied?: boolean): void;
   open: boolean;
   /**
    * Whether the reviewer opened this pull request. GitHub takes a comment from
@@ -313,12 +315,23 @@ export function ReviewSubmitDialog({
                   size="sm"
                   variant={VARIANT[spec.event]}
                   onClick={() => {
+                    const submission = submit(spec.event, body);
+                    // An approval's own address on github.com goes to the
+                    // clipboard, ready to paste wherever the pull request was
+                    // asked for. The write starts here, inside the press, and
+                    // waits for GitHub's answer to know the address.
+                    const copied =
+                      spec.event === 'APPROVE'
+                        ? copyWhenReady(
+                            submission.then((result) => result?.htmlUrl)
+                          )
+                        : undefined;
                     void (async () => {
-                      const result = await submit(spec.event, body);
+                      const result = await submission;
                       // A failure keeps the dialog open, with GitHub's reason in
                       // it and the words the reviewer wrote still in the box.
                       if (result == null) return;
-                      onSubmitted?.(spec.event);
+                      onSubmitted?.(spec.event, await copied);
                       onClose();
                     })();
                   }}

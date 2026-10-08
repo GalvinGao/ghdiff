@@ -130,8 +130,11 @@ interface ReviewHeaderProps {
    * than not at all, so the row does not shift when the diff lands.
    */
   onToggleFiles?(): void;
-  /** Called once a verdict lands, so the caller can reload what changed. */
-  onReviewSubmitted?(event: ReviewEvent): void;
+  /**
+   * Called once a verdict lands, so the caller can reload what changed.
+   * `linkCopied` says whether an approval's link reached the clipboard.
+   */
+  onReviewSubmitted?(event: ReviewEvent, linkCopied?: boolean): void;
   /** Absent unless the target is a pull request. */
   pull?: PullDetailsState;
   /** Absent unless the target is a pull request, which is the only one to
