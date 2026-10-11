@@ -163,6 +163,27 @@ export function searchDiff(
       pattern.lastIndex = 0;
       let found = pattern.exec(text);
       if (found == null) return true;
+      // Changes and unified context are drawn on one side. Emit them
+      // directly instead of allocating a second array and a tuple per hit.
+      // Only split context needs to replay hits for the second column.
+      if (oldLine == null || newLine == null) {
+        const side = oldLine == null ? 'additions' : 'deletions';
+        const lineNumber = (newLine ?? oldLine)!;
+        for (; found != null; found = pattern.exec(text)) {
+          if (matches.length >= limit) {
+            truncated = true;
+            return false;
+          }
+          matches.push({
+            itemId: item.id,
+            side,
+            lineNumber,
+            start: found.index,
+            end: found.index + found[0].length,
+          });
+        }
+        return true;
+      }
       // One hit past what the cap has room for is enough to prove truncation,
       // so a minified line is never scanned to its end for hits that would
       // only be thrown away.
