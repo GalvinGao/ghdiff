@@ -62,6 +62,23 @@ function paths(state: ReviewFilterState): string[] {
 }
 
 describe('applyReviewFilter', () => {
+  it('uses replacement item versions and accepts entries in a different order', () => {
+    applyReviewFilter(data, EMPTY_FILTER_STATE);
+    const replacement = { ...data.items[0], version: 7 };
+    const changed = {
+      ...data,
+      items: [replacement, ...data.items.slice(1)].reverse(),
+    };
+    const result = applyReviewFilter(changed, EMPTY_FILTER_STATE);
+    assert.equal(result.items[0], replacement);
+    assert.equal(result.items[0].version, 7);
+    assert.deepEqual(result.entries, data.entries);
+    assert.equal(
+      applyReviewFilter(data, EMPTY_FILTER_STATE).items[0],
+      data.items[0]
+    );
+  });
+
   it('keeps every file with the default state', () => {
     const result = applyReviewFilter(data, EMPTY_FILTER_STATE);
     assert.equal(result.entries.length, PATHS.length);

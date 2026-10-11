@@ -115,13 +115,30 @@ export function presetStats(
   return stats;
 }
 
+// Query and status changes keep the immutable item array. Build its lookup
+// once, without keeping a review alive after the query cache drops it. A new
+// item array (including new versions/metadata) receives a new index.
+const itemIndexes = new WeakMap<
+  ReviewData['items'],
+  ReadonlyMap<string, CodeViewDiffItem<CommentMetadata>>
+>();
+
+function indexItems(items: ReviewData['items']) {
+  let index = itemIndexes.get(items);
+  if (index == null) {
+    index = new Map(items.map((item) => [item.id, item]));
+    itemIndexes.set(items, index);
+  }
+  return index;
+}
+
 export function applyReviewFilter(
   data: ReviewData,
   state: ReviewFilterState
 ): FilteredReviewData {
   const preset = getFilterPreset(state.presetId);
   const query = state.query.trim().toLowerCase();
-  const itemById = new Map(data.items.map((item) => [item.id, item]));
+  const itemById = indexItems(data.items);
 
   const entries: ReviewFileEntry[] = [];
   const items: CodeViewDiffItem<CommentMetadata>[] = [];
