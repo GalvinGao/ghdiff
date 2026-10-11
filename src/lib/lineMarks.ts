@@ -60,8 +60,32 @@ function lineNumberAt(
   return hunkStart + (arrayIndex - hunkLineIndex);
 }
 
-function stripAllWhitespace(text: string): string {
-  return text.replace(/\s+/g, '');
+const UNICODE_WHITESPACE = /\s/;
+
+function whitespaceAt(text: string, index: number): boolean {
+  const code = text.charCodeAt(index);
+  return (
+    code === 32 ||
+    (code >= 9 && code <= 13) ||
+    (code > 127 && UNICODE_WHITESPACE.test(text[index]))
+  );
+}
+
+/** Compare without constructing two stripped copies; stop on the first change. */
+function equalIgnoringWhitespace(left: string, right: string): boolean {
+  if (left === right) return true;
+  let a = 0;
+  let b = 0;
+  for (;;) {
+    while (a < left.length && whitespaceAt(left, a)) a++;
+    while (b < right.length && whitespaceAt(right, b)) b++;
+    if (a === left.length || b === right.length) {
+      return a === left.length && b === right.length;
+    }
+    if (left.charCodeAt(a) !== right.charCodeAt(b)) return false;
+    a++;
+    b++;
+  }
 }
 
 /**
@@ -83,7 +107,7 @@ function collectQuietPairs(
     const deleted = fileDiff.deletionLines[block.deletionLineIndex + offset];
     const added = fileDiff.additionLines[block.additionLineIndex + offset];
     if (deleted == null || added == null) continue;
-    if (stripAllWhitespace(deleted) !== stripAllWhitespace(added)) continue;
+    if (!equalIgnoringWhitespace(deleted, added)) continue;
     marks.quietDeletions.add(
       lineNumberAt(
         hunk.deletionStart,
