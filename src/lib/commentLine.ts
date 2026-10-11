@@ -6,8 +6,9 @@ import type { CommentLineType } from './comments.ts';
  * Where a 1-based line number on one diff side sits: whether the block holding
  * it is a change or context, and the index of its text in that side's array.
  *
- * One walk, because the two questions are one question. It steps each hunk's
- * ordered content while it tracks the running line number on the requested
+ * The hunks are ordered and disjoint on each side, so their end boundaries
+ * locate the containing hunk without scanning all preceding hunks. Then one
+ * walk steps its content while tracking the running line number on the requested
  * side: a context block of N lines advances both sides by N, and a change block
  * advances the addition side by its additions and the deletion side by its
  * deletions. Every block carries the offset into the side's line array where it
@@ -22,32 +23,41 @@ function locateLine(
   side: AnnotationSide,
   lineNumber: number
 ): { lineType: CommentLineType; index: number } | undefined {
-  for (const hunk of fileDiff.hunks) {
-    let current =
-      side === 'additions' ? hunk.additionStart : hunk.deletionStart;
-    const count =
-      side === 'additions' ? hunk.additionCount : hunk.deletionCount;
-    if (lineNumber < current || lineNumber >= current + count) continue;
-    for (const content of hunk.hunkContent) {
-      const length =
-        content.type === 'context'
-          ? content.lines
-          : side === 'additions'
-            ? content.additions
-            : content.deletions;
-      if (length === 0) continue;
-      if (lineNumber < current + length) {
-        const start =
-          side === 'additions'
-            ? content.additionLineIndex
-            : content.deletionLineIndex;
-        return {
-          lineType: content.type === 'context' ? 'context' : 'change',
-          index: start + (lineNumber - current),
-        };
-      }
-      current += length;
+  const additions = side === 'additions';
+  let low = 0;
+  let high = fileDiff.hunks.length;
+  while (low < high) {
+    const middle = low + Math.floor((high - low) / 2);
+    const hunk = fileDiff.hunks[middle];
+    const end = additions
+      ? hunk.additionStart + hunk.additionCount
+      : hunk.deletionStart + hunk.deletionCount;
+    if (end <= lineNumber) low = middle + 1;
+    else high = middle;
+  }
+  const hunk = fileDiff.hunks[low];
+  if (hunk == null) return undefined;
+  let current = additions ? hunk.additionStart : hunk.deletionStart;
+  if (lineNumber < current) return undefined;
+  for (const content of hunk.hunkContent) {
+    const length =
+      content.type === 'context'
+        ? content.lines
+        : side === 'additions'
+          ? content.additions
+          : content.deletions;
+    if (length === 0) continue;
+    if (lineNumber < current + length) {
+      const start =
+        side === 'additions'
+          ? content.additionLineIndex
+          : content.deletionLineIndex;
+      return {
+        lineType: content.type === 'context' ? 'context' : 'change',
+        index: start + (lineNumber - current),
+      };
     }
+    current += length;
   }
   return undefined;
 }
