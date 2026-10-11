@@ -1,4 +1,5 @@
 import {
+  type QueryClient,
   queryOptions,
   skipToken,
   useQuery,
@@ -10,11 +11,8 @@ import { m } from '../paraglide/messages.js';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
 import { sharedCacheOf, type TextAnswer } from '@/lib/queryCache/sharedCache';
-import {
-  buildReviewData,
-  EMPTY_REVIEW_DATA,
-  type ReviewData,
-} from '@/lib/reviewData';
+import { EMPTY_REVIEW_DATA, type ReviewData } from '@/lib/reviewData';
+import { ReviewParseCache } from '@/lib/reviewParseCache';
 import {
   isGitHubTarget,
   type ReviewTarget,
@@ -66,6 +64,17 @@ interface PatchResponse {
   notice?: string;
 }
 
+const parsesByClient = new WeakMap<QueryClient, ReviewParseCache>();
+
+function parseCacheOf(client: QueryClient): ReviewParseCache {
+  let cache = parsesByClient.get(client);
+  if (cache == null) {
+    cache = new ReviewParseCache();
+    parsesByClient.set(client, cache);
+  }
+  return cache;
+}
+
 /** A failure the route answered, with the status the panel decides on. */
 class PatchRequestError extends Error {
   readonly status: number;
@@ -94,9 +103,10 @@ function patchBytesKey(cacheKey: string) {
  * The query for one target's patch: what `useReviewPatch` reads, and what a
  * screen about to open that target prefetches.
  *
- * The text is cached and the parse is not. Parsing is one synchronous pass
- * over the whole patch, so a prefetch that parsed would freeze the tab under a
- * reviewer still typing their note; the screen that reads the patch parses it.
+ * Prefetch caches only text. Parsing is one synchronous pass over the whole
+ * patch, so a prefetch that parsed would freeze the tab under a reviewer still
+ * typing their note. A mounted screen parses once and reuses that parse on a
+ * fresh revisit, while the raw query response is still alive.
  */
 export function patchQueryOptions(target: ReviewTarget) {
   const cacheKey = reviewTargetKey(target);
@@ -228,11 +238,11 @@ export function useReviewPatch(options: {
     const timer = window.setTimeout(() => {
       setParsed({
         from: response,
-        data: buildReviewData(response.body, cacheKey, untrackedPaths),
+        data: parseCacheOf(queryClient).get(response, cacheKey, untrackedPaths),
       });
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [cacheKey, response, untrackedPaths]);
+  }, [cacheKey, queryClient, response, untrackedPaths]);
 
   // Reset rather than refetch: an errored query that refetches keeps its
   // error until the answer lands, and the panel has to go back to the wait.
