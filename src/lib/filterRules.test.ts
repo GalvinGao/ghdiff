@@ -13,6 +13,19 @@ import {
   isTestPath,
 } from './filterRules.ts';
 
+it('keeps separator and case semantics when identifying path segments', () => {
+  assert.equal(isTestPath('//SRC///TESTS/file.ts///'), true);
+  assert.equal(isGeneratedPath('//vendor///file.ts/'), true);
+  assert.equal(isGeneratedPath('vendor///'), false);
+  assert.equal(isDocsPath('//DOCS///file.ts//'), true);
+  assert.equal(isConfigPath('///Dockerfile///'), true);
+  assert.equal(isSourcePath('//SRC///file.TS///'), true);
+  for (const preset of FILTER_PRESETS) {
+    if (preset.id === 'all' || preset.id.startsWith('without-')) continue;
+    assert.equal(preset.matches('////'), false);
+  }
+});
+
 describe('isTestPath', () => {
   const testPaths = [
     'src/lib/parse.test.ts',
