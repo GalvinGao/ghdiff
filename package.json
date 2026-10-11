@@ -25,7 +25,7 @@
     "storybook:build": "storybook build",
     "storybook:shot": "node scripts/storybook-shot.mjs",
     "storybook:video": "node .agents/skills/pr-visual-evidence/scripts/record-interaction.mjs scripts/storybook-dialog.mjs",
-    "perf:cpu": "node scripts/perf/run.mjs",
+    "perf:cpu": "pnpm i18n:compile && node scripts/perf/run.mjs",
     "perf:compare": "node scripts/perf/compare.mjs",
     "perf:test": "node --test scripts/perf/*.test.mjs"
   },

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { cpus, platform, release, arch } from 'node:os';
 import { resolve } from 'node:path';
@@ -82,10 +83,7 @@ for (const shape of SHAPES) {
     10
   );
   const data = buildReviewData(patch, 'perf');
-  const filtered = applyReviewFilter(data, {
-    ...EMPTY_FILTER_STATE,
-    query: 'src/',
-  });
+  const kept = data.entries.filter((entry) => entry.path.startsWith('src/'));
   measure(
     shape.id,
     'filter',
@@ -93,7 +91,7 @@ for (const shape of SHAPES) {
     (answer) => {
       assert.deepEqual(
         answer.entries.map((entry) => entry.itemId),
-        filtered.entries.map((entry) => entry.itemId)
+        kept.map((entry) => entry.itemId)
       );
       assert.deepEqual(answer.stats, {
         fileCount: Math.ceil(shape.files / 4),
@@ -102,11 +100,41 @@ for (const shape of SHAPES) {
         totalLines: Math.ceil(shape.files / 4) * shape.linesPerSide * 2,
       });
       assert.equal(answer.treeSource.paths.length, answer.items.length);
+      assert.deepEqual(
+        answer.items.map((item) => item.id),
+        kept.map((entry) => entry.itemId)
+      );
+      assert.deepEqual(
+        answer.treeSource.paths,
+        kept.map((entry) => entry.treePath)
+      );
     },
     30
   );
   const presetIds = FILTER_PRESETS.map((preset) => preset.id);
-  const expectedPresets = presetStats(data.entries, presetIds);
+  const countIn = (directory) =>
+    data.entries.filter((entry) => entry.path.startsWith(`${directory}/`))
+      .length;
+  const filesByPreset = {
+    all: shape.files,
+    tests: countIn('tests'),
+    'without-tests': shape.files - countIn('tests'),
+    source: countIn('src') + countIn('docs'),
+    docs: countIn('docs'),
+    config: 0,
+    generated: countIn('generated'),
+    'without-generated': shape.files - countIn('generated'),
+  };
+  const expectedPresets = new Map(
+    presetIds.map((id) => [
+      id,
+      {
+        files: filesByPreset[id],
+        addedLines: filesByPreset[id] * shape.linesPerSide,
+        deletedLines: filesByPreset[id] * shape.linesPerSide,
+      },
+    ])
+  );
   measure(
     shape.id,
     'presets',
@@ -135,6 +163,22 @@ for (const shape of SHAPES) {
       deletedLines: entries.length * shape.linesPerSide,
     });
   }
+  assert.equal(
+    expectedTree.addedDigits,
+    String(
+      Math.max(
+        ...[...expectedTree.byPath.values()].map((stat) => stat.addedLines)
+      )
+    ).length
+  );
+  assert.equal(
+    expectedTree.deletedDigits,
+    String(
+      Math.max(
+        ...[...expectedTree.byPath.values()].map((stat) => stat.deletedLines)
+      )
+    ).length
+  );
   measure(
     shape.id,
     'tree',
@@ -205,6 +249,12 @@ const report = {
     release: release(),
     arch: arch(),
     cpu: cpus()[0]?.model,
+    packageManager: JSON.parse(
+      await readFile(resolve(root, 'package.json'), 'utf8')
+    ).packageManager,
+    lockfileSha256: createHash('sha256')
+      .update(await readFile(resolve(root, 'pnpm-lock.yaml')))
+      .digest('hex'),
   },
   state:
     'warm CPU; two discarded warmups; serial phases; fixture generation and imports excluded',

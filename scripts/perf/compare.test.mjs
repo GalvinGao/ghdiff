@@ -36,3 +36,29 @@ test('refuses incomparable or missing measurements', () => {
     compareReports(report(100), { ...report(100), results: [] })
   );
 });
+
+test('a duplicated phase cannot replace a missing phase in either report', () => {
+  const base = report(100);
+  base.results.push({ ...base.results[0], phase: 'filter' });
+  const duplicate = { ...base, results: [base.results[0], base.results[0]] };
+  assert.throws(() => compareReports(base, duplicate), /duplicate head metric/);
+  assert.throws(() => compareReports(duplicate, base), /duplicate base metric/);
+});
+
+test('rejects empty measurements, changed state and invalid baseline budgets', () => {
+  assert.throws(() =>
+    compareReports(
+      { ...report(100), results: [] },
+      { ...report(100), results: [] }
+    )
+  );
+  assert.throws(() =>
+    compareReports(
+      { ...report(100), state: 'cold' },
+      { ...report(100), state: 'warm' }
+    )
+  );
+  const base = report(100);
+  base.results[0].budget.relative = NaN;
+  assert.throws(() => compareReports(base, report(100)));
+});
