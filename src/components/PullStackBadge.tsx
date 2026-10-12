@@ -1,7 +1,7 @@
 import { IconLayers } from '@pierre/icons';
 
-import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * How many pull requests one stack chains together: the layers glyph, and the

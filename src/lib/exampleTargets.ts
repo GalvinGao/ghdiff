@@ -1,5 +1,5 @@
-import { m } from '../paraglide/messages.js';
-import { type GitHubReviewTarget } from './reviewTarget.ts';
+import { type GitHubReviewTarget } from './reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 // Diffs worth opening before there is one of your own to read.
 //

@@ -1,10 +1,10 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { buildAgentPrompt, MAX_QUOTED_LINES } from './agentPrompt.ts';
-import { commentSection, commentThread } from './commentFixtures.ts';
-import type { CommentListSection } from './comments.ts';
+import { buildAgentPrompt, MAX_QUOTED_LINES } from './agentPrompt';
+import { commentSection, commentThread } from './commentFixtures';
+import type { CommentListSection } from './comments';
 
 // One file of ten new lines, as one hunk of one change block. That is enough
 // for every question here: which line a note quotes, how a range is labelled,

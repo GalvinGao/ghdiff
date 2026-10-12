@@ -6,7 +6,6 @@ import {
 } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
 import { sharedCacheOf, type TextAnswer } from '@/lib/queryCache/sharedCache';
@@ -22,6 +21,7 @@ import {
   reviewTargetQuery,
 } from '@/lib/reviewTarget';
 import { readStreamedText } from '@/lib/streamText';
+import { m } from '@/paraglide/messages.js';
 
 export type PatchLoadState = 'fetching' | 'parsing' | 'ready' | 'error';
 

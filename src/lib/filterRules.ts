@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // Preset path filters for the review surface.
 //
 // The file tree and the diff list are both driven by the selected presets, so

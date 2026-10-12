@@ -1,6 +1,5 @@
 import type { FileDiffMetadata, SelectionSide } from '@pierre/diffs';
 
-import { m } from '../../paraglide/messages.js';
 import { forEachRenderedRow, rangesForSpans } from '@/components/diffLineMarks';
 import {
   type EffectFold,
@@ -8,6 +7,7 @@ import {
   type EffectLineHint,
   findEffectHints,
 } from '@/lib/lenses/effect/effectHints';
+import { m } from '@/paraglide/messages.js';
 
 // How the Effect lens's reading, in src/lib/lenses/effect/effectHints.ts,
 // reaches the rendered rows.

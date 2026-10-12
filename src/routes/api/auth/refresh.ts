@@ -6,7 +6,7 @@ import {
   GitHubAuthError,
   REFRESH_ALREADY_SPENT,
   refreshGrant,
-} from '@/lib/server/githubApp';
+} from '@/lib/server/github/app';
 import { clearSession, readSession, writeSession } from '@/lib/server/session';
 import {
   accessTokenFresh,

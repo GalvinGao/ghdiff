@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   accountAvatarUrl,
@@ -8,7 +8,7 @@ import {
   repoPullsUrl,
   repoUrl,
   reviewTargetUrl,
-} from './githubUrls.ts';
+} from './urls';
 
 const REF = { owner: 'acme', repo: 'app' };
 

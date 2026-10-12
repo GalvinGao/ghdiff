@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { checkApiRequest, hostAllowed, tokenMatches } from './guards.ts';
+import { checkApiRequest, hostAllowed, tokenMatches } from './guards';
 
 describe('hostAllowed', () => {
   it('takes the two spellings of loopback, on this port', () => {

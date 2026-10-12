@@ -1,8 +1,8 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { classifyCommentLineType, commentLineText } from './commentLine.ts';
+import { classifyCommentLineType, commentLineText } from './commentLine';
 
 // A file where two lines were replaced by three, with context either side:
 //

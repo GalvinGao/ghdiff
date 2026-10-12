@@ -1,4 +1,4 @@
-import type { CommentPayload, ThreadComment } from './comments.ts';
+import type { CommentPayload, ThreadComment } from './comments';
 
 // Grouping review comments into threads.
 //

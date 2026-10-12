@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { fromBase64Url, toBase64Url } from './base64url.ts';
+import { fromBase64Url, toBase64Url } from './base64url';
 
 describe('toBase64Url', () => {
   it('uses the URL-safe alphabet and no padding', () => {

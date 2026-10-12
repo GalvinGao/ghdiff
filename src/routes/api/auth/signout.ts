@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import { empty, readAuthSetup } from '@/lib/server/authRoute';
-import { revokeToken } from '@/lib/server/githubApp';
+import { revokeToken } from '@/lib/server/github/app';
 import { clearHandoff, clearSession, readSession } from '@/lib/server/session';
 import { originAllowed } from '@/lib/session';
 

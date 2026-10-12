@@ -2,9 +2,9 @@ import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { claimModuleReload, isModuleLoadError } from '@/lib/moduleRecovery';
+import { m } from '@/paraglide/messages.js';
 
 /** Eagerly loaded with the router, so a missing route chunk cannot hide recovery. */
 export function RouteError({ error }: ErrorComponentProps) {

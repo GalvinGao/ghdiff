@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { isGitPatch, unquoteGitPath } from './gitPath.ts';
-import { buildReviewData } from './reviewData.ts';
+import { isGitPatch, unquoteGitPath } from './gitPath';
+import { buildReviewData } from './reviewData';
 
 // Every fixture below is what `git diff` and `git show` printed for the same
 // files, with the default `core.quotePath`, and not text written to match a

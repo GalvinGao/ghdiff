@@ -1,5 +1,5 @@
-import type { LocalizationSettings } from './config.ts';
-import type { LocalizationGroup } from './model.ts';
+import type { LocalizationSettings } from './config';
+import type { LocalizationGroup } from './model';
 
 // Which languages the reviewer reads, and which they skip.
 //

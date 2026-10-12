@@ -22,7 +22,6 @@ import {
   useRef,
 } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { CommentComposer } from '@/components/CommentComposer';
 import { CommentThreadCard } from '@/components/CommentThreadCard';
 import {
@@ -53,6 +52,7 @@ import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
 import type { SearchMarks } from '@/lib/diffSearch';
 import type { ViewerControls } from '@/lib/viewerControls';
+import { m } from '@/paraglide/messages.js';
 
 /** The one method the scroll handler needs from the viewer it is handed. */
 interface ItemTopReader {

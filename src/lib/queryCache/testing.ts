@@ -1,9 +1,9 @@
 // Stand-ins for the browser's channel and store, for the tests beside this
 // file. Nothing outside a test imports this.
 
-import type { CacheMessage, MessageBus } from './messages.ts';
-import type { BlobMeta, CacheRecord } from './records.ts';
-import type { CacheStore } from './store.ts';
+import type { CacheMessage, MessageBus } from './messages';
+import type { BlobMeta, CacheRecord } from './records';
+import type { CacheStore } from './store';
 
 /**
  * A channel between any number of tabs in one process. A message reaches every

@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router';
 
-import { m } from '../paraglide/messages.js';
 import { EXAMPLE_TARGETS } from '@/lib/exampleTargets';
 import { reviewTargetDisplayPath, reviewTargetSplat } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * Diffs to open when there is nothing of your own to review yet.

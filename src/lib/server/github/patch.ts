@@ -12,8 +12,8 @@
 // `synthesizePatch` reports both counts so the UI can say what is missing
 // rather than showing a short diff as if it were whole.
 
-import { m } from '../../paraglide/messages.js';
-import { quoteGitPath } from '../gitPath.ts';
+import { quoteGitPath } from '@/lib/gitPath';
+import { m } from '@/paraglide/messages.js';
 
 export interface GitHubPullFile {
   filename: string;

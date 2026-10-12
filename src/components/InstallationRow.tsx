@@ -1,6 +1,5 @@
 import { IconArrowUpRight } from '@pierre/icons';
 
-import { m } from '../paraglide/messages.js';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import { cn } from '@/lib/cn';
@@ -8,6 +7,7 @@ import {
   type AppInstallation,
   describeInstallationReach,
 } from '@/lib/installations';
+import { m } from '@/paraglide/messages.js';
 
 // The row and the shape of the row, side by side and sharing every class that
 // decides how tall it is. A skeleton whose figures were copied would drift from

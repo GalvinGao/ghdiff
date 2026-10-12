@@ -1,5 +1,5 @@
-import { m } from '../paraglide/messages.js';
-import { isRateLimited } from './rateLimit.ts';
+import { isRateLimited } from './rateLimit';
+import { m } from '@/paraglide/messages.js';
 
 // What the review panel says, and which button it offers, when the diff does
 // not arrive.

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   COMMAND_ARGS,
@@ -7,7 +7,7 @@ import {
   helpText,
   isUsableRevision,
   parseArgs,
-} from './args.ts';
+} from './args';
 
 function run(...argv: string[]) {
   const parsed = parseArgs(argv);

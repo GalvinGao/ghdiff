@@ -1,4 +1,4 @@
-import { getLocale } from '../paraglide/runtime.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 export function formatNumber(
   value: number,

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { describeCron, findCronSchedules } from './cron.ts';
+import { describeCron, findCronSchedules } from './cron';
 
 const EVERY_FIVE_MINUTES = /every 5 minutes/i;
 const WEEKDAY_MORNING = /09:00.*Monday.*Friday/;

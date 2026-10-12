@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import type { ReviewData, ReviewFileEntry } from './reviewData.ts';
+import type { ReviewData, ReviewFileEntry } from './reviewData';
 import {
   applyReviewFilter,
   availableStatuses,
@@ -9,7 +9,7 @@ import {
   isFilterActive,
   presetStats,
   type ReviewFilterState,
-} from './reviewFilter.ts';
+} from './reviewFilter';
 
 function entry(
   path: string,

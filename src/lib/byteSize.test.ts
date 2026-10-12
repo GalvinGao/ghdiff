@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import { formatBytes } from './byteSize.ts';
+import { formatBytes } from './byteSize';
 
 test('counts bytes up to the first thousand', () => {
   assert.equal(formatBytes(0), '0 bytes');

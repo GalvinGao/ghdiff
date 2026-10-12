@@ -1,6 +1,6 @@
 import type { AnnotationSide, FileDiffMetadata } from '@pierre/diffs';
 
-import type { CommentLineType } from './comments.ts';
+import type { CommentLineType } from './comments';
 
 /**
  * Where a 1-based line number on one diff side sits: whether the block holding

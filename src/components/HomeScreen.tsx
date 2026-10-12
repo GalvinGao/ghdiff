@@ -4,7 +4,6 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { type MouseEvent, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { ExampleTargets } from '@/components/ExampleTargets';
@@ -21,8 +20,9 @@ import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
 import { useServedCount } from '@/hooks/useServedCount';
 import { cn } from '@/lib/cn';
-import { GHDIFF_REPO, repoUrl } from '@/lib/githubUrls';
+import { GHDIFF_REPO, repoUrl } from '@/lib/github/urls';
 import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 const creditsMarkup = {
   diffs: ({ children }: { children?: ReactNode }) => (

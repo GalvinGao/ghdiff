@@ -15,9 +15,9 @@
 // that applies, and both the list and the switch read that answer, so the
 // switch cannot show a scope pressed that the list is not drawing.
 
-import { flattenStacks, isViewerPull, type PullSummary } from './pulls.ts';
-import { buildPullStacks } from './pullStacks.ts';
-import type { GitHubPullTarget } from './reviewTarget.ts';
+import { flattenStacks, isViewerPull, type PullSummary } from './pulls';
+import { buildPullStacks } from './pullStacks';
+import type { GitHubPullTarget } from './reviewTarget';
 
 export type PullScope = 'all' | 'mine' | 'others' | 'stack';
 

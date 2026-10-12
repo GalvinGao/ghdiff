@@ -1,6 +1,6 @@
 import type { GitStatus } from '@pierre/trees';
 
-import { type FilterPresetId, isFilterPresetId } from './filterRules.ts';
+import { type FilterPresetId, isFilterPresetId } from './filterRules';
 
 // The filter a reviewer left on each diff, so the next visit opens with it.
 //

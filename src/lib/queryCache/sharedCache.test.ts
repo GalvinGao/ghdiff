@@ -1,22 +1,22 @@
 import { QueryClient } from '@tanstack/react-query';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   type Coordinator,
   softLeaseCoordinator,
   webLocksCoordinator,
-} from './coordinator.ts';
-import { withoutAttachments } from './persist.ts';
+} from './coordinator';
+import { withoutAttachments } from './persist';
 import {
   CACHE_SCHEMA_VERSION,
   type CacheRecord,
   moment,
   queryHash,
   recordId,
-} from './records.ts';
-import { type Persist, SESSION_QUERY_KEY, SharedCache } from './sharedCache.ts';
-import { busHub, memoryStore, settle, until } from './testing.ts';
+} from './records';
+import { type Persist, SESSION_QUERY_KEY, SharedCache } from './sharedCache';
+import { busHub, memoryStore, settle, until } from './testing';
 
 const KEY = ['pulls.list', 'acme/app'];
 

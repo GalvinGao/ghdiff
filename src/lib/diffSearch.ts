@@ -1,6 +1,6 @@
 import type { FileDiffMetadata, SelectionSide } from '@pierre/diffs';
 
-import type { DiffStyle } from './viewerControls.ts';
+import type { DiffStyle } from './viewerControls';
 
 // Find in diff.
 //

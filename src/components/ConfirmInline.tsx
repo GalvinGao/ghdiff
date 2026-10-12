@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
+import { m } from '@/paraglide/messages.js';
 
 // A destructive action asks twice, in place.
 //

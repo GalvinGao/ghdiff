@@ -1,7 +1,6 @@
 import type { DiffLineAnnotation, SelectedLineRange } from '@pierre/diffs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
 import { useForcedRefetch, useSharedQuery } from './useSharedQuery';
 import {
@@ -29,6 +28,7 @@ import {
 } from '@/lib/reviewTarget';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { localCommentsStorageKey } from '@/lib/storageKeys';
+import { m } from '@/paraglide/messages.js';
 
 // Where a comment lives depends on the target. A GitHub pull request keeps its
 // comments on GitHub, so a comment written here shows up on github.com. Every

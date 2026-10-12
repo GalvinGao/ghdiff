@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // Every address the ghdiff GitHub App has on github.com, built in one place.
 //
 // This is the same rule `githubUrls.ts` holds for the addresses of a repository:

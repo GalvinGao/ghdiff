@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // Where the App can actually reach, as the setup page reports it.
 //
 // A personal access token needed no such idea: it could see whatever its owner

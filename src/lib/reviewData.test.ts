@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { gitStatusFromChangeType, reviewFileStatus } from './reviewData.ts';
+import { gitStatusFromChangeType, reviewFileStatus } from './reviewData';
 
 describe('gitStatusFromChangeType', () => {
   it('folds both rename variants into one badge', () => {

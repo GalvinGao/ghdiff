@@ -19,10 +19,10 @@ import {
   useState,
 } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import type { ColorScheme } from '@/hooks/useColorMode';
 import type { ReviewTreeSource } from '@/lib/reviewFilter';
 import type { TreeStatIndex } from '@/lib/treeStats';
+import { m } from '@/paraglide/messages.js';
 
 const ITEM_HEIGHT = 24;
 

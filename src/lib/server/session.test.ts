@@ -1,15 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { fromBase64Url, toBase64Url } from '../base64url.ts';
-import {
-  OAUTH_COOKIE,
-  type OAuthHandoff,
-  SESSION_COOKIE,
-  SESSION_MAX_AGE_MS,
-  type SessionPayload,
-} from '../session.ts';
-import { parseDeploymentConfig } from './config.ts';
+import { parseDeploymentConfig } from './config';
 import {
   clearSession,
   codeChallenge,
@@ -21,7 +13,15 @@ import {
   seal,
   writeHandoff,
   writeSession,
-} from './session.ts';
+} from './session';
+import { fromBase64Url, toBase64Url } from '@/lib/base64url';
+import {
+  OAUTH_COOKIE,
+  type OAuthHandoff,
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_MS,
+  type SessionPayload,
+} from '@/lib/session';
 
 const NOW = 1_800_000_000_000;
 const HOUR = 60 * 60 * 1000;

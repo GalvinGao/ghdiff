@@ -1,7 +1,6 @@
 import { IconBrandGithub } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
-import { m } from '../paraglide/messages.js';
 import { GitHubAccountPanel } from '@/components/GitHubAccountPanel';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
@@ -12,6 +11,7 @@ import {
 } from '@/components/ui/DropdownMenu';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import type { GitHubSessionState } from '@/hooks/useGitHubSession';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * The header's account control, which is two different controls.

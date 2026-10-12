@@ -1,12 +1,12 @@
 import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
 import {
   oldFileFromPatch,
   patchFitsNewFile,
   splitFileLines,
-} from './diffHydration.ts';
+} from './diffHydration';
 
 // Every patch below came out of `git diff --no-index -U3`, so what is under
 // test is the reverse-apply against git's own arithmetic rather than against a

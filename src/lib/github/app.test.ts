@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   AUTH_ERROR_PARAM,
@@ -9,7 +9,7 @@ import {
   callbackUrl,
   CALLBACK_PATH,
   installUrl,
-} from './githubApp.ts';
+} from './app';
 
 const CLIENT_ID = 'Iv23liTestClientId';
 

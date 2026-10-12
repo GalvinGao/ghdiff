@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // The faces the diff can be read in.
 //
 // A code review is almost entirely code, so this is the one typeface choice

@@ -1,10 +1,10 @@
 import { RPCHandler } from '@orpc/server/fetch';
 import { createFileRoute } from '@tanstack/react-router';
 
-import { m } from '../../../paraglide/messages.js';
 import { withEvlog } from '@/lib/logger';
 import { router } from '@/lib/rpc/router';
-import { resolveGitHubToken } from '@/lib/server/github';
+import { resolveGitHubToken } from '@/lib/server/github/client';
+import { m } from '@/paraglide/messages.js';
 
 // Every JSON call the app makes, under one path. The diff is not here: it is a
 // patch of up to tens of megabytes that the route pipes straight from GitHub to

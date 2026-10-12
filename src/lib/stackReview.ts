@@ -7,9 +7,9 @@
 // reviewer who looks up from the dialog sees the next row directly under the
 // one they are on.
 
-import type { PullSummary } from './pulls.ts';
-import { currentStackPulls } from './pullScope.ts';
-import type { GitHubPullTarget } from './reviewTarget.ts';
+import type { PullSummary } from './pulls';
+import { currentStackPulls } from './pullScope';
+import type { GitHubPullTarget } from './reviewTarget';
 
 /** The address of a pull request the list holds. */
 export function stackPullTarget(pull: PullSummary): GitHubPullTarget {

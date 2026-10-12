@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import {
   useForcedRefetch,
   useSharedCache,
@@ -13,6 +12,7 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
+import { m } from '@/paraglide/messages.js';
 
 export interface OpenPullsState {
   data?: OpenPullsData;

@@ -2,7 +2,6 @@ import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { Button } from '@/components/ui/Button';
@@ -15,6 +14,7 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { describePullStatus, type PullReviewStatus } from '@/lib/pullStatus';
+import { m } from '@/paraglide/messages.js';
 
 const watchMarkup = {
   strong: ({ children }: { children?: ReactNode }) => (

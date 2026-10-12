@@ -8,7 +8,7 @@
 // the small half alone — a startup that read every stored patch to find the
 // expired ones would read tens of megabytes to throw most of them away.
 
-import type { BlobMeta, CacheRecord } from './records.ts';
+import type { BlobMeta, CacheRecord } from './records';
 
 const DATABASE = 'ghdiff-cache';
 const DATABASE_VERSION = 2;

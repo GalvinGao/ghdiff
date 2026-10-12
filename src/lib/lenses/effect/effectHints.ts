@@ -1,6 +1,6 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
 
-import { m } from '../../../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 
 // What an Effect program says between the `yield*`s.
 //

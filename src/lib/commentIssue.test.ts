@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   composeCommentIssue,
   issueCommentBody,
   issueTitleFromText,
   MAX_ISSUE_TITLE_LENGTH,
-} from './commentIssue.ts';
+} from './commentIssue';
 
 const BASE = {
   permalink: 'https://github.com/acme/app/blob/abc/src/a.ts#L3-L5',

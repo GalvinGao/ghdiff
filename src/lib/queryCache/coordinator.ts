@@ -6,7 +6,7 @@
 // coordinator that let two tabs through at once costs a request, never a wrong
 // answer. That is what lets the weaker two below exist at all.
 
-import type { CacheMessage, MessageBus } from './messages.ts';
+import type { CacheMessage, MessageBus } from './messages';
 
 export type CoordinatorKind = 'web-locks' | 'soft-lease' | 'local';
 

@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // The two things a reviewer wants to know about an open pull request before
 // they open it: has anybody reviewed it, and does it build.
 //

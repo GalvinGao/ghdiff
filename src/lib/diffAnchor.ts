@@ -1,6 +1,6 @@
 import type { SelectedLineRange, SelectionSide } from '@pierre/diffs';
 
-import type { ReviewFileEntry } from './reviewData.ts';
+import type { ReviewFileEntry } from './reviewData';
 
 // The fragment that names a place in a diff.
 //

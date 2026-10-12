@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { describeReviewFailure } from './reviewFailure.ts';
+import { describeReviewFailure } from './reviewFailure';
 
 // These test the decision, not the prose. The wording is written by `agy -p`
 // against the project's copy brief and is rewritten whenever it reads badly, so

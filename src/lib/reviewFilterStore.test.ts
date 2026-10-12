@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   acceptReviewFilterStore,
@@ -7,7 +7,7 @@ import {
   MAX_STORED_REVIEW_FILTERS,
   type StoredReviewFilter,
   writeReviewFilter,
-} from './reviewFilterStore.ts';
+} from './reviewFilterStore';
 
 describe('acceptReviewFilterStore', () => {
   it('refuses a value that is not an object', () => {

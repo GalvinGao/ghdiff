@@ -1,9 +1,9 @@
 import type { DiffLineAnnotation } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { isOnlyInThisTab, mergeGitHubThreads } from './commentMerge.ts';
-import type { CommentMetadata, ThreadComment } from './comments.ts';
+import { isOnlyInThisTab, mergeGitHubThreads } from './commentMerge';
+import type { CommentMetadata, ThreadComment } from './comments';
 
 type Annotation = DiffLineAnnotation<CommentMetadata>;
 

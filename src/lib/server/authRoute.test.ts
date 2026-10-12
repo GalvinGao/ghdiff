@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { externalRequestUrl } from './authRoute.ts';
+import { externalRequestUrl } from './authRoute';
 
 // The URL a request arrived on from outside, behind whatever terminates TLS.
 

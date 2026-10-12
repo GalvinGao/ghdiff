@@ -1,4 +1,4 @@
-import { m } from '../../paraglide/messages.js';
+import { USER_AGENT } from './client';
 // The three calls the App makes about its own credentials: spend a code, spend a
 // refresh token, and revoke an access token. Nothing else here talks to GitHub.
 //
@@ -8,9 +8,9 @@ import { m } from '../../paraglide/messages.js';
 // alone says nothing, and `GitHubAuthError` carries GitHub's own error code up to
 // the route. `/api/auth/refresh` reads that code: one value of it means another
 // tab won a race, and every other value means the session is over.
-import { TOKEN_URL } from '../githubApp.ts';
-import type { DeploymentConfig } from './config.ts';
-import { USER_AGENT } from './github.ts';
+import { TOKEN_URL } from '@/lib/github/app';
+import type { DeploymentConfig } from '@/lib/server/config';
+import { m } from '@/paraglide/messages.js';
 
 /** What the App is, as a deployment configures it. */
 export interface AppConfig {

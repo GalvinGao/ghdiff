@@ -4,19 +4,16 @@ import { realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  describeReviewTarget,
-  type LocalDiffTarget,
-} from '../../src/lib/reviewTarget.ts';
-import { DEFAULT_PORT, helpText, parseArgs, VERSION } from './args.ts';
-import { TOKEN_PARAM } from './guards.ts';
+import { DEFAULT_PORT, helpText, parseArgs, VERSION } from './args';
+import { TOKEN_PARAM } from './guards';
 import {
   listUntracked,
   pinCommit,
   resolveRepositoryRoot,
   verifyRange,
-} from './repo.ts';
-import { startLocalServer } from './server.ts';
+} from './repo';
+import { startLocalServer } from './server';
+import { describeReviewTarget, type LocalDiffTarget } from '@/lib/reviewTarget';
 
 // `ghdiff` — the ghdiff review surface, over a diff that is on this machine.
 //

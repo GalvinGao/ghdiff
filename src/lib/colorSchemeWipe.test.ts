@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { wipeOriginFromClick, wipeReach } from './colorSchemeWipe.ts';
+import { wipeOriginFromClick, wipeReach } from './colorSchemeWipe';
 
 // The two decisions in this module that need no browser: where the circle
 // starts, and how far it has to go. The transition itself is checked in a

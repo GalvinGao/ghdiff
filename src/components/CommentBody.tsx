@@ -11,9 +11,9 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
-import { m } from '../paraglide/messages.js';
 import { resolveAttachment, type SignedAttachment } from '@/lib/attachments';
 import { cn } from '@/lib/cn';
+import { m } from '@/paraglide/messages.js';
 
 // GFM for comment bodies: tables, task lists, strikethrough, autolinks, fences.
 //

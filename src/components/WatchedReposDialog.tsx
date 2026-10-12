@@ -1,7 +1,7 @@
-import { m } from '../paraglide/messages.js';
 import { Dialog } from '@/components/ui/Dialog';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
 import type { WatchedReposState } from '@/hooks/useWatchedRepos';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * Editing the watch list is its own task, so it gets its own window. It used to

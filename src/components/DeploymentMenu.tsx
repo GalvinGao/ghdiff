@@ -3,7 +3,6 @@ import { MarkGithubIcon } from '@primer/octicons-react/MarkGithubIcon';
 import { RocketIcon } from '@primer/octicons-react/RocketIcon';
 import { useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { Button } from '@/components/ui/Button';
 import {
@@ -29,6 +28,7 @@ import {
 } from '@/lib/deployments';
 import { describeAge } from '@/lib/pullDetails';
 import type { GitHubReviewTarget } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * The full history is a scroll away under the latest rows. Twenty pushes of a

@@ -18,7 +18,8 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "pnpm i18n:compile && node --test --experimental-strip-types \"src/lib/**/*.test.ts\" \"cli/src/**/*.test.ts\"",
+    "test": "pnpm run '/^test:[^:]+$/'",
+    "test:lib": "pnpm i18n:compile && vitest run --project lib --project cli",
     "i18n:compile": "node scripts/compile-i18n.mjs && node scripts/build-userscript.mjs",
     "i18n:check": "node scripts/check-i18n.mjs",
     "storybook": "storybook dev -p 6006 --no-open",
@@ -86,6 +87,7 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
+    "vitest": "^5.0.0",
     "wrangler": "^4.125.0"
   },
   "packageManager": "pnpm@12.4.1"

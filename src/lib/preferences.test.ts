@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   CODE_FONT_PREFERENCE,
@@ -13,8 +13,8 @@ import {
   VIEWER_CONTROLS_PREFERENCE,
   WATCH_OFFER_PREFERENCE,
   WATCHED_REPOS_PREFERENCE,
-} from './preferences.ts';
-import { DEFAULT_VIEWER_CONTROLS } from './viewerControls.ts';
+} from './preferences';
+import { DEFAULT_VIEWER_CONTROLS } from './viewerControls';
 
 // Read as one kind, so a rule below is asked of every codec rather than of each
 // one separately. The two directions are methods, which TypeScript treats as

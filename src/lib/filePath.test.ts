@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { isReadablePath } from './filePath.ts';
+import { isReadablePath } from './filePath';
 
 describe('isReadablePath', () => {
   it('takes an ordinary path, and one with a space in it', () => {

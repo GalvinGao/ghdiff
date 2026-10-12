@@ -1,29 +1,29 @@
 import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import {
-  acceptRepoLensStore,
-  applyLenses,
-  type LensFile,
-  repoLensKey,
-} from '../lenses.ts';
 import {
   acceptLocalizationSettings,
   detectLocaleSources,
   type LocaleSource,
-} from './config.ts';
-import { readEntryLine, readFlatCatalogue } from './flatJson.ts';
-import { detectLocalePatterns, matchLocalePath } from './localePaths.ts';
-import { buildLocalizationModel } from './model.ts';
-import { placeholderNames, tokenizeMessage } from './placeholders.ts';
+} from './config';
+import { readEntryLine, readFlatCatalogue } from './flatJson';
+import { detectLocalePatterns, matchLocalePath } from './localePaths';
+import { buildLocalizationModel } from './model';
+import { placeholderNames, tokenizeMessage } from './placeholders';
 import {
   isLocaleShown,
   localeChoices,
   showAllLocales,
   shownLocales,
   toggleShownLocale,
-} from './shownLocales.ts';
+} from './shownLocales';
+import {
+  acceptRepoLensStore,
+  applyLenses,
+  type LensFile,
+  repoLensKey,
+} from '@/lib/lenses/lenses';
 
 // The catalogue hunks below are troph-team/lilja#778 as GitHub serves it: the
 // same three keys added to every locale of one message directory, with three

@@ -15,7 +15,8 @@
 // It reads the keyring out of the deployment's configuration and imports
 // nothing from `cloudflare:workers`, which is what lets `node --test` reach it.
 
-import { fromBase64Url, toBase64Url } from '../base64url.ts';
+import type { DeploymentConfig } from './config';
+import { fromBase64Url, toBase64Url } from '@/lib/base64url';
 import {
   clearCookieHeader,
   OAUTH_COOKIE,
@@ -26,8 +27,7 @@ import {
   type SessionPayload,
   sessionCookieMaxAge,
   setCookieHeader,
-} from '../session.ts';
-import type { DeploymentConfig } from './config.ts';
+} from '@/lib/session';
 
 /**
  * The first byte of every sealed value. It is not a version of the cipher — a

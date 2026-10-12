@@ -2,7 +2,6 @@ import { IconFilter, IconXSquircle } from '@pierre/icons';
 import type { GitStatus } from '@pierre/trees';
 import { useMemo } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -25,6 +24,7 @@ import {
   presetStats,
   type ReviewFilterState,
 } from '@/lib/reviewFilter';
+import { m } from '@/paraglide/messages.js';
 
 // Status colors match the values the tree's own stylesheet uses, so a badge
 // here reads the same as the badge on the row.

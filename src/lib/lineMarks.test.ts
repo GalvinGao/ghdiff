@@ -1,8 +1,8 @@
 import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import { findLineMarks } from './lineMarks.ts';
+import { findLineMarks } from './lineMarks';
 
 // Every patch below is written the way git writes one, and parsed by the same
 // `parsePatchFiles` the app itself feeds, so the line numbers under test are

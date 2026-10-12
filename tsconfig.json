@@ -13,10 +13,6 @@
     // `import appCss from '@/globals.css?url'` is a Vite import, and
     // `import.meta.env` is Vite's.
     "types": ["vite/client"],
-    // Test files import siblings with an explicit .ts extension so that
-    // `node --test --experimental-strip-types` can resolve them without a
-    // bundler.
-    "allowImportingTsExtensions": true,
     "strict": true,
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
@@ -27,7 +23,9 @@
     "verbatimModuleSyntax": true,
     "incremental": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@cli/*": ["./cli/*"],
+      "@scripts/*": ["./scripts/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

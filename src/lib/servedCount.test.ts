@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import { formatServedCount, parseServedCount } from './servedCount.ts';
+import { formatServedCount, parseServedCount } from './servedCount';
 
 test('reads a stored count', () => {
   assert.equal(parseServedCount('0'), 0);

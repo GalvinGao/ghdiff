@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
 import {
   CODE_FONTS,
@@ -7,7 +7,7 @@ import {
   codeFontStacks,
   DEFAULT_CODE_FONT,
   isCodeFont,
-} from './codeFonts.ts';
+} from './codeFonts';
 
 test('the platform face is first, and it is the default', () => {
   assert.equal(CODE_FONTS[0]?.id, 'system');

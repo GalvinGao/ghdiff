@@ -14,13 +14,8 @@
 
 import type { QueryClient } from '@tanstack/react-query';
 
-import { onSessionEnded } from '../authFetch.ts';
-import { type Coordinator, pickCoordinator } from './coordinator.ts';
-import {
-  broadcastBus,
-  type CacheMessage,
-  type MessageBus,
-} from './messages.ts';
+import { type Coordinator, pickCoordinator } from './coordinator';
+import { broadcastBus, type CacheMessage, type MessageBus } from './messages';
 import {
   BLOB_BUDGET_BYTES,
   type BlobMeta,
@@ -36,8 +31,9 @@ import {
   queryHash,
   recordId,
   SHARE_WINDOW_MS,
-} from './records.ts';
-import { type CacheStore, openCacheStore } from './store.ts';
+} from './records';
+import { type CacheStore, openCacheStore } from './store';
+import { onSessionEnded } from '@/lib/authFetch';
 
 /**
  * Whether an answer goes to disk: `true` as it is, a function for what of it

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   localCoordinator,
   pickCoordinator,
   softLeaseCoordinator,
   webLocksCoordinator,
-} from './coordinator.ts';
-import { busHub, settle } from './testing.ts';
+} from './coordinator';
+import { busHub, settle } from './testing';
 
 /** A task that records when it ran, and takes `ms` to finish. */
 function tracer() {

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   type Deployment,
@@ -12,7 +12,7 @@ import {
   safeDeploymentUrl,
   STALLED_AFTER_MS,
   toDeployment,
-} from './deployments.ts';
+} from './deployments';
 
 const HEAD = 'a'.repeat(40);
 const OLD = 'b'.repeat(40);

@@ -4,7 +4,6 @@ import { PersonFillIcon } from '@primer/octicons-react/PersonFillIcon';
 import { StackIcon } from '@primer/octicons-react/StackIcon';
 import { type ComponentType, type KeyboardEvent, useRef } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { OpenPullsState } from '@/hooks/useOpenPulls';
@@ -13,6 +12,7 @@ import { cn } from '@/lib/cn';
 import { formatNumber } from '@/lib/locale';
 import type { PullScope } from '@/lib/pullScope';
 import type { GitHubPullTarget } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 // Which pull requests the list draws, as tabs with a count each.
 //

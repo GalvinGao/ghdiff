@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   addConversationAuthors,
   buildConversation,
   filterConversation,
-} from './pullConversation.ts';
+} from './pullConversation';
 
 const person = { login: 'alice', type: 'User' };
 const bot = { login: 'coderabbitai[bot]', type: 'Bot' };

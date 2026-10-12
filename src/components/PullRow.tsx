@@ -1,7 +1,6 @@
 import { IconCheck } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
-import { m } from '../paraglide/messages.js';
 import { pullStateLabel } from '@/components/PullStateIcon';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { railPullFlipKey } from '@/hooks/useRailFlip';
@@ -9,6 +8,7 @@ import { cn } from '@/lib/cn';
 import type { PullSummary } from '@/lib/pulls';
 import { describePullStatus } from '@/lib/pullStatus';
 import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 // The leading lane of a row holds the status square, and nothing else. The
 // lifecycle octicon that stood beside it repeated what the list already says —

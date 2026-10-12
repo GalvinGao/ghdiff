@@ -1,4 +1,4 @@
-import type { LocalDiffRange } from '../../src/lib/reviewTarget.ts';
+import type { LocalDiffRange } from '@/lib/reviewTarget';
 
 // The argument vectors this command hands to git, and nothing else. Pure, so
 // the four ranges are pinned by a test rather than by reading a diff on screen.

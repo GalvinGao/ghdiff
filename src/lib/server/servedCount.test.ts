@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import type { ServedBackend } from './servedBackend.ts';
-import { createServedCounter } from './servedCount.ts';
+import type { ServedBackend } from './servedBackend';
+import { createServedCounter } from './servedCount';
 
 /**
  * A backend in memory, plus the flush promise the counter hands to

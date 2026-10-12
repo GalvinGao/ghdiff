@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   commentPreviewText,
   measureCommentBody,
   measureThread,
-} from './commentHeight.ts';
+} from './commentHeight';
 
 describe('measureCommentBody', () => {
   it('gives a one-line comment one line', () => {

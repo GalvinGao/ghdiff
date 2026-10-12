@@ -1,5 +1,5 @@
-import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
+import { m } from '@/paraglide/messages.js';
 
 export function PageError() {
   return (

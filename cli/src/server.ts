@@ -7,18 +7,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve as resolvePath, sep } from 'node:path';
 import { Readable } from 'node:stream';
 
-import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '../../src/lib/fileLimit.ts';
-import { isReadablePath } from '../../src/lib/filePath.ts';
-import {
-  CODE_FONT_SCRIPT,
-  COLOR_MODE_SCRIPT,
-} from '../../src/lib/prePaintScripts.ts';
-import {
-  type LocalDiffTarget,
-  reviewTargetFromQuery,
-  reviewTargetQuery,
-} from '../../src/lib/reviewTarget.ts';
-import { git, GitFailure, type GitStep, gitStream } from './git.ts';
+import { git, GitFailure, type GitStep, gitStream } from './git';
 import {
   diffArgs,
   newSideSource,
@@ -26,9 +15,17 @@ import {
   showArgs,
   untrackedDiffArgs,
   untrackedStageArgs,
-} from './gitRange.ts';
-import { checkApiRequest, TOKEN_HEADER } from './guards.ts';
-import { LaunchFailure, listUntracked } from './repo.ts';
+} from './gitRange';
+import { checkApiRequest, TOKEN_HEADER } from './guards';
+import { LaunchFailure, listUntracked } from './repo';
+import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/fileLimit';
+import { isReadablePath } from '@/lib/filePath';
+import { CODE_FONT_SCRIPT, COLOR_MODE_SCRIPT } from '@/lib/prePaintScripts';
+import {
+  type LocalDiffTarget,
+  reviewTargetFromQuery,
+  reviewTargetQuery,
+} from '@/lib/reviewTarget';
 
 // The other host for the ghdiff frontend.
 //

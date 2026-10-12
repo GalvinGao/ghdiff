@@ -1,7 +1,6 @@
 import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
-import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { CenteredNotice } from '@/components/ui/CenteredNotice';
@@ -14,6 +13,7 @@ import {
   type ReviewTarget,
   reviewTargetSplat,
 } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 export type ReviewLoadState = 'fetching' | 'parsing' | 'starting' | 'error';
 

@@ -1,7 +1,6 @@
 import { implement, ORPCError } from '@orpc/server';
 
-import { m } from '../../paraglide/messages.js';
-import { contract } from './contract.ts';
+import { contract } from './contract';
 import { readSignedAttachments } from '@/lib/attachments';
 import { composeCommentIssue } from '@/lib/commentIssue';
 import {
@@ -9,8 +8,8 @@ import {
   type CommentPayload,
   gitHubSideFromAnnotation,
 } from '@/lib/comments';
-import { installUrl as buildInstallUrl } from '@/lib/githubApp';
-import { blobPermalinkUrl, reviewTargetUrl } from '@/lib/githubUrls';
+import { installUrl as buildInstallUrl } from '@/lib/github/app';
+import { blobPermalinkUrl, reviewTargetUrl } from '@/lib/github/urls';
 import { requestLog } from '@/lib/logger';
 import {
   buildConversation,
@@ -29,6 +28,7 @@ import { recentTeamReviews, type TeamReviewSource } from '@/lib/reviewDecision';
 import { resolveSideCommit } from '@/lib/server/commentIssue';
 import { parseDeploymentConfig } from '@/lib/server/config';
 import { readDeployments } from '@/lib/server/deployments';
+import { readAppConfig } from '@/lib/server/github/app';
 import {
   FULL_JSON_MEDIA_TYPE,
   GitHubError,
@@ -40,11 +40,11 @@ import {
   githubJson,
   githubWrite,
   SIGN_IN_EXPIRED,
-} from '@/lib/server/github';
-import { readAppConfig } from '@/lib/server/githubApp';
-import { readInstallations } from '@/lib/server/installations';
+} from '@/lib/server/github/client';
+import { readInstallations } from '@/lib/server/github/installations';
 import { readServedCount } from '@/lib/server/platform';
 import { isFileViewed } from '@/lib/viewedFiles';
+import { m } from '@/paraglide/messages.js';
 
 // The Worker's half of the contract. Nothing here is imported by the browser:
 // the client is built from `contract`, which holds no implementation, so this

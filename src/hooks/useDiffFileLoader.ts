@@ -1,7 +1,6 @@
 import type { FileDiffContentsLoader, FileDiffMetadata } from '@pierre/diffs';
 import { useCallback, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useSharedCache } from './useSharedQuery';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import {
@@ -18,6 +17,7 @@ import {
   reviewTargetQuery,
 } from '@/lib/reviewTarget';
 import { readStreamedText } from '@/lib/streamText';
+import { m } from '@/paraglide/messages.js';
 
 // What the viewer calls when a reviewer expands the unmodified lines around a
 // hunk. `@pierre/diffs` asks for both whole files and keeps the patch's own

@@ -1,17 +1,17 @@
+import { inspectCatalogs, inspectSource } from '@scripts/check-i18n.mjs';
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import { inspectCatalogs, inspectSource } from '../../scripts/check-i18n.mjs';
-import { m } from '../paraglide/messages.js';
+import { describeInstallationReach } from './installations';
+import { textDirection } from './locale';
+import { m } from '@/paraglide/messages.js';
 import {
   cookieName,
   getLocale,
   getUrlOrigin,
   locales,
-} from '../paraglide/runtime.js';
-import { paraglideMiddleware } from '../paraglide/server.js';
-import { describeInstallationReach } from './installations.ts';
-import { textDirection } from './locale.ts';
+} from '@/paraglide/runtime.js';
+import { paraglideMiddleware } from '@/paraglide/server.js';
 
 test('compiled counts distinguish zero, one, other, and formatted large values', () => {
   assert.equal(m.common_file_count({ count: 0 }), '0 files');
@@ -225,7 +225,7 @@ test('document direction is derived from the locale without changing code conten
 test('Pierre labels are transformed in build and versioned development modules', async () => {
   const { readFile } = await import('node:fs/promises');
   const { fileURLToPath } = await import('node:url');
-  const { pierreI18n } = await import('../../scripts/pierre-i18n.mjs');
+  const { pierreI18n } = await import('@scripts/pierre-i18n.mjs');
   const transform = pierreI18n().transform;
   assert.equal(typeof transform, 'function');
   if (typeof transform !== 'function') throw new Error('Missing transform');
@@ -258,7 +258,7 @@ test('Pierre labels are transformed in build and versioned development modules',
 });
 
 test('browser locale matching handles regions without changing Chinese scripts', async () => {
-  const { matchLocale } = await import('./matchLocale.ts');
+  const { matchLocale } = await import('./matchLocale');
   const available = ['en', 'ja', 'zh-Hans', 'pt-BR'] as const;
   assert.equal(matchLocale('ja-JP', available), 'ja');
   assert.equal(matchLocale('zh-CN', available), 'zh-Hans');
@@ -345,8 +345,8 @@ test('new local deletion copy distinguishes exactly one from plural-category one
 });
 
 test('lens labels and Effect hints use the current request locale', async () => {
-  const { LENSES } = await import('./lenses/lenses.ts');
-  const { scanEffectRun } = await import('./lenses/effect/effectHints.ts');
+  const { LENSES } = await import('@/lib/lenses/lenses');
+  const { scanEffectRun } = await import('@/lib/lenses/effect/effectHints');
   for (const locale of ['en', 'fr', 'ja'] as const) {
     await paraglideMiddleware(
       new Request('https://example.test/', {

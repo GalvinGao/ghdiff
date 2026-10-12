@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { m } from '../../paraglide/messages.js';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
   type GitHubReviewTarget,
@@ -16,7 +15,7 @@ import {
   githubWebDiff,
   resolveGitHubToken,
   SIGN_IN_EXPIRED,
-} from '@/lib/server/github';
+} from '@/lib/server/github/client';
 import {
   commitFilesFetch,
   compareFilesFetch,
@@ -24,8 +23,9 @@ import {
   fetchFilePages,
   pullFilesFetch,
   synthesizePatch,
-} from '@/lib/server/githubPatch';
+} from '@/lib/server/github/patch';
 import { recordServe } from '@/lib/server/platform';
+import { m } from '@/paraglide/messages.js';
 
 // Returns the unified diff for one review target as text/plain.
 //

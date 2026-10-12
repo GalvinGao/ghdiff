@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   describeAge,
   type PullDetailsInput,
   toPullDetails,
-} from './pullDetails.ts';
+} from './pullDetails';
 
 const BASE: PullDetailsInput = {
   number: 12,

@@ -8,7 +8,7 @@ import {
   GitHubError,
   githubGraphQL,
   githubJson,
-} from '@/lib/server/github';
+} from '@/lib/server/github/client';
 
 /** The diff under review, less its repository: the RPC input's own shape. */
 export type DeploymentTarget =

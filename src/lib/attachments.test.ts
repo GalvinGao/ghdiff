@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   attachmentId,
@@ -7,7 +7,7 @@ import {
   readSignedAttachments,
   resolveAttachment,
   signatureLifetimeMs,
-} from './attachments.ts';
+} from './attachments';
 
 const IMAGE_ID = 'ce918f14-5c5a-4961-b33b-e2c54ccf1ab3';
 const VIDEO_ID = 'ba523b05-faca-40a2-b623-3ae39a6d6c75';

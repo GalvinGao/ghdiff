@@ -1,8 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
-import { formatList, formatNumber } from '../lib/locale.ts';
-import { m } from '../paraglide/messages.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
@@ -12,7 +10,8 @@ import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { usePullScope } from '@/hooks/usePullScope';
 import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
-import { accountAvatarUrl, repoPullsUrl, repoUrl } from '@/lib/githubUrls';
+import { accountAvatarUrl, repoPullsUrl, repoUrl } from '@/lib/github/urls';
+import { formatList, formatNumber } from '@/lib/locale';
 import {
   formatWatchedRepo,
   groupPullsByRepo,
@@ -21,6 +20,7 @@ import {
 } from '@/lib/pulls';
 import { countStackNodes, stackCompareRange } from '@/lib/pullStacks';
 import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 interface PullRequestListProps {
   /** The pull request under review, which the list marks. */

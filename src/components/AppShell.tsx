@@ -2,7 +2,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'jotai';
 import { type ReactNode, useState } from 'react';
 
-import { getLocale } from '../paraglide/runtime.js';
 import { AppDataProvider } from '@/components/AppDataProvider';
 import { PullRail } from '@/components/PullRail';
 import {
@@ -11,6 +10,7 @@ import {
   SharedCacheContext,
 } from '@/hooks/useSharedQuery';
 import { textDirection } from '@/lib/locale';
+import { getLocale } from '@/paraglide/runtime.js';
 
 /**
  * The frame every page sits in: the pull request bar on the left, the page to

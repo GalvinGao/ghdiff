@@ -1,13 +1,13 @@
 import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   type EffectLineHints,
   findEffectHints,
   scanEffectRun,
   tokenize,
-} from './effectHints.ts';
+} from './effectHints';
 
 function scan(source: string, firstLine = 1): EffectLineHints {
   const hints: EffectLineHints = new Map();

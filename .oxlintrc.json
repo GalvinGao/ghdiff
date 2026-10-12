@@ -27,6 +27,7 @@
       }
     ],
     "typescript/no-explicit-any": "warn",
+    "import/no-relative-parent-imports": "error",
     "react/react-in-jsx-scope": "off",
     "react/set-state-in-effect": "off",
     "no-underscore-dangle": [
@@ -36,6 +37,12 @@
       }
     ]
   },
+  "overrides": [
+    {
+      "files": ["scripts/**", ".storybook/**"],
+      "rules": { "import/no-relative-parent-imports": "off" }
+    }
+  ],
   "ignorePatterns": [
     "**/node_modules/**",
     "**/dist/**",

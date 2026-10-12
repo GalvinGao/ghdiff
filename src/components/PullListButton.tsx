@@ -1,7 +1,6 @@
 import { IconReload } from '@pierre/icons';
 import { useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PullRequestList } from '@/components/PullRequestList';
 import {
@@ -16,6 +15,7 @@ import { WatchedReposDialog } from '@/components/WatchedReposDialog';
 import { useCurrentPull } from '@/hooks/useCurrentPull';
 import { useHydrated } from '@/hooks/useHydrated';
 import { usePullScope } from '@/hooks/usePullScope';
+import { m } from '@/paraglide/messages.js';
 
 // What the left bar is on a phone.
 //

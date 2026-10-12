@@ -3,9 +3,9 @@ import { GitPullRequestClosedIcon } from '@primer/octicons-react/GitPullRequestC
 import { GitPullRequestDraftIcon } from '@primer/octicons-react/GitPullRequestDraftIcon';
 import { GitPullRequestIcon } from '@primer/octicons-react/GitPullRequestIcon';
 
-import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
 import type { PullState } from '@/lib/pulls';
+import { m } from '@/paraglide/messages.js';
 
 // The official octicons, imported one file at a time so only these four reach
 // the bundle. Colors are GitHub's own Primer state tokens, defined per scheme in

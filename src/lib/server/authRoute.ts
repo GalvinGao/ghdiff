@@ -1,4 +1,3 @@
-import { m } from '../../paraglide/messages.js';
 // What the four `/api/auth/*` routes have in common, stated once.
 //
 // Each of them is a few lines of its own logic wrapped in the same three
@@ -7,9 +6,10 @@ import { m } from '../../paraglide/messages.js';
 // two to set. The last is the one worth a helper — a `Headers` object literal
 // with two `set-cookie` keys keeps one of them, and which one it keeps is not
 // something to find out in production.
-import { parseDeploymentConfig } from './config.ts';
-import { readAppConfig, type AppConfig } from './githubApp.ts';
-import { readKeyring } from './session.ts';
+import { parseDeploymentConfig } from './config';
+import { readKeyring } from './session';
+import { readAppConfig, type AppConfig } from '@/lib/server/github/app';
+import { m } from '@/paraglide/messages.js';
 
 /** Everything a route needs before it can speak for the App. */
 export interface AuthSetup {
