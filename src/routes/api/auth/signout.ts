@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import { empty, readAuthSetup } from '@/lib/server/authRoute';
 import { revokeToken } from '@/lib/server/github/app';
-import { clearHandoff, clearSession, readSession } from '@/lib/server/session';
+import { SessionSeal } from '@/lib/server/session';
 import { originAllowed } from '@/lib/session';
 
 // Signing out ends the token, not just the cookie.
@@ -32,22 +32,23 @@ const signout = withEvlog(async ({ request }: { request: Request }) => {
     return empty(403);
   }
 
-  const gone = [clearSession(), clearHandoff()];
   const setup = readAuthSetup();
+  const seal = new SessionSeal(setup?.keyring);
+  const gone = [seal.clearSession(), seal.clearHandoff()];
   if (setup == null) {
     log.set({ outcome: 'not-configured' });
     return empty(204, gone);
   }
 
-  const session = await readSession(request, setup.keyring);
-  if (session == null) {
+  const session = await seal.readSession(request);
+  if (session?.github == null) {
     log.set({ outcome: 'no-session' });
     return empty(204, gone);
   }
 
   try {
     await revokeToken({
-      accessToken: session.accessToken,
+      accessToken: session.github.accessToken,
       config: setup.config,
     });
     log.set({ outcome: 'revoked' });

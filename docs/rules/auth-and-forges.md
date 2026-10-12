@@ -308,29 +308,38 @@ the refresh route asks, and the skew is there because GitHub's clock and this
 Worker's are not the same clock. Answering the first question with the skew
 would drop a signed-in reviewer to anonymous for those five minutes.
 
-**A sealed cookie is guarded by six things, and none of them is a store.** Each
-is a few lines and none adds a dependency; `src/lib/session.ts` holds the ones
-with no cipher in them and `src/lib/server/session.ts` the rest.
+**A sealed cookie is guarded by six things, and none of them is a store.**
+`src/lib/session.ts` holds the ones with no cipher in them and
+`src/lib/server/session/` the rest: the two seals the cookie has ever had are
+the JWE every new cookie is, and the legacy seal pre-migration browsers still
+carry, read-only and gone 180 days after the deploy, when the last of those
+cookies has expired. A cookie value goes to the cipher that owns its shape —
+five base64url segments is the JWE's — so neither is ever asked to read the
+other's.
 
-A **per-seal key**: `HKDF-SHA256` over `SESSION_SECRET` with sixteen fresh
-random bytes as the salt, and the salt travels in the cookie. One key never
-seals two cookies, so GCM's nonce-reuse cliff is not reachable even in
-principle.
+A **standard seal**: the cookie is a compact JWE — `dir` key management, A256GCM
+content encryption — sealed by jose, which draws a fresh 96-bit IV for every
+encryption, so GCM's nonce-reuse cliff is not reachable even in principle. The
+256-bit content key is `HKDF-SHA256` over `SESSION_SECRET` with a fixed info,
+derived once per isolate.
 
 A **keyring, not a secret**: `SESSION_SECRET` parses as a comma-separated list.
-The first seals and every one of them is tried on the way in. GCM authenticates
-what it opens, so a wrong key simply fails and no key id has to travel — and a
-rotation costs nobody their session, where one key would sign out every reviewer
-at once. An unset secret answers with nothing, which is a deployment that serves
-public diffs and cannot sign anybody in; a secret that is set and is not a key
-throws, because that is a typo and a loud failure is what tells somebody so.
+The first seals; the reader tries every key in order and lets the seal
+authenticate, so a rotation costs nobody their session, where one key would sign
+out every reviewer at once. An unset secret answers with nothing, which is a
+deployment that serves public diffs and cannot sign anybody in; a secret that is
+set and is not a key throws, because that is a typo and a loud failure is what
+tells somebody so.
 
 The **`__Host-` prefix** on both cookie names. The browser enforces it:
 `Secure`, `Path=/`, and no `Domain` at all, so no subdomain of ghdiff.com can
 write the session cookie and none can fix a session onto a reviewer.
 `SameSite=Lax` plus `originAllowed` on every mutating route is the CSRF pair —
 the first for every browser that honours it, the second for the check that does
-not depend on one.
+not depend on one. `originAllowed` compares the host, port included, and not the
+whole origin: behind a TLS-terminating proxy the server cannot see the scheme
+the browser used, and the scheme carries no signal of its own — the `Secure`
+cookie never travels over http, so an http page has no session to ride.
 
 An **absolute lifetime**. The payload carries `issuedAt` and a refresh carries
 it forward unchanged, so `SESSION_MAX_AGE_MS` is a ceiling and not a window that

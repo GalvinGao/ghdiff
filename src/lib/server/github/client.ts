@@ -9,7 +9,7 @@
 import { gitHubErrorMessage } from '@/lib/github/error';
 import { rateLimitedStatus } from '@/lib/rateLimit';
 import { parseDeploymentConfig } from '@/lib/server/config';
-import { readKeyring, readSession } from '@/lib/server/session';
+import { readKeyring, SessionSeal } from '@/lib/server/session';
 import { accessTokenUsable, refreshDue, withinMaxAge } from '@/lib/session';
 import { m } from '@/paraglide/messages.js';
 
@@ -104,12 +104,13 @@ export async function resolveGitHubToken(
   const deployment = parseDeploymentConfig(process.env);
   const keyring = readKeyring(deployment);
   if (keyring != null) {
-    const session = await readSession(request, keyring);
+    const session = await new SessionSeal(keyring).readSession(request);
     const now = Date.now();
-    if (session != null) {
-      if (withinMaxAge(session, now) && accessTokenUsable(session, now)) {
+    const github = session?.github;
+    if (session != null && github != null) {
+      if (withinMaxAge(session, now) && accessTokenUsable(github, now)) {
         return {
-          token: session.accessToken,
+          token: github.accessToken,
           fromSession: true,
           refreshDue: false,
         };

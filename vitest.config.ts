@@ -5,6 +5,12 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  define: {
+    // Tests run the Node half of every build-time branch — the in-memory
+    // served backend, the one-line log shape — so the target is named here,
+    // the same way the build names it for a bundle.
+    'import.meta.env.VITE_GHDIFF_TARGET': JSON.stringify('node'),
+  },
   resolve: {
     // `@/*` comes from tsconfig.json — vite.config.ts reads it the same way,
     // so the tools cannot disagree.

@@ -42,7 +42,7 @@ import {
   SIGN_IN_EXPIRED,
 } from '@/lib/server/github/client';
 import { readInstallations } from '@/lib/server/github/installations';
-import { readServedCount } from '@/lib/server/platform';
+import { readServedCount } from '@/lib/server/served';
 import { isFileViewed } from '@/lib/viewedFiles';
 import { m } from '@/paraglide/messages.js';
 

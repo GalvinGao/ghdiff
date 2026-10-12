@@ -1,4 +1,5 @@
-// The reviewer's GitHub credential, as it travels between requests.
+// The reviewer's credential, as it travels between requests: one GitHub grant,
+// keyed by forge so a second forge's grants have a place beside it.
 //
 // This is the half of the session with no cipher in it: what the cookie carries,
 // what the cookie is called, the two clocks that decide when it is spent, and
@@ -9,6 +10,19 @@
 
 /** What the sealed cookie carries, and nothing more. */
 export interface SessionPayload {
+  /**
+   * When this session began, in Unix milliseconds. A refresh carries it forward
+   * unchanged, so it dates the sign-in and never the seal. That is what makes
+   * the ceiling below an actual ceiling rather than a window that rolls forward
+   * every eight hours.
+   */
+  issuedAt: number;
+  /** The GitHub credential. */
+  github?: GitHubGrant;
+}
+
+/** A GitHub credential: the user-to-server token, its clocks, and the refresh. */
+export interface GitHubGrant {
   /** The user-to-server token, `ghu_…`. */
   accessToken: string;
   /**
@@ -21,18 +35,11 @@ export interface SessionPayload {
   refreshToken?: string;
   /** When `refreshToken` dies, in Unix milliseconds. */
   refreshExpiresAt?: number;
-  /**
-   * When this session began, in Unix milliseconds. A refresh carries it forward
-   * unchanged, so it dates the sign-in and never the seal. That is what makes
-   * the ceiling below an actual ceiling rather than a window that rolls forward
-   * every eight hours.
-   */
-  issuedAt: number;
 }
 
-/** What the handoff cookie carries across GitHub's half of the flow. */
+/** What the handoff cookie carries across the forge's half of the flow. */
 export interface OAuthHandoff {
-  /** Echoed back by GitHub, and compared to prove the callback is ours. */
+  /** Echoed back by the forge, and compared to prove the callback is ours. */
   state: string;
   /** The PKCE secret, held here and never sent until the exchange. */
   verifier: string;
@@ -145,11 +152,11 @@ export function clearCookieHeader(name: string): string {
  * for the five minutes before their own refresh landed.
  */
 export function accessTokenUsable(
-  payload: SessionPayload,
+  grant: { accessExpiresAt?: number },
   now: number
 ): boolean {
-  if (payload.accessExpiresAt == null) return true;
-  return payload.accessExpiresAt > now;
+  if (grant.accessExpiresAt == null) return true;
+  return grant.accessExpiresAt > now;
 }
 
 /**
@@ -160,32 +167,44 @@ export function accessTokenUsable(
  * minutes early costs them nothing.
  */
 export function accessTokenFresh(
-  payload: SessionPayload,
+  grant: { accessExpiresAt?: number },
   now: number
 ): boolean {
-  if (payload.accessExpiresAt == null) return true;
-  return payload.accessExpiresAt - REFRESH_SKEW_MS > now;
+  if (grant.accessExpiresAt == null) return true;
+  return grant.accessExpiresAt - REFRESH_SKEW_MS > now;
 }
 
-/** Whether a refresh is still a thing this session can ask for. */
-export function refreshable(payload: SessionPayload, now: number): boolean {
-  if (payload.refreshToken == null) return false;
-  if (payload.refreshExpiresAt == null) return true;
-  return payload.refreshExpiresAt > now;
+/** Whether a refresh is still a thing this grant can ask for. */
+export function refreshable(
+  grant: { refreshToken?: string; refreshExpiresAt?: number },
+  now: number
+): boolean {
+  if (grant.refreshToken == null) return false;
+  if (grant.refreshExpiresAt == null) return true;
+  return grant.refreshExpiresAt > now;
 }
 
 /** Whether the session began recently enough to still be honoured. */
-export function withinMaxAge(payload: SessionPayload, now: number): boolean {
-  return payload.issuedAt + SESSION_MAX_AGE_MS > now;
+export function withinMaxAge(
+  session: { issuedAt: number },
+  now: number
+): boolean {
+  return session.issuedAt + SESSION_MAX_AGE_MS > now;
 }
 
 /**
- * Whether this session can still authenticate anything. A live access token is
- * one way; a spent one with a refresh token behind it is the other.
+ * Whether the session's GitHub credential still authenticates. A live access
+ * token is one way; a spent one with a refresh token behind it is the other.
+ * A session with no GitHub grant at all is neither.
  */
-export function sessionLive(payload: SessionPayload, now: number): boolean {
-  if (!withinMaxAge(payload, now)) return false;
-  return accessTokenUsable(payload, now) || refreshable(payload, now);
+export function sessionLive(
+  session: { issuedAt: number; github?: GitHubGrant },
+  now: number
+): boolean {
+  if (!withinMaxAge(session, now)) return false;
+  const github = session.github;
+  if (github == null) return false;
+  return accessTokenUsable(github, now) || refreshable(github, now);
 }
 
 /**
@@ -204,18 +223,23 @@ export function sessionLive(payload: SessionPayload, now: number): boolean {
  * ceiling, or with no refresh token left, is nobody signed in: there is nothing
  * a refresh could fetch, so the browser is not sent to fetch it.
  */
-export function refreshDue(payload: SessionPayload, now: number): boolean {
-  if (!withinMaxAge(payload, now)) return false;
-  if (accessTokenUsable(payload, now)) return false;
-  return refreshable(payload, now);
+export function refreshDue(
+  session: { issuedAt: number; github?: GitHubGrant },
+  now: number
+): boolean {
+  if (!withinMaxAge(session, now)) return false;
+  const github = session.github;
+  if (github == null) return false;
+  if (accessTokenUsable(github, now)) return false;
+  return refreshable(github, now);
 }
 
 /** What is left of the ceiling, in seconds, for the cookie's own `Max-Age`. */
 export function sessionCookieMaxAge(
-  payload: SessionPayload,
+  session: { issuedAt: number },
   now: number
 ): number {
-  const remaining = payload.issuedAt + SESSION_MAX_AGE_MS - now;
+  const remaining = session.issuedAt + SESSION_MAX_AGE_MS - now;
   return Math.max(0, Math.floor(remaining / 1000));
 }
 

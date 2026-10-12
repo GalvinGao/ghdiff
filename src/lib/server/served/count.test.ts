@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 
-import type { ServedBackend } from './servedBackend';
-import { createServedCounter } from './servedCount';
+import type { ServedBackend } from './backend';
+import { createServedCounter } from './count';
 
 /**
  * A backend in memory, plus the flush promise the counter hands to
@@ -32,7 +32,7 @@ function fakeBackend(stored: string | null = null, failWrites = 0) {
 
 test('every serve is counted, and a serve during a flush joins the next round', async () => {
   const { writes, backend, flushed } = fakeBackend('10');
-  const counter = createServedCounter(backend, { writeIntervalMs: 0 });
+  const counter = createServedCounter(backend, 0);
   counter.recordServe();
   counter.recordServe();
   counter.recordServe();
@@ -44,7 +44,7 @@ test('every serve is counted, and a serve during a flush joins the next round', 
 
 test('a stale stored figure never takes the count backwards', async () => {
   const { writes, backend, flushed } = fakeBackend('5');
-  const counter = createServedCounter(backend, { writeIntervalMs: 0 });
+  const counter = createServedCounter(backend, 0);
   counter.recordServe();
   await flushed();
   counter.recordServe();
@@ -55,7 +55,7 @@ test('a stale stored figure never takes the count backwards', async () => {
 
 test('a failed write is handed back and retried by the next serve', async () => {
   const { writes, backend, flushed } = fakeBackend('10', 1);
-  const counter = createServedCounter(backend, { writeIntervalMs: 0 });
+  const counter = createServedCounter(backend, 0);
   counter.recordServe();
   await flushed();
   assert.deepEqual(writes, []);
@@ -66,6 +66,6 @@ test('a failed write is handed back and retried by the next serve', async () => 
 
 test('the footer figure parses what the store holds', async () => {
   const { backend } = fakeBackend('1234');
-  const counter = createServedCounter(backend, { writeIntervalMs: 0 });
+  const counter = createServedCounter(backend, 0);
   assert.equal(await counter.readServedCount(), 1234);
 });

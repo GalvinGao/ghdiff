@@ -1,4 +1,6 @@
-import type { ServedBackend } from './servedBackend';
+import { setTimeout } from 'node:timers/promises';
+
+import type { ServedBackend } from './backend';
 import { log, toLoggable } from '@/lib/logger';
 import { parseServedCount } from '@/lib/servedCount';
 
@@ -46,7 +48,7 @@ export interface ServedCounter {
  */
 export function createServedCounter(
   backend: ServedBackend,
-  { writeIntervalMs = WRITE_INTERVAL_MS }: { writeIntervalMs?: number } = {}
+  writeIntervalMs = WRITE_INTERVAL_MS
 ): ServedCounter {
   /** Serves counted here that no write has carried yet. */
   let pending = 0;
@@ -80,7 +82,7 @@ export function createServedCounter(
     for (let round = 0; round < MAX_FLUSH_ROUNDS && pending > 0; round += 1) {
       const wait = writeIntervalMs - (Date.now() - lastWriteAt);
       // Every serve that arrives during this wait joins the same write.
-      if (wait > 0) await sleep(wait);
+      if (wait > 0) await setTimeout(wait);
 
       const taking = pending;
       pending = 0;
@@ -101,8 +103,4 @@ export function createServedCounter(
   }
 
   return { recordServe, readServedCount };
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

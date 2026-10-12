@@ -71,19 +71,9 @@ export default defineConfig({
     // Node-only API cannot pass `pnpm dev` and then fail after a deploy. The
     // self-hosted Node build swaps this for Nitro, which emits a directly
     // runnable Node server (`.output/server/index.mjs`) around the same fetch
-    // handler the Worker runs. The one header rule is for the userscript: it
-    // is a static asset here, and heuristic caching would hold an old script
-    // for days where no-cache lets an installed one update on its own check.
+    // handler the Worker runs — the canonical setup, one bare plugin.
     ...(target === 'node'
-      ? [
-          nitro({
-            routeRules: {
-              '/ghdiff.user.js': {
-                headers: { 'cache-control': 'no-cache' },
-              },
-            },
-          }),
-        ]
+      ? [nitro()]
       : [cloudflare({ viteEnvironment: { name: 'ssr' } })]),
     tanstackStart(),
     // React's plugin must come after Start's.

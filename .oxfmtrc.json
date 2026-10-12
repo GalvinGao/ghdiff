@@ -40,7 +40,7 @@
     "*.patch",
     "*.diff",
     "src/paraglide/**",
-    "public/ghdiff.user.js",
+    "src/lib/server/ghdiff.user.js",
     "storybook-static"
   ]
 }

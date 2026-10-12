@@ -51,7 +51,7 @@
     "src/routeTree.gen.ts",
     "worker-configuration.d.ts",
     "src/paraglide/**",
-    "public/ghdiff.user.js",
+    "src/lib/server/ghdiff.user.js",
     "storybook-static"
   ]
 }
