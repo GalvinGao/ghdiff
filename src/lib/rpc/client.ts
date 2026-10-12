@@ -4,6 +4,7 @@ import type { ContractRouterClient } from '@orpc/contract';
 
 import { contract } from './contract';
 import { withRefresh } from '@/lib/authFetch';
+import { type FailureMeta, isFailureMeta } from '@/lib/failure';
 
 // The browser's half. It is built from `contract` and never from the router, so
 // no path leads from a component to `@/lib/server/github`.
@@ -59,4 +60,20 @@ export const rpc: ContractRouterClient<typeof contract> =
 export function rpcErrorMessage(cause: unknown, fallback: string): string {
   if (cause instanceof Error && cause.message.length > 0) return cause.message;
   return fallback;
+}
+
+/**
+ * The typed reason a failed call carries beside its sentence, when the Worker
+ * classified it — what a caller reads instead of parsing the wording.
+ */
+export function rpcFailure(cause: unknown): FailureMeta | null {
+  if (cause == null || typeof cause !== 'object' || !('data' in cause)) {
+    return null;
+  }
+  const data = (cause as { data?: unknown }).data;
+  const failure =
+    data != null && typeof data === 'object' && 'failure' in data
+      ? (data as { failure?: unknown }).failure
+      : undefined;
+  return isFailureMeta(failure) ? failure : null;
 }

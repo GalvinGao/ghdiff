@@ -4,6 +4,11 @@ import {
   DEFAULT_COMMENT_AUTHOR_FILTER,
   isCommentAuthorFilter,
 } from './commentAuthors';
+import {
+  acceptRepoLensStore,
+  EMPTY_REPO_LENS_STORE,
+  type RepoLensStore,
+} from './lenses/lenses';
 import { dedupeWatchedRepos, type WatchedRepo } from './pulls';
 import { isPullScope, type PullScope } from './pullScope';
 import {
@@ -18,6 +23,7 @@ import {
   PULL_SCOPE_STORAGE_KEY,
   RAIL_COLLAPSED_STORAGE_KEY,
   RAIL_WIDTH_STORAGE_KEY,
+  SIDEBAR_HEIGHT_STORAGE_KEY,
   REPO_LENSES_STORAGE_KEY,
   REVIEW_FILTERS_STORAGE_KEY,
   SIDEBAR_WIDTH_STORAGE_KEY,
@@ -26,11 +32,6 @@ import {
   WATCHED_REPOS_STORAGE_KEY,
 } from './storageKeys';
 import { acceptViewerControls, type ViewerControls } from './viewerControls';
-import {
-  acceptRepoLensStore,
-  EMPTY_REPO_LENS_STORE,
-  type RepoLensStore,
-} from '@/lib/lenses/lenses';
 
 // Every setting the browser remembers, named once.
 //
@@ -233,6 +234,10 @@ export const COMMENT_AUTHOR_FILTER_PREFERENCE =
 
 export const SIDEBAR_WIDTH_PREFERENCE = paneWidthPreference(
   SIDEBAR_WIDTH_STORAGE_KEY
+);
+
+export const SIDEBAR_HEIGHT_PREFERENCE = paneWidthPreference(
+  SIDEBAR_HEIGHT_STORAGE_KEY
 );
 
 export const RAIL_WIDTH_PREFERENCE = paneWidthPreference(

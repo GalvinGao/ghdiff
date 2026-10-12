@@ -51,6 +51,7 @@ import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
 import type { SearchMarks } from '@/lib/diffSearch';
+import type { ForgeName } from '@/lib/forges';
 import type { ViewerControls } from '@/lib/viewerControls';
 import { m } from '@/paraglide/messages.js';
 
@@ -62,17 +63,23 @@ interface ItemTopReader {
 interface ReviewViewerProps {
   /** Whether the composer offers to file a note as an issue. */
   canCreateIssue: boolean;
+  /** True when a draft can go to the forge: a pull target, and a credential. */
+  canStage: boolean;
   className?: string;
   /** The files folded shut, by item id. */
   collapsedItemIds: ReadonlySet<string>;
   /** Where a comment written here goes, which a card says out loud. */
   commentStore: CommentStore;
   controls: ViewerControls;
+  /** True once a draft review exists on this target: the composer joins it. */
+  draftsExist: boolean;
   /**
    * Whether the Effect lens is on for this repository: `yield*` quieted, and
    * the expressions it hides drawn as labels.
    */
   effectLens: boolean;
+  /** The target's own forge, which a thread's card names. */
+  forge: ForgeName;
   items: readonly CodeViewDiffItem<CommentMetadata>[];
   /**
    * Reads a whole file so the viewer can draw the unmodified lines a patch
@@ -85,12 +92,19 @@ interface ReviewViewerProps {
   onCreateDraft(itemId: string, range: SelectedLineRange): void;
   onDeleteComment(itemId: string, key: string): void;
   onReplyToThread(itemId: string, key: string, body: string): void;
+  /** Resolves a thread on its forge, or takes the mark back. */
+  onResolveThread(
+    itemId: string,
+    key: string,
+    resolved: boolean
+  ): Promise<void>;
   onSaveDraft(
     itemId: string,
     key: string,
     body: string,
     createIssue: boolean
   ): void;
+  onStageDraft(itemId: string, key: string, body: string): void;
   /** Reports the scroll offset, so the file tree can follow the diff. */
   onScroll(scrollTop: number, viewer: ItemTopReader): void;
   onSelectedLinesChange(selection: CodeViewLineSelection | null): void;
@@ -111,6 +125,8 @@ interface ReviewViewerProps {
    */
   searchMarks: SearchMarks | null;
   selectedLines: CodeViewLineSelection | null;
+  /** True on a pull target with no credential: the composer says so. */
+  stageNeedsSignIn: boolean;
   themeType: ThemeTypes;
   /** The files already marked read, by item id. */
   viewedItemIds: ReadonlySet<string>;
@@ -133,11 +149,14 @@ const VIEWER_CSS =
 // hover. It is what opens a comment composer on the hovered line.
 export const ReviewViewer = memo(function ReviewViewer({
   canCreateIssue,
+  canStage,
   className,
   collapsedItemIds,
   commentStore,
   controls,
+  draftsExist,
   effectLens,
+  forge,
   items,
   loadDiffFiles,
   loadingFiles,
@@ -145,7 +164,9 @@ export const ReviewViewer = memo(function ReviewViewer({
   onCreateDraft,
   onDeleteComment,
   onReplyToThread,
+  onResolveThread,
   onSaveDraft,
+  onStageDraft,
   onScroll,
   onSelectedLinesChange,
   onToggleCollapsed,
@@ -154,6 +175,7 @@ export const ReviewViewer = memo(function ReviewViewer({
   scrollRef,
   searchMarks,
   selectedLines,
+  stageNeedsSignIn,
   themeType,
   viewedItemIds,
   viewerRef,
@@ -353,19 +375,26 @@ export const ReviewViewer = memo(function ReviewViewer({
           return (
             <CommentComposer
               canCreateIssue={canCreateIssue}
+              canStage={canStage}
+              draftsExist={draftsExist}
+              stageNeedsSignIn={stageNeedsSignIn}
+              store={commentStore}
               itemId={item.id}
               metadata={diffAnnotation.metadata}
               onCancel={onCancelDraft}
               onSave={onSaveDraft}
+              onStage={onStageDraft}
             />
           );
         }
         return (
           <CommentThreadCard
+            forge={forge}
             itemId={item.id}
             metadata={diffAnnotation.metadata}
             onDelete={onDeleteComment}
             onReply={onReplyToThread}
+            onResolveThread={onResolveThread}
             store={commentStore}
           />
         );

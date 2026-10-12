@@ -1,6 +1,7 @@
 import { IconBrandGithub } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
+import { useAppData } from '@/components/AppDataProvider';
 import { GitHubAccountPanel } from '@/components/GitHubAccountPanel';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
@@ -19,7 +20,9 @@ import { m } from '@/paraglide/messages.js';
  * Signed out it is a link to `/setup`, not a sign-in. Signing in is only the
  * first of two things a reviewer needs, and a control that jumped straight to
  * GitHub left them to discover the second one as a 404 — so the label says where
- * it goes rather than promising a redirect it no longer makes.
+ * it goes rather than promising a redirect it no longer makes. A deployment
+ * with nothing to set up — no GitHub App — gets no link at all: there is no
+ * page behind it.
  *
  * Signed in it is a menu, because there is something to see — the account every
  * comment will be posted as — and something to do about it.
@@ -35,11 +38,13 @@ export function GitHubAccountControl({
 }: {
   session: GitHubSessionState;
 }) {
+  const { instance } = useAppData();
   const viewer = session.viewer;
 
   if (session.checking) return null;
 
   if (viewer == null) {
+    if (!instance.github.oauth) return null;
     return (
       <Link
         className={buttonClass({ size: 'sm', variant: 'outline' })}

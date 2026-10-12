@@ -163,14 +163,13 @@ function dialogTitle({ added, subject }: OfferState): string {
 }
 
 export function WatchOfferDialog({
-  owner,
   ready,
-  repo,
+  subject,
 }: {
-  owner: string;
   /** True once the diff is on screen. Nothing is asked before that. */
   ready: boolean;
-  repo: string;
+  /** The repository the diff on screen belongs to. */
+  subject: WatchedRepo;
 }) {
   const { watched } = useAppData();
   // Which sentence the offer tells. `useIsPhone` is a media query and no
@@ -185,11 +184,16 @@ export function WatchOfferDialog({
   // whether it is open. Every condition that opened it stops holding the moment
   // the reviewer presses Watch — the list is no longer empty — and the window
   // still has an answer to give after that press.
-  const [subject, setSubject] = useState<string | undefined>(undefined);
+  const [subjectLabel, setSubjectLabel] = useState<string | undefined>(
+    undefined
+  );
   const [added, setAdded] = useState(false);
   // Destructured, so nothing reads a property of the state object while this
   // component renders.
   const { hydrated: watchedHydrated, repos } = watched;
+  // The caller memoizes `subject` per target, so holding the object in the
+  // dependencies costs no re-runs; the label is what the window latches.
+  const subjectKey = formatWatchedRepo(subject);
 
   useEffect(() => {
     if (!ready) return;
@@ -198,34 +202,37 @@ export function WatchOfferDialog({
     // before storage answers.
     if (!offerHydrated || !watchedHydrated) return;
     if (repos.length > 0) return;
-    const subjectRepo: WatchedRepo = { owner, repo };
     // Asked about this repository once, whatever they answered. A reviewer who
     // said no to one is still worth asking about the next, which is why the
     // record is a list and not a flag.
-    if (offeredRepos.some((entry) => isSameWatchedRepo(entry, subjectRepo))) {
+    if (offeredRepos.some((entry) => isSameWatchedRepo(entry, subject))) {
       return;
     }
-    setSubject(formatWatchedRepo(subjectRepo));
+    setSubjectLabel(subjectKey);
     // Written as the offer is made and not as it is answered, so a reviewer who
     // closes the tab with the window open is not asked about this repository
     // again either. Every way out of the window is a dismissal by then.
-    setOffered([...offeredRepos, subjectRepo]);
+    setOffered([...offeredRepos, subject]);
   }, [
     offerHydrated,
     offeredRepos,
-    owner,
     ready,
-    repo,
     repos.length,
     setOffered,
+    subject,
+    subjectKey,
     watchedHydrated,
   ]);
 
-  const state: OfferState = { added, subject };
-  const close = () => setSubject(undefined);
+  const state: OfferState = { added, subject: subjectLabel };
+  const close = () => setSubjectLabel(undefined);
 
   return (
-    <Dialog onClose={close} open={subject != null} title={dialogTitle(state)}>
+    <Dialog
+      onClose={close}
+      open={subjectLabel != null}
+      title={dialogTitle(state)}
+    >
       {added ? (
         <>
           <p className="text-ink-muted text-sm">
@@ -289,15 +296,19 @@ export function WatchOfferDialog({
               size="md"
               variant="solid"
               onClick={() => {
-                // The two names came out of the path, which validated them
-                // against the same characters `parseWatchedRepo` accepts, so
-                // this cannot refuse. If it ever did, the window stays on the
+                // The label reads back through `parseWatchedRepo`, so this
+                // cannot refuse. If it ever did, the window stays on the
                 // question, which is the true answer.
-                if (subject != null && watched.add(subject)) setAdded(true);
+                if (
+                  subjectLabel != null &&
+                  watched.add(formatWatchedRepo(subject))
+                ) {
+                  setAdded(true);
+                }
               }}
             >
               <span className="truncate">
-                {m.watch_offer_action({ subject: subject ?? '' })}
+                {m.watch_offer_action({ subject: subjectLabel ?? '' })}
               </span>
             </Button>
           </div>

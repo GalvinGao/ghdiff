@@ -33,6 +33,7 @@ import type {
 } from '@/lib/commentAuthors';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import { countComments, countThreads } from '@/lib/commentSections';
+import type { ForgeName } from '@/lib/forges';
 import { textDirection } from '@/lib/locale';
 import type { ConversationEntry } from '@/lib/pullConversation';
 import type { ReviewFileEntry, ReviewDiffStats } from '@/lib/reviewData';
@@ -73,6 +74,8 @@ interface ReviewSidebarProps {
   onConversationAttachmentError(): void;
   entries: readonly ReviewFileEntry[];
   filter: ReviewFilterState;
+  /** The target's own forge, for the comment list's empty state. */
+  forge: ForgeName;
   hiddenCount: number;
   onAuthorFilterChange(next: CommentAuthorFilter): void;
   onFilterChange(next: ReviewFilterState): void;
@@ -107,6 +110,7 @@ export function ReviewSidebar({
   onConversationAttachmentError,
   entries,
   filter,
+  forge,
   hiddenCount,
   onAuthorFilterChange,
   onCopyPrompt,
@@ -136,6 +140,10 @@ export function ReviewSidebar({
       dir={textDirection(getLocale())}
       className={cn(
         'border-line bg-surface flex h-full min-h-0 flex-col border-r',
+        // A band above the diff on a portrait screen, not a column beside it:
+        // the separator moves from the side to the bottom. The phone overlay
+        // is the caller's className below, and it already drops the border.
+        'phone:portrait:border-r-0 phone:portrait:border-b',
         className
       )}
     >
@@ -252,6 +260,7 @@ export function ReviewSidebar({
         >
           <CommentsList
             activeKey={activeThreadKey}
+            forge={forge}
             conversation={conversation}
             conversationAttachments={conversationAttachments}
             onConversationAttachmentError={onConversationAttachmentError}
@@ -283,7 +292,7 @@ export function ReviewSidebar({
           // has two segments that can never do anything. The strip stays: its
           // height is stated, and it is what keeps this foot level with the
           // left bar's.
-          commentStore === 'github' && (
+          commentStore === 'forge' && (
             <div className="flex min-w-0 flex-1 pr-2">
               <CommentAuthorFilterBar
                 counts={authorCounts}

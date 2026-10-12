@@ -5,9 +5,10 @@ import { pullStateLabel } from '@/components/PullStateIcon';
 import { PullStatusMark } from '@/components/PullStatusMark';
 import { railPullFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
-import type { PullSummary } from '@/lib/pulls';
+import { type PullSummary, reviewTargetFromPull } from '@/lib/pulls';
 import { describePullStatus } from '@/lib/pullStatus';
-import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
+import type { ReviewTarget } from '@/lib/reviewTarget';
+import { reviewTargetSplat } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 
 // The leading lane of a row holds the status square, and nothing else. The
@@ -34,10 +35,10 @@ const TEXT_INSET = MARK_SIZE + MARK_GAP;
 /** True when this row is the pull request already under review. */
 export function isCurrentPull(
   pull: PullSummary,
-  current?: GitHubPullTarget
+  current?: ReviewTarget
 ): boolean {
   return (
-    current != null &&
+    current?.kind === 'github-pull' &&
     current.owner === pull.owner &&
     current.repo === pull.repo &&
     current.number === pull.number
@@ -58,7 +59,7 @@ export function PullRow({
   pull,
   statusLane,
 }: {
-  current?: GitHubPullTarget;
+  current?: ReviewTarget;
   onNavigate?(): void;
   pull: PullSummary;
   /** Whether the list holds a lane for the status square on every row. */
@@ -68,14 +69,7 @@ export function PullRow({
   return (
     <Link
       to="/$"
-      params={{
-        _splat: reviewTargetSplat({
-          kind: 'github-pull',
-          owner: pull.owner,
-          repo: pull.repo,
-          number: pull.number,
-        }),
-      }}
+      params={{ _splat: reviewTargetSplat(reviewTargetFromPull(pull)) }}
       aria-current={isCurrent ? 'page' : undefined}
       onClick={onNavigate}
       className={cn(
@@ -85,10 +79,15 @@ export function PullRow({
       title={m.pull_row_tooltip({
         title: pull.title,
         state: pullStateLabel(pull.state),
-        status:
+        status: `${
           pull.status == null
             ? ''
-            : m.pull_row_label({ value: describePullStatus(pull.status) }),
+            : m.pull_row_label({ value: describePullStatus(pull.status) })
+        }${
+          pull.reviewRequested === true
+            ? m.pull_row_label({ value: m.pull_row_your_review_is_requested() })
+            : ''
+        }`,
         head: pull.headRef,
         base: pull.baseRef,
       })}
@@ -123,6 +122,15 @@ export function PullRow({
         {pull.state === 'draft' && (
           <span className="border-line text-ink-faint shrink-0 rounded border px-1 text-[10px] leading-4">
             {m.pull_row_draft()}
+          </span>
+        )}
+        {/* Waiting on the reviewer personally, which the square cannot carry
+            either: it answers "has anybody reviewed", not "is that you". The
+            accent pair is the same reading the review surface's draft cards
+            draw. */}
+        {pull.reviewRequested === true && (
+          <span className="border-accent/60 text-accent shrink-0 rounded border px-1 text-[10px] leading-4">
+            {m.pull_row_requested()}
           </span>
         )}
         <span

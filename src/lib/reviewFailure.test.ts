@@ -79,6 +79,38 @@ describe('describeReviewFailure', () => {
     }
   });
 
+  it('offers no setup path on a deployment with no GitHub App', () => {
+    // Everything that would send a reviewer to `/setup` degrades to the retry:
+    // the cause stays, the button that would 501 goes.
+    for (const status of [429, 401, 404]) {
+      for (const signedIn of [false, true]) {
+        const failure = describeReviewFailure({
+          signedIn,
+          status,
+          githubOAuth: false,
+        });
+        assert.equal(failure.action, 'retry', `${status} signedIn=${signedIn}`);
+        assert.doesNotMatch(failure.message, /Set up access/);
+      }
+    }
+  });
+
+  it('keeps the cause when the setup clause goes', () => {
+    // A rate limit is still about the 60, a 404 still about private-or-missing.
+    const limited = describeReviewFailure({
+      signedIn: false,
+      status: 429,
+      githubOAuth: false,
+    });
+    assert.match(limited.message, /60/);
+    const missing = describeReviewFailure({
+      signedIn: false,
+      status: 404,
+      githubOAuth: false,
+    });
+    assert.match(missing.message, /private/i);
+  });
+
   it('keeps the message from the server for every other status', () => {
     const failure = describeReviewFailure({
       signedIn: false,
@@ -103,5 +135,90 @@ describe('describeReviewFailure', () => {
       const failure = describeReviewFailure({ signedIn: true, status });
       assert.equal(failure.action, 'retry', String(status));
     }
+  });
+});
+
+// The typed path: the reason the server attached decides the panel, and the
+// status is only the fallback. What each case checks is the same decision as
+// above — which button, and which cause the message is about.
+describe('describeReviewFailure by reason', () => {
+  it('keeps the deployment’s own sentence for an unserved forge', () => {
+    const failure = describeReviewFailure({
+      signedIn: false,
+      status: 404,
+      message: 'This ghdiff serves GitHub on github.com.',
+      failure: { reason: 'not-served', forge: 'github' },
+    });
+    assert.equal(failure.action, 'retry');
+    assert.match(failure.message, /serves GitHub/);
+    // The gate's 404 must not read as a missing repository.
+    assert.doesNotMatch(failure.message, /private/i);
+  });
+
+  it('sends an expired GitHub grant to setup, whoever the screen believes', () => {
+    for (const signedIn of [false, true]) {
+      const failure = describeReviewFailure({
+        signedIn,
+        status: 401,
+        failure: { reason: 'auth-expired', forge: 'github' },
+      });
+      assert.equal(failure.action, 'setup', String(signedIn));
+      assert.match(failure.message, /sign-in/i);
+    }
+  });
+
+  it('sends an anonymous GitHub refusal to setup with the sign-in wording', () => {
+    const failure = describeReviewFailure({
+      signedIn: false,
+      status: 401,
+      failure: { reason: 'auth-required', forge: 'github' },
+    });
+    assert.equal(failure.action, 'setup');
+    assert.match(failure.message, /Set up access/);
+  });
+
+  it('degrades the GitHub sign-in offer with no App to offer it', () => {
+    for (const reason of ['auth-expired', 'auth-required'] as const) {
+      const failure = describeReviewFailure({
+        signedIn: false,
+        failure: { reason, forge: 'github' },
+        githubOAuth: false,
+      });
+      assert.equal(failure.action, 'retry', reason);
+      assert.doesNotMatch(failure.message, /Set up access/);
+    }
+  });
+
+  it('keeps the forge’s sentence for a refused permission', () => {
+    const failure = describeReviewFailure({
+      signedIn: true,
+      status: 403,
+      message: 'Resource not accessible by integration',
+      failure: { reason: 'permission-denied', forge: 'github' },
+    });
+    assert.equal(failure.action, 'retry');
+    assert.match(failure.message, /Resource not accessible/);
+  });
+
+  it('lets the reason win over a misleading status', () => {
+    // A 404 with auth-expired attached is a dead grant, not a missing diff.
+    const failure = describeReviewFailure({
+      signedIn: true,
+      status: 404,
+      failure: { reason: 'auth-expired', forge: 'github' },
+    });
+    assert.equal(failure.action, 'setup');
+    assert.match(failure.message, /no longer valid/);
+  });
+
+  it('keeps the server’s sentence for a bad request', () => {
+    const failure = describeReviewFailure({
+      signedIn: false,
+      status: 400,
+      message: 'That review target is not valid.',
+      failure: { reason: 'bad-request', forge: 'github' },
+    });
+    assert.equal(failure.action, 'retry');
+    assert.match(failure.message, /not valid/);
   });
 });

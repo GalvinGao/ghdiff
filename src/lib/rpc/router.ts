@@ -1,122 +1,118 @@
-import { implement, ORPCError } from '@orpc/server';
+import { implement, type MiddlewareNextFn, ORPCError } from '@orpc/server';
 
 import { contract } from './contract';
-import { readSignedAttachments } from '@/lib/attachments';
-import { composeCommentIssue } from '@/lib/commentIssue';
 import {
-  annotationSideFromGitHub,
-  type CommentPayload,
-  gitHubSideFromAnnotation,
-} from '@/lib/comments';
+  authExpiredMessage,
+  failureForStatus,
+  type FailureMeta,
+} from '@/lib/failure';
+import {
+  forgeGroupKey,
+  formatRepoRef,
+  type ForgeName,
+  type PullRef,
+  type RepoRef,
+  repoRefFromTarget,
+} from '@/lib/forges';
 import { installUrl as buildInstallUrl } from '@/lib/github/app';
-import { blobPermalinkUrl, reviewTargetUrl } from '@/lib/github/urls';
-import { requestLog } from '@/lib/logger';
-import {
-  buildConversation,
-  type IssueCommentSource,
-  type PullReviewSource,
-} from '@/lib/pullConversation';
-import { toPullDetails } from '@/lib/pullDetails';
-import {
-  dedupeWatchedRepos,
-  formatWatchedRepo,
-  type PullSummary,
-  type WatchedRepo,
-} from '@/lib/pulls';
-import { normalizePullStatus, type PullStatusSource } from '@/lib/pullStatus';
-import { recentTeamReviews, type TeamReviewSource } from '@/lib/reviewDecision';
-import { resolveSideCommit } from '@/lib/server/commentIssue';
-import { parseDeploymentConfig } from '@/lib/server/config';
-import { readDeployments } from '@/lib/server/deployments';
-import { readAppConfig } from '@/lib/server/github/app';
-import {
-  FULL_JSON_MEDIA_TYPE,
-  GitHubError,
-  type GitHubPullRequest,
-  type GitHubReview,
-  type GitHubReviewComment,
-  type GitHubUser,
-  githubGraphQL,
-  githubJson,
-  githubWrite,
-  SIGN_IN_EXPIRED,
-} from '@/lib/server/github/client';
+import type { RequestLog } from '@/lib/logger';
+import type { OpenPullsAnswer } from '@/lib/pulls';
+import type { ForgeTarget } from '@/lib/reviewTarget';
+import type { DeploymentConfig } from '@/lib/server/config';
+import type { ResolvedCredentials } from '@/lib/server/credentials';
+import { forgeFor, forgeNamed } from '@/lib/server/forges';
+import type { Forge, ForgeCredential } from '@/lib/server/forges/types';
+import { GitHubError } from '@/lib/server/github/client';
 import { readInstallations } from '@/lib/server/github/installations';
 import { readServedCount } from '@/lib/server/served';
-import { isFileViewed } from '@/lib/viewedFiles';
 import { m } from '@/paraglide/messages.js';
 
 // The Worker's half of the contract. Nothing here is imported by the browser:
 // the client is built from `contract`, which holds no implementation, so this
-// module and `@/lib/server/github` under it stay out of the client bundle
+// module and the forge implementations under it stay out of the client bundle
 // however the hooks are written.
 
 /**
- * What the route hands every procedure. The token is read from the request once,
- * at the edge, so no procedure has to know it travels on a header.
+ * What the route hands every procedure, read once at the edge: the deployment
+ * config, the request's wide event, and the request's resolved credentials.
+ * What a procedure can derive per input — the forge, the credential it speaks
+ * with — is injected per procedure by the middleware below, not carried here.
  */
 export interface RpcContext {
-  token?: string;
-  /** True when that token came out of the sealed session cookie. */
-  fromSession?: boolean;
-  /**
-   * True when the cookie holds a session whose access token is spent and whose
-   * refresh token is live. No procedure sees that state: the middleware below
-   * answers it for all of them.
-   */
-  refreshDue?: boolean;
+  /** What this deployment serves, parsed from the environment at the route. */
+  config: DeploymentConfig;
+  /** The request's wide event, started by the route's middleware. */
+  log: RequestLog;
+  /** Every credential the request speaks with, resolved once at the edge. */
+  credentials: ResolvedCredentials;
 }
 
-// The one middleware, and it stands over every procedure. A cookie that is due a
-// refresh is answered 401 before any procedure runs, because a 401 is the only
-// answer the client refreshes on: `withRefresh` asks `/api/auth/refresh` and
-// sends the call again with the mended cookie. It is an `ORPCError` and not a
-// bare response from the route, so that the one time a reviewer reads it — a
+// The gate stands over every procedure. A cookie that is due a refresh is
+// answered 401 before any procedure runs, because a 401 is the only answer the
+// client refreshes on: `withRefresh` asks `/api/auth/refresh` and sends the
+// call again with the mended cookie. It is an `ORPCError` and not a bare
+// response from the route, so that the one time a reviewer reads it — a
 // refresh that failed — the client decodes a sentence rather than a body it
-// cannot parse. The message is the one `/api/diff` and `/api/file` print for
-// the same state, stated once beside `resolveGitHubToken`.
+// cannot parse. The typed `auth-expired` rides the error's data; which grant
+// died is not knowable at this edge, so the failure names no forge and the
+// sentence names none either.
 const os = implement(contract)
   .$context<RpcContext>()
   .use(({ context, next }) => {
-    if (context.refreshDue === true) {
-      requestLog().set({ outcome: 'refresh-due' });
+    if (context.credentials.refreshDue) {
+      context.log.set({ outcome: 'refresh-due' });
       throw new ORPCError('UNAUTHORIZED', {
         status: 401,
-        message: SIGN_IN_EXPIRED(),
+        message: authExpiredMessage(),
+        data: { failure: { reason: 'auth-expired' } satisfies FailureMeta },
       });
     }
     return next();
   });
 
 const MAX_WATCHED_REPOS = 25;
-/**
- * The newest 100 open pull requests of a repository, which is also the largest
- * page GitHub will answer with — REST caps `per_page` there and GraphQL caps
- * `first`. A repository with more open than that is a repository nobody reads
- * to the end of a list for, and the rail sorts by most recently updated, so the
- * hundred that are cut are the hundred nobody has touched.
- */
-const MAX_PULLS_PER_REPO = 100;
-/**
- * How many pages of changed files the viewed-mark query reads. GitHub caps a
- * `files` page at 100, so this is a thousand files, and a pull request larger
- * than that gets its first thousand marks and no more. Nothing breaks past the
- * cap: an unread mark draws an empty box, and `viewedFiles.set` addresses a
- * file by its path alone, so a press on file 1001 still reaches GitHub.
- */
-const MAX_VIEWED_FILE_PAGES = 10;
-const VIEWED_FILES_PAGE_SIZE = 100;
 
 /**
- * Turns a failure from GitHub into one the client can read. The status is what
- * survives the trip, so `rateLimitedStatus`'s work upstream still reaches the
- * browser: a quota that is gone is 429 here as it is everywhere else.
+ * What `fail` needs to type a forge failure: the ref the call named, and
+ * whether a credential spoke. The 401 reading turns on the second — a spent
+ * or revoked grant is `auth-expired`, an anonymous refusal `auth-required` —
+ * and the forge travels so the client never parses it out of the sentence.
  */
-function fail(error: unknown, fallback: string): never {
+interface FailureSource {
+  ref?: { forge: ForgeName };
+  credentialed?: boolean;
+}
+
+/**
+ * Turns a failure from a forge into one the client can read. The status is what
+ * survives the trip, so `rateLimitedStatus`'s work upstream still reaches the
+ * browser: a quota that is gone is 429 here as it is everywhere else. A gate's
+ * own `ORPCError` — a missing token, a capability the forge does not have —
+ * passes through as it is. A `GitHubError` that already carries its `failure`
+ * — the forge gate's `not-served` — keeps it; one that carries only a status
+ * is mapped through `failureForStatus`.
+ */
+function fail(
+  error: unknown,
+  fallback: string,
+  source: FailureSource = {}
+): never {
+  if (error instanceof ORPCError) throw error;
   if (error instanceof GitHubError) {
-    throw new ORPCError(codeForStatus(error.status), {
-      status: error.status,
+    // GraphQL reports an error inside a 200, and oRPC refuses an error status
+    // under 400 by masking it as a bare 500. It is the forge's own answer, so
+    // it travels as the gateway's failure, its sentence intact.
+    const status = error.status >= 400 ? error.status : 502;
+    const failure =
+      error.failure ??
+      failureForStatus(status, {
+        forge: source.ref?.forge,
+        credentialed: source.credentialed === true,
+      });
+    throw new ORPCError(codeForStatus(status), {
+      status,
       message: error.message,
+      ...(failure != null ? { data: { failure } } : {}),
       cause: error,
     });
   }
@@ -137,535 +133,597 @@ function codeForStatus(status: number): string {
     case 429:
       return 'TOO_MANY_REQUESTS';
     default:
-      return status >= 500 ? 'INTERNAL_SERVER_ERROR' : 'BAD_REQUEST';
+      // A 5xx is the forge's gateway failing, not this app's internals — and
+      // oRPC masks INTERNAL_SERVER_ERROR's message on the wire, which is how
+      // a reviewer once got a bare "500 Internal Server Error" for a failure
+      // the forge had explained. BAD_GATEWAY keeps the meaning and lets the
+      // sentence through.
+      return status >= 500 ? 'BAD_GATEWAY' : 'BAD_REQUEST';
   }
 }
 
-/** Every write needs a token, and saying so beats GitHub's own 401. */
-function requireToken(token: string | undefined, message: string): string {
-  if (token == null) {
-    throw new ORPCError('UNAUTHORIZED', {
-      status: 401,
-      message,
-    });
-  }
-  return token;
+/** The credential a forge sees for one ref, per the ref's own forge group. */
+function credFor(
+  credentials: ResolvedCredentials,
+  ref: RepoRef
+): ForgeCredential {
+  // A credential named on the request itself wins, the way it wins for the
+  // plain routes: a caller that named one meant that one. GitHub's slot
+  // already holds it — `resolveGitHubToken`'s cascade puts the header first.
+  return credentials.byForge[forgeGroupKey(ref)] ?? {};
 }
 
-const getViewer = os.viewer.get.handler(async ({ context }) => {
-  const log = requestLog();
-  const fromSession = context.fromSession === true;
-  if (context.token == null) return { viewer: undefined, fromSession };
+/**
+ * A seam a forge may not have — drafts, thread resolve, viewed-file marks —
+ * or a BAD_REQUEST with the sentence that says what it keeps none of.
+ */
+function requireCapability<T>(capability: T | undefined, message: string): T {
+  if (capability == null) {
+    throw new ORPCError('BAD_REQUEST', { status: 400, message });
+  }
+  return capability;
+}
+
+/**
+ * The forge for one ref, with the gate's 404 mapped through `fail` the way a
+ * handler maps it — raised in a middleware, a bare GitHubError would read as
+ * a masked 500.
+ */
+function forgeForRef(config: DeploymentConfig, ref: RepoRef): Forge {
   try {
-    const user = await githubJson<GitHubUser>('/user', context.token);
-    log.set({ outcome: 'ok', viewer: user.login });
-    return {
-      fromSession,
-      viewer: {
-        login: user.login,
-        avatarUrl: user.avatar_url,
-        name: user.name,
-      },
-    };
+    return forgeFor(config, ref);
   } catch (error) {
-    log.set({ outcome: 'error' });
-    return fail(error, m.router_could_not_check_who_you_are_signed_in());
+    return fail(error, m.router_could_not_load_this_repository(), { ref });
   }
-});
+}
 
-const listInstallations = os.installations.list.handler(async ({ context }) => {
-  const log = requestLog();
-  const app = readAppConfig(parseDeploymentConfig(process.env));
-  const installUrl = app == null ? undefined : buildInstallUrl(app.slug);
-  if (context.token == null) {
-    log.set({ outcome: 'anonymous' });
-    return { installations: [], installUrl };
-  }
-  try {
-    const installations = await readInstallations(context.token);
-    log.set({ outcome: 'ok', installationCount: installations.length });
-    return { installations, installUrl };
-  } catch (error) {
-    log.set({ outcome: 'error' });
-    return fail(error, m.router_could_not_read_where_ghdiff_is_installed());
-  }
-});
+/** The options a ref middleware reads: the request context and the next call. */
+type RefMiddlewareOptions<TOutput> = {
+  context: RpcContext;
+  next: MiddlewareNextFn<TOutput>;
+};
 
-const listPulls = os.pulls.list.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const repos = dedupeWatchedRepos(input.repos).slice(0, MAX_WATCHED_REPOS);
-  log.set({ repoCount: repos.length, authenticated: context.token != null });
-  if (repos.length === 0) return { pulls: [], failures: [] };
+// The forge the input's ref is on, the credential it speaks with, and the
+// log's ref/pull fields — set once here, not in twelve handlers.
+const withForge = <TOutput>(
+  { context, next }: RefMiddlewareOptions<TOutput>,
+  input: PullRef
+) => {
+  context.log.set({ ref: formatRepoRef(input), pull: input.number });
+  return next({
+    context: {
+      forge: forgeForRef(context.config, input),
+      cred: credFor(context.credentials, input),
+    },
+  });
+};
 
-  const token = context.token;
+/** The writes a credential is asked for, each with the sentence per forge. */
+const AUTH_REQUIRED = {
+  review: {
+    github: m.auth_required_review,
+  },
+  comment: {
+    github: m.auth_required_comment,
+  },
+  delete: {
+    github: m.auth_required_delete,
+  },
+  resolve: {
+    github: m.auth_required_resolve,
+  },
+  stage: {
+    github: m.auth_required_stage,
+  },
+  unstage: {
+    github: m.auth_required_unstage,
+  },
+  viewed: {
+    github: m.auth_required_viewed,
+  },
+  issue: {
+    github: m.auth_required_issue,
+  },
+} satisfies Record<string, Record<ForgeName, () => string>>;
 
-  // The viewer login decides which pull requests are self review. Without a
-  // token there is no viewer, so every author reads as somebody else.
-  const viewer =
-    token == null
-      ? undefined
-      : await githubJson<GitHubUser>('/user', token)
-          .then((user) => user.login)
-          .catch(() => undefined);
+type AuthAction = keyof typeof AUTH_REQUIRED;
 
-  const pulls: PullSummary[] = [];
-  const failures: { repo: string; message: string }[] = [];
+/**
+ * The 401 a write without a credential gets, naming the action. The failure is
+ * typed `auth-required` with the ref's forge beside the sentence, so
+ * the client reads the reason without parsing the wording.
+ */
+function authRequired(
+  action: AuthAction,
+  ref: RepoRef
+): ORPCError<string, unknown> {
+  return new ORPCError('UNAUTHORIZED', {
+    status: 401,
+    message: AUTH_REQUIRED[action][ref.forge](),
+    data: {
+      failure: {
+        reason: 'auth-required',
+        forge: ref.forge,
+      } satisfies FailureMeta,
+    },
+  });
+}
 
-  await Promise.all(
-    repos.map(async (repo) => {
-      try {
-        pulls.push(
-          ...(token == null
-            ? await readOpenPullsRest(repo, token)
-            : await readOpenPullsGraphQL(repo, token))
-        );
-      } catch (error) {
-        failures.push({
-          repo: formatWatchedRepo(repo),
-          message:
-            error instanceof GitHubError
-              ? error.message
-              : m.router_could_not_load_this_repository(),
-        });
-      }
-    })
-  );
+// The same, but a missing token is the 401 that names the action — answered
+// here before the handler runs, so the handler never sees a tokenless write.
+const withAuth =
+  (action: AuthAction) =>
+  <TOutput>(
+    { context, next }: RefMiddlewareOptions<TOutput>,
+    input: PullRef
+  ) => {
+    context.log.set({ ref: formatRepoRef(input), pull: input.number });
+    const forge = forgeForRef(context.config, input);
+    const cred = credFor(context.credentials, input);
+    if (cred.token == null) throw authRequired(action, input);
+    return next({ context: { forge, cred } });
+  };
 
-  log.set({ pullCount: pulls.length, failureCount: failures.length, viewer });
-  return { viewer, pulls, failures };
-});
+// The forge and credential for an input that names a whole review target
+// rather than a pull request — a commit and a compare range have deployments
+// and lines to file an issue from too.
+const withTargetForge = <TOutput>(
+  { context, next }: RefMiddlewareOptions<TOutput>,
+  input: { target: ForgeTarget }
+) => {
+  const ref = repoRefFromTarget(input.target);
+  context.log.set({ ref: formatRepoRef(ref), targetKind: input.target.kind });
+  return next({
+    context: {
+      ref,
+      forge: forgeForRef(context.config, ref),
+      cred: credFor(context.credentials, ref),
+    },
+  });
+};
 
-const getPull = os.pulls.get.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { number, owner, repo } = input;
-  log.set({ owner, repo, number, authenticated: context.token != null });
-  try {
-    // The `full` media type is for `body_html`, whose attachment addresses are
-    // signed where the markdown's are not. `@/lib/attachments` says why.
-    const pull = await githubJson<GitHubPullRequest>(
-      `/repos/${owner}/${repo}/pulls/${number}`,
-      context.token,
-      { headers: { accept: FULL_JSON_MEDIA_TYPE } }
+const getViewer = os.viewer.get.handler(
+  async ({ context: { log, credentials } }) => {
+    // A sign-out is offered when the credential came out of the sealed cookie.
+    // A viewer resolved from `GITHUB_TOKEN` or a named header has no session
+    // to end.
+    const fromSession = Object.values(credentials.byForge).some(
+      (grant) => grant.fromSession === true
     );
-    const details = toPullDetails(owner, repo, pull);
-    log.set({ outcome: 'ok', state: details.state });
-    return details;
-  } catch (error) {
-    return fail(error, m.router_could_not_load_this_pull_request());
-  }
-});
 
-const getMyReview = os.reviews.mine.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { number, owner, repo } = input;
-  log.set({ owner, repo, pull: number });
-  // GraphQL refuses an anonymous caller, and `viewerLatestReview` is a question
-  // about the token in the first place, so there is nothing to ask without one.
-  if (context.token == null) return {};
-
-  try {
-    const data = await githubGraphQL<MyReviewQueryData>(
-      MY_REVIEW_QUERY,
-      { owner, repo, number },
-      context.token
-    );
-    const node = data.repository?.pullRequest?.viewerLatestReview;
-    // A viewer who has never reviewed this pull request gets a null field and
-    // no error, which is the ordinary answer and not a failure. A review whose
-    // `databaseId` or `state` did not arrive reads the same way: the header
-    // says nothing rather than report a verdict it cannot name.
-    if (node?.state == null || typeof node.databaseId !== 'number') {
-      log.set({ outcome: 'none' });
-      return {};
+    const token = credentials.byForge['github']?.token;
+    if (token == null) {
+      return { viewer: undefined, fromSession };
     }
-    log.set({ outcome: 'ok', state: node.state });
-    return {
-      review: {
-        id: node.databaseId,
-        state: node.state,
-        submittedAt: node.submittedAt ?? undefined,
-        htmlUrl: node.url ?? undefined,
-      },
-    };
-  } catch (error) {
-    return fail(error, m.router_could_not_load_your_review_of_this_pull());
-  }
-});
-
-const getTeamReviews = os.reviews.team.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { number, owner, repo } = input;
-  log.set({ owner, repo, pull: number });
-  if (context.token == null) return { reviews: [] };
-
-  try {
-    const data = await githubGraphQL<TeamReviewsQueryData>(
-      TEAM_REVIEWS_QUERY,
-      { owner, repo, number, last: TEAM_REVIEWS_PAGE },
-      context.token
-    );
-    const reviews = recentTeamReviews(
-      data.repository?.pullRequest?.reviews?.nodes ?? []
-    );
-    log.set({ outcome: 'ok', reviews: reviews.length });
-    return { reviews };
-  } catch (error) {
-    return fail(
-      error,
-      m.router_could_not_load_the_teams_reviews_of_this_pull()
-    );
-  }
-});
-
-const submitReview = os.reviews.submit.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { body, event, number, owner, repo } = input;
-  log.set({ owner, repo, pull: number, event });
-  const token = requireToken(context.token, m.auth_required_review());
-
-  try {
-    // An empty body is left off rather than sent as `""`. GitHub takes both for
-    // an approval, and neither is a body, so the shorter request is the honest
-    // one. The other two events GitHub refuses without words, which is the
-    // answer `canSubmitReview` already gave in the dialog.
-    const trimmed = body?.trim();
-    const review = await githubWrite<GitHubReview>(
-      'POST',
-      `/repos/${owner}/${repo}/pulls/${number}/reviews`,
-      token,
-      {
-        event,
-        ...(trimmed == null || trimmed.length === 0 ? {} : { body: trimmed }),
-      }
-    );
-    if (review == null) {
-      throw new ORPCError('BAD_GATEWAY', {
-        status: 502,
-        get message() {
-          return m.router_github_accepted_the_review_but_returned_nothing();
-        },
+    try {
+      const viewer = await forgeNamed('github').viewer({ token, fromSession });
+      log.set({ outcome: 'ok', viewer: viewer?.login });
+      return { fromSession, viewer };
+    } catch (error) {
+      log.set({ outcome: 'error' });
+      return fail(error, m.router_could_not_check_who_you_are_signed_in(), {
+        ref: { forge: 'github' },
+        credentialed: true,
       });
     }
-    log.set({ outcome: 'submitted', reviewId: review.id, state: review.state });
-    return {
-      id: review.id,
-      state: review.state,
-      submittedAt: review.submitted_at ?? undefined,
-      htmlUrl: review.html_url,
-    };
-  } catch (error) {
-    // GitHub's own words are worth more than ours here: it is the one that
-    // knows a reviewer cannot approve their own pull request.
-    return fail(error, m.router_could_not_submit_this_review());
   }
-});
+);
 
-const listComments = os.comments.list.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { number, owner, repo } = input;
-  log.set({ owner, repo, pull: number });
-  try {
-    // `full` for the same reason `pulls.get` asks for it: `body_html` is where
-    // a private attachment's address is signed.
-    const comments = await githubJson<GitHubReviewComment[]>(
-      `/repos/${owner}/${repo}/pulls/${number}/comments?per_page=100`,
-      context.token,
-      { headers: { accept: FULL_JSON_MEDIA_TYPE } }
-    );
-    log.set({ outcome: 'ok', count: comments.length });
-    return comments.map(toPayload);
-  } catch (error) {
-    return fail(error, m.router_could_not_load_comments());
-  }
-});
-
-const listConversation = os.comments.conversation.handler(
-  async ({ context, input }) => {
-    const log = requestLog();
-    const { number, owner, repo } = input;
-    log.set({ owner, repo, pull: number });
+const listInstallations = os.installations.list.handler(
+  async ({ context: { config, log, credentials } }) => {
+    const app = config.github.app;
+    const installUrl =
+      app?.slug == null ? undefined : buildInstallUrl(app.slug);
+    const token = credentials.byForge['github']?.token;
+    if (token == null) {
+      log.set({ outcome: 'anonymous' });
+      return { installations: [], installUrl };
+    }
     try {
-      // GitHub files a remark under the description and a verdict on the pull
-      // request in two lists, so both are asked for at once. `full` for the
-      // signed attachment addresses, as `comments.list` asks for it. One page
-      // of each, which is the limit the line comments already live with.
-      const media = { headers: { accept: FULL_JSON_MEDIA_TYPE } };
-      const [comments, reviews] = await Promise.all([
-        githubJson<IssueCommentSource[]>(
-          `/repos/${owner}/${repo}/issues/${number}/comments?per_page=100`,
-          context.token,
-          media
-        ),
-        githubJson<PullReviewSource[]>(
-          `/repos/${owner}/${repo}/pulls/${number}/reviews?per_page=100`,
-          context.token,
-          media
-        ),
-      ]);
-      const entries = buildConversation(comments, reviews);
+      const installations = await readInstallations(token);
+      log.set({ outcome: 'ok', installationCount: installations.length });
+      return { installations, installUrl };
+    } catch (error) {
+      log.set({ outcome: 'error' });
+      return fail(error, m.router_could_not_read_where_ghdiff_is_installed(), {
+        ref: { forge: 'github' },
+        credentialed: true,
+      });
+    }
+  }
+);
+
+const listPulls = os.pulls.list.handler(
+  async ({ context: { config, log, credentials }, input }) => {
+    const repos = dedupeRepoRefs(input.repos).slice(0, MAX_WATCHED_REPOS);
+    log.set({
+      repoCount: repos.length,
+      authenticated: credentials.byForge['github']?.token != null,
+    });
+    if (repos.length === 0) return { viewers: {}, pulls: [], failures: [] };
+
+    // Each forge group answers its own repositories with its own credential,
+    // and one that fails fails only its own rows. A ref for a forge this
+    // deployment does not serve fails at the gate with the sentence that says
+    // what it does serve.
+    const byForge = Map.groupBy(repos, (ref) => forgeGroupKey(ref));
+
+    const result: OpenPullsAnswer = { viewers: {}, pulls: [], failures: [] };
+    await Promise.all(
+      [...byForge.values()].map(async (refs) => {
+        try {
+          const data = await forgeFor(config, refs[0]).listOpenPulls(
+            refs,
+            credFor(credentials, refs[0])
+          );
+          result.pulls.push(...data.pulls);
+          result.failures.push(...data.failures);
+          // The viewer stays with its own group: a login that matches across
+          // forges is not the same person.
+          if (data.viewer != null) {
+            result.viewers[forgeGroupKey(refs[0])] = data.viewer;
+          }
+        } catch (error) {
+          for (const ref of refs) {
+            result.failures.push({
+              repo: formatRepoRef(ref),
+              message:
+                error instanceof GitHubError
+                  ? error.message
+                  : m.router_could_not_load_this_repository(),
+            });
+          }
+        }
+      })
+    );
+
+    log.set({
+      pullCount: result.pulls.length,
+      failureCount: result.failures.length,
+      viewers: Object.keys(result.viewers).length,
+    });
+    return result;
+  }
+);
+
+const getPull = os.pulls.get
+  .use(withForge)
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    try {
+      const details = await forge.pullDetails(input, cred);
+      log.set({ outcome: 'ok', state: details.state });
+      return details;
+    } catch (error) {
+      return fail(error, m.router_could_not_load_this_pull_request(), {
+        ref: input,
+        credentialed: cred.token != null,
+      });
+    }
+  });
+
+const getMyReview = os.reviews.mine
+  .use(withForge)
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    try {
+      const review = await forge.reviews.mine(input, cred);
+      log.set({ outcome: review == null ? 'none' : 'ok' });
+      return review == null ? {} : { review };
+    } catch (error) {
+      return fail(error, m.router_could_not_load_your_review_of_this_pull(), {
+        ref: input,
+        credentialed: cred.token != null,
+      });
+    }
+  });
+
+const submitReview = os.reviews.submit
+  .use(withAuth('review'))
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    const { body, event, ...ref } = input;
+    log.set({ event });
+    try {
+      if (!forge.capabilities.verdicts.includes(event)) {
+        throw new ORPCError('BAD_REQUEST', {
+          status: 400,
+          message: m.router_this_forge_does_not_take_that_verdict(),
+        });
+      }
+      const review = await forge.reviews.submit(ref, { event, body }, cred);
+      log.set({
+        outcome: 'submitted',
+        reviewId: review.id,
+        state: review.state,
+      });
+      return review;
+    } catch (error) {
+      // The forge's own words are worth more than ours here: it is the one
+      // that knows a reviewer cannot approve their own pull request.
+      return fail(error, m.router_could_not_submit_this_review(), {
+        ref: input,
+        credentialed: true,
+      });
+    }
+  });
+
+const listComments = os.comments.list
+  .use(withForge)
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    try {
+      const comments = await forge.comments.list(input, cred);
+      log.set({ outcome: 'ok', count: comments.length });
+      return comments;
+    } catch (error) {
+      return fail(error, m.router_could_not_load_comments(), {
+        ref: input,
+        credentialed: cred.token != null,
+      });
+    }
+  });
+
+const createComment = os.comments.create
+  .use(withAuth('comment'))
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    const { body, replyToId, path, line, side, startLine, startSide, ...ref } =
+      input;
+    log.set({ replyToId });
+    try {
+      const created = await forge.comments.create(
+        ref,
+        {
+          body,
+          replyToId,
+          path,
+          line,
+          side,
+          startLine,
+          startSide,
+        },
+        cred
+      );
+      log.set({ outcome: 'created', commentId: created.remoteId });
+      return created;
+    } catch (error) {
+      return fail(error, m.router_could_not_post_this_comment(), {
+        ref: input,
+        credentialed: true,
+      });
+    }
+  });
+
+const removeComment = os.comments.remove
+  .use(withAuth('delete'))
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    const { commentId, ...ref } = input;
+    log.set({ commentId });
+    try {
+      await forge.comments.remove(ref, commentId, cred);
+      log.set({ outcome: 'deleted' });
+      return { ok: true as const };
+    } catch (error) {
+      return fail(error, m.router_could_not_delete_this_comment(), {
+        ref: input,
+        credentialed: true,
+      });
+    }
+  });
+
+const resolveCommentThread = os.comments.resolve
+  .use(withAuth('resolve'))
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    const { threadId, resolved, ...ref } = input;
+    log.set({ resolved });
+    try {
+      const resolve = requireCapability(
+        forge.comments.resolve,
+        m.router_this_forge_resolves_no_review_threads()
+      );
+      await resolve(ref, { threadId, resolved }, cred);
+      log.set({ outcome: 'ok' });
+      return { resolved };
+    } catch (error) {
+      return fail(error, m.router_could_not_resolve_that_thread(), {
+        ref: input,
+        credentialed: true,
+      });
+    }
+  });
+
+// Anonymous is a first-class caller here, the way it is for `pulls.get`: a
+// public review loads with nobody signed in, and both adapters answer an empty
+// list to no credential. A grant that exists but is spent is another matter —
+// the forge's own 401 becomes the typed `auth-expired` failure through
+// `fail`, never an empty list that reads as "nothing staged".
+const listDrafts = os.drafts.list
+  .use(withForge)
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    try {
+      const drafts = requireCapability(
+        forge.drafts,
+        m.router_this_forge_keeps_no_review_drafts()
+      );
+      const list = await drafts.list(input, cred);
+      log.set({ outcome: 'ok', count: list.length });
+      return { drafts: list };
+    } catch (error) {
+      return fail(error, m.router_could_not_load_your_staged_comments(), {
+        ref: input,
+        credentialed: cred.token != null,
+      });
+    }
+  });
+
+const createDraft = os.drafts.create
+  .use(withAuth('stage'))
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    const { body, path, line, side, startLine, startSide, ...ref } = input;
+    try {
+      const drafts = requireCapability(
+        forge.drafts,
+        m.router_this_forge_keeps_no_review_drafts()
+      );
+      const draft = await drafts.create(
+        ref,
+        { body, path, line, side, startLine, startSide },
+        cred
+      );
+      log.set({ outcome: 'created', commentId: draft.remoteId });
+      return draft;
+    } catch (error) {
+      return fail(error, m.router_could_not_stage_this_comment(), {
+        ref: input,
+        credentialed: true,
+      });
+    }
+  });
+
+const removeDraft = os.drafts.remove
+  .use(withAuth('unstage'))
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    const { id, nodeId, ...ref } = input;
+    log.set({ commentId: id });
+    try {
+      const drafts = requireCapability(
+        forge.drafts,
+        m.router_this_forge_keeps_no_review_drafts()
+      );
+      await drafts.remove(ref, { id, nodeId }, cred);
+      log.set({ outcome: 'deleted' });
+      return { ok: true as const };
+    } catch (error) {
+      return fail(error, m.router_could_not_delete_this_staged_comment(), {
+        ref: input,
+        credentialed: true,
+      });
+    }
+  });
+
+const listViewedFiles = os.viewedFiles.list
+  .use(withForge)
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    try {
+      const viewedFiles = requireCapability(
+        forge.viewedFiles,
+        m.router_this_forge_keeps_no_viewed_file_marks()
+      );
+      const data = await viewedFiles.list(input, cred);
+      log.set({ outcome: 'ok', count: data.paths.length });
+      return data;
+    } catch (error) {
+      return fail(error, m.router_could_not_load_which_files_you_have_read(), {
+        ref: input,
+        credentialed: cred.token != null,
+      });
+    }
+  });
+
+const setViewedFile = os.viewedFiles.set
+  .use(withAuth('viewed'))
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    const { path, viewed, ...ref } = input;
+    log.set({ viewed });
+    try {
+      const viewedFiles = requireCapability(
+        forge.viewedFiles,
+        m.router_this_forge_keeps_no_viewed_file_marks()
+      );
+      await viewedFiles.set(ref, { path, viewed }, cred);
+      log.set({ outcome: 'ok' });
+      return { ok: true as const };
+    } catch (error) {
+      return fail(error, m.router_could_not_send_that_mark_to_github(), {
+        ref: input,
+        credentialed: true,
+      });
+    }
+  });
+
+// A courtesy beside the diff rather than a part of it: no credential, or a
+// forge that keeps no such list, answers an empty one rather than asking.
+const getTeamReviews = os.reviews.team
+  .use(withForge)
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    if (cred.token == null || forge.reviews.team == null) {
+      return { reviews: [] };
+    }
+    try {
+      const reviews = await forge.reviews.team(input, cred);
+      log.set({ outcome: 'ok', reviews: reviews.length });
+      return { reviews };
+    } catch (error) {
+      return fail(
+        error,
+        m.router_could_not_load_the_teams_reviews_of_this_pull(),
+        {
+          ref: input,
+          credentialed: true,
+        }
+      );
+    }
+  });
+
+const listConversation = os.comments.conversation
+  .use(withForge)
+  .handler(async ({ context: { forge, cred, log }, input }) => {
+    if (forge.comments.conversation == null) return [];
+    try {
+      const entries = await forge.comments.conversation(input, cred);
       log.set({ outcome: 'ok', count: entries.length });
       return entries;
     } catch (error) {
-      return fail(error, m.router_could_not_load_the_conversation());
-    }
-  }
-);
-
-const createComment = os.comments.create.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { number, owner, repo } = input;
-  log.set({ owner, repo, pull: number });
-  const token = requireToken(context.token, 'comment');
-
-  try {
-    // A reply names only the comment it answers. Everything else about where it
-    // lands, the path, the line, the side and the commit, comes from that
-    // comment, so a reply cannot drift off its thread.
-    if (input.replyToId != null) {
-      log.set({ replyToId: input.replyToId });
-      const reply = await githubWrite<GitHubReviewComment>(
-        'POST',
-        `/repos/${owner}/${repo}/pulls/${number}/comments/${String(input.replyToId)}/replies`,
-        token,
-        { body: input.body }
-      );
-      if (reply == null) {
-        throw new ORPCError('BAD_GATEWAY', {
-          status: 502,
-          get message() {
-            return m.router_github_accepted_the_reply_but_returned_nothing();
-          },
-        });
-      }
-      log.set({ outcome: 'replied', commentId: reply.id });
-      return toPayload(reply);
-    }
-
-    if (input.path == null || input.line == null) {
-      throw new ORPCError('BAD_REQUEST', {
-        status: 400,
-        get message() {
-          return m.router_this_comment_is_missing_a_file_or_line();
-        },
+      return fail(error, m.router_could_not_load_the_conversation(), {
+        ref: input,
+        credentialed: cred.token != null,
       });
     }
+  });
 
-    // A review comment must name the commit it applies to.
-    const pullRequest = await githubJson<GitHubPullRequest>(
-      `/repos/${owner}/${repo}/pulls/${number}`,
-      token
-    );
-
-    const created = await githubWrite<GitHubReviewComment>(
-      'POST',
-      `/repos/${owner}/${repo}/pulls/${number}/comments`,
-      token,
-      {
-        body: input.body,
-        commit_id: pullRequest.head.sha,
-        path: input.path,
-        line: input.line,
-        side: gitHubSideFromAnnotation(input.side ?? 'additions'),
-        ...(input.startLine != null && input.startLine !== input.line
-          ? {
-              start_line: input.startLine,
-              start_side: gitHubSideFromAnnotation(
-                input.startSide ?? 'additions'
-              ),
-            }
-          : {}),
-      }
-    );
-    if (created == null) {
-      throw new ORPCError('BAD_GATEWAY', {
-        status: 502,
-        get message() {
-          return m.router_github_accepted_the_comment_but_returned_nothing();
-        },
-      });
-    }
-    log.set({ outcome: 'created', commentId: created.id });
-    return toPayload(created);
-  } catch (error) {
-    if (error instanceof ORPCError) throw error;
-    return fail(error, m.router_could_not_post_this_comment());
-  }
-});
-
-const ISSUES_FORBIDDEN =
-  m.router_github_wont_let_ghdiff_open_issues_here_the_ghdiff;
-
-const createIssue = os.issues.create.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { line, owner, path, repo, side, source } = input;
-  log.set({ owner, repo, source: source.kind, side });
-  const token = requireToken(context.token, m.issue_create_action());
-  const ref = { owner, repo };
-
-  try {
-    const sha = await resolveSideCommit(ref, source, side, token);
-    const { title, body } = composeCommentIssue({
-      text: input.text,
-      permalink: blobPermalinkUrl(ref, sha, path, {
-        start: input.startLine ?? line,
-        end: line,
-      }),
-      sourceUrl: reviewTargetUrl({ ...ref, ...source }),
-      path,
-      line,
-    });
-    const issue = await githubWrite<{ number: number; html_url: string }>(
-      'POST',
-      `/repos/${owner}/${repo}/issues`,
-      token,
-      { title, body }
-    );
-    if (issue == null) {
-      throw new ORPCError('BAD_GATEWAY', {
-        status: 502,
-        message: m.router_github_accepted_the_issue_but_returned_nothing(),
-      });
-    }
-    log.set({ outcome: 'created', issue: issue.number });
-    return { number: issue.number, htmlUrl: issue.html_url };
-  } catch (error) {
-    if (error instanceof ORPCError) throw error;
-    // A 403 here is almost always the App's registration or its installation
-    // lacking the Issues permission, and GitHub's own sentence for that —
-    // "Resource not accessible by integration" — names no permission at all.
-    // A spent quota is 429 by now, so it does not land here.
-    if (error instanceof GitHubError && error.status === 403) {
-      throw new ORPCError('FORBIDDEN', {
-        status: 403,
-        message: ISSUES_FORBIDDEN(),
-        cause: error,
-      });
-    }
-    return fail(error, m.router_could_not_create_this_issue());
-  }
-});
-
-const removeComment = os.comments.remove.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { commentId, owner, repo } = input;
-  log.set({ owner, repo, commentId });
-  const token = requireToken(context.token, m.auth_required_delete());
-  try {
-    await githubWrite(
-      'DELETE',
-      `/repos/${owner}/${repo}/pulls/comments/${commentId}`,
-      token
-    );
-    log.set({ outcome: 'deleted' });
-    return { ok: true as const };
-  } catch (error) {
-    return fail(error, m.router_could_not_delete_this_comment());
-  }
-});
-
-const listViewedFiles = os.viewedFiles.list.handler(
-  async ({ context, input }) => {
-    const log = requestLog();
-    const { number, owner, repo } = input;
-    log.set({ owner, repo, pull: number });
-    // The mark belongs to the token's own user, and GraphQL refuses an
-    // anonymous caller, so there is nothing here to ask without one.
-    if (context.token == null) return { paths: [] };
-
+const createIssue = os.issues.create
+  .use(withTargetForge)
+  .handler(async ({ context: { forge, cred, ref, log }, input }) => {
+    const { target, ...issue } = input;
+    log.set({ side: issue.side });
+    if (cred.token == null) throw authRequired('issue', ref);
     try {
-      const paths: string[] = [];
-      let after: string | null = null;
-      for (let page = 0; page < MAX_VIEWED_FILE_PAGES; page++) {
-        const data: ViewedFilesQueryData = await githubGraphQL(
-          VIEWED_FILES_QUERY,
-          {
-            owner,
-            repo,
-            number,
-            first: VIEWED_FILES_PAGE_SIZE,
-            after,
-          },
-          context.token
-        );
-        const files = data.repository?.pullRequest?.files;
-        if (files == null) break;
-        for (const node of files.nodes ?? []) {
-          if (node?.path == null) continue;
-          if (isFileViewed(node.viewerViewedState)) paths.push(node.path);
-        }
-        if (files.pageInfo?.hasNextPage !== true) break;
-        after = files.pageInfo.endCursor ?? null;
-        if (after == null) break;
-      }
-      log.set({ outcome: 'ok', count: paths.length });
-      return { paths };
+      const issues = requireCapability(
+        forge.issues,
+        m.router_this_forge_files_no_issues()
+      );
+      const created = await issues.create(target, issue, cred);
+      log.set({ outcome: 'created', issue: created.number });
+      return created;
     } catch (error) {
-      return fail(error, m.router_could_not_load_which_files_you_have_read());
+      return fail(error, m.router_could_not_create_this_issue(), {
+        ref,
+        credentialed: true,
+      });
     }
-  }
-);
+  });
 
-const setViewedFile = os.viewedFiles.set.handler(async ({ context, input }) => {
-  const log = requestLog();
-  const { number, owner, path, repo, viewed } = input;
-  log.set({ owner, repo, pull: number, viewed });
-  const token = requireToken(context.token, m.auth_required_viewed());
-
-  try {
-    // Both mutations address the pull request by its node id and nothing else,
-    // so the id is read first. The browser is not asked to hold it: it would
-    // then have to be handed to every press, and a press that arrived before
-    // the list did would have nothing to send.
-    const found = await githubGraphQL<PullNodeIdQueryData>(
-      PULL_NODE_ID_QUERY,
-      { owner, repo, number },
-      token
-    );
-    const pullRequestId = found.repository?.pullRequest?.id;
-    if (pullRequestId == null) {
-      throw new GitHubError(404, m.router_not_found());
-    }
-    await githubGraphQL(
-      viewed ? MARK_FILE_VIEWED_MUTATION : UNMARK_FILE_VIEWED_MUTATION,
-      { pullRequestId, path },
-      token
-    );
-    log.set({ outcome: 'ok' });
-    return { ok: true as const };
-  } catch (error) {
-    return fail(error, m.router_could_not_send_that_mark_to_github());
-  }
-});
-
-/**
- * The counter behind the footer's "Served" line. It is the one procedure that
- * asks nothing of GitHub, so it neither reads the token nor reports a GitHub
- * failure: a store that cannot answer throws, the browser catches it, and the
- * footer prints no figure at all.
- */
-const listDeployments = os.deployments.list.handler(
-  async ({ context, input }) => {
-    const log = requestLog();
-    const { owner, repo, source } = input;
-    log.set({ owner, repo, target: source.kind });
+const listDeployments = os.deployments.list
+  .use(withTargetForge)
+  .handler(async ({ context: { forge, cred, ref, log }, input }) => {
+    if (forge.deployments == null) return { deployments: [] };
     try {
-      const { outcome, ...data } = await readDeployments(
-        owner,
-        repo,
-        source,
-        context.token
-      );
+      const { outcome, ...data } = await forge.deployments(input.target, cred);
       log.set({ outcome, deployments: data.deployments.length });
       return data;
     } catch (error) {
-      return fail(error, m.router_could_not_load_the_deployments());
+      return fail(error, m.router_could_not_load_the_deployments(), {
+        ref,
+        credentialed: cred.token != null,
+      });
     }
-  }
-);
+  });
 
-const getServedCount = os.stats.served.handler(async () => {
+/**
+ * The counter behind the footer's "Served" line. It is the one procedure that
+ * asks nothing of a forge, so it neither reads the token nor reports a forge
+ * failure: a store that cannot answer throws, the browser catches it, and the
+ * footer prints no figure at all.
+ */
+const getServedCount = os.stats.served.handler(async ({ context: { log } }) => {
   const count = await readServedCount();
-  requestLog().set({ outcome: 'ok', served: count });
+  log.set({ outcome: 'ok', served: count });
   return { count };
 });
 
@@ -686,6 +744,12 @@ export const router = os.router({
     conversation: listConversation,
     create: createComment,
     remove: removeComment,
+    resolve: resolveCommentThread,
+  },
+  drafts: {
+    list: listDrafts,
+    create: createDraft,
+    remove: removeDraft,
   },
   viewedFiles: {
     list: listViewedFiles,
@@ -693,254 +757,12 @@ export const router = os.router({
   },
 });
 
-function toPayload(comment: GitHubReviewComment): CommentPayload {
-  const side = annotationSideFromGitHub(comment.side ?? 'RIGHT');
-  // GitHub reports `line: null` for a comment whose line fell out of the diff
-  // after a force push. `original_line` still points at where it was written.
-  const line = comment.line ?? comment.original_line ?? 1;
-  const startLine = comment.start_line ?? comment.original_start_line;
-  const attachments = readSignedAttachments(comment.body_html);
-  return {
-    githubId: comment.id,
-    path: comment.path,
-    author: comment.user?.login ?? 'unknown',
-    authorAvatarUrl: comment.user?.avatar_url,
-    // GitHub types an App's account as 'Bot'. The sidebar's People and Bots
-    // filter reads this rather than guessing from the login.
-    authorIsBot: comment.user?.type === 'Bot',
-    body: comment.body,
-    line,
-    startLine: startLine ?? undefined,
-    side,
-    startSide:
-      comment.start_side == null
-        ? undefined
-        : annotationSideFromGitHub(comment.start_side),
-    createdAt: comment.created_at,
-    htmlUrl: comment.html_url,
-    replyToId: comment.in_reply_to_id,
-    attachments:
-      Object.keys(attachments.byId).length > 0 ? attachments : undefined,
-  };
-}
-
-// `reviews(last: 1, states: [CHANGES_REQUESTED])` is the one review that
-// matters here: the newest request for changes, so the author's newest commit
-// can be compared against it.
-//
-// `latestOpinionatedReviews` is the review axis itself, and `reviewFromSource`
-// says why `reviewDecision` cannot carry it alone. Twenty is the page, because
-// a pull request with more than twenty people who each left a verdict is a
-// pull request nobody is reading a list of squares for — past that the axis
-// misses a twenty-first reviewer's request for changes. `first` is the whole
-// page's own cap, so the nesting costs about twenty rate-limit points per
-// repository, against the five thousand an hour a token has. The list is
-// fetched once a session.
-const OPEN_PULLS_QUERY = `
-query($owner:String!,$repo:String!,$first:Int!){
-  repository(owner:$owner,name:$repo){
-    pullRequests(states:OPEN,first:$first,orderBy:{field:UPDATED_AT,direction:DESC}){
-      nodes{
-        number title url isDraft updatedAt
-        headRefName baseRefName headRefOid reviewDecision
-        author{ login avatarUrl }
-        commits(last:1){nodes{commit{oid committedDate statusCheckRollup{state}}}}
-        reviews(last:1,states:[CHANGES_REQUESTED]){nodes{submittedAt}}
-        latestOpinionatedReviews(first:20){nodes{state}}
-      }
-    }
+/** Dedupes refs by their label, first occurrence winning. */
+function dedupeRepoRefs(refs: readonly RepoRef[]): RepoRef[] {
+  const seen = new Map<string, RepoRef>();
+  for (const ref of refs) {
+    const key = formatRepoRef(ref).toLowerCase();
+    if (!seen.has(key)) seen.set(key, ref);
   }
-}`;
-
-interface GraphQLPullNode extends PullStatusSource {
-  number?: number | null;
-  title?: string | null;
-  url?: string | null;
-  isDraft?: boolean | null;
-  updatedAt?: string | null;
-  headRefName?: string | null;
-  baseRefName?: string | null;
-  author?: { login?: string | null; avatarUrl?: string | null } | null;
+  return [...seen.values()];
 }
-
-interface OpenPullsQueryData {
-  repository?: {
-    pullRequests?: { nodes?: (GraphQLPullNode | null)[] | null } | null;
-  } | null;
-}
-
-/** The list with its review decision and its check rollup. Needs a token. */
-async function readOpenPullsGraphQL(
-  repo: WatchedRepo,
-  token: string
-): Promise<PullSummary[]> {
-  const data = await githubGraphQL<OpenPullsQueryData>(
-    OPEN_PULLS_QUERY,
-    { owner: repo.owner, repo: repo.repo, first: MAX_PULLS_PER_REPO },
-    token
-  );
-  // A token that cannot see the repository gets a 200 with a null repository.
-  if (data.repository == null) {
-    throw new GitHubError(404, m.router_not_found());
-  }
-
-  const pulls: PullSummary[] = [];
-  for (const node of data.repository.pullRequests?.nodes ?? []) {
-    if (node == null || typeof node.number !== 'number') continue;
-    pulls.push({
-      owner: repo.owner,
-      repo: repo.repo,
-      number: node.number,
-      title: node.title ?? '',
-      author: node.author?.login ?? 'unknown',
-      authorAvatarUrl: node.author?.avatarUrl ?? undefined,
-      // The query asks for open pull requests only, so the lifecycle is either
-      // open or draft.
-      state: node.isDraft === true ? 'draft' : 'open',
-      htmlUrl: node.url ?? '',
-      updatedAt: node.updatedAt ?? '',
-      headRef: node.headRefName ?? '',
-      baseRef: node.baseRefName ?? '',
-      status: normalizePullStatus(node),
-    });
-  }
-  return pulls;
-}
-
-/** The same list without the two status axes, for a reviewer with no token. */
-async function readOpenPullsRest(
-  repo: WatchedRepo,
-  token: string | undefined
-): Promise<PullSummary[]> {
-  const result = await githubJson<GitHubPullRequest[]>(
-    `/repos/${repo.owner}/${repo.repo}/pulls?state=open&sort=updated&direction=desc&per_page=${MAX_PULLS_PER_REPO}`,
-    token
-  );
-  return result.map((pull) => ({
-    owner: repo.owner,
-    repo: repo.repo,
-    number: pull.number,
-    title: pull.title,
-    author: pull.user?.login ?? 'unknown',
-    authorAvatarUrl: pull.user?.avatar_url,
-    state: pull.draft === true ? 'draft' : 'open',
-    htmlUrl: pull.html_url,
-    updatedAt: pull.updated_at,
-    headRef: pull.head.ref,
-    baseRef: pull.base.ref,
-  }));
-}
-
-// `viewerLatestReview` is the whole question in one field: the last review this
-// token's own user left on this pull request. REST has no equivalent — it
-// answers with every review by everybody, over as many pages as the pull
-// request has collected, and the caller would then have to ask GitHub who it is
-// before it could pick out its own.
-const MY_REVIEW_QUERY = `
-query($owner:String!,$repo:String!,$number:Int!){
-  repository(owner:$owner,name:$repo){
-    pullRequest(number:$number){
-      viewerLatestReview{ databaseId state submittedAt url }
-    }
-  }
-}`;
-
-interface MyReviewQueryData {
-  repository?: {
-    pullRequest?: {
-      viewerLatestReview?: {
-        databaseId?: number | null;
-        state?: string | null;
-        submittedAt?: string | null;
-        url?: string | null;
-      } | null;
-    } | null;
-  } | null;
-}
-
-// The newest reviews on the pull request, whoever wrote them. `recentTeamReviews`
-// drops the viewer's own, the bots', and the bare replies GitHub files as
-// reviews, so the page is wider than the five the dialog lists: on a pull
-// request with a busy line thread, most of the last fifty are those replies.
-// `viewerDidAuthor` is what tells the viewer's own apart without asking GitHub
-// who the viewer is.
-const TEAM_REVIEWS_PAGE = 50;
-
-const TEAM_REVIEWS_QUERY = `
-query($owner:String!,$repo:String!,$number:Int!,$last:Int!){
-  repository(owner:$owner,name:$repo){
-    pullRequest(number:$number){
-      reviews(last:$last){
-        nodes{
-          databaseId state submittedAt url bodyText viewerDidAuthor
-          author{ kind: __typename login avatarUrl }
-          comments{ totalCount }
-        }
-      }
-    }
-  }
-}`;
-
-interface TeamReviewsQueryData {
-  repository?: {
-    pullRequest?: {
-      reviews?: { nodes?: (TeamReviewSource | null)[] | null } | null;
-    } | null;
-  } | null;
-}
-
-// `viewerViewedState` is the whole question in one field: what this token's own
-// user has said about this file. REST has no equivalent — the pull request
-// files endpoint answers with the patch and the counts and says nothing about
-// who has read what — so this and the two mutations under it are GraphQL only.
-const VIEWED_FILES_QUERY = `
-query($owner:String!,$repo:String!,$number:Int!,$first:Int!,$after:String){
-  repository(owner:$owner,name:$repo){
-    pullRequest(number:$number){
-      files(first:$first,after:$after){
-        pageInfo{ hasNextPage endCursor }
-        nodes{ path viewerViewedState }
-      }
-    }
-  }
-}`;
-
-interface ViewedFilesQueryData {
-  repository?: {
-    pullRequest?: {
-      files?: {
-        pageInfo?: {
-          hasNextPage?: boolean | null;
-          endCursor?: string | null;
-        } | null;
-        nodes?:
-          | ({
-              path?: string | null;
-              viewerViewedState?: string | null;
-            } | null)[]
-          | null;
-      } | null;
-    } | null;
-  } | null;
-}
-
-const PULL_NODE_ID_QUERY = `
-query($owner:String!,$repo:String!,$number:Int!){
-  repository(owner:$owner,name:$repo){
-    pullRequest(number:$number){ id }
-  }
-}`;
-
-interface PullNodeIdQueryData {
-  repository?: { pullRequest?: { id?: string | null } | null } | null;
-}
-
-const MARK_FILE_VIEWED_MUTATION = `
-mutation($pullRequestId:ID!,$path:String!){
-  markFileAsViewed(input:{pullRequestId:$pullRequestId,path:$path}){ clientMutationId }
-}`;
-
-const UNMARK_FILE_VIEWED_MUTATION = `
-mutation($pullRequestId:ID!,$path:String!){
-  unmarkFileAsViewed(input:{pullRequestId:$pullRequestId,path:$path}){ clientMutationId }
-}`;

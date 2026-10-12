@@ -1,4 +1,3 @@
-import { githubJson } from './client';
 // What the setup page asks GitHub: where is this App installed, and how far does
 // each installation reach.
 //
@@ -11,6 +10,8 @@ import { githubJson } from './client';
 // second call asks for one repository per page and reads `total_count` off the
 // answer, so a reviewer with an installation over three hundred repositories
 // pays for one of them.
+
+import { githubJson } from './client';
 import type { AppInstallation } from '@/lib/installations';
 import { m } from '@/paraglide/messages.js';
 

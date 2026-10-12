@@ -1,0 +1,273 @@
+{
+  "url": "https://api.github.com/repos/GalvinGao/ghdiff/compare/3756360521e239afdc7145f36ef20d204f5204cf...9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+  "html_url": "https://github.com/GalvinGao/ghdiff/compare/3756360521e239afdc7145f36ef20d204f5204cf...9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+  "permalink_url": "https://github.com/GalvinGao/ghdiff/compare/GalvinGao:3756360...GalvinGao:9054b5d",
+  "diff_url": "https://github.com/GalvinGao/ghdiff/compare/3756360521e239afdc7145f36ef20d204f5204cf...9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91.diff",
+  "patch_url": "https://github.com/GalvinGao/ghdiff/compare/3756360521e239afdc7145f36ef20d204f5204cf...9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91.patch",
+  "base_commit": {
+    "sha": "3756360521e239afdc7145f36ef20d204f5204cf",
+    "node_id": "C_kwDOUDZxw9oAKDM3NTYzNjA1MjFlMjM5YWZkYzcxNDVmMzZlZjIwZDIwNGY1MjA0Y2Y",
+    "commit": {
+      "author": {
+        "name": "GalvinGao",
+        "email": "me@galvingao.com",
+        "date": "2026-09-05T07:55:17Z"
+      },
+      "committer": {
+        "name": "GalvinGao",
+        "email": "me@galvingao.com",
+        "date": "2026-09-05T07:55:17Z"
+      },
+      "message": "fix(comments): keep expanded comments open while scrolling",
+      "tree": {
+        "sha": "48c051dd627def2742fa7d442f986ec4ff30bd62",
+        "url": "https://api.github.com/repos/GalvinGao/ghdiff/git/trees/48c051dd627def2742fa7d442f986ec4ff30bd62"
+      },
+      "url": "https://api.github.com/repos/GalvinGao/ghdiff/git/commits/3756360521e239afdc7145f36ef20d204f5204cf",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\niQEzBAABCAAdFiEEzAZw/qRi6B6eItqFs2SoW/r89xoFAmqbyuYACgkQs2SoW/r8\n9xovGwf6AgMRgze4OhrJIm95bNC2asxOPXSUC9KbnQuUY3/fSwccOc3DA8poEtHb\n0A4lLb71lQB4YLItEvH4vCvaBURB722OyfPvKbTqBUKFEJBZ6vAt3ZmGDTtDtMvw\nBkawBAq6luobRflL19ox1ZNWPAczcjOG4X5QQ3f/CJTFS25uOFNikth24ImXHUm1\nCjkDQDVRt4IEfRHbSp6097oy/KvnFyrYvfUNI+qoe0yPikmlEDD4XD+4oPTasu+f\nSaGweustMLqSSgSMAYL7/SfxziitbuaCuAGgsa+boY6rom0g29++GqLDP/57d1oA\n0yJ43863QNWpJorz6+X2xsBoqYfzkQ==\n=3NAD\n-----END PGP SIGNATURE-----",
+        "payload": "tree 48c051dd627def2742fa7d442f986ec4ff30bd62\nparent a7536e0a3ba26e931b09beb7f4ea396e8b32ffef\nauthor GalvinGao <me@galvingao.com> 1788594917 +0900\ncommitter GalvinGao <me@galvingao.com> 1788594917 +0900\n\nfix(comments): keep expanded comments open while scrolling\n",
+        "verified_at": "2026-09-05T07:55:30Z"
+      }
+    },
+    "url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/3756360521e239afdc7145f36ef20d204f5204cf",
+    "html_url": "https://github.com/GalvinGao/ghdiff/commit/3756360521e239afdc7145f36ef20d204f5204cf",
+    "comments_url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/3756360521e239afdc7145f36ef20d204f5204cf/comments",
+    "author": {
+      "login": "GalvinGao",
+      "id": 12567059,
+      "node_id": "MDQ6VXNlcjEyNTY3MDU5",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12567059?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/GalvinGao",
+      "html_url": "https://github.com/GalvinGao",
+      "followers_url": "https://api.github.com/users/GalvinGao/followers",
+      "following_url": "https://api.github.com/users/GalvinGao/following{/other_user}",
+      "gists_url": "https://api.github.com/users/GalvinGao/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/GalvinGao/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/GalvinGao/subscriptions",
+      "organizations_url": "https://api.github.com/users/GalvinGao/orgs",
+      "repos_url": "https://api.github.com/users/GalvinGao/repos",
+      "events_url": "https://api.github.com/users/GalvinGao/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/GalvinGao/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "GalvinGao",
+      "id": 12567059,
+      "node_id": "MDQ6VXNlcjEyNTY3MDU5",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12567059?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/GalvinGao",
+      "html_url": "https://github.com/GalvinGao",
+      "followers_url": "https://api.github.com/users/GalvinGao/followers",
+      "following_url": "https://api.github.com/users/GalvinGao/following{/other_user}",
+      "gists_url": "https://api.github.com/users/GalvinGao/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/GalvinGao/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/GalvinGao/subscriptions",
+      "organizations_url": "https://api.github.com/users/GalvinGao/orgs",
+      "repos_url": "https://api.github.com/users/GalvinGao/repos",
+      "events_url": "https://api.github.com/users/GalvinGao/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/GalvinGao/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "a7536e0a3ba26e931b09beb7f4ea396e8b32ffef",
+        "url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/a7536e0a3ba26e931b09beb7f4ea396e8b32ffef",
+        "html_url": "https://github.com/GalvinGao/ghdiff/commit/a7536e0a3ba26e931b09beb7f4ea396e8b32ffef"
+      }
+    ]
+  },
+  "merge_base_commit": {
+    "sha": "3756360521e239afdc7145f36ef20d204f5204cf",
+    "node_id": "C_kwDOUDZxw9oAKDM3NTYzNjA1MjFlMjM5YWZkYzcxNDVmMzZlZjIwZDIwNGY1MjA0Y2Y",
+    "commit": {
+      "author": {
+        "name": "GalvinGao",
+        "email": "me@galvingao.com",
+        "date": "2026-09-05T07:55:17Z"
+      },
+      "committer": {
+        "name": "GalvinGao",
+        "email": "me@galvingao.com",
+        "date": "2026-09-05T07:55:17Z"
+      },
+      "message": "fix(comments): keep expanded comments open while scrolling",
+      "tree": {
+        "sha": "48c051dd627def2742fa7d442f986ec4ff30bd62",
+        "url": "https://api.github.com/repos/GalvinGao/ghdiff/git/trees/48c051dd627def2742fa7d442f986ec4ff30bd62"
+      },
+      "url": "https://api.github.com/repos/GalvinGao/ghdiff/git/commits/3756360521e239afdc7145f36ef20d204f5204cf",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\niQEzBAABCAAdFiEEzAZw/qRi6B6eItqFs2SoW/r89xoFAmqbyuYACgkQs2SoW/r8\n9xovGwf6AgMRgze4OhrJIm95bNC2asxOPXSUC9KbnQuUY3/fSwccOc3DA8poEtHb\n0A4lLb71lQB4YLItEvH4vCvaBURB722OyfPvKbTqBUKFEJBZ6vAt3ZmGDTtDtMvw\nBkawBAq6luobRflL19ox1ZNWPAczcjOG4X5QQ3f/CJTFS25uOFNikth24ImXHUm1\nCjkDQDVRt4IEfRHbSp6097oy/KvnFyrYvfUNI+qoe0yPikmlEDD4XD+4oPTasu+f\nSaGweustMLqSSgSMAYL7/SfxziitbuaCuAGgsa+boY6rom0g29++GqLDP/57d1oA\n0yJ43863QNWpJorz6+X2xsBoqYfzkQ==\n=3NAD\n-----END PGP SIGNATURE-----",
+        "payload": "tree 48c051dd627def2742fa7d442f986ec4ff30bd62\nparent a7536e0a3ba26e931b09beb7f4ea396e8b32ffef\nauthor GalvinGao <me@galvingao.com> 1788594917 +0900\ncommitter GalvinGao <me@galvingao.com> 1788594917 +0900\n\nfix(comments): keep expanded comments open while scrolling\n",
+        "verified_at": "2026-09-05T07:55:30Z"
+      }
+    },
+    "url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/3756360521e239afdc7145f36ef20d204f5204cf",
+    "html_url": "https://github.com/GalvinGao/ghdiff/commit/3756360521e239afdc7145f36ef20d204f5204cf",
+    "comments_url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/3756360521e239afdc7145f36ef20d204f5204cf/comments",
+    "author": {
+      "login": "GalvinGao",
+      "id": 12567059,
+      "node_id": "MDQ6VXNlcjEyNTY3MDU5",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12567059?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/GalvinGao",
+      "html_url": "https://github.com/GalvinGao",
+      "followers_url": "https://api.github.com/users/GalvinGao/followers",
+      "following_url": "https://api.github.com/users/GalvinGao/following{/other_user}",
+      "gists_url": "https://api.github.com/users/GalvinGao/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/GalvinGao/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/GalvinGao/subscriptions",
+      "organizations_url": "https://api.github.com/users/GalvinGao/orgs",
+      "repos_url": "https://api.github.com/users/GalvinGao/repos",
+      "events_url": "https://api.github.com/users/GalvinGao/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/GalvinGao/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "GalvinGao",
+      "id": 12567059,
+      "node_id": "MDQ6VXNlcjEyNTY3MDU5",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12567059?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/GalvinGao",
+      "html_url": "https://github.com/GalvinGao",
+      "followers_url": "https://api.github.com/users/GalvinGao/followers",
+      "following_url": "https://api.github.com/users/GalvinGao/following{/other_user}",
+      "gists_url": "https://api.github.com/users/GalvinGao/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/GalvinGao/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/GalvinGao/subscriptions",
+      "organizations_url": "https://api.github.com/users/GalvinGao/orgs",
+      "repos_url": "https://api.github.com/users/GalvinGao/repos",
+      "events_url": "https://api.github.com/users/GalvinGao/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/GalvinGao/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "a7536e0a3ba26e931b09beb7f4ea396e8b32ffef",
+        "url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/a7536e0a3ba26e931b09beb7f4ea396e8b32ffef",
+        "html_url": "https://github.com/GalvinGao/ghdiff/commit/a7536e0a3ba26e931b09beb7f4ea396e8b32ffef"
+      }
+    ]
+  },
+  "status": "ahead",
+  "ahead_by": 1,
+  "behind_by": 0,
+  "total_commits": 1,
+  "commits": [
+    {
+      "sha": "9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+      "node_id": "C_kwDOUDZxw9oAKDkwNTRiNWQ3NTFlNmFkOWFlMmIwOWUzZmY3NTlkNTFjOGFhZDNiOTE",
+      "commit": {
+        "author": {
+          "name": "GalvinGao",
+          "email": "me@galvingao.com",
+          "date": "2026-09-07T07:52:04Z"
+        },
+        "committer": {
+          "name": "GalvinGao",
+          "email": "me@galvingao.com",
+          "date": "2026-09-07T07:52:04Z"
+        },
+        "message": "feat(header): show pull request state icon",
+        "tree": {
+          "sha": "55d070111f79ddd63a18f803b21748d96350a313",
+          "url": "https://api.github.com/repos/GalvinGao/ghdiff/git/trees/55d070111f79ddd63a18f803b21748d96350a313"
+        },
+        "url": "https://api.github.com/repos/GalvinGao/ghdiff/git/commits/9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+        "comment_count": 0,
+        "verification": {
+          "verified": true,
+          "reason": "valid",
+          "signature": "-----BEGIN PGP SIGNATURE-----\n\niQEzBAABCAAdFiEEzAZw/qRi6B6eItqFs2SoW/r89xoFAmqebSUACgkQs2SoW/r8\n9xpZKQgAhxEmhuKnAGwLsP12lG3KQ2GkWze1PLto8FWNPkoXtl0xESoSdX+M4JnG\ng4t5paBmSzfXFnOI6S4CiFEsv0anzLlzsDlCzr6TE1F06SBn8qX32C3hY9rdkaA8\nwOZeKAELjopE7W0AagkakKndMeUusAE8jd5Du/80LprKt5vPZ/HdTSAXsZmVqXtH\nw++Y+VEE+ac5s0HqYy/Sx/dbf/jOZUGhPac7aKSppL954pDBbq9PC0W3ZYzvHNgG\nZEeIuFN8g6L/2o5h+ZSwPcKX9Z34v8c0UYNINaSaygGLvYrDGSyMcMYd0MjNiiYT\n3oFYqOjdbfDGqbraOdomEoul4uaBQw==\n=9DuB\n-----END PGP SIGNATURE-----",
+          "payload": "tree 55d070111f79ddd63a18f803b21748d96350a313\nparent 3756360521e239afdc7145f36ef20d204f5204cf\nauthor GalvinGao <me@galvingao.com> 1788767524 +0900\ncommitter GalvinGao <me@galvingao.com> 1788767524 +0900\n\nfeat(header): show pull request state icon\n",
+          "verified_at": "2026-09-07T08:50:45Z"
+        }
+      },
+      "url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+      "html_url": "https://github.com/GalvinGao/ghdiff/commit/9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+      "comments_url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91/comments",
+      "author": {
+        "login": "GalvinGao",
+        "id": 12567059,
+        "node_id": "MDQ6VXNlcjEyNTY3MDU5",
+        "avatar_url": "https://avatars.githubusercontent.com/u/12567059?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/GalvinGao",
+        "html_url": "https://github.com/GalvinGao",
+        "followers_url": "https://api.github.com/users/GalvinGao/followers",
+        "following_url": "https://api.github.com/users/GalvinGao/following{/other_user}",
+        "gists_url": "https://api.github.com/users/GalvinGao/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/GalvinGao/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/GalvinGao/subscriptions",
+        "organizations_url": "https://api.github.com/users/GalvinGao/orgs",
+        "repos_url": "https://api.github.com/users/GalvinGao/repos",
+        "events_url": "https://api.github.com/users/GalvinGao/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/GalvinGao/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "GalvinGao",
+        "id": 12567059,
+        "node_id": "MDQ6VXNlcjEyNTY3MDU5",
+        "avatar_url": "https://avatars.githubusercontent.com/u/12567059?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/GalvinGao",
+        "html_url": "https://github.com/GalvinGao",
+        "followers_url": "https://api.github.com/users/GalvinGao/followers",
+        "following_url": "https://api.github.com/users/GalvinGao/following{/other_user}",
+        "gists_url": "https://api.github.com/users/GalvinGao/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/GalvinGao/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/GalvinGao/subscriptions",
+        "organizations_url": "https://api.github.com/users/GalvinGao/orgs",
+        "repos_url": "https://api.github.com/users/GalvinGao/repos",
+        "events_url": "https://api.github.com/users/GalvinGao/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/GalvinGao/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "3756360521e239afdc7145f36ef20d204f5204cf",
+          "url": "https://api.github.com/repos/GalvinGao/ghdiff/commits/3756360521e239afdc7145f36ef20d204f5204cf",
+          "html_url": "https://github.com/GalvinGao/ghdiff/commit/3756360521e239afdc7145f36ef20d204f5204cf"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "sha": "e4f7032d99bf53ce342618cbbdb827dee703fa04",
+      "filename": "src/components/ReviewHeader.tsx",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 2,
+      "changes": 7,
+      "blob_url": "https://github.com/GalvinGao/ghdiff/blob/9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91/src%2Fcomponents%2FReviewHeader.tsx",
+      "raw_url": "https://github.com/GalvinGao/ghdiff/raw/9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91/src%2Fcomponents%2FReviewHeader.tsx",
+      "contents_url": "https://api.github.com/repos/GalvinGao/ghdiff/contents/src%2Fcomponents%2FReviewHeader.tsx?ref=9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+      "patch": "@@ -20,6 +20,7 @@ import { GitHubAccountControl } from '@/components/GitHubAccountControl';\n import { GitHubTextLink } from '@/components/GitHubLink';\n import { PullDetailsCard } from '@/components/PullDetailsCard';\n import { PullListButton } from '@/components/PullListButton';\n+import { PullStateIcon } from '@/components/PullStateIcon';\n import { ReviewSubmitDialog } from '@/components/ReviewSubmitDialog';\n import { Button } from '@/components/ui/Button';\n import {\n@@ -400,16 +401,17 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {\n   // Stamped when the card opens, so the ages it shows are read from one instant\n   // and no clock runs behind a closed menu.\n   const [openedAt, setOpenedAt] = useState<number | null>(null);\n-  const title = pull.data?.title;\n+  const details = pull.data;\n \n-  if (title == null) {\n+  if (details == null) {\n     return pull.loading ? (\n       <span\n         aria-hidden=\"true\"\n         className=\"bg-line/60 ml-1 h-3.5 w-48 min-w-0 animate-pulse rounded motion-reduce:animate-none\"\n       />\n     ) : null;\n   }\n+  const { title } = details;\n \n   return (\n     <DropdownMenu\n@@ -427,6 +429,7 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {\n           title={title}\n           variant=\"chrome\"\n         >\n+          <PullStateIcon state={details.state} />\n           <span className=\"text-ink min-w-0 truncate font-medium\">{title}</span>\n         </Button>\n       </DropdownMenuTrigger>"
+    }
+  ]
+}

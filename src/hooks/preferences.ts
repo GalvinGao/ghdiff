@@ -15,6 +15,7 @@ import {
   PULL_SCOPE_PREFERENCE,
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
+  SIDEBAR_HEIGHT_PREFERENCE,
   REPO_LENSES_PREFERENCE,
   REVIEW_FILTERS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
@@ -160,6 +161,7 @@ export const commentAuthorFilterPreference = preference(
   COMMENT_AUTHOR_FILTER_PREFERENCE
 );
 export const sidebarWidthPreference = preference(SIDEBAR_WIDTH_PREFERENCE);
+export const sidebarHeightPreference = preference(SIDEBAR_HEIGHT_PREFERENCE);
 export const railWidthPreference = preference(RAIL_WIDTH_PREFERENCE);
 export const pullScopePreference = preference(PULL_SCOPE_PREFERENCE);
 export const repoLensesPreference = preference(REPO_LENSES_PREFERENCE);

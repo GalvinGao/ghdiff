@@ -81,7 +81,7 @@ describe('currentStackPulls', () => {
 
 describe('countPullScopes', () => {
   it("counts the viewer's own without regard to case", () => {
-    const counts = countPullScopes(pulls, 'GALVIN', at(2));
+    const counts = countPullScopes(pulls, { github: 'GALVIN' }, at(2));
     assert.equal(counts.mine, 4);
     assert.equal(counts.others, 3);
     assert.equal(counts.stack?.length, 3);
@@ -96,37 +96,49 @@ describe('countPullScopes', () => {
 });
 
 describe('effectivePullScope', () => {
-  const withStack = countPullScopes(pulls, 'galvin', at(1));
-  const without = countPullScopes(pulls, 'galvin', at(4));
+  const withStack = countPullScopes(pulls, { github: 'galvin' }, at(1));
+  const without = countPullScopes(pulls, { github: 'galvin' }, at(4));
 
   it('keeps a scope the moment can honour', () => {
-    assert.equal(effectivePullScope('mine', 'galvin', without), 'mine');
-    assert.equal(effectivePullScope('others', 'galvin', without), 'others');
-    assert.equal(effectivePullScope('stack', 'galvin', withStack), 'stack');
+    assert.equal(
+      effectivePullScope('mine', { github: 'galvin' }, without),
+      'mine'
+    );
+    assert.equal(
+      effectivePullScope('others', { github: 'galvin' }, without),
+      'others'
+    );
+    assert.equal(
+      effectivePullScope('stack', { github: 'galvin' }, withStack),
+      'stack'
+    );
   });
 
   it('falls back to everything rather than to an empty list', () => {
-    assert.equal(effectivePullScope('stack', 'galvin', without), 'all');
+    assert.equal(
+      effectivePullScope('stack', { github: 'galvin' }, without),
+      'all'
+    );
     assert.equal(effectivePullScope('mine', undefined, without), 'all');
     assert.equal(effectivePullScope('others', undefined, without), 'all');
   });
 });
 
 describe('scopePulls', () => {
-  const counts = countPullScopes(pulls, 'galvin', at(2));
+  const counts = countPullScopes(pulls, { github: 'galvin' }, at(2));
 
   it('draws each scope', () => {
-    assert.equal(scopePulls(pulls, 'galvin', 'all', counts), pulls);
+    assert.equal(scopePulls(pulls, { github: 'galvin' }, 'all', counts), pulls);
     assert.deepEqual(
-      numbers(scopePulls(pulls, 'galvin', 'mine', counts)),
+      numbers(scopePulls(pulls, { github: 'galvin' }, 'mine', counts)),
       [1, 2, 3, 4]
     );
     assert.deepEqual(
-      numbers(scopePulls(pulls, 'galvin', 'others', counts)),
+      numbers(scopePulls(pulls, { github: 'galvin' }, 'others', counts)),
       [5, 6, 7]
     );
     assert.deepEqual(
-      numbers(scopePulls(pulls, 'galvin', 'stack', counts)),
+      numbers(scopePulls(pulls, { github: 'galvin' }, 'stack', counts)),
       [1, 2, 3]
     );
   });
@@ -134,15 +146,15 @@ describe('scopePulls', () => {
 
 describe('availablePullScopes', () => {
   it('offers the author tabs only to a viewer, and the stack only in one', () => {
-    const inStack = countPullScopes(pulls, 'galvin', at(1));
-    const alone = countPullScopes(pulls, 'galvin', at(4));
-    assert.deepEqual(availablePullScopes('galvin', inStack), [
+    const inStack = countPullScopes(pulls, { github: 'galvin' }, at(1));
+    const alone = countPullScopes(pulls, { github: 'galvin' }, at(4));
+    assert.deepEqual(availablePullScopes({ github: 'galvin' }, inStack), [
       'all',
       'mine',
       'others',
       'stack',
     ]);
-    assert.deepEqual(availablePullScopes('galvin', alone), [
+    assert.deepEqual(availablePullScopes({ github: 'galvin' }, alone), [
       'all',
       'mine',
       'others',

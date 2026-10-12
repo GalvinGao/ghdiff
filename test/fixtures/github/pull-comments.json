@@ -1,0 +1,419 @@
+[
+  {
+    "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3876626378",
+    "pull_request_review_id": 5046498750,
+    "id": 3876626378,
+    "node_id": "PRRC_kwDOHFhdAs7nEJ_K",
+    "diff_hunk": "@@ -0,0 +1,295 @@\n+//! EGL bindings via GLAD.\n+//!\n+//! Core EGL functions (eglGetDisplay, eglCreateContext, etc.) are linked\n+//! directly from libEGL and available via `c.egl*`. Extension functions\n+//! (such as `eglExportDMABUFImageMESA`) are loaded by GLAD at runtime\n+//! and are also accessed via `c.egl*` — GLAD `#define`s each extension\n+//! function name to its internal function-pointer global, so the same\n+//! call syntax works for both core and extension functions.\n+//!\n+//! Call `load()` once before using any EGL extension functions.\n+\n+const std = @import(\"std\");\n+const c = @cImport({\n+    @cInclude(\"glad/glad_egl.h\");\n+});",
+    "path": "pkg/opengl/egl.zig",
+    "commit_id": "3e7bf0454d360ea192d1525993e37e335059758e",
+    "original_commit_id": "3e7bf0454d360ea192d1525993e37e335059758e",
+    "user": {
+      "login": "jcollie",
+      "id": 740022,
+      "node_id": "MDQ6VXNlcjc0MDAyMg==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/740022?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jcollie",
+      "html_url": "https://github.com/jcollie",
+      "followers_url": "https://api.github.com/users/jcollie/followers",
+      "following_url": "https://api.github.com/users/jcollie/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jcollie/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jcollie/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jcollie/subscriptions",
+      "organizations_url": "https://api.github.com/users/jcollie/orgs",
+      "repos_url": "https://api.github.com/users/jcollie/repos",
+      "events_url": "https://api.github.com/users/jcollie/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jcollie/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "This needs to be a `translate-c` step somewhere in the build process.",
+    "created_at": "2026-08-27T23:23:55Z",
+    "updated_at": "2026-08-27T23:23:55Z",
+    "html_url": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3876626378",
+    "pull_request_url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3876626378"
+      },
+      "html": {
+        "href": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3876626378"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3876626378/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": 13,
+    "start_side": "RIGHT",
+    "line": null,
+    "original_line": 15,
+    "side": "RIGHT",
+    "author_association": "MEMBER",
+    "original_position": 15,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3906566685",
+    "pull_request_review_id": 5080961929,
+    "id": 3906566685,
+    "node_id": "PRRC_kwDOHFhdAs7o2Xod",
+    "diff_hunk": "@@ -153,6 +153,9 @@ pub const Message = union(enum) {\n     /// Selected search index change\n     search_selected: ?usize,\n \n+    /// Renderer pushed a new frame, redraw this surface.\n+    redraw,",
+    "path": "src/apprt/surface.zig",
+    "commit_id": "25baa198ba9a087a03b70755b71974937196bef0",
+    "original_commit_id": "cf0f7af4326c5f4137129aba9ab3a735f36aad02",
+    "user": {
+      "login": "mitchellh",
+      "id": 1299,
+      "node_id": "MDQ6VXNlcjEyOTk=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1299?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mitchellh",
+      "html_url": "https://github.com/mitchellh",
+      "followers_url": "https://api.github.com/users/mitchellh/followers",
+      "following_url": "https://api.github.com/users/mitchellh/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mitchellh/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mitchellh/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mitchellh/subscriptions",
+      "organizations_url": "https://api.github.com/users/mitchellh/orgs",
+      "repos_url": "https://api.github.com/users/mitchellh/repos",
+      "events_url": "https://api.github.com/users/mitchellh/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mitchellh/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "Do we need this anymore? I can't remember the context but I thought we only needed this for main-thread drawing. If we're not doing that anymore, is this necessary? I don't think macOS even uses this.",
+    "created_at": "2026-09-01T17:14:40Z",
+    "updated_at": "2026-09-01T17:14:53Z",
+    "html_url": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3906566685",
+    "pull_request_url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3906566685"
+      },
+      "html": {
+        "href": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3906566685"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3906566685/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": 157,
+    "original_line": 157,
+    "side": "RIGHT",
+    "author_association": "CONTRIBUTOR",
+    "original_position": 5,
+    "position": 5,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3911643066",
+    "pull_request_review_id": 5086676231,
+    "id": 3911643066,
+    "node_id": "PRRC_kwDOHFhdAs7pJu-6",
+    "diff_hunk": "@@ -153,6 +153,9 @@ pub const Message = union(enum) {\n     /// Selected search index change\n     search_selected: ?usize,\n \n+    /// Renderer pushed a new frame, redraw this surface.\n+    redraw,",
+    "path": "src/apprt/surface.zig",
+    "commit_id": "25baa198ba9a087a03b70755b71974937196bef0",
+    "original_commit_id": "cf0f7af4326c5f4137129aba9ab3a735f36aad02",
+    "user": {
+      "login": "pluiedev",
+      "id": 22406910,
+      "node_id": "MDQ6VXNlcjIyNDA2OTEw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22406910?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/pluiedev",
+      "html_url": "https://github.com/pluiedev",
+      "followers_url": "https://api.github.com/users/pluiedev/followers",
+      "following_url": "https://api.github.com/users/pluiedev/following{/other_user}",
+      "gists_url": "https://api.github.com/users/pluiedev/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/pluiedev/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/pluiedev/subscriptions",
+      "organizations_url": "https://api.github.com/users/pluiedev/orgs",
+      "repos_url": "https://api.github.com/users/pluiedev/repos",
+      "events_url": "https://api.github.com/users/pluiedev/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/pluiedev/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "This is used to tell GTK to redraw the render surface: https://docs.gtk.org/gtk4/method.Widget.queue_draw.html\r\n\r\n~~I do wonder if we can do this more intelligently... Maybe something like https://docs.gtk.org/gdk4/class.FrameClock.html could help the widget redraw itself autonomously. Let me look into this more~~\r\n\r\nThis is a bad idea as GTK does not like being redrawn hundreds of times a second. Gonna leave this as is.",
+    "created_at": "2026-09-02T07:13:32Z",
+    "updated_at": "2026-09-04T19:00:03Z",
+    "html_url": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3911643066",
+    "pull_request_url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3911643066"
+      },
+      "html": {
+        "href": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3911643066"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3911643066/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": 157,
+    "original_line": 157,
+    "side": "RIGHT",
+    "in_reply_to_id": 3906566685,
+    "author_association": "MEMBER",
+    "original_position": 5,
+    "position": 5,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938623919",
+    "pull_request_review_id": 5118752838,
+    "id": 3938623919,
+    "node_id": "PRRC_kwDOHFhdAs7qwqGv",
+    "diff_hunk": "@@ -42,20 +43,69 @@ alloc: std.mem.Allocator,\n /// Alpha blending mode\n blending: configpkg.Config.AlphaBlending,\n \n-/// The most recently presented target, in case we need to present it again.\n-last_target: ?Target = null,\n+egl_display: *gl.egl.Display,\n+egl_context: *gl.egl.Context,\n+\n+pub fn init(alloc: Allocator, opts: rendererpkg.Options) !OpenGL {\n+    try egl.load();\n+\n+    const display: *egl.Display = try .init(egl.c.EGL_DEFAULT_DISPLAY);\n+\n+    log.info(\"EGL vendor={s}\", .{display.queryString(.vendor) orelse \"(unknown)\"});\n+    log.info(\"EGL extensions={s}\", .{display.queryString(.extensions) orelse \"(unknown)\"});",
+    "path": "src/renderer/OpenGL.zig",
+    "commit_id": "25baa198ba9a087a03b70755b71974937196bef0",
+    "original_commit_id": "42de27ec1d7fafceebca503a080ad04b89be6fa3",
+    "user": {
+      "login": "vancluever",
+      "id": 10704423,
+      "node_id": "MDQ6VXNlcjEwNzA0NDIz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10704423?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/vancluever",
+      "html_url": "https://github.com/vancluever",
+      "followers_url": "https://api.github.com/users/vancluever/followers",
+      "following_url": "https://api.github.com/users/vancluever/following{/other_user}",
+      "gists_url": "https://api.github.com/users/vancluever/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/vancluever/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/vancluever/subscriptions",
+      "organizations_url": "https://api.github.com/users/vancluever/orgs",
+      "repos_url": "https://api.github.com/users/vancluever/repos",
+      "events_url": "https://api.github.com/users/vancluever/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/vancluever/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "Minor nit: I think this is line-broken on main right now; possibly coming through drivers and not necessarily Ghostty, but it might help with readability, e.g.:\r\n\r\n```\r\nEGL API version 1.5 found\r\n - Vendor: NVIDIA\r\n - Version: 1.5\r\n - Device: /dev/dri...\r\n - Client APIs: OpenGL_ES OpenGL\r\n - Extensions:\r\n        ...\r\n```",
+    "created_at": "2026-09-04T23:48:28Z",
+    "updated_at": "2026-09-04T23:53:32Z",
+    "html_url": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3938623919",
+    "pull_request_url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938623919"
+      },
+      "html": {
+        "href": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3938623919"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938623919/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": 55,
+    "original_line": 55,
+    "side": "RIGHT",
+    "author_association": "CONTRIBUTOR",
+    "original_position": 45,
+    "position": 45,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938734634",
+    "pull_request_review_id": 5118890830,
+    "id": 3938734634,
+    "node_id": "PRRC_kwDOHFhdAs7qxFIq",
+    "diff_hunk": "@@ -42,20 +43,69 @@ alloc: std.mem.Allocator,\n /// Alpha blending mode\n blending: configpkg.Config.AlphaBlending,\n \n-/// The most recently presented target, in case we need to present it again.\n-last_target: ?Target = null,\n+egl_display: *gl.egl.Display,\n+egl_context: *gl.egl.Context,\n+\n+pub fn init(alloc: Allocator, opts: rendererpkg.Options) !OpenGL {\n+    try egl.load();\n+\n+    const display: *egl.Display = try .init(egl.c.EGL_DEFAULT_DISPLAY);\n+\n+    log.info(\"EGL vendor={s}\", .{display.queryString(.vendor) orelse \"(unknown)\"});\n+    log.info(\"EGL extensions={s}\", .{display.queryString(.extensions) orelse \"(unknown)\"});",
+    "path": "src/renderer/OpenGL.zig",
+    "commit_id": "25baa198ba9a087a03b70755b71974937196bef0",
+    "original_commit_id": "42de27ec1d7fafceebca503a080ad04b89be6fa3",
+    "user": {
+      "login": "jcollie",
+      "id": 740022,
+      "node_id": "MDQ6VXNlcjc0MDAyMg==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/740022?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jcollie",
+      "html_url": "https://github.com/jcollie",
+      "followers_url": "https://api.github.com/users/jcollie/followers",
+      "following_url": "https://api.github.com/users/jcollie/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jcollie/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jcollie/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jcollie/subscriptions",
+      "organizations_url": "https://api.github.com/users/jcollie/orgs",
+      "repos_url": "https://api.github.com/users/jcollie/repos",
+      "events_url": "https://api.github.com/users/jcollie/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jcollie/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "Pretty sure that this is logged directly to stderr by GTK. There's not much we can do without an upstream code change.",
+    "created_at": "2026-09-05T00:13:11Z",
+    "updated_at": "2026-09-05T00:13:12Z",
+    "html_url": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3938734634",
+    "pull_request_url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938734634"
+      },
+      "html": {
+        "href": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3938734634"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938734634/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": 55,
+    "original_line": 55,
+    "side": "RIGHT",
+    "in_reply_to_id": 3938623919,
+    "author_association": "MEMBER",
+    "original_position": 45,
+    "position": 45,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938764375",
+    "pull_request_review_id": 5118924993,
+    "id": 3938764375,
+    "node_id": "PRRC_kwDOHFhdAs7qxMZX",
+    "diff_hunk": "@@ -42,20 +43,69 @@ alloc: std.mem.Allocator,\n /// Alpha blending mode\n blending: configpkg.Config.AlphaBlending,\n \n-/// The most recently presented target, in case we need to present it again.\n-last_target: ?Target = null,\n+egl_display: *gl.egl.Display,\n+egl_context: *gl.egl.Context,\n+\n+pub fn init(alloc: Allocator, opts: rendererpkg.Options) !OpenGL {\n+    try egl.load();\n+\n+    const display: *egl.Display = try .init(egl.c.EGL_DEFAULT_DISPLAY);\n+\n+    log.info(\"EGL vendor={s}\", .{display.queryString(.vendor) orelse \"(unknown)\"});\n+    log.info(\"EGL extensions={s}\", .{display.queryString(.extensions) orelse \"(unknown)\"});",
+    "path": "src/renderer/OpenGL.zig",
+    "commit_id": "25baa198ba9a087a03b70755b71974937196bef0",
+    "original_commit_id": "42de27ec1d7fafceebca503a080ad04b89be6fa3",
+    "user": {
+      "login": "vancluever",
+      "id": 10704423,
+      "node_id": "MDQ6VXNlcjEwNzA0NDIz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10704423?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/vancluever",
+      "html_url": "https://github.com/vancluever",
+      "followers_url": "https://api.github.com/users/vancluever/followers",
+      "following_url": "https://api.github.com/users/vancluever/following{/other_user}",
+      "gists_url": "https://api.github.com/users/vancluever/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/vancluever/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/vancluever/subscriptions",
+      "organizations_url": "https://api.github.com/users/vancluever/orgs",
+      "repos_url": "https://api.github.com/users/vancluever/repos",
+      "events_url": "https://api.github.com/users/vancluever/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/vancluever/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "Yeah, just saying maybe some formatting on this line to mimic said logging might be in order. Not a big deal either way 🙂 ",
+    "created_at": "2026-09-05T00:19:43Z",
+    "updated_at": "2026-09-05T00:19:43Z",
+    "html_url": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3938764375",
+    "pull_request_url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938764375"
+      },
+      "html": {
+        "href": "https://github.com/ghostty-org/ghostty/pull/14052#discussion_r3938764375"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/comments/3938764375/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": 55,
+    "original_line": 55,
+    "side": "RIGHT",
+    "in_reply_to_id": 3938623919,
+    "author_association": "CONTRIBUTOR",
+    "original_position": 45,
+    "position": 45,
+    "subject_type": "line"
+  }
+]

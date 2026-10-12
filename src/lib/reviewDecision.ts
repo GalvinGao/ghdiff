@@ -1,11 +1,13 @@
-// Submitting a review: the three verdicts GitHub takes, and the one rule that
+// Submitting a review: the verdicts a forge takes, and the one rule that
 // separates them.
 //
 // GitHub calls these `event` on `POST /pulls/{n}/reviews`, and the names are
 // its own — the API takes `APPROVE`, not `approve`, and nothing here translates
-// them. A review submitted from ghdiff is a standalone review: the line
-// comments this app writes are posted as they are written, so there is never a
-// pending batch for a verdict to carry.
+// them. A line comment is posted where it is written, or staged as the forge's
+// own draft — a pending-review thread on GitHub — and the verdict publishes the
+// drafts, so the call itself carries none.
+
+import { forgeLabel, type ForgeName } from './forges';
 import type { StatusTone } from './pullStatus';
 import { m } from '@/paraglide/messages.js';
 
@@ -74,6 +76,11 @@ export const REVIEW_EVENTS: readonly ReviewEventSpec[] = [
   },
 ];
 
+/** The verdicts a forge takes, in the contract's spelling. */
+export function verdictsForForge(_forge: ForgeName): readonly ReviewEvent[] {
+  return ['APPROVE', 'COMMENT', 'REQUEST_CHANGES'];
+}
+
 export function reviewEventSpec(event: ReviewEvent): ReviewEventSpec {
   const spec = REVIEW_EVENTS.find((candidate) => candidate.event === event);
   // The list above is exhaustive over the union, so this is unreachable. It is
@@ -86,9 +93,11 @@ export function reviewEventSpec(event: ReviewEvent): ReviewEventSpec {
  * Why a verdict cannot be sent, when it cannot.
  *
  * Two things stop one, and they are not the same kind of thing. A missing note
- * is the reviewer's to fix and clears the moment they type. Their own pull
- * request never clears — GitHub refuses an approval and a change request from
- * the person who opened it, whatever they write.
+ * is the reviewer's to fix and clears the moment they type — and while a draft
+ * is waiting it is no block at all, since a review whose content is its line
+ * comments needs no summary: GitHub takes that. Their own pull request
+ * never clears — GitHub refuses an approval and a change request from the
+ * person who opened it, whatever they write.
  *
  * `own-pull-request` is asked first for exactly that reason: on your own pull
  * request, `Approve` and `Request changes` are gone whether or not there is a
@@ -125,10 +134,24 @@ export function reviewBlock(input: {
   event: ReviewEvent;
   /** Whether the reviewer is the one who opened this pull request. */
   ownPullRequest: boolean;
+  /**
+   * How many draft comments the verdict carries. A review whose content is
+   * its line comments needs no summary, so `needs-note` fires only when the
+   * body is empty and there are none.
+   */
+  draftCount?: number;
 }): ReviewBlock | undefined {
   const spec = reviewEventSpec(input.event);
-  if (input.ownPullRequest && !spec.allowedOnOwn) return 'own-pull-request';
-  if (spec.requiresBody && input.body.trim().length === 0) return 'needs-note';
+  if (input.ownPullRequest && !spec.allowedOnOwn) {
+    return 'own-pull-request';
+  }
+  if (
+    spec.requiresBody &&
+    input.body.trim().length === 0 &&
+    (input.draftCount ?? 0) === 0
+  ) {
+    return 'needs-note';
+  }
   return undefined;
 }
 
@@ -139,9 +162,10 @@ export function reviewBlock(input: {
 export function canSubmitReview(
   event: ReviewEvent,
   body: string,
-  ownPullRequest = false
+  ownPullRequest = false,
+  draftCount?: number
 ): boolean {
-  return reviewBlock({ body, event, ownPullRequest }) == null;
+  return reviewBlock({ body, draftCount, event, ownPullRequest }) == null;
 }
 
 /**
@@ -212,7 +236,10 @@ export interface SubmittedReview {
 }
 
 /** The line the header shows after a verdict lands. */
-export function describeSubmittedReview(review: SubmittedReview): string {
+export function describeSubmittedReview(
+  review: SubmittedReview,
+  forge: ForgeName = 'github'
+): string {
   switch (review.state) {
     case 'APPROVED':
       return m.review_decision_you_approved_this_pull_request();
@@ -221,9 +248,11 @@ export function describeSubmittedReview(review: SubmittedReview): string {
     case 'COMMENTED':
       return m.review_decision_you_commented_on_this_pull_request();
     default:
-      // GitHub has states this app does not offer, `DISMISSED` among them, and
-      // a review read back in one of them is still a review that landed.
-      return m.review_decision_github_recorded_your_review();
+      // A forge has states this app does not offer, `DISMISSED` among them,
+      // and a review read back in one of them is still a review that landed.
+      return m.review_decision_forge_recorded_your_review({
+        forge: forgeLabel(forge),
+      });
   }
 }
 

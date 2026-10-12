@@ -1,61 +1,41 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
+import { pullRefFromTarget } from './forges';
 import {
+  classifyRouteSegments,
   describeReviewTarget,
-  gitHubTargetFromSegments,
-  isGitHubTarget,
+  isForgeTarget,
   type LocalDiffTarget,
   parseCompareRange,
-  parseGitHubInput,
-  reviewTargetFromQuery,
-  reviewTargetKey,
-  reviewTargetDisplayPath,
-  reviewTargetQuery,
-  reviewTargetSplat,
   repoNameFromRoot,
-  supportsGitHubComments,
+  reviewTabTitle,
+  reviewTabType,
+  reviewTargetFromQuery,
+  reviewTargetFromSegments,
+  reviewTargetKey,
+  reviewTargetQuery,
+  reviewTargetSearch,
+  reviewTargetSplat,
+  segmentsFromPath,
 } from './reviewTarget';
 
-describe('parseGitHubInput', () => {
-  it('parses a pull request URL', () => {
+describe('reviewTargetFromSegments', () => {
+  it('parses a GitHub pull request in the colon form', () => {
     assert.deepEqual(
-      parseGitHubInput('https://github.com/oven-sh/bun/pull/30412'),
-      {
-        kind: 'github-pull',
-        owner: 'oven-sh',
-        repo: 'bun',
-        number: 30412,
-      }
-    );
-  });
-
-  it('parses a pull request files tab', () => {
-    assert.deepEqual(
-      parseGitHubInput('https://github.com/oven-sh/bun/pull/30412/files'),
+      reviewTargetFromSegments(['github.com:oven-sh', 'bun', 'pull', '30412']),
       { kind: 'github-pull', owner: 'oven-sh', repo: 'bun', number: 30412 }
     );
   });
 
-  it('parses a raw patch URL', () => {
+  it('parses a GitHub commit in the colon form', () => {
     assert.deepEqual(
-      parseGitHubInput('https://github.com/oven-sh/bun/pull/30412.diff'),
-      { kind: 'github-pull', owner: 'oven-sh', repo: 'bun', number: 30412 }
-    );
-  });
-
-  it('parses the owner/repo#number shorthand', () => {
-    assert.deepEqual(parseGitHubInput('GalvinGao/ghdiff#7'), {
-      kind: 'github-pull',
-      owner: 'GalvinGao',
-      repo: 'ghdiff',
-      number: 7,
-    });
-  });
-
-  it('parses a commit URL', () => {
-    assert.deepEqual(
-      parseGitHubInput('github.com/pierrecomputer/pierre/commit/0800fbaa'),
+      reviewTargetFromSegments([
+        'github.com:pierrecomputer',
+        'pierre',
+        'commit',
+        '0800fbaa',
+      ]),
       {
         kind: 'github-commit',
         owner: 'pierrecomputer',
@@ -65,9 +45,14 @@ describe('parseGitHubInput', () => {
     );
   });
 
-  it('parses a compare URL', () => {
+  it('parses a GitHub compare range in the colon form', () => {
     assert.deepEqual(
-      parseGitHubInput('https://github.com/torvalds/linux/compare/v6.0...v6.1'),
+      reviewTargetFromSegments([
+        'github.com:torvalds',
+        'linux',
+        'compare',
+        'v6.0...v6.1',
+      ]),
       {
         kind: 'github-compare',
         owner: 'torvalds',
@@ -78,34 +63,29 @@ describe('parseGitHubInput', () => {
     );
   });
 
-  it('rejects a host that is not github.com', () => {
-    assert.equal(parseGitHubInput('https://gitlab.com/a/b/pull/1'), undefined);
+  it('is canonical-only: a hostless path is not a target', () => {
+    assert.equal(reviewTargetFromSegments(['a', 'b', 'pull', '7']), undefined);
   });
 
-  it('rejects text that is not a target', () => {
-    assert.equal(parseGitHubInput(''), undefined);
-    assert.equal(parseGitHubInput('hello world'), undefined);
-    assert.equal(parseGitHubInput('https://github.com/oven-sh/bun'), undefined);
-  });
-});
-
-describe('gitHubTargetFromSegments', () => {
-  it('rejects a pull number that is not a positive integer', () => {
-    assert.equal(gitHubTargetFromSegments(['a', 'b', 'pull', '0']), undefined);
-    assert.equal(gitHubTargetFromSegments(['a', 'b', 'pull', 'x']), undefined);
-  });
-
-  it('rejects a sha that is too short', () => {
+  it('rejects what no grammar holds', () => {
     assert.equal(
-      gitHubTargetFromSegments(['a', 'b', 'commit', 'abc']),
+      reviewTargetFromSegments(['github.com:a', 'b', 'pull', '0']),
+      undefined
+    );
+    assert.equal(
+      reviewTargetFromSegments(['github.com:a', 'b', 'pull', 'x']),
+      undefined
+    );
+    assert.equal(
+      reviewTargetFromSegments(['github.com:a', 'b', 'commit', 'abc']),
       undefined
     );
   });
 
   it('accepts a percent-encoded compare range', () => {
     assert.deepEqual(
-      gitHubTargetFromSegments([
-        'a',
+      reviewTargetFromSegments([
+        'github.com:a',
         'b',
         'compare',
         encodeURIComponent('main...feature/x'),
@@ -117,6 +97,162 @@ describe('gitHubTargetFromSegments', () => {
         base: 'main',
         head: 'feature/x',
       }
+    );
+  });
+
+  it('keeps a branch name that holds a percent sign', () => {
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'github.com:a',
+        'b',
+        'compare',
+        'main...fix-100%',
+      ]),
+      {
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
+        base: 'main',
+        head: 'fix-100%',
+      }
+    );
+  });
+});
+
+describe('classifyRouteSegments', () => {
+  it('parses the colon form into a target', () => {
+    assert.deepEqual(
+      classifyRouteSegments(['github.com:a', 'b', 'pull', '7']),
+      {
+        kind: 'target',
+        target: { kind: 'github-pull', owner: 'a', repo: 'b', number: 7 },
+      }
+    );
+  });
+
+  it('is none when the colon form holds no grammar', () => {
+    assert.deepEqual(classifyRouteSegments(['github.com:a', 'b']), {
+      kind: 'none',
+    });
+  });
+
+  it('redirects a hostless GitHub path to the one GitHub host', () => {
+    assert.deepEqual(classifyRouteSegments(['a', 'b', 'pull', '7']), {
+      kind: 'redirect',
+      splat: 'github.com:a/b/pull/7',
+      status: 302,
+    });
+  });
+
+  it('redirects the pulls and commits aliases too', () => {
+    assert.deepEqual(classifyRouteSegments(['a', 'b', 'pulls', '7']), {
+      kind: 'redirect',
+      splat: 'github.com:a/b/pulls/7',
+      status: 302,
+    });
+    assert.deepEqual(classifyRouteSegments(['a', 'b', 'commits', 'deadbeef']), {
+      kind: 'redirect',
+      splat: 'github.com:a/b/commits/deadbeef',
+      status: 302,
+    });
+    assert.deepEqual(
+      classifyRouteSegments(['a', 'b', 'compare', 'main...topic']),
+      {
+        kind: 'redirect',
+        splat: 'github.com:a/b/compare/main...topic',
+        status: 302,
+      }
+    );
+  });
+
+  it('is none for a colon head the canonical grammar rejects', () => {
+    assert.deepEqual(classifyRouteSegments(['a_b:c']), { kind: 'none' });
+    assert.deepEqual(classifyRouteSegments(['@x:y', 'z']), { kind: 'none' });
+  });
+
+  it('is none for anything else', () => {
+    assert.deepEqual(classifyRouteSegments([]), { kind: 'none' });
+    assert.deepEqual(classifyRouteSegments(['hello']), { kind: 'none' });
+    assert.deepEqual(classifyRouteSegments(['a', 'b']), { kind: 'none' });
+    // A GitHub shape that fails the grammar does not redirect to a 404.
+    assert.deepEqual(classifyRouteSegments(['a', 'b', 'pull', '0']), {
+      kind: 'none',
+    });
+  });
+});
+
+describe('the path shape', () => {
+  it('accepts the www.github.com alias in the colon form', () => {
+    assert.deepEqual(
+      reviewTargetFromSegments(['www.github.com:oven-sh', 'bun', 'pull', '7']),
+      { kind: 'github-pull', owner: 'oven-sh', repo: 'bun', number: 7 }
+    );
+  });
+
+  it('splits a compare range at its first separator', () => {
+    // Degenerate double separators read left to right, not three-dots-first.
+    assert.deepEqual(
+      reviewTargetFromSegments(['github.com:a', 'b', 'compare', 'a..b...c']),
+      {
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
+        base: 'a',
+        head: 'b...c',
+      }
+    );
+  });
+
+  it('refuses a review number with a leading zero', () => {
+    assert.equal(
+      reviewTargetFromSegments(['github.com:a', 'b', 'pull', '007']),
+      undefined
+    );
+  });
+});
+
+describe('reviewTargetSplat', () => {
+  it('writes the canonical colon form for all three kinds', () => {
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'github-pull',
+        owner: 'a',
+        repo: 'b',
+        number: 12,
+      }),
+      'github.com:a/b/pull/12'
+    );
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'github-commit',
+        owner: 'a',
+        repo: 'b',
+        sha: 'deadbeef',
+      }),
+      'github.com:a/b/commit/deadbeef'
+    );
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
+        base: 'main',
+        head: 'topic',
+      }),
+      'github.com:a/b/compare/main...topic'
+    );
+  });
+
+  it('leaves a slash in a branch name alone', () => {
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
+        base: 'main',
+        head: 'renovate/all-minor',
+      }),
+      'github.com:a/b/compare/main...renovate/all-minor'
     );
   });
 });
@@ -137,7 +273,7 @@ describe('round trips', () => {
   for (const target of targets) {
     it(`survives the api query for ${target.kind}`, () => {
       assert.deepEqual(
-        reviewTargetFromQuery(reviewTargetQuery(target)),
+        reviewTargetSearch.parse(Object.fromEntries(reviewTargetQuery(target))),
         target
       );
     });
@@ -150,103 +286,172 @@ describe('round trips', () => {
 
   // The router splits the splat on `/` and decodes each segment, so the splat
   // this app writes must survive `split('/')` with no decode step of its own.
-  it('recovers a github target from its own splat', () => {
+  it('recovers a target from its own splat', () => {
     for (const target of targets) {
       assert.deepEqual(
-        gitHubTargetFromSegments(reviewTargetSplat(target).split('/')),
+        reviewTargetFromSegments(reviewTargetSplat(target).split('/')),
         target
       );
     }
   });
 
-  it('shortens a commit SHA for display and leaves the rest alone', () => {
+  it('keeps the GitHub labels as they were', () => {
     assert.equal(
-      reviewTargetDisplayPath({
-        kind: 'github-commit',
-        owner: 'gekichumai',
-        repo: 'dxrating',
-        sha: '637a9c80f69d3222d1c3aed3ae8f4aefdb613bc9',
-      }),
-      'gekichumai/dxrating/commit/637a9c8'
-    );
-    assert.equal(
-      reviewTargetDisplayPath({
-        kind: 'github-pull',
-        owner: 'oven-sh',
-        repo: 'bun',
-        number: 30412,
-      }),
-      'oven-sh/bun/pull/30412'
-    );
-    assert.equal(
-      reviewTargetDisplayPath({
-        kind: 'github-compare',
-        owner: 'ghostty-org',
-        repo: 'ghostty',
-        base: 'v1.3.0',
-        head: 'v1.3.1',
-      }),
-      'ghostty-org/ghostty/compare/v1.3.0...v1.3.1'
-    );
-  });
-
-  it('leaves a slash in a branch name alone', () => {
-    assert.equal(
-      reviewTargetSplat({
-        kind: 'github-compare',
-        owner: 'a',
-        repo: 'b',
-        base: 'main',
-        head: 'renovate/all-minor',
-      }),
-      'a/b/compare/main...renovate/all-minor'
-    );
-  });
-
-  it('keeps a branch name that holds a percent sign', () => {
-    assert.deepEqual(
-      gitHubTargetFromSegments(['a', 'b', 'compare', 'main...fix-100%']),
-      {
-        kind: 'github-compare',
-        owner: 'a',
-        repo: 'b',
-        base: 'main',
-        head: 'fix-100%',
-      }
-    );
-  });
-});
-
-describe('supportsGitHubComments', () => {
-  it('is true only for a pull request', () => {
-    assert.equal(
-      supportsGitHubComments({
+      describeReviewTarget({
         kind: 'github-pull',
         owner: 'a',
         repo: 'b',
         number: 1,
       }),
-      true
+      'a/b #1'
+    );
+  });
+});
+
+describe('reviewTabTitle', () => {
+  it('names a GitHub pull request with its title, place, and brand', () => {
+    const target = {
+      kind: 'github-pull' as const,
+      owner: 'oven-sh',
+      repo: 'bun',
+      number: 30412,
+    };
+    assert.equal(
+      reviewTabTitle(target, 'Fix the bug'),
+      'Fix the bug · github.com/oven-sh/bun #30412 · ghdiff'
     );
     assert.equal(
-      supportsGitHubComments({
+      reviewTabTitle(target),
+      'github.com/oven-sh/bun #30412 · ghdiff'
+    );
+  });
+
+  it('names a commit and a compare range', () => {
+    assert.equal(
+      reviewTabTitle({
         kind: 'github-commit',
         owner: 'a',
         repo: 'b',
-        sha: 'deadbeef',
+        sha: '0800fbaa12',
       }),
-      false
+      'github.com/a/b @ 0800fba · ghdiff'
     );
     assert.equal(
-      supportsGitHubComments({
+      reviewTabTitle({
         kind: 'github-compare',
         owner: 'a',
         repo: 'b',
         base: 'main',
         head: 'topic',
       }),
+      'github.com/a/b main...topic · ghdiff'
+    );
+  });
+});
+
+describe('reviewTabType', () => {
+  it('maps the target kinds to the three badge types', () => {
+    assert.equal(
+      reviewTabType({ kind: 'github-pull', owner: 'a', repo: 'b', number: 1 }),
+      'pull'
+    );
+    assert.equal(
+      reviewTabType({
+        kind: 'github-commit',
+        owner: 'a',
+        repo: 'b',
+        sha: 'deadbeef',
+      }),
+      'commit'
+    );
+    assert.equal(
+      reviewTabType({
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
+        base: 'x',
+        head: 'y',
+      }),
+      'compare'
+    );
+  });
+});
+
+describe('segmentsFromPath', () => {
+  it('strips a scheme, a leading slash, and empty segments', () => {
+    assert.deepEqual(segmentsFromPath('/github.com:acme/app/pull/1'), [
+      'github.com:acme',
+      'app',
+      'pull',
+      '1',
+    ]);
+  });
+});
+
+describe('reviewTargetSearch', () => {
+  const pull = {
+    kind: 'github-pull',
+    owner: 'octo',
+    repo: 'hello',
+    number: '7',
+  };
+
+  it('parses a target', () => {
+    assert.deepEqual(reviewTargetSearch.safeParse(pull).success, true);
+  });
+
+  it('strips keys the target does not name', () => {
+    const parsed = reviewTargetSearch.parse({ ...pull, extra: 'x' });
+    assert.deepEqual(parsed, {
+      kind: 'github-pull',
+      owner: 'octo',
+      repo: 'hello',
+      number: 7,
+    });
+  });
+
+  it('accepts an empty compare range, the tolerance the old parser had', () => {
+    assert.equal(
+      reviewTargetSearch.safeParse({
+        kind: 'github-compare',
+        owner: 'a',
+        repo: 'b',
+        base: '',
+        head: '',
+      }).success,
+      true
+    );
+  });
+
+  it('rejects a missing kind', () => {
+    const { kind: _kind, ...rest } = pull;
+    assert.equal(reviewTargetSearch.safeParse(rest).success, false);
+  });
+
+  it('rejects a kind the union does not know', () => {
+    assert.equal(
+      reviewTargetSearch.safeParse({ ...pull, kind: 'github-fork' }).success,
       false
     );
+  });
+
+  it('rejects a bad owner or repo', () => {
+    for (const bad of [
+      { ...pull, owner: 'has space' },
+      { ...pull, repo: 'has/slash' },
+      { ...pull, owner: '' },
+    ]) {
+      assert.equal(reviewTargetSearch.safeParse(bad).success, false);
+    }
+  });
+
+  it('rejects a number that is not a positive integer', () => {
+    for (const number of ['abc', '3.5', '0', '-2']) {
+      assert.equal(
+        reviewTargetSearch.safeParse({ ...pull, number }).success,
+        false
+      );
+    }
   });
 });
 
@@ -258,10 +463,10 @@ describe('a local diff target', () => {
     range: { mode: 'worktree' },
   };
 
-  it('is not a GitHub target, and the other three are', () => {
-    assert.equal(isGitHubTarget(worktree), false);
+  it('is not a forge target, and the others are', () => {
+    assert.equal(isForgeTarget(worktree), false);
     assert.equal(
-      isGitHubTarget({
+      isForgeTarget({
         kind: 'github-commit',
         owner: 'a',
         repo: 'b',
@@ -272,7 +477,7 @@ describe('a local diff target', () => {
   });
 
   it('keeps its comments in the browser, like a commit', () => {
-    assert.equal(supportsGitHubComments(worktree), false);
+    assert.equal(pullRefFromTarget(worktree), undefined);
   });
 
   it('keys off the repository path and the range, and off nothing else', () => {
@@ -408,9 +613,12 @@ describe('a local diff target', () => {
     );
   });
 
-  it('never comes out of a path on github.com', () => {
-    assert.equal(gitHubTargetFromSegments(['local-diff']), undefined);
-    assert.equal(parseGitHubInput('/home/dev/projects/ghdiff'), undefined);
+  it('never comes out of a review path', () => {
+    assert.equal(reviewTargetFromSegments(['local-diff']), undefined);
+    assert.equal(
+      reviewTargetFromSegments(segmentsFromPath('/home/dev/projects/ghdiff')),
+      undefined
+    );
   });
 });
 

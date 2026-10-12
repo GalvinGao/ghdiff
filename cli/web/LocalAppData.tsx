@@ -32,6 +32,16 @@ const NO_SESSION: AppData['session'] = {
   signOut: () => {},
 };
 
+// A local run serves no forge: no sign-in to offer and no examples to open.
+// The screens read it the way they read a deployment configured for nothing,
+// which is what draws none of their forge controls.
+const NO_INSTANCE: AppData['instance'] = {
+  brand: 'ghdiff',
+  host: 'localhost',
+  github: { oauth: false, served: false },
+  examples: [],
+};
+
 const NO_PULLS: AppData['pulls'] = {
   loading: false,
   reload: () => {},
@@ -53,6 +63,7 @@ export function LocalAppData({ children }: { children: ReactNode }) {
     () => ({
       codeFont,
       colorMode,
+      instance: NO_INSTANCE,
       pulls: NO_PULLS,
       session: NO_SESSION,
       watched: NO_WATCH_LIST,

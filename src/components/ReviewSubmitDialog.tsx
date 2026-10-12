@@ -12,6 +12,9 @@ import { patchQueryOptions } from '@/hooks/useReviewPatch';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { copyWhenReady } from '@/lib/clipboard';
 import { cn } from '@/lib/cn';
+import { commentPreviewText } from '@/lib/commentHeight';
+import type { StagedReviewComment } from '@/lib/comments';
+import { forgeLabel, type ForgeName } from '@/lib/forges';
 import { describeAge } from '@/lib/pullDetails';
 import {
   describeSubmittedReview,
@@ -21,7 +24,9 @@ import {
   type ReviewEvent,
   reviewVerdict,
   type TeamReview,
+  verdictsForForge,
 } from '@/lib/reviewDecision';
+import { reviewToJsonl } from '@/lib/reviewExport';
 import { type StackPosition, stackPullTarget } from '@/lib/stackReview';
 import { m } from '@/paraglide/messages.js';
 
@@ -31,17 +36,26 @@ const reviewMarkup = {
   ),
 };
 
-// The verdict on the pull request as a whole.
+// The verdict on the pull request as a whole, and whatever is going up with
+// it.
 //
 // Three buttons and no radio group: each one says what it does and does it, so
-// a verdict is one press rather than a choice and then a confirmation. GitHub's
-// own form asks twice because it also has a batch of pending line comments to
-// send; this app posts a line comment as it is written, so there is nothing
-// waiting here for a verdict to carry, and nothing to confirm.
+// a verdict is one press rather than a choice and then a confirmation. A line
+// comment is posted where it is written, or staged as the forge's own draft —
+// a pending-review thread on GitHub — and the verdict publishes the drafts. The drafts are listed above the note, so what the
+// verdict is about to carry is stated before it is sent.
 //
 // Approve is the one filled control, because it is the answer a reviewer gives
 // most and the app's accent is ink rather than a colour. Request changes is the
-// only red thing on screen, which is the weight it has on GitHub.
+// only red thing on screen, which is the weight it has on GitHub. Which set is
+// on offer is the target's forge's (`verdictsForForge`).
+
+/**
+ * U+200E, LEFT-TO-RIGHT MARK. It goes in front of a path rendered right to
+ * left, so a path that opens on a dot or a slash keeps that character where it
+ * belongs. The same idiom as the comment list's section headings.
+ */
+const LRM = '\u200E';
 
 const VARIANT: Record<ReviewEvent, 'danger' | 'outline' | 'solid'> = {
   APPROVE: 'solid',
@@ -57,28 +71,65 @@ const VARIANT: Record<ReviewEvent, 'danger' | 'outline' | 'solid'> = {
  * different sentences about different verdicts, and a reviewer reading one
  * should not have to work out which of the two they pressed.
  */
-function blockTip(event: ReviewEvent, block: ReviewBlock): string {
+function blockTip(
+  event: ReviewEvent,
+  block: ReviewBlock,
+  forge: ForgeName
+): string {
   if (block === 'needs-note')
-    return m.review_submit_dialog_add_a_note_github_needs_one();
+    return m.review_submit_dialog_add_a_note_forge_needs_one({
+      forge: forgeLabel(forge),
+    });
   return event === 'APPROVE'
     ? m.review_submit_dialog_github_refuses_an_approval_on_your_own_pull()
     : m.review_submit_dialog_github_refuses_requested_changes_on_your_own_pull();
 }
 
 export function ReviewSubmitDialog({
+  author,
+  commentsError,
+  commentsReady = true,
+  forge,
   id,
   onOpenChange,
   onClose,
+  onRetryComments,
+  onSettled,
   onSubmitted,
   open,
   ownPullRequest,
   review,
   stack,
+  staged,
+  target,
   targetLabel,
+  title,
+  url,
+  writesPending = false,
 }: {
+  /** The reviewer's login, stamped on each comment of the JSONL copy. */
+  author?: string;
+  /**
+   * Set when the comment store could not be read. The verdict publishes the
+   * forge's drafts, so it waits — with the retry below — until a read
+   * succeeds.
+   */
+  commentsError?: string;
+  /** True once the comment store's contents are known; a verdict gates on it. */
+  commentsReady?: boolean;
+  /** The target's own forge: it decides which verdicts are on offer. */
+  forge: ForgeName;
   id: string;
   onOpenChange(open: boolean): void;
   onClose(): void;
+  /** Re-reads the comment store: the explicit retry after a failed read. */
+  onRetryComments?(): void;
+  /**
+   * Called once a verdict attempt settles, success or failure, so the caller
+   * can reconcile what the verdict touched: the comments and drafts it
+   * published (or did not), and the rail whose squares it moved.
+   */
+  onSettled?(): void;
   /**
    * Called once GitHub has recorded a verdict, so the caller can reload — and,
    * for an approval inside a stack, go on to the next layer. An approval's link
@@ -98,10 +149,29 @@ export function ReviewSubmitDialog({
    * goes on to the next layer, and the dialog says which one before the press.
    */
   stack?: StackPosition;
+  /** The draft comments the verdict publishes, listed above the note. */
+  staged: StagedReviewComment[];
+  /** The target as the JSONL copy names it: `github.com:owner/repo#123`. */
+  target: string;
   /** `owner/repo #number`, so the dialog says what it is about to decide. */
   targetLabel: string;
+  /** The pull request's own title, for the JSONL copy. */
+  title?: string;
+  /** The pull request's page on its forge, for the JSONL copy. */
+  url: string;
+  /** True while a comment write is on the wire; a verdict waits for it. */
+  writesPending?: boolean;
 }) {
   const [body, setBody] = useState('');
+  // Set by a successful copy, and taken back a moment later.
+  const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (copyTimerRef.current != null) clearTimeout(copyTimerRef.current);
+    },
+    []
+  );
   // Stamped when the popover opens, so every age in the team's list is read
   // from one instant and no clock runs behind a closed popover. The rows do
   // not wait for it: the list is drawn with the popover's first paint, and the
@@ -153,6 +223,7 @@ export function ReviewSubmitDialog({
   useEffect(() => {
     if (!open) return;
     setBody('');
+    setCopied(false);
     setOpenedAt(Date.now());
     reset();
   }, [open, reset]);
@@ -172,19 +243,67 @@ export function ReviewSubmitDialog({
   }, [nextPull, open, queryClient]);
 
   const busy = pending != null;
+  // What holds a verdict, beyond the note and ownership rules: the submit
+  // already in flight, a comment write still on the wire (the verdict
+  // publishes what the forge holds, and the write has not landed there yet),
+  // and a comment store whose contents are not known — a failed read could be
+  // hiding a draft the verdict would publish unseen.
+  const verdictsHeld = busy || writesPending || !commentsReady;
+  const events = REVIEW_EVENTS.filter((spec) =>
+    verdictsForForge(forge).includes(spec.event)
+  );
+  const blockOf = (event: ReviewEvent) =>
+    reviewBlock({
+      body,
+      draftCount: staged.length,
+      event,
+      ownPullRequest,
+    });
 
   // Whichever fact explains the grey buttons, and only one shows. Ownership
   // wins: on your own pull request it is the reason two of the three are gone,
   // and it is not a thing a reviewer can do anything about — where the note is.
-  const needsNote = REVIEW_EVENTS.some(
-    (spec) =>
-      reviewBlock({ body, event: spec.event, ownPullRequest }) === 'needs-note'
+  // A comment
+  // write still on the wire is transient, and says what it waits for.
+  const needsNote = events.some((spec) => blockOf(spec.event) === 'needs-note');
+  const ownBlocked = events.some(
+    (spec) => blockOf(spec.event) === 'own-pull-request'
   );
-  const standingLine = ownPullRequest
+  const standingLine = ownBlocked
     ? m.review_submit_dialog_you_can_comment_on_your_own_pull_request()
     : needsNote
       ? m.review_submit_dialog_add_a_note_github_needs_one_to_request()
-      : undefined;
+      : writesPending
+        ? m.review_submit_dialog_a_comment_is_still_reaching_the_forge()
+        : undefined;
+
+  // A copy for an agent: the review and its draft comments as JSONL. Offered
+  // only when there is something to copy — a draft comment or the note.
+  const canCopy = staged.length > 0 || body.trim().length > 0;
+  const copyTip =
+    m.review_submit_dialog_stage_a_comment_or_write_a_note_first();
+  const copyJsonl = () => {
+    if (!canCopy) return;
+    const jsonl = reviewToJsonl({
+      target,
+      url,
+      title,
+      note: body,
+      author,
+      comments: staged,
+    });
+    void (async () => {
+      try {
+        await navigator.clipboard.writeText(jsonl);
+      } catch {
+        // The clipboard refused. Nothing is copied, so nothing says it was.
+        return;
+      }
+      setCopied(true);
+      if (copyTimerRef.current != null) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
+    })();
+  };
 
   return (
     <div
@@ -219,12 +338,50 @@ export function ReviewSubmitDialog({
       {team.length > 0 && <TeamReviews now={openedAt} reviews={team} />}
       <div className="p-3">
         <p className="text-ink-muted text-xs">
-          <ParaglideMessage
-            message={m.review_submit_scope}
-            inputs={{ target: targetLabel }}
-            markup={reviewMarkup}
-          />
+          {staged.length === 0 ? (
+            <ParaglideMessage
+              message={m.review_submit_scope}
+              inputs={{ target: targetLabel }}
+              markup={reviewMarkup}
+            />
+          ) : (
+            <>
+              <ParaglideMessage
+                message={m.review_submit_scope_pull_request}
+                inputs={{ target: targetLabel }}
+                markup={reviewMarkup}
+              />{' '}
+              {m.review_submit_drafts_go_up({ count: staged.length })}
+            </>
+          )}
         </p>
+
+        {/* What the verdict is about to carry. Each row is where the comment
+            lands and its first line: the path trimmed from its start, the way
+            the comment list trims it, because the end is what names the file. */}
+        {staged.length > 0 && (
+          <ul className="border-line mt-2 rounded-md border">
+            {staged.map((comment) => (
+              <li
+                key={comment.key}
+                className="border-line flex items-baseline gap-1.5 border-t px-2 py-1.5 first:border-t-0"
+              >
+                <span
+                  dir="rtl"
+                  className="text-ink-faint min-w-0 shrink truncate text-left font-mono text-[11px]"
+                >
+                  {LRM + comment.path}
+                </span>
+                <span className="text-ink-faint shrink-0 font-mono text-[11px] tabular-nums">
+                  :{comment.line}
+                </span>
+                <span className="text-ink-muted min-w-0 flex-1 truncate text-xs">
+                  {commentPreviewText(comment.body)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* Inside a stack, Approve also opens the next layer, so the dialog
           names that layer before the press rather than after it. On the last
@@ -240,7 +397,7 @@ export function ReviewSubmitDialog({
         {latest != null && (
           <p className="text-ink-muted mt-2 text-xs">
             {m.review_previous_verdict({
-              verdict: describeSubmittedReview(latest),
+              verdict: describeSubmittedReview(latest, forge),
             })}
           </p>
         )}
@@ -269,7 +426,20 @@ export function ReviewSubmitDialog({
         )}
         {submitted != null && (
           <p className="text-ink-muted mt-2 text-xs" role="status">
-            {describeSubmittedReview(submitted)}
+            {describeSubmittedReview(submitted, forge)}
+          </p>
+        )}
+        {/* The comment store could not be read, and the verdict publishes what
+            it holds — so the verdicts stay grey until this retry lands. The
+            note above is left exactly as the reviewer wrote it. */}
+        {commentsError != null && (
+          <p className="mt-2 flex items-center gap-2 text-xs" role="alert">
+            <span className="text-removed min-w-0 flex-1">{commentsError}</span>
+            {onRetryComments != null && (
+              <Button size="sm" variant="outline" onClick={onRetryComments}>
+                {m.review_status_panel_try_again()}
+              </Button>
+            )}
           </p>
         )}
 
@@ -282,22 +452,44 @@ export function ReviewSubmitDialog({
           own tooltip is what asks for the note, since a note is the only thing
           left that a reviewer can change. */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
+          {/* The staged review as JSONL for an agent, copied rather than sent.
+              Quiet, because it decides nothing: the verdicts are the buttons
+              that matter here. */}
+          {canCopy ? (
+            <span>
+              <Button variant="quiet" size="sm" onClick={copyJsonl}>
+                {copied
+                  ? m.clipboard_copied()
+                  : m.review_submit_dialog_copy_jsonl()}
+              </Button>
+            </span>
+          ) : (
+            <Tooltip label={copyTip} side="right" wide>
+              <Button
+                aria-label={m.review_submit_dialog_label({
+                  label: m.review_submit_dialog_copy_jsonl(),
+                  tip: copyTip,
+                })}
+                disabled
+                variant="quiet"
+                size="sm"
+              >
+                {m.review_submit_dialog_copy_jsonl()}
+              </Button>
+            </Tooltip>
+          )}
           {standingLine != null && (
             <p className="text-ink-faint text-xs">{standingLine}</p>
           )}
           <div className="ml-auto flex items-center gap-2">
-            {[...REVIEW_EVENTS].reverse().map((spec) => {
-              const block = reviewBlock({
-                body,
-                event: spec.event,
-                ownPullRequest,
-              });
+            {events.toReversed().map((spec) => {
+              const block = blockOf(spec.event);
               const next = spec.event === 'APPROVE' ? stack?.next : undefined;
               // A block explains a grey button, and outranks the note about
               // where an available one goes.
               const tip =
                 block != null
-                  ? blockTip(spec.event, block)
+                  ? blockTip(spec.event, block, forge)
                   : next != null
                     ? m.review_stack_approve_tip({ number: next.number })
                     : undefined;
@@ -310,8 +502,12 @@ export function ReviewSubmitDialog({
                   // The reason joins the label rather than replacing it. The
                   // tooltip's own text is `aria-hidden`, so without this a screen
                   // reader is told the button is unavailable and never why.
-                  aria-label={tip == null ? undefined : `${label} — ${tip}`}
-                  disabled={busy || block != null}
+                  aria-label={
+                    tip == null
+                      ? undefined
+                      : m.review_submit_dialog_label({ label, tip })
+                  }
+                  disabled={verdictsHeld || block != null}
                   size="sm"
                   variant={VARIANT[spec.event]}
                   onClick={() => {
@@ -320,7 +516,7 @@ export function ReviewSubmitDialog({
                     // clipboard, ready to paste wherever the pull request was
                     // asked for. The write starts here, inside the press, and
                     // waits for GitHub's answer to know the address.
-                    const copied =
+                    const linkCopied =
                       spec.event === 'APPROVE'
                         ? copyWhenReady(
                             submission.then((result) => result?.htmlUrl)
@@ -328,10 +524,14 @@ export function ReviewSubmitDialog({
                         : undefined;
                     void (async () => {
                       const result = await submission;
-                      // A failure keeps the dialog open, with GitHub's reason in
-                      // it and the words the reviewer wrote still in the box.
+                      // Every attempt reconciles what the verdict touched: the
+                      // comments and drafts it published (or did not), and the
+                      // rail whose squares it moved.
+                      onSettled?.();
+                      // A failure keeps the dialog open, with the forge's reason
+                      // in it and the words the reviewer wrote still in the box.
                       if (result == null) return;
-                      onSubmitted?.(spec.event, await copied);
+                      onSubmitted?.(spec.event, await linkCopied);
                       onClose();
                     })();
                   }}
@@ -447,7 +647,7 @@ function TeamReviewRow({
   const comments =
     review.commentCount === 0
       ? undefined
-      : `${review.commentCount} line comment${review.commentCount === 1 ? '' : 's'}`;
+      : m.common_comment_count({ count: review.commentCount });
   const content = (
     <>
       <div className="flex min-w-0 items-center gap-1.5 text-xs">

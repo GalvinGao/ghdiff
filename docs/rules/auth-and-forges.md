@@ -1,20 +1,16 @@
 # Auth and forges
 
-Credentials and the GitHub boundary: the session cookie and its guards, refresh,
-the GitHub App, the RPC contract, the diff and file routes, verdicts, and error
-shapes.
+Credentials and the forge boundary: the session cookie and its guards, refresh,
+the GitHub App, the Forge interface, the RPC contract, the diff and file routes,
+verdicts, and error shapes.
 
 **A failure GitHub explained must reach the reviewer explained.** GitHub answers
-most failures with the useful sentence in the body's top-level `message` — "Not
-Found", "Bad credentials", the rate limit's own line. A **validation** failure
-is the exception: there `message` is only the status name, and the reason sits
-in `errors[].message`. Reading the top level alone is what put **Unprocessable
-Entity** in front of a reviewer who had tried to approve their own pull request,
-which is a true sentence and the least useful one available.
-`gitHubErrorMessage` in `src/lib/github/error.ts` takes the detail when there is
-one and changes nothing otherwise, and `github/error.test.ts` pins both halves —
-the 422 that has a reason, and the ordinary failures that must keep behaving as
-they did.
+most failures with the useful sentence in the body's top-level `message`; a
+**validation** failure is the exception, where `message` is only the status name
+and the reason sits in `errors[].message`. `gitHubErrorMessage` in
+`src/lib/github/error.ts` takes the detail when there is one and changes nothing
+otherwise, and `github/error.test.ts` pins both halves — the 422 that has a
+reason, and the ordinary failures that must keep behaving as they did.
 
 **A review is a verdict, and it is one press.** `reviews.submit` posts to
 `/pulls/{n}/reviews` with GitHub's own `event`, and `src/lib/reviewDecision.ts`
@@ -22,25 +18,33 @@ holds the three and the one rule that separates them: `REQUEST_CHANGES` and
 `COMMENT` are nothing without words, and `canSubmitReview` is what disables
 those buttons rather than letting a 422 arrive after the reviewer has written
 them. `ReviewSubmitDialog` gives each event a button of its own instead of a
-radio group and a Submit: GitHub asks twice because it has a batch of pending
-line comments to send with the verdict, and this app has none — a line comment
-is posted where it is written. A failure keeps the dialog open with GitHub's own
-sentence in it, because GitHub is the one that knows a reviewer cannot approve
-their own pull request. A verdict that lands reloads the open pull requests,
-since the review half of every row's square has just changed.
+radio group and a Submit. A line comment is posted where it is written, or
+staged as the forge's own draft for the review — and the verdict publishes the
+drafts: `POST /pulls/{n}/reviews/{id}/events` on GitHub, submitting the pending
+review they belong to. Either way the press is one: the dialog lists what the
+verdict is carrying, so there is nothing left to confirm. A failure keeps the
+dialog open with GitHub's own sentence in it, because GitHub is the one that
+knows a reviewer cannot approve their own pull request. A verdict that lands
+reloads the open pull requests, since the review half of every row's square has
+just changed.
+
+**The dialog offers only the verdicts the forge takes.** `verdictsForForge`
+names them per forge and `capabilities.verdicts` says the same thing
+server-side: `reviews.submit` answers a verdict's absence rather than letting a
+404 arrive. GitHub takes all three.
 
 **A grey button says why it is grey.** Two things stop a verdict, and they are
 not the same kind of thing. A missing note is the reviewer's to fix and clears
-the moment they type. Their own pull request never clears — GitHub refuses an
-approval and a change request from whoever opened it, and answers 422 if asked,
-which is how this was found: pressing **Approve** on your own pull request
-returned a bare "Unprocessable Entity". So `reviewBlock` in
-`src/lib/reviewDecision.ts` returns a reason rather than a boolean, and
-`own-pull-request` is asked before `needs-note`: on your own pull request a note
-would change nothing, and sending a reviewer to write one is sending them to do
-work for no result. `isOwnPullRequest` compares logins without case and answers
-no when either side is unknown, which is the safe default — it leaves all three
-offered and lets GitHub decide.
+the moment they type — and while a draft is waiting it is no block at all, since
+`needs-note` fires only when the body is empty and nothing is drafted. Their own
+pull request never clears — GitHub refuses an approval and a change request from
+whoever opened it. So `reviewBlock` in `src/lib/reviewDecision.ts` returns a
+reason rather than a boolean, and `own-pull-request` is asked before
+`needs-note`: on your own pull request a note would change nothing, and sending
+a reviewer to write one is sending them to do work for no result.
+`isOwnPullRequest` compares logins without case and answers no when either side
+is unknown, which is the safe default — it leaves all three offered and lets
+GitHub decide.
 
 The reason reaches the reviewer twice, because the two ways of reading a screen
 need different things. A standing line beside the buttons is real text in the
@@ -49,26 +53,22 @@ shows, and ownership wins over the note because it is the fact that cannot be
 acted on. Per button, a `Tooltip` carries the precise sentence, and the button's
 own `aria-label` becomes its label plus that sentence — the tooltip's text is
 `aria-hidden`, so without that a screen reader is told a button is unavailable
-and never why.
-
-Two measurements shape those tooltips, and both were surprises. `buttonClass`
-sets `disabled:pointer-events-none`, which sounds like it would kill a CSS-only
-tooltip on a disabled control — it does not, because `Tooltip` hovers on the
-wrapper it puts around the control and the pointer passes straight through to
-it. And the buttons are the **last row of a scrolling dialog**, so `side`
-matters twice over: a label below them is outside the content box and gets
-clipped, and a centred label on the rightmost button hangs out the side — which
-turns into a horizontal scrollbar across the whole dialog, because a box with
-`overflow-y: auto` has an `overflow-x` of `auto` whether it asked for one or
-not. `top-end` plus `wide` is what keeps a sixty-character reason inside a 480px
-dialog, and it was verified by measuring all four edges rather than by looking.
+and never why. Two measurements shape those tooltips. `buttonClass` sets
+`disabled:pointer-events-none`, which does not kill the CSS-only tooltip:
+`Tooltip` hovers on the wrapper it puts around the control and the pointer
+passes straight through to it. And the buttons are the **last row of a scrolling
+dialog**, so `side` matters twice over: a label below them is outside the
+content box and gets clipped, and a centred label on the rightmost button hangs
+out the side — which turns into a horizontal scrollbar across the whole dialog,
+because a box with `overflow-y: auto` has an `overflow-x` of `auto` whether it
+asked for one or not. `top-end` plus `wide` is what keeps a sixty-character
+reason inside a 480px dialog.
 
 **A verdict already given is what the button says.** `reviews.mine` asks GraphQL
 for `viewerLatestReview`, the one field that answers "what did this token's own
 user decide about this pull request" — REST answers with every review by
-everybody, over as many pages as the pull request has collected, and the caller
-would then have to ask GitHub who it is. `reviewVerdict` in
-`src/lib/reviewDecision.ts` reads that state, and `PENDING` and `DISMISSED`
+everybody, over as many pages as the pull request has collected. `reviewVerdict`
+in `src/lib/reviewDecision.ts` reads that state, and `PENDING` and `DISMISSED`
 answer with nothing: a draft nobody sent and a verdict GitHub took back are not
 decisions. `ReviewButton` then says **Approved** rather than **Review**, in the
 tone `PullStatusMark` paints the same verdict in, so one green means one thing
@@ -201,29 +201,95 @@ diff.
 names every procedure, its input and its output, and imports nothing from a
 server and nothing from a component. `router.ts` implements it and `client.ts`
 calls it, so a field renamed in the contract fails to compile on both sides at
-once. That split is also what keeps `@/lib/server/github` out of the client
+once. That split is also what keeps the forge implementations out of the client
 bundle: the client is built from the **contract**, never from the router, so no
-import path leads from a hook to the GitHub client.
-
-No procedure takes a credential. The token is resolved once at the edge and
-handed down as context, and on the client side there is no context at all: the
-cookie is same-origin and the browser attaches it.
-
-An input carries a zod schema, because it arrives from a browser and is not
-trusted. An output carries `type<T>()`, which is a type and no runtime check:
-`PullSummary`, `PullDetails` and `CommentPayload` each already have one home in
-`src/lib`, and a second description of them in zod would be a copy free to
-drift. Add a procedure by adding it to the contract first; the two
+import path leads from a hook to a forge client. No procedure takes a
+credential: the RPC route names `credentialsMiddleware`, which reads the session
+cookie and resolves every credential the request speaks with once, at the edge,
+and hands them down as `context.credentials` — and what a procedure can derive
+per input (the forge the ref is on, the credential it speaks with) is injected
+per procedure by the `withForge`/`withAuth` middleware in `router.ts`, not
+carried in the context. On the client side the cookie is same-origin and the
+browser attaches it. An input carries a zod schema, because it arrives from a
+browser and is not trusted. An output carries `type<T>()`, which is a type and
+no runtime check: `PullSummary`, `PullDetails` and `CommentPayload` each already
+have one home in `src/lib`, and a second description of them in zod would be a
+copy free to drift. Add a procedure by adding it to the contract first; the two
 implementations will not compile until they agree with it.
+
+**The router names no forge; the ref in the input names it.** Every repository
+reference in the contract is a discriminated union on `forge` —
+`{forge:'github', owner, repo}` today — defined once as TypeScript types in
+`src/lib/forges.ts` and mirrored as zod in the contract. The router resolves
+`forgeFor(config, ref)` from `src/lib/server/forges/index.ts` and calls the
+`Forge` interface in `src/lib/server/forges/types.ts`: a streamed diff and a
+streamed whole file, the viewer, the open pull requests, the details, the
+comments, the verdicts, the review drafts, and the viewed-file marks.
+`ForgeCapabilities` holds one flag, `verdicts`; what else a forge may decline is
+an optional seam on the interface — the `viewedFiles?` and `drafts?`
+sub-interfaces, `comments.resolve?` for the resolve mark, `media?` for an image
+only a grant can reach — and its absence is the flag: the router answers it (a
+drafts call where none are kept hears `This forge keeps no review drafts.`, a
+resolve call where none resolve `This forge resolves no review threads.`) rather
+than letting a 404 arrive, and `/api/media` answers `media`'s absence the same
+way. `registerForge` is the test seam: the router's procedures are unit-tested
+against an in-memory fake forge, so no procedure test needs a network.
+
+**The forge's JSON goes through an SDK; its streams never do.** The GitHub forge
+(`src/lib/server/forges/github.ts`) makes every JSON and GraphQL call through
+`@octokit/core`, whose response types come from GitHub's own OpenAPI
+description. **Every GraphQL operation is a `graphql()`-tagged document in the
+forge's `<forge>.gql.ts` neighbor, typed by `@graphql-codegen/client-preset`**
+from the vendor's live schema (the URL in `codegen.ts`, so a run needs the
+network). The generated files under `src/lib/server/forges/gqlgen/` are
+committed and sit in both linters' ignore lists next to `src/routeTree.gen.ts`.
+No response type is written by hand: the octokit `gql` wrapper takes the
+generated `TypedDocumentString`, so a field renamed upstream fails the compile.
+What no SDK covers stays on the hand-rolled fetchers in
+`src/lib/server/github/`: the streamed `.diff` and raw file in `client.ts` (tens
+of megabytes, with the byte counting and the size cap), and the GitHub App's own
+calls in `app.ts` and `installations.ts` (the OAuth exchange, revocation,
+installations). One adapter turns the SDK's error into the app's shape: a spent
+quota reads 429 and a validation failure reads its `errors[].message`, so
+`describeReviewFailure` and the failure panels never ask which SDK threw.
 
 **The diff is not a procedure.** `/api/diff` stays a plain route that answers
 `text/plain`, because a patch runs to tens of megabytes — oven-sh/bun#30412 is
-43 MB — and the route hands GitHub's own body straight to the browser. An RPC
-envelope would make the Worker read all of it into memory and JSON-escape it
+43 MB — and the route hands the forge's own body straight to the browser. An RPC
+envelope would make the server read all of it into memory and JSON-escape it
 first, on a runtime with neither the memory nor the CPU time to spare. It is
 also the one call whose HTTP status the client reads directly, for
 `describeReviewFailure`. `/api/file` is a route for the same reason and answers
-the same way; a source file is not much smaller than a patch.
+the same way; a source file is not much smaller than a patch. `/api/media` is
+the third such route, and its reason is different: not size but reach. A
+forge-hosted image on a private repository answers a browser only to the forge's
+own session cookie, which the reviewer does not have — the sealed grant lives on
+the server — so `CommentBody` points those `<img>` tags here and the forge
+fetches with that grant. The proxy reaches only the image hosts the forge
+allows, so it is not a credentialed GET of anywhere the markup pointed — and it
+fetches `https:` addresses only, because the first hop carries the reviewer's
+credential and a plaintext one would hand it to everyone on the path. Redirects
+are followed by hand, and the credential is sent only to the origin the address
+named — scheme and port included, so a hop down to plain http drops it. The
+answer must arrive as `image/*` or, for an upload whose type was never recorded,
+carry an image extension the gate maps its type from; anything else, a sign-in
+page included, is refused with a 415 that names what arrived. The answer is
+never cached — it depends on whose credential fetched it, and a browser keys its
+cache by URL alone — and it rides out under a `default-src 'none'; sandbox` CSP
+so a scripted SVG navigated to directly runs nowhere — the sandbox makes the
+answer an opaque origin and leaves its links and forms dead. There is no byte
+cap: the address space is the forge's image hosts and the body is piped, never
+buffered.
+
+GitHub has that wall in two places, and both open to a user token: the
+`/owner/repo/assets/…` attachment on a private repository, which answers a
+browser's own session and a `ghu_` grant alike (an App _installation_ token is
+the one credential it refuses), and a raw file on `raw.githubusercontent.com`,
+which takes the same. `user-images` and avatars are public already and never
+come here. The GitHub forge's `media` fetches those two shapes through
+`src/lib/server/forges/media.ts`, which holds the redirect-following and the
+image gate any forge shares — and the assets answer's own redirect to the signed
+image host is the cross-host case the credential-stripping rule is for.
 
 **A private diff is capped, and the cap is GitHub App's fault.** github.com's
 `.diff` host has no file or line limit and is the primary source — but it does
@@ -233,60 +299,50 @@ route with a live `ghu_` token on a private pull request answers from
 `api-diff`. So a private diff gets the API's 300 files and 20000 lines, then
 `synthesizePatch`, which is where GitHub omits `patch` on its larger files — a
 162-file private pull request came back with 96 of them carrying no lines.
-
 Public diffs are unaffected, and private diffs inside the cap are complete. What
 a large private diff loses is content the personal access token used to fetch,
 and `describeSynthesisGaps` is what says so on screen. That is a known and
-accepted cost of shipping the App as the only credential path; the fallback for
-it is a follow-up, and the seam it will use already exists — a `Bearer` header
-still reaches the web host, and `resolveGitHubToken` honours one ahead of the
-cookie. Whatever that follow-up does, it must not put a token form back in front
-of a reviewer who has just finished authorizing an App: it asks only when a diff
-has actually hit the limit, and nowhere else.
+accepted cost of shipping the App as the only credential path; the seam a
+fallback would use already exists — a `Bearer` header still reaches the web
+host, and `resolveGitHubToken` honours one ahead of the cookie. Whatever that
+follow-up does, it must not put a token form back in front of a reviewer who has
+just finished authorizing an App: it asks only when a diff has actually hit the
+limit, and nowhere else.
 
-**A spent quota is one status, and the panel asks for a sign-in.** GitHub
+**A spent quota is one status, and the panel offers one of two actions.** GitHub
 reports the primary rate limit as 403 on `api.github.com` and as 429 on the web
 diff host, and a 403 is also its answer to an invisible repository and to a
 request that names no user agent. `rateLimitedStatus` in `src/lib/rateLimit.ts`
 reads `retry-after` and `x-ratelimit-remaining: 0` to tell those apart, and
 every throw in `src/lib/server/github/client.ts` reports 429 for a quota that is
-gone, so nothing downstream has to ask which 403 it holds.
-`describeReviewFailure` in `src/lib/reviewFailure.ts` then turns that status
-into the panel's copy and its button: a signed-out browser over the limit leads
-with **Sign in with GitHub**, because "Try again" against a spent anonymous
-quota does nothing for the rest of the hour while signing in takes the ceiling
-from 60 requests to 5000 on the next one. A signed-in reviewer over quota gets
-the retry alone — there is no second account to add, and the hour is all that is
-left. That button is one press and no dialog: `session.signIn()` leaves the
-site, and `returnTo` carries the fragment, so the sign-in comes back to the very
-lines the reviewer was reading.
+gone. `describeReviewFailure` in `src/lib/reviewFailure.ts` turns that status
+into the panel's copy and one of two actions: `setup` leads to `/setup` with the
+path the diff would not load from, and `retry` is the offer when there is
+nothing to grant. A signed-out browser over the limit leads with `setup` —
+retrying a spent anonymous quota does nothing for the hour, while signing in
+takes the ceiling from 60 requests to 5000 on the next one. A signed-in reviewer
+over quota gets the retry alone.
 
 Not Found is the other failure with a fix, and the one that does not look like
 it has one. GitHub answers 404 both for a diff that is not there and for a diff
-the caller may not see, deliberately: an answer that told the two apart would
-confirm that a private repository exists. So the panel guesses out loud, and the
-guess turns on whether the reviewer is signed in.
-
-Signed out, the answer is the repository is probably private, and the fix is to
-sign in. Signed in, it is almost never the credential: the sign-in worked, and
-telling that reviewer to sign in again sends them to redo a step that already
-did what it could. It is the step a personal access token never had. A GitHub
+the caller may not see, deliberately: telling the two apart would confirm that a
+private repository exists. Signed out, the repository is probably private and
+the fix is to sign in. Signed in, it is almost never the credential: a GitHub
 App reaches only the repositories it is **installed** on, so a signed-in 404
-means ghdiff is not installed on this one — `ReviewFailureAction` calls that
-`install`, and it leads to `/setup` rather than to github.com.
+means ghdiff is not installed on this one, and the action leads to `/setup`
+rather than to github.com.
 
 **The credential never reaches the server's disk, and no script can read it.** A
 reviewer signs in through the ghdiff GitHub App. What comes back is a
 user-to-server access token, good for eight hours, and a refresh token good for
-six months; both go into one `httpOnly` cookie the Worker seals with AES-256-GCM
-and hands to the browser. There is no session table, no per-reviewer record, and
-nothing kept between requests — a dump of everything this Worker persists is one
-KV key holding an integer, so `SESSION_SECRET` on its own opens nothing, because
-nothing sealed is stored anywhere for it to open.
-
-`httpOnly` is what the personal access token could not have. This app renders
-comment bodies that any GitHub user can write, through `rehype-sanitize`, and a
-credential in `localStorage` is one hole in that filter away from being read.
+six months; both go into one `httpOnly` cookie the Worker seals as a JWE —
+AES-256-GCM under a key derived from the deployment's secret — and hands to the
+browser. There is no session table and nothing kept between requests — a dump of
+everything this Worker persists is one KV key holding an integer, so
+`SESSION_SECRET` on its own opens nothing. `httpOnly` is what the personal
+access token could not have: this app renders comment bodies that any GitHub
+user can write, through `rehype-sanitize`, and a credential in `localStorage` is
+one hole in that filter away from being read.
 
 `resolveGitHubToken` in `src/lib/server/github/client.ts` is where the three
 sources meet, most specific first: a `Bearer` header, then the sealed cookie,
@@ -298,8 +354,8 @@ entirely.
 
 It also answers `fromSession`, and that is the only thing that reads it: a
 viewer resolved from `GITHUB_TOKEN` has no sign-out to offer and one resolved
-from the cookie does, so `viewer.get` forwards it and the account menu draws the
-button from it rather than guessing from the viewer.
+from the cookie does. The account menu draws `canSignOut` — and its **Sign out**
+— from it rather than guessing from the viewer.
 
 `accessTokenUsable` is asked there **without** the refresh skew, and
 `accessTokenFresh` with it. They are two different questions. A token five
@@ -355,25 +411,22 @@ limit reached" where they should have read "sign in again".
 **Revocation at GitHub on sign-out.** `DELETE /applications/{client_id}/token`
 with the client id and secret as HTTP Basic, awaited inside the request rather
 than in `waitUntil`: a sign-out that reported success before the revocation
-landed would be reporting something it did not know. This is the answer to the
-one thing a session table is genuinely good for — GitHub **is** the session
-store, the reviewer can revoke ghdiff from their own settings page at any
+landed would be reporting something it did not know. GitHub **is** the session
+store — the reviewer can revoke ghdiff from their own settings page at any
 moment, and every cookie dies with it. Both cookies go whatever GitHub says: a
 revocation that failed leaves a token outliving its session, which is a shame,
 where a cookie surviving the press would leave a reviewer signed in after asking
 not to be.
 
 None of this stops a stolen cookie, and nothing here pretends to. A cookie is a
-bearer credential. What the six do is bound how long one lasts and give the
-reviewer one press that kills it.
-
-The split-key design — ciphertext in KV, half the key in a cookie and stored
-nowhere — is the right answer the day ghdiff keeps anything server-side per
-reviewer. Not before: there is nothing to keep, and KV is eventually consistent,
-so a refresh written in one location can be invisible in another for up to a
-minute. That is a session that breaks at random for a travelling reviewer, and
-strong consistency means a Durable Object, which this file already turned down
-for the served counter.
+bearer credential; what the six do is bound how long one lasts and give the
+reviewer one press that kills it. The split-key design — ciphertext in KV, half
+the key in a cookie and stored nowhere — is the right answer the day ghdiff
+keeps anything server-side per reviewer. Not before: there is nothing to keep,
+and KV is eventually consistent, so a refresh written in one location can be
+invisible in another for up to a minute — a session that breaks at random for a
+travelling reviewer — and strong consistency means a Durable Object, already
+turned down for the served counter (`docs/rules/platform-and-tests.md`).
 
 **One route spends a refresh token, and the cookie is the single-flight.**
 GitHub's refresh token is single-use: spending it invalidates it and the access
@@ -392,33 +445,27 @@ and the overwhelmingly likely somebody is another tab whose new cookie the
 browser is holding right now — a cookie this request cannot see, because the
 browser sent the old one before the new one existed. So the route breaks nothing
 and lets the caller retry, and the retry carries the newer cookie. In the other
-case — a refresh token spent where this browser will never see the result,
-revoked at github.com or taken — the retry carries the same dead cookie and gets
-the same 401, and `withRefresh` ends the session on that second 401 through
-`/api/auth/signout`, the route that already knows how to end one. It is the one
-place that sees both answers: a 401 after a 204 is the proof the race had no
-winner here, and without that press a cookie no refresh can mend would cost a
-refresh and an error on every load for the rest of its 180 days. The wrong guess
-costs one request; the opposite wrong guess would sign a reviewer out for having
-two tabs open.
+case — a refresh token spent where this browser will never see the result — the
+retry carries the same dead cookie and gets the same 401, and `withRefresh` ends
+the session on that second 401 through `/api/auth/signout`, the route that
+already knows how to end one. It is the one place that sees both answers: a 401
+after a 204 is the proof the race had no winner here. The wrong guess costs one
+request; the opposite wrong guess would sign a reviewer out for having two tabs
+open.
 
 **A spent token is answered 401, because nothing else asks for a refresh.**
-`withRefresh` calls the refresh route after a 401 and at no other time, and for
-one deploy no read produced one: `resolveGitHubToken` found the dead token,
-answered with no token, and every read went on anonymously — `viewer.get` said
-nobody was signed in and a private diff came back Not Found, eight hours into a
-sign-in good for 180 days. Only a write reached `requireToken`'s 401, so
-pressing Approve mended a session a page load could not. `refreshDue` in
-`src/lib/session.ts` names the one state — inside the ceiling, access token
-spent, refresh token live — and the three routes that read the cookie answer it
-with 401 before GitHub is asked: the RPC handler through one middleware over
-every procedure, so the client decodes a sentence rather than a body it cannot
-parse, and `/api/diff` and `/api/file` as `text/plain`. It outranks
-`GITHUB_TOKEN`, or that reviewer's ninth hour would be spent as the deployment's
-own account. A session past the ceiling or with no refresh token gets no 401 and
-is anonymous, as it always was: there is nothing to send the browser to fetch.
-`describeReviewFailure` gives the status the setup button, since by the time a
-401 reaches the panel the refresh has failed and the session is gone.
+`withRefresh` calls the refresh route after a 401 and at no other time.
+`refreshDue` in `src/lib/session.ts` names the one state — inside the ceiling,
+access token spent, refresh token live — and the routes that read the cookie
+answer it with 401 before the forge is asked: the RPC handler through one
+middleware over every procedure, so the client decodes a sentence rather than a
+body it cannot parse, and `/api/diff`, `/api/file` and `/api/media` as
+`text/plain`. It outranks `GITHUB_TOKEN`, or that reviewer's ninth hour would be
+spent as the deployment's own account. A session past the ceiling or with no
+refresh token gets no 401 and is anonymous, as it always was: there is nothing
+to send the browser to fetch. `describeReviewFailure` gives the status the
+`setup` action, since by the time a 401 reaches the panel the refresh has failed
+and the session is gone.
 
 Inside one tab the same job is a promise. `withRefresh` in
 `src/lib/authFetch.ts` wraps every call this app makes to its own Worker: a 401
@@ -427,7 +474,8 @@ requests hit 401 together, and then sends the request again. It takes a
 **function** and not a request, because sending reads a body and a body is a
 stream — the RPC link takes its `Request` apart and rebuilds it per attempt,
 which also sidesteps `worker-configuration.d.ts` putting Cloudflare's own
-generic `Request` in the global scope of a browser module.
+generic `Request` in the global scope of a browser module. `fetchWithRefresh` is
+the same wrap for a plain URL fetch.
 
 **No hook carries a credential any more.** The cookie is same-origin and the
 browser attaches it itself, so `useOpenPulls`, `usePullDetails`,
@@ -435,11 +483,11 @@ browser attaches it itself, so `useOpenPulls`, `usePullDetails`,
 each lost a `token` option, a dependency, and the chance of sending a stale one.
 `RpcContext` on the client is gone with them.
 
-`useGitHubSession` has no version counter either, and that is deliberate rather
-than an omission. A sign-in leaves the site and comes back to a fresh document.
-A sign-out calls `location.assign('/')` — the one moment when everything already
-fetched under a credential should stop being on screen, rather than re-render a
-private diff into an error panel. Neither press needs a hook told to re-run.
+`useGitHubSession` has no version counter either, and that is deliberate. A
+sign-in leaves the site and comes back to a fresh document. A sign-out calls
+`location.assign('/')` — the one moment when everything already fetched under a
+credential should stop being on screen, rather than re-render a private diff
+into an error panel. Neither press needs a hook told to re-run.
 
 **The one redirect nobody asked for, and the gate that keeps it rare.** An older
 build kept a reviewer's personal access token in browser storage under
@@ -449,22 +497,18 @@ the cookie in `resolveGitHubToken`, so a browser still sending an old token
 would go on using it after the reviewer had signed in, with no way to tell whose
 account their comments carried.
 
-So `useGitHubSession` deletes it. Not quietly, though, and this is the part
-worth getting right: **deleting it from storage revokes nothing.** That token is
-live at GitHub for whatever is left of the ninety days the old form asked for,
-and a reviewer who is never told it was there will leave it valid. Wording that
-called it cleared, revoked or safe would read as "the credential is dead" and
-produce exactly that outcome. So the first load after this change sends them to
-`/setup?migrated=true`, and `MigrationNotice` says the token is gone from this
-browser **and** that GitHub still accepts it, with a link to
-`personalAccessTokensUrl()`. Naming GitHub as the one that still accepts it is
-what shuts the wrong reading down — "it has been removed" alone invites "so it
-is dealt with".
-
-A notice on that page rather than a dialog over it. The page exists to explain
-this, so a modal would have to be dismissed before any of the three steps could
-be read — and it would take the revoke link with it, which is the one thing in
-there to act on.
+So `useGitHubSession` deletes it. Not quietly, though: **deleting it from
+storage revokes nothing.** That token is live at GitHub for whatever is left of
+the ninety days the old form asked for, and a reviewer who is never told it was
+there will leave it valid. Wording that called it cleared, revoked or safe would
+read as "the credential is dead" and produce exactly that outcome. So the first
+load after this change sends them to `/setup?migrated=true`, and
+`MigrationNotice` says the token is gone from this browser **and** that GitHub
+still accepts it, with a link to `personalAccessTokensUrl()` — naming GitHub as
+the one that still accepts it is what shuts the wrong reading down. A notice on
+that page rather than a dialog over it: the page exists to explain this, and a
+modal would take the revoke link with it, which is the one thing in there to act
+on.
 
 The gate is `heldLegacyToken` in `src/lib/legacyToken.ts` and nothing else,
 because ghdiff works signed out and an anonymous visitor pulled off the diff
@@ -483,16 +527,14 @@ The key is deleted **before** the navigation, so a reviewer who presses back
 arrives at a browser with nothing left to migrate. `legacyToken.test.ts` is what
 holds all of that, and it is the anonymous rows it is really about.
 
-**Nothing signs in except `/setup`.** The home page row, the header control and
-the failure panel are all plain links to that page; `session.signIn()` has one
-caller left, which is step one of the page itself.
-
-That is one press more than going straight to GitHub, and it is the trade this
-app wants. Signing in is only the first of two things GitHub needs, and a
-control that jumped to GitHub left the second to be discovered later as a 404 —
-the exact confusion `/setup` exists to remove. It is also why none of those
-three says **Sign in with GitHub** any more: a button promising a redirect it
-does not make is a small lie, so each says where it goes.
+**Nothing signs in to GitHub except `/setup`.** The home page row, the header
+control and the failure panel are all plain links to that page;
+`session.signIn()` has one caller left, which is step one of the page itself.
+Signing in is only the first of two things GitHub needs, and a control that
+jumped to GitHub left the second to be discovered later as a 404 — the exact
+confusion `/setup` exists to remove. It is also why none of those three says
+**Sign in with GitHub** any more: a button promising a redirect it does not make
+is a small lie, so each says where it goes.
 
 **The account popup manages accounts, not just the account.** A GitHub App keeps
 two facts apart: who a reviewer signed in as, which decides whose name their
@@ -516,8 +558,9 @@ menu passes `active`, the dialog passes its own `open`.
 Which row belongs to the diff on screen is read off the path by
 `useCurrentAccount`, the way the left bar reads the pull request it marks —
 nothing hands it down, and it is right over a review, the home page and a 404
-alike. `useCurrentPull` answers only for pull requests; this one answers for any
-target, because a commit and a compare range have owners too.
+alike. It answers for any target, because a commit and a compare range have
+owners too; `src/hooks/useCurrentPull.ts` exports it and
+`useCurrentReviewTarget`, and there is no `useCurrentPull` any more.
 
 `InstallationRow` is shared with `/setup` and takes its wrapper's classes from
 the caller. The page puts these on cards down a wide column and the popup puts
@@ -526,12 +569,9 @@ box around them is not. Measured at 296px, a long organization name truncates
 rather than pushing **Configure** off the row. The reach caption is allowed to
 wrap to two lines there — "No repositories selected" is the line that explains a
 404 nothing else explains, and clipping it to fit would hide the one thing the
-row is for.
-
-It names no permissions. GitHub's own consent screen names every one the App
-asks for, it is the only authoritative statement of them, and a list here would
-be free to drift from the registration it described. The registration is written
-below instead.
+row is for. It names no permissions: GitHub's consent screen is the only
+authoritative statement of them, and a list here would be free to drift from the
+registration it described.
 
 A sign-in that fails has nowhere to draw a panel — the callback is a redirect —
 so `authFailureUrl` puts the reason on the address as `ghdiff_auth`, the screen
@@ -542,20 +582,26 @@ address bar where anybody can type one, and `in` walks the prototype chain, so
 `?ghdiff_auth=toString` would otherwise put a function's source on screen as a
 sentence.
 
-**Comments belong to their target.** A GitHub pull request is the only target
-with an upstream review thread, so only `supportsGitHubComments` targets post to
-GitHub. Every other target keeps comments in browser storage, and the sidebar
-says so.
+**Comments belong to their target's forge.** A pull request has a review thread
+on GitHub, so it posts upstream — `pullRefFromTarget` decides, and every other
+target keeps comments in this browser, with the sidebar saying which forge it
+means. A comment on a pull target can also be staged for the review instead: the
+forge's own draft — a thread on the viewer's pending review on GitHub — which
+the verdict publishes, and which shows on the forge's own UI as pending until it
+does. Staging is a forge write and asks for a credential, because the draft is
+the user's own, through the same `withAuth` 401 as every other write. The
+comment store is `forge` or `local`, never a forge's name, because the label
+under a composer is the one place the difference shows, and it takes the forge's
+name as a parameter.
 
 Which means the rest of the comment surface has to ask the store rather than
-assume GitHub. `CommentThreadCard` names GitHub in its delete confirmation only
-when the comment is actually there — asking a reviewer to confirm deleting
-something on GitHub that was never on GitHub is the wrong sentence in the one
-place a wrong sentence costs the most. `CommentAuthorFilterBar` is not drawn at
-all over a browser store: those threads are one reviewer's own notes and can
-hold no bot, so two of its three segments could never do anything. The strip
-stays behind it, because its height is what keeps that foot level with the left
-bar's.
+assume a forge. `CommentThreadCard` names the forge in its delete confirmation
+only when the comment is actually there — asking a reviewer to confirm deleting
+something on a forge that was never there is the wrong sentence in the one place
+a wrong sentence costs the most. `CommentAuthorFilterBar` is not drawn at all
+over a browser store: those threads are one reviewer's own notes and can hold no
+bot, so two of its three segments could never do anything. The strip stays
+behind it, because its height is what keeps that foot level with the left bar's.
 
 **A pull request's conversation leads the comment list.** Line threads were all
 the list held, so a summary written above the lines, or a remark under the
@@ -583,7 +629,7 @@ where the author filter is already fighting for room on a pull request.
 
 It is offered on every target that has comments and not on local diffs alone,
 because handing a review to an agent is at least as useful when the notes are
-somebody else's. Two things turn on the store rather than the host: a GitHub
+somebody else's. Two things turn on the store rather than the host: a forge
 thread is a conversation, so every message is named, and a browser thread is one
 reviewer talking to themselves, where a name in front of each note is noise.
 
@@ -605,8 +651,8 @@ hundred lines would spend it on a quotation nobody reads. What is cut is counted
 and said, so the `### lines 2-58` heading always names what the reviewer
 selected while the fence says what it left out. A selection whose two ends sit
 on opposite sides of a split diff has no one side to quote, so it falls back to
-the line the annotation is anchored to — the line GitHub would file the comment
-against.
+the line the annotation is anchored to — the line the forge would file the
+comment against.
 
 The prompt is built on the press and never before: it walks every thread's hunks
 for the lines it quotes, and a reviewer who never presses it pays nothing. It
@@ -620,76 +666,126 @@ paste and find out.
 The composer's **Create issue** toggle, top right, sends the text to
 `issues.create` instead of `comments.create`. The issue gets the text, a
 permalink to the selected lines on a line of its own, and the review's own
-address; the comment on the line then says `see #N`. GitHub cross-references
-both mentions, so each end shows the other and nothing here has to remember the
-pair. The card's link to the issue is held in memory and nowhere else — a reload
-keeps `see #N` and drops the button, because finding the issue again would be a
-search and the comment already names it.
+address; the comment on the line then says `see #N`. GitHub links both mentions,
+so each end shows the other and nothing here has to remember the pair. The
+card's link to the issue is held in memory and nowhere else — a reload keeps
+`see #N` and drops the button, because finding the issue again would be a search
+and the comment already names it.
 
 The permalink is the part that has to be exact. GitHub embeds a snippet only for
 a `blob` URL in the same repository, with a **full** sha and a `#L` anchor, and
 a rendered document such as a README needs `?plain=1` as well —
 `blobPermalinkUrl` in `src/lib/github/urls.ts` builds all of that. The browser
 holds a pull request number, a short sha or a branch, so `resolveSideCommit` in
-`src/lib/server/commentIssue.ts` asks: the head for the new side, and for the
+`src/lib/server/github/issue.ts` asks: the head for the new side, and for the
 old side the commit the diff was taken against — a commit's first parent, or the
 merge base of a pull request or range, never `base.sha`, which stops being the
 merge base the moment the base branch moves. A note on removed lines of a
 renamed file links the old name, which is why `ReviewFileEntry` carries
 `previousPath`.
 
-The toggle is offered on the three GitHub targets and only with a viewer, and
-the App registration has to grant **Issues**. Without it GitHub answers 403
-"Resource not accessible by integration", which names nothing, so the router
-replaces that sentence with one that names the permission. A failed issue leaves
-the typed text on the line, marked failed, the way a failed comment does.
+The toggle is offered on every forge target and only with a viewer. The App
+registration has to grant **Issues**. Without it GitHub answers 403 "Resource
+not accessible by integration", which names nothing, so the router replaces that
+sentence with one that names the permission. A failed issue leaves the typed
+text on the line, marked failed, the way a failed comment does.
+
+GitHub's `reviewThreads` answers one node per thread, its comments root first.
+The forge maps what it gets to flat `CommentPayload` rows — `remoteId` is the
+comment id, `replyToId` is the thread's root comment id, and the thread-grouping
+the client already did needs no second shape. A reply is never staged: a draft
+is always a new thread on a diff line, so the reply composer keeps posting where
+it is written. GitHub refuses a comment on a line outside the diff, and the
+failure lands in the foot strip.
+
+**On GitHub the draft is the viewer's pending review** — one per pull request.
+`addPullRequestReview` with no event creates it, `addPullRequestReviewThread`
+adds a comment (`subjectType: LINE` and the line, side and range fields — no
+diff-position arithmetic), and `deletePullRequestReviewComment` removes one.
+Listing the drafts is the pending-review lookup plus the `reviewThreads` read
+`comments.list` makes: the threads whose root comment belongs to that review are
+the drafts, and the position comes from the thread, because the review-comment
+type has no `side` of its own. The same read is what keeps one staged comment
+from drawing twice: the comment's review `state` rides the thread's fragment, so
+the published list excludes the roots still `PENDING` and the drafts own them.
+That mutation names a GraphQL node id rather than the numeric one, which is what
+`remoteNodeId` on `CommentPayload` holds; drafts come back on the same payload
+with `staged: true`. The verdict submits the review over REST —
+`POST /pulls/{n}/reviews/{id}/events` with `{ event, body }` — and with no
+pending review the submit is the plain `POST /pulls/{n}/reviews` it always was.
+A pending review started on github.com lists here as drafts, and one started
+here shows there as pending.
+
+**A resolved thread is the forge's answer, carried on its root.** A resolved
+thread carries `resolved` on its root payload alone: in the diff its card
+collapses to one line until it is pressed, and in the list it sorts after the
+open threads. GitHub's comments read is GraphQL `reviewThreads` precisely
+because its REST comments carry no such state (an anonymous read stays on that
+REST list, as it always was, since GraphQL refuses it). The root payload also
+carries the id the resolve call addresses — GitHub's review-thread node id,
+present only when the thread takes the mark at all — and `comments.resolve`
+sends it to `resolveReviewThread` and `unresolveReviewThread`. Who may resolve
+is the forge's answer, not this app's: GitHub wants write access, and a refusal
+surfaces its own sentence in the thread, the way verdict refusals do.
 
 **A file the reviewer has read is marked in its own header, and GitHub keeps
 that mark.** `markFileAsViewed` and `unmarkFileAsViewed` are the two mutations,
 `PullRequestChangedFile.viewerViewedState` reads it back, and all three are
 GraphQL only — REST answers with the patch and the counts and says nothing about
 who has read what. So a mark made here is the same mark github.com's own
-**Viewed** box draws, and a reviewer can start in one and finish in the other.
-The mark divides by target the way a comment does: a pull request's goes
-upstream, and a commit's or a compare range's stays in this browser, because
-GitHub holds no such state for either. Those two records never merge — a browser
-mark is about a diff GitHub is not tracking, and the pull request's is GitHub's
-own — so `useViewedFiles` reads one store and writes the same one.
+**Viewed** box draws. The mark divides by target the way a comment does: a pull
+request's goes upstream, and a commit's or a compare range's stays in this
+browser, because GitHub holds no such state for either. Those two records never
+merge, so `useViewedFiles` reads one store and writes the same one.
 
 `viewedFiles.list` is what fills the boxes on arrival, and it needs a token,
 since the mark is the token's own user's. A caller with no token gets an empty
 list rather than an error, the way `reviews.mine` gets no review, and its press
-then fails with the sentence `requireToken` writes. A read that fails is
-reported nowhere: an unread mark and no mark draw the same empty box, and a
-press still lands, because `viewedFiles.set` names the file by its path alone.
-That is also why the router resolves the pull request's node id itself on every
-press rather than have the browser hold it — a browser that held it would have
-nothing to send for a press that arrived before the list did.
-
-`DISMISSED` is the third state and it counts as unread. GitHub writes it when a
-file changed after the reviewer marked it, and GitHub's own screen takes the
-tick off at that point: the mark was about lines that are no longer there.
+then fails with the sentence `withAuth` writes. A read that fails is reported
+nowhere: an unread mark and no mark draw the same empty box, and a press still
+lands, because `viewedFiles.set` names the file by its path alone. That is also
+why the router resolves the pull request's node id itself on every press rather
+than have the browser hold it — a browser that held it would have nothing to
+send for a press that arrived before the list did. `DISMISSED` is the third
+state and it counts as unread: GitHub writes it when a file changed after the
+reviewer marked it, and the mark was about lines that are no longer there.
 
 The box is drawn and not an `<input type="checkbox">`, for the reason
-`TaskMarker` draws its own: the browser paints a native one in the platform's
-blue, which is the single colour this app never uses. It goes in
-`renderHeaderMetadata`, which is the last child of the header's metadata row, so
-it lands to the right of the file's own `-N +N` and takes that row's gap.
+`TaskMarker` draws its own (`docs/rules/review-surface.md`): the browser paints
+a native one in the platform's blue, which is the single colour this app never
+uses. It goes in `renderHeaderMetadata`, which is the last child of the header's
+metadata row, so it lands to the right of the file's own `-N +N` and takes that
+row's gap.
 
 **Every GitHub request names itself.** `src/lib/server/github/client.ts` sends a
 `user-agent` header on every call, to `api.github.com` and to the web diff host
 alike. Node's `fetch` supplies one; workerd supplies none, and GitHub answers a
 header-less request with 403 "Request forbidden by administrative rules". A new
-call path that bypasses `headers()` gets that 403 and nothing else.
+call path that bypasses `headers()` gets that 403 and nothing else. The octokit
+calls the GitHub forge makes are constructed with the same agent, so the rule
+holds on both sides of the SDK split.
 
 **One wide event per request, through a hand-rolled integration.** evlog ships
 adapters for Next, Nitro, and Hono, but not for a TanStack Start server route,
 so `src/lib/logger.ts` builds one from `defineFrameworkIntegration` in
-`evlog/toolkit`. `withEvlog` wraps a handler and `requestLog()` reads the logger
-out of an `AsyncLocalStorage`, which is why `nodejs_compat` is not optional. The
-diff route streams, so `withEvlog` finishes through `finishResponse`, which
-holds the emit until the body ends. A handler that skips `withEvlog` throws from
-`requestLog()`.
+`evlog/toolkit`. The logger reaches the handler as `context.log`, carried by
+TanStack request middleware: `logMiddleware` in `src/lib/server/middleware.ts`
+starts the event and hands the logger down through `next({ context })`, typed
+end to end, so no `AsyncLocalStorage` and no getter helper exists. The chain is
+declared once and composed per route — a route names `apiMiddleware` in its
+`server.middleware`, or `validate(...)` from `src/lib/server/validate.ts`, which
+depends on it and parses the route's declared `search`/`body` channels into the
+same typed context, answering 400 before the handler runs. The mutating auth
+routes name `originMiddleware` instead, which answers a foreign origin 403
+before anything else runs, and the routes that read the session — the auth
+routes and the credential-resolving edge alike — name `sessionMiddleware`, which
+reads the cookie once and hands `keyring`, `seal` and `session` down as context.
+The RPC route names `credentialsMiddleware`, which resolves every credential the
+request speaks with once, from the config and the session, and hands them down
+as `context.credentials`. `/healthz` and the userscript route name no logging
+middleware and stay outside the request log. The diff route streams, so the
+middleware finishes through `finishResponse`, which holds the emit until the
+body ends.
 
 ## The GitHub App
 
@@ -721,7 +817,11 @@ no refresh token beside it, and `accessExpiresAt` absent is exactly that case.
 
 The callback URL is not configured here. `callbackUrl` derives it from the
 origin the request arrived on, so one App registered with both addresses serves
-ghdiff.com and a laptop alike and neither can be sent to the other's. Register
+ghdiff.com and a laptop alike and neither can be sent to the other's. Behind a
+TLS-terminating proxy the server hears plain http, so `externalRequestUrl` takes
+the scheme from `X-Forwarded-Proto` — the one header every ingress sets — and
+only the scheme: the `Host` header is the one every absolute URL here is built
+from, and a forwarded header does not get to name a redirect URI. Register
 `https://ghdiff.com/api/auth/callback` on the production App and
 `http://localhost:3000/api/auth/callback` on the dev one. GitHub compares the
 value against its own list, so an unregistered origin fails at GitHub with a
@@ -732,3 +832,31 @@ travels back through the reviewer's own browser and whatever sits in front of
 it, and `code_verifier` is the half of the pair that never leaves the Worker —
 so a code lifted out of a redirect, a log or a referrer cannot be spent by
 whoever lifted it.
+
+## What a deployment serves
+
+GitHub is served while the App or `GITHUB_TOKEN` is set, and the server enforces
+that at the forge gate (`src/lib/server/forges/index.ts`): a ref for anything
+else is a 404 whose sentence says what this instance serves. The client learns
+the same answer with the page: the root route's loader calls a server function
+(`getInstanceInfo` in `src/lib/instance.ts`) that maps the deployment config to
+it — whether GitHub sign-in is on offer and GitHub served at all, and the home
+page's example diffs (the built-in catalog, or `GHDIFF_EXAMPLES`) narrowed to
+the hosts served — plus the brand, `GHDIFF_BRANDING` or ghdiff.com, and the host
+the request arrived on. It runs in the same process on the server, which is the
+thing a loader on workerd cannot do over HTTP, and the document carries it down.
+Every screen renders against one certain answer from the first paint, nothing
+about the deployment is baked at build time, and a fact about the deployment
+never travels the session's credential pipeline: an expired grant has no say in
+what this ghdiff serves. Components read `useAppData()`, and no `forge` prop is
+threaded through `ReviewHeader`, `ReviewSubmitDialog`, `PullDetailsCard`,
+`CommentsList` or `CommentThreadCard`. A review address is read in one place,
+`reviewInputFrom` in `src/lib/resolveHost.ts`: the shorthand, a github.com URL,
+this deployment's own URL, and the colon form. A trailing `files` segment, or a
+`.diff` suffix, still names the same review.
+
+`resolveCredentials` in `src/lib/server/credentials.ts` answers every credential
+the request speaks with as `byForge`, keyed by `forgeGroupKey` — `github` — plus
+`headerToken` when a credential was named on the header, and one `refreshDue`
+for "a grant is spent with a live refresh behind it". The 401 that produces
+sends the browser to `/api/auth/refresh`, which mends it.

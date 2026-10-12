@@ -5,86 +5,102 @@ its offer, the home page, the pull list and its status squares, and the setup
 page.
 
 **The left bar belongs to the app, not to a screen.** `src/routes/__root.tsx`
-mounts `AppShell`, which is the bar plus whatever page is open. Moving between
-pull requests never unmounts it, so the list is fetched once per session. The
-bar reads the pull request on screen out of `useLocation()` rather than being
-told, which is what lets it sit above the home page, a review, and a 404 alike.
+mounts `AppShell`, the bar plus whatever page is open; moving between pull
+requests never unmounts it, so the list is fetched once per session. The bar
+reads the pull request on screen out of `useLocation()` rather than being told,
+so it sits above the home page, a review, and a 404 alike.
 
-**A review URL is github.com's own path, at the root.** `src/routes/$.tsx` is a
-splat over the whole path, so `ghdiff.com/owner/repo/pull/123` is the github.com
-URL with the host swapped and nothing else. Every static route — `/` and each
-`/api/...` handler — outranks the splat, so adding a static route is safe and
-adding a top-level _page_ route is what would shadow a repository owner of that
-name. `/setup` is the one static **page** route besides `/`, and it is the case
-that rule is there to catch. `github.com/setup` is a real account — but ghdiff
-has no route for a user profile and never did, so
-`gitHubTargetFromSegments(['setup'])` answers with nothing and `/setup` was
-already a 404. It claims a dead address rather than shadowing one a reviewer
-could reach. Check that before adding another: a name GitHub serves a _diff_
-under is a name this app cannot take.
+**A review URL is the forge's own path with its host glued on, at the root.**
+`src/routes/$.tsx` is a splat over the whole path, and a canonical URL names the
+host in its first segment, glued to the owner with a colon:
+`ghdiff.com/github.com:owner/repo/pull/123` is the github.com URL with the host
+moved inside the path. A port survives — in `/host:8443:owner/repo/...` the
+first segment is `host:port:owner`, and the split keeps the port with the host.
+The host decides the grammar: `github.com` takes GitHub's (`pull`, `commit`,
+`compare`), and a host that speaks no forge's grammar names no target. No GitHub
+owner may hold a colon, so the glue never collides with a name. `GITHUB_HOSTS`
+in `src/lib/github/hosts.ts` is the whole GitHub list — one host today, and the
+marked seam GHES widens.
+
+Hostless URLs are entry points, and the splat's loader answers each:
+
+| A path that arrives as                           | The loader's answer                                 |
+| ------------------------------------------------ | --------------------------------------------------- |
+| `/owner/repo/pull/123` — GitHub-shaped, no colon | 302 to `/github.com:owner/repo/pull/123`            |
+| the colon form                                   | parsed as the target, with no membership check here |
+
+The loader stays client-safe — no server import, no self-fetch, which would leak
+into the client bundle or fail on workerd — so whether this deployment serves
+the host is not its question to ask. A colon URL renders the page, and the forge
+gate's 404 names what the deployment does serve, in the sentence
+`ReviewStatusPanel` shows.
+
+Every static route — `/`, `/ghdiff.user.js`, and each `/api/...` handler —
+outranks the splat, so adding one is safe; a top-level _page_ route is still
+what would shadow a bare path under its name. A canonical URL can never be
+shadowed — its first segment always carries a colon and no route name does — so
+the rule now bites only the bare entry-point paths. `/setup` is the one static
+**page** route besides `/`, and it claims a dead address: one colon-less segment
+parses as no target, so `/setup` was already a 404. Check that before adding
+another: a name a bare GitHub-shaped path resolves under is a name this app
+cannot take. `/healthz` passes the same check and is taken for the liveness
+probe: a server-only route like the `/api/...` handlers, and the one route with
+no request log, because a platform fires it every few seconds and each answer
+depends on nothing but the process being up. `/ghdiff.user.js` passes it too —
+the `[.]` in its filename is the router's literal-dot escape, and it is the one
+route whose answer is built from the deployment rather than the build.
 
 `src/routes/gh/$.tsx` is the old prefix and holds no component: its loader
 throws a `redirect`, which keeps every link already written alive. `PullRail`
 reads through a leading `gh` segment for the one navigation the redirect takes.
 
-**The userscript makes that host swap a button, and the tab bar is where it
-goes.** The userscript adds one link to github.com, beside **Files changed** at
-the end of the pull request's own tab row. That row is the one part of the page
-that both of GitHub's headers still draw and that the conversation and the diff
-share, so a single insertion point covers all four combinations:
+**The userscript makes that URL a button, and the tab bar is where it goes.**
+`/ghdiff.user.js` is a server route, not a static asset: a self-hosted
+deployment's script has to point at that deployment, which only the server
+knows, so the route fills the template in `src/lib/server/ghdiff.user.js` with
+the origin the request arrived on, scheme from `X-Forwarded-Proto`. The address
+is the one the script has always had, so scripts already installed keep
+updating. The button sits on github.com beside **Files changed** at the end of
+the pull request's own tab row. That row is the one part of the page that both
+of GitHub's headers still draw and that the conversation and the diff share, so
+a single insertion point covers all four combinations:
 `nav[aria-label="Pull request navigation"]` is the React header and
 `.tabnav-tabs` is the one it has not replaced yet. Neither selector is a
 contract, so `findRowByLinkTo` says what the row _is_ — the row that holds the
 link to this pull request's own `/files` page — and finds it again when the
-names change. The title-row actions were the other candidate and lost: GitHub
-puts the review state, **Code** and **Preview** there, and it needs a second
-selector for the same button.
+names change.
 
 **A commit is the other page that is one diff, and its button goes beside Browse
 files.** A commit header has no tab row, so `findHost` sends a commit to the
 same `findRowByLinkTo` with a different question: the row that holds the link to
-this commit's own `/tree/<sha>` page. That row holds nothing but **Browse
-files** — twice, in fact, a wide one with the words and a narrow icon, one of
-which is always hidden — so the search takes whichever is on screen and they
-share the one row either way. No selector is named for a commit at all, because
-every class on that header is hashed per build.
+this commit's own `/tree/<sha>` page. No selector is named for a commit at all,
+because every class on that header is hashed per build.
 
-The button wears two skins, and both were read off the live page rather than
-guessed. In the tab row it is another one of github.com's own tabs — the same
-`TabNavLink` the row draws for **Files changed**: transparent and borderless in
-its unselected shape, `8px 12px` of padding at `--text-body-size-medium` and
-weight 400, stretched to the row's height, with a leading `link-external`
-octicon in `--fgColor-muted` the way every tab in the row carries one, gone
-under github.com's `sm` breakpoint the way theirs are. Beside **Browse files**
-on a commit it is Primer React's own default `Button`, the component github.com
-draws next to it there — `prc-Button-ButtonBase`, a medium control at
-`--control-medium-size` and weight 500, the 80 ms colour transition, the hover
-and active backgrounds, and the focus ring. The custom properties are Primer's
-design tokens, set by github.com itself on the document element for both colour
-schemes, so the button follows the reviewer's scheme without a stylesheet of its
-own to keep in step; the fallbacks are the ones Primer ships, for the day a
-token is renamed.
+The button wears two skins, both read off the live page. In the tab row it is
+github.com's own `TabNavLink`: transparent and borderless at rest, `8px 12px` of
+padding at `--text-body-size-medium` and weight 400, stretched to the row's
+height, a leading `link-external` octicon in `--fgColor-muted`, gone under
+github.com's `sm` breakpoint the way theirs are. Beside **Browse files** it is
+Primer React's default `Button` — `prc-Button-ButtonBase`, a medium control at
+`--control-medium-size` and weight 500, the 80 ms colour transition, and the
+focus ring. The custom properties are Primer's design tokens, set by github.com
+itself for both colour schemes; the fallbacks are the ones Primer ships.
 
 The two rows are not the same row, and `data-ghdiff-place` on the button is what
 lets one stylesheet dress it for both. The tab row has no gap of its own, so the
-tab skin sits flush against **Files changed** and reads as the next tab; the
-commit header's action row is a flex row with an 8px gap of its own, so the
-button skin carries no margin there. The old server-rendered `.tabnav-tabs`
-draws its tabs wider and quieter than the React one — muted at rest, spacious
-padding, a colour-only hover — and a descendant override under the same selector
-github.com scopes its own rules with follows it. Everything else the two places
-share is stated once, above them both.
+tab skin sits flush against **Files changed**; the commit header's action row is
+a flex row with an 8px gap of its own, so the button skin carries no margin
+there. The old server-rendered `.tabnav-tabs` draws its tabs wider and quieter —
+muted at rest, spacious padding, a colour-only hover — and a descendant override
+under the same selector github.com scopes its own rules with follows it. GitHub
+moves between its own pages without reloading, and the script reuses this one
+button, so `sync` writes the href, the place and the title on every pass rather
+than at build time. A compare range is the third target ghdiff has an address
+for, and it has no button: its header carries no control of its own to sit
+beside.
 
-A move from a pull request to a commit is a navigation GitHub makes without
-reloading, and it reuses this one button. So `sync` writes the href, the place
-and the title on every pass rather than at build time.
-
-A compare range is the third target ghdiff has an address for, and it has no
-button. Its header carries no control of its own to sit beside.
-
-The script matches every page on github.com and not the pull request paths
-alone, because GitHub moves between its own pages without reloading the
-document, and a userscript manager starts a script once per document. So a
+The script matches every page on github.com, because a userscript manager starts
+a script once per document and GitHub navigates without reloading. A
 `MutationObserver` re-appends the button that React's next render drops, and a
 50 ms timer — not `requestAnimationFrame`, which a background tab never runs —
 turns a diff's thousands of mutations into one `sync` at a time. The button
@@ -95,133 +111,72 @@ resolve.
 `UserscriptInstall` offers it from the home page, under the form and above the
 examples. The line above the button names one manager and links to its install
 page, because Install pressed in a browser with no manager downloads a file that
-browser can do nothing with. That link is what the address written out under the
-card used to be for, and one of the two is enough. Its Install control is a
-plain `<a>` and never a `Link`: a client-side navigation makes no request, and
-the request is the whole point. Bump `@version` in the script when it changes,
-or nobody who installed it gets the change — `@updateURL` is what every manager
-re-reads, and the version is what it compares.
+browser can do nothing with. Its Install control is a plain `<a>` and never a
+`Link`: a client-side navigation makes no request, and the request is the whole
+point. Bump `@version` in the script when it changes, or nobody who installed it
+gets the change — `@updateURL` is what every manager re-reads, and the version
+is what it compares.
 
 **The left bar is not there when it has nothing to list.** `PullRail` returns
-`null` while the watch list is empty, because an empty column beside a diff is a
-promise the app cannot keep. The test is
-`watched.hydrated && repos.length === 0` and not `repos.length` alone: browser
-storage is read after mount, so an unread watch list looks empty, and hiding the
-bar on that reading would unmount it and re-mount it on every load. With the bar
-away, `ReviewHeader` takes its `showBrand` prop and carries the way home, so no
-screen is a dead end.
+`null` while the watch list is empty, and the test is
+`watched.hydrated && repos.length === 0`, not `repos.length` alone: storage is
+read after mount, so an unread watch list looks empty, and hiding on that
+reading would unmount and re-mount the bar on every load. With the bar away,
+`ReviewHeader` takes its `showBrand` prop and carries the way home.
 
 **The first paint of that bar is settled in the document head.** `hydrated` is
-false for one paint, and the server already sent the bar's markup, so a reviewer
-who watches nothing saw the column arrive and then leave. `WatchedReposScript`
-reads the same key before the body is parsed and writes `data-watching` on the
-document; `html[data-watching='no'] [data-app-rail]` in `src/globals.css` keeps
-that paint empty, and React's answer lands after it and agrees. Every reading
-that leaves `useWatchedRepos` empty has to reach `'no'` there — no key, a value
-that is not an array, and storage that throws alike — or the flash returns the
-other way round. `PullRequestList` takes `hydrated` for the same reason: an
-empty `repos` before the read is the default, not an answer, so it draws
-`PullListSkeleton` and does not tell a reviewer who watches five that they watch
-none. It draws the same skeleton whenever a request is in flight and it has no
-rows, which is the other half of that: the moment after the first repository is
-watched, `useOpenPulls` still holds the empty answer it gives an empty watch
-list, and "no open pull requests in it" is a wrong answer to a question GitHub
-has not been asked yet.
-
-The attribute belongs to the watch list from then on, and `AppDataProvider`
-writes it on every change once `hydrated`. The head script settles the first
-paint and nothing else, so a stale `'no'` would go on hiding the bar with the
-CSS after the reviewer watched their first repository — which is exactly the
-reviewer the rule is there for, and exactly the moment the bar has to arrive.
+false for one paint and the server already sent the bar's markup, so
+`WatchedReposScript` reads the same key before the body is parsed and writes
+`data-watching` on the document; `html[data-watching='no'] [data-app-rail]` in
+`src/globals.css` keeps that paint empty. Every empty reading of
+`useWatchedRepos` has to reach `'no'` there — no key, a non-array value, and
+throwing storage alike. `PullRequestList` draws `PullListSkeleton` until
+`hydrated`, and again whenever a request is in flight with no rows: an empty
+`repos` before the read is the default, not an answer, and `useOpenPulls` holds
+the empty answer it gives an empty watch list. Once `hydrated`,
+`AppDataProvider` owns the attribute and writes it on every change — a stale
+`'no'` would hide the bar from the reviewer who just watched their first
+repository.
 
 **The home page holds the watch list itself, not the pull requests it makes.**
-The bar lists those on every page, this one included, so a second copy of the
-bar down the home page was the same rows twice. What the home page has that the
-bar has not is the way to change the list, and `WatchedReposEditor` is there in
-the open rather than behind a button: the bar is not drawn at all for a reviewer
-who watches nothing, so on their first visit this section is the only way in.
-`PullRail` keeps `WatchedReposDialog` for the same editor, because a reviewer
-reading a diff cannot lose it to a navigation home.
+The bar lists those on every page, this one included, so the home page's own
+piece is the way to change the list: `WatchedReposEditor`, in the open rather
+than behind a button, because the bar is not drawn for a reviewer who watches
+nothing and this is their only way in. `PullRail` keeps `WatchedReposDialog` for
+the same editor, so a reviewer reading a diff cannot lose it to a navigation
+home.
 
-**A reviewer who watches nothing is asked once per repository.** `PullRail`
-draws nothing while the watch list is empty, so the one feature that makes
-ghdiff somewhere to stay is invisible to exactly the reviewer who has not found
-it yet — and a reviewer who arrived from the userscript button has never seen
-the home page, where the editor sits in the open. `WatchOfferDialog` goes to
-them instead, on the repository they are already reading, and offers to watch it
-in one press.
+**A reviewer who watches nothing is asked once per repository.**
+`WatchOfferDialog` offers to watch the repository they are already reading.
+`watchOfferPreference` records the asking, not the answer: **Not now** is final
+for that repository and says nothing about the next, Add lands there beside it,
+and the tab closed with the window open has still been asked. Nothing trims the
+list: forty bytes a row against a five megabyte store is no reason for a cap
+whose only effect would be to ask somebody twice. The key held a bare boolean
+for one deploy, and the codec refuses anything that is not an array, so a
+browser from that afternoon reads as the empty list and is offered the
+repository once more — the one place the encoding rule below is broken on
+purpose. The offer waits for the diff, so `ReviewScreen` mounts it, not
+`AppShell`: `ready` is `patch.state === 'ready'`, a failed diff draws
+`ReviewStatusPanel` instead, and a 404 leaves the setting alone. The press names
+the repository, so the label truncates rather than widen the row — the dialog
+scrolls vertically, and a box with `overflow-y: auto` takes an `overflow-x` of
+`auto` whether it asked for one or not. The home page is offered nothing: it has
+the editor in the open, and it names no repository.
 
-Three things keep that from being a nag, and each of them is why it is a
-component rather than a condition inside `PullRail`.
-
-It is asked once per repository. `watchOfferPreference` holds the repositories
-the offer has been made for, so **Not now** is final for the repository on
-screen and says nothing about the next one — declining is an answer about this
-diff, not about the feature, and a reviewer who has not found the bar yet is
-still worth asking when they open somebody else's code. It records the asking
-and not the answer, so Add lands there beside Not now: that costs nothing, since
-the offer only reaches a reviewer whose watch list is empty and Add is what
-fills it, and it buys the case no `onClose` can cover — a reviewer who closes
-the tab with the window open has been asked, and the write on open is what
-remembers it. Nothing trims the list: forty bytes a row against a five megabyte
-store is no reason for a cap whose only effect would be to ask somebody twice.
-
-That key held a bare `true` or `false` for one deploy, and the codec refuses
-anything that is not an array, so a browser from that afternoon reads as the
-empty list and is offered the repository in front of it once more. One dialog,
-once. It is the one place the encoding rule below has been broken on purpose,
-and the alternative was a second key to remember a shape that outlived nothing.
-
-It waits for the diff, which is why `ReviewScreen` mounts it and `AppShell` does
-not — `ready` is `patch.state === 'ready'`. A diff that would not load draws
-`ReviewStatusPanel`, a failure with a fix in it and usually the 404 that sends
-the reviewer to `/setup`, and a modal over that is a question stacked on a
-problem. It also keeps the one offer for a repository the reviewer can read: a
-404 leaves the setting alone, and the next diff that loads is offered.
-
-And the press names the repository, so the label truncates rather than widen the
-row. A name is as long as its owner made it, and this dialog scrolls vertically
-— a box with `overflow-y: auto` takes an `overflow-x` of `auto` whether it asked
-for one or not, so the overflow would arrive as a scrollbar across the window.
-Nothing is lost to the clip, because the header above the diff names the
-repository too.
-
-The home page is offered nothing. It has the editor in the open already, and it
-names no repository to offer.
-
-**And the offer shows the bar rather than describe it.** A reviewer is being
-asked to take a step on the strength of one sentence, and the sentence has to
-name a thing they have never seen. So `WatchOfferPreview` draws it: the status
-square is the whole point of the bar, and three of them say the three answers a
-reviewer scans that column for — approved and green, changes requested with a
-check failed, nobody looked yet and the checks still running.
-
-The green square is the middle row of the five, and the middle of the three the
-fade leaves legible. It is the answer a reviewer scans that column for, so it
-sits where the eye lands first.
-
-Five rows, because a list of exactly three reads as all there is. The first and
-the last fade under one `mask-image` gradient whose stops sit at a fifth and
-four fifths of the column, which is the whole of "fade one, three solid, fade
-one" — and a mask reads alpha and never colour, so `transparent` to `#000`
-serves both schemes with one figure. That is also why it is a mask rather than a
-gradient painted over the rows: a paint would have to name the dialog's own
-background and would drift the day that token moves.
-
-The square is drawn at 30px where the real bar gives it 13, and the words beside
-it stay at 12. In the bar the square is a mark on a row of text; here it is the
-subject, and a mark at label size would read as a bullet in front of a list of
-sentences. Nothing about the bar's figures follows from these two. No panel
-behind it and the block centred, because a bordered box reads as a control to
-press and this is a picture — `w-fit` on the column is what centres the block
-while leaving every square on one pixel.
-
-Every word in it comes from `describePullStatus`, the same function that names
-the square for a screen reader on every row of the real bar, so the
-advertisement cannot come to promise a state `PullStatusMark` does not paint.
-The whole illustration is `aria-hidden`: it illustrates the paragraph above it,
-and five marks each reading out their own `title` is noise in front of the two
-buttons.
+**And the offer shows the bar rather than describe it.** `WatchOfferPreview`
+draws three status squares — approved and green, changes requested with a check
+failed, nobody looked yet and the checks still running — in five rows, because a
+list of exactly three reads as all there is; the green square is the middle row.
+The first and last fade under one `mask-image` gradient stopped at a fifth and
+four fifths of the column; a mask reads alpha, so `transparent` to `#000` serves
+both schemes. The square is drawn at 30px where the bar gives it 13 and the
+words stay at 12 — here it is the subject, and a mark at label size would read
+as a bullet. No panel behind it, and `w-fit` centres the block while leaving
+every square on one pixel. Every word comes from `describePullStatus`, the
+function that names the square for a screen reader on the real bar, so the offer
+cannot promise a state `PullStatusMark` does not paint. The whole illustration
+is `aria-hidden`.
 
 **The offer names a place, and a phone has a different one.** `PullRail` is
 `max-phone:hidden` and `PullListButton` stands in for it, so "the bar on the
@@ -232,62 +187,63 @@ the place twice, so complete phone and desktop catalog messages state both
 readings and `useIsPhone` picks between them. A second caller of that hook costs
 nothing: it is a media query and not a request.
 
+**The home page's brand is a label, and the addresses are the request's.**
+`GHDIFF_BRANDING` names the deployment — ghdiff.com when unset — and the root
+loader carries it down as `instance.brand`, which the `<h1>` and the way home
+from `/setup` read. The URL-rewrite instruction pair and the box's own-URL
+reading take `instance.host`, the host the request arrived on, so an example
+shown on a self-hosted deployment is an address that works there. Both ride the
+loader, so the server markup and the first client render cannot disagree. The
+rest of the page reads what the deployment serves in the same certain way: the
+instruction pair shows while GitHub is served, the box rejects a GitHub target
+on a deployment that serves no GitHub with a sentence rather than navigating to
+the gate's 404, and the examples arrive already narrowed to the hosts served — a
+deployment with no rows to show hides the section, the way the bar hides when it
+has nothing to list.
+
 **A field's border is its promise of a click target.** The card around the home
-page's URL box is that border, and the `<input>` is only the middle of it: the
-row's padding, the gap, and the space around **Review** are not the field, so a
-click there did nothing. `focusTargetField` in `HomeScreen` puts the caret in
-the field for any `mousedown` on the row that misses a control of its own, and
-the guard has to name every control the row nests. It is `mousedown` and not
-`click`, because by the time a click is reported the caret has already moved and
-the selection is gone. The button is not overlaid on the input instead, which is
-the other answer: its width is its label's, and the input would have to reserve
-a fixed strip for a control free to outgrow it.
+page's URL box is that border, and the `<input>` is only the middle of it.
+`focusTargetField` in `HomeScreen` puts the caret in the field for any
+`mousedown` on the row that misses a control of its own, and the guard has to
+name every control the row nests. It is `mousedown` and not `click`, because by
+the time a click is reported the caret has already moved and the selection is
+gone. The button is not overlaid on the input: its width is its label's, and the
+input would have to reserve a fixed strip for a control free to outgrow it.
 
-**The footer names the commit it was built from.** A reviewer looking at a
-deployment has one right answer to "which version is this", and the page could
-not give it. `vite.config.ts` asks git at config time and writes the sha into
-both bundles as `import.meta.env.VITE_COMMIT_SHA` — nothing at runtime can ask a
-Worker what it was built from. Git is asked before `GITHUB_SHA`, because
-`actions/checkout` leaves the deploy job on the very commit it deploys and a
-developer's own `pnpm dev` then reports what they are working from. A build with
-no repository around it writes an empty string, and `BuildCommit` draws nothing
-rather than link to a commit that may not exist. `GHDIFF_REPO` in
-`src/lib/github/urls.ts` is this repository, so the two links in that footer
-cannot name different ones.
-
-That row reads as two pairs. **Source on GitHub** and **@imgggalvin** are
-addresses off this site — the project, then the person who writes it — and the
-sha and the served figure after them are about this deployment. Each of the two
-links carries its own mark, and the X mark is drawn a pixel smaller than the
-GitHub one: it fills its own box corner to corner where the GitHub mark keeps a
-margin inside one, so equal boxes would not weigh the same. The X address is
-written where it is used and not in `src/lib/github/urls.ts`, which holds
-github.com and nothing else.
+**The footer names the commit it was built from.** `vite.config.ts` asks git at
+config time and writes the sha into both bundles as
+`import.meta.env.VITE_COMMIT_SHA` — nothing at runtime can ask a Worker what it
+was built from. Git is asked before `GITHUB_SHA`, because `actions/checkout`
+leaves the deploy job on the very commit it deploys. A build with no repository
+around it writes an empty string, and `BuildCommit` draws nothing rather than
+link to a commit that may not exist. `GHDIFF_REPO` in `src/lib/github/urls.ts`
+is this repository, so the two links in that footer cannot name different ones.
+The X mark is drawn a pixel smaller than the GitHub one — it fills its own box
+corner to corner where the GitHub mark keeps a margin inside one — and the X
+address is written where it is used and not in `src/lib/github/urls.ts`, which
+holds github.com and nothing else.
 
 The sha opens that commit **in ghdiff**, not on github.com: this app reads
 diffs, and its own build is a diff like any other. It is the one link in the app
-that is a `Link` in this tab rather than a new one. `GitHubTextLink` opens a new
-tab to keep a reviewer's scroll position, filter and fragment, and the home page
-has none of the three to lose — so the rule that sends every other name to a new
-tab has nothing to protect here.
+that is a `Link` in this tab rather than a new one — `GitHubTextLink` opens a
+new tab to keep a reviewer's scroll position, filter and fragment, and the home
+page has none of the three to lose. A deployment that serves no GitHub cannot
+open it here at all, so there it opens on github.com like every other forge
+link.
 
 **A remembered setting is a jotai atom, and that is the whole of why it
 travels.** `src/lib/preferences.ts` names every setting the browser keeps — the
-colour mode, the code font, the token, the watch list, the repositories that
-list has been offered for, the viewer's five controls, the bar's collapse, the
-two pane widths, the comment author filter, and the pull request list's scope —
-as a key, a fallback, and the two directions between the value and the one
-string a browser can hold. `src/hooks/preferences.ts` turns each of those into
-one `atomWithStorage`, and `usePreference` is how a hook reads it.
-
-Three things follow, and each of them was a rule or a bug before it. The store
-is the owner, so two callers of a setting cannot come to disagree. A `storage`
-event is what one tab hears when another writes, so a reviewer with four tabs
-open changes the code font once — verified live for the nine that were there
-then, sign-out included. And a setting is `undefined` until the browser's copy
-has been read, which is where `hydrated` comes from: storage is read on mount
-and never during a render, so the server's markup and the first client render
-agree, and an unread watch list is not an empty one.
+colour mode, the code font, the watch list, the repositories that list has been
+offered for, the viewer's five controls, the bar's collapse, the two pane
+widths, the comment author filter, and the pull request list's scope — as a key,
+a fallback, and the two directions between the value and the one string a
+browser can hold. `src/hooks/preferences.ts` turns each of those into one
+`atomWithStorage`, and `usePreference` is how a hook reads it. The store is the
+owner, so two callers of a setting cannot come to disagree; a `storage` event is
+what one tab hears when another writes; and a setting is `undefined` until the
+browser's copy has been read, which is where `hydrated` comes from — storage is
+read on mount and never during a render, so the server's markup and the first
+client render agree.
 
 Add a setting by adding its codec to `src/lib/preferences.ts` and its atom
 beside the others, then reading it with `usePreference`. The encodings there are
@@ -296,30 +252,31 @@ has to go on reading across a deploy, and three of those keys are read before
 the first paint by a script in the document head. `src/lib/preferences.test.ts`
 is where a new codec proves it can refuse what an older build wrote. The
 watch-list offer's key is the one exception on record, written up with the offer
-itself above: it held a boolean for a single deploy, and refusing that boolean
-is what carries the browsers still holding one.
-
-Two settings are not settings and stay where they are. The comments and the
-viewed-file marks a browser keeps are per target, they are content rather than a
-preference, and `useReviewComments` and `useViewedFiles` go on reading their own
-key through `readStoredJson`.
+itself above. Two settings are not settings and stay where they are: the
+comments and the viewed-file marks a browser keeps are per target, they are
+content rather than a preference, and `useReviewComments` and `useViewedFiles`
+go on reading their own key through `readStoredJson`.
 
 **One owner for the state the whole app shares.** `AppDataProvider` mounts
-`useCodeFont`, `useColorMode`, `useGitHubToken`, `useWatchedRepos`, and
-`useOpenPulls` once, above the bar and the page. Four of those now read an atom
-and could safely be called anywhere. `useOpenPulls` and `useGitHubSession` are
-shared queries now, so a second caller would join the first rather than ask
-GitHub again — but it would also read the result through a different object, and
-the rule costs nothing to keep. Call `useAppData()`, and do not call those five
-hooks in a screen.
+`useCodeFont`, `useColorMode`, `useGitHubSession`, `useWatchedRepos`, and
+`useOpenPulls` once, above the bar and the page; what this deployment serves it
+reads off the root route's loader data, which arrives with the page. Three of
+those read a setting through a jotai atom and could be called anywhere; the
+other two are shared queries, so a second caller would join the first rather
+than ask the forge again — but it would also read the result through a different
+object, and the rule costs nothing to keep. So it stands: call `useAppData()`,
+and do not call those hooks in a screen. jotai's own `Provider` sits above all
+of it, in `AppShell`, and it is there for the Worker rather than for the
+browser: without it every atom would resolve against one store held by the
+module, and a Worker isolate serves many requests in turn.
 
-**A request to GitHub is a shared query, and every tab of the browser shares
+**A request to a forge is a shared query, and every tab of the browser shares
 it.** `useSharedQuery` in `src/hooks/useSharedQuery.ts` is React Query with one
 `queryFn` behind it, `SharedCache.fetch` in `src/lib/queryCache/sharedCache.ts`,
 and that is three things that each degrade on their own. A coordinator decides
 which tab fetches a key when several want it; a `BroadcastChannel` carries the
 answer to the others the moment it lands; and an IndexedDB store keeps it for
-the next load, so a new tab draws what the last one had before GitHub has
+the next load, so a new tab draws what the last one had before the forge has
 answered it.
 
 The coordinator is the strongest the browser offers, picked once by
@@ -342,7 +299,7 @@ why a tab that waited reads the store first, and why it then gives the channel
 none of that and costs nothing.
 
 **What leaves a tab belongs to one account, and the session query says which.**
-GitHub answers the same question differently for a signed-in reviewer and for
+A forge answers the same question differently for a signed-in reviewer and for
 nobody, so a record is filed under `viewerNamespace`, a broadcast names it, and
 a tab reads and takes only its confirmed account's. The session query,
 `SESSION_QUERY_KEY`, is what confirms the account. It asks with this tab's own
@@ -402,8 +359,8 @@ standing, and write that account's answers straight back. The same happens when
 
 The left bar's list is the answer this was built for. It is on every page of
 every tab, so `useOpenPulls` keeps it for `PULLS_STALE_MS` and a new tab draws
-the rows the last load left before GitHub has been asked. A change of watch list
-keeps the old rows on screen until the new ones arrive, and only within one
+the rows the last load left before a forge has been asked. A change of watch
+list keeps the old rows on screen until the new ones arrive, and only within one
 session: a sign-out or a change of account resets every answer, and rows carried
 across it would be the previous account's private ones.
 
@@ -435,32 +392,32 @@ the session's `ticket` from the moment it was sent.
 A pull request's line comments are shared the same way, and the merge is the
 part to get right. `useReviewComments` seeds its threads from the first answer
 for a diff, and every later one — a comment posted in another tab, a reload —
-goes through `mergeGitHubThreads` in `src/lib/commentMerge.ts`. What only this
+goes through `mergeForgeThreads` in `src/lib/commentMerge.ts`. What only this
 tab knows survives it: an open composer, a message still on its way, a failure
 with the reviewer's text in it, and the issue link a thread holds in memory. A
-thread GitHub already has keeps the key this tab gave it, so its card is not
-mounted again. A message that never reached GitHub is laid after GitHub's own
-messages in that thread, failure and all, rather than lost to a later reply that
-did — and a thread deleted elsewhere stays as this tab drew it while it holds
-such a message, since that text is the reviewer's and nowhere else. After a
-write GitHub took — a post, a reply, a delete — the tab asks for the list afresh
-instead of patching it and publishing the result: two tabs patching the same old
-list at once would each erase the other's comment. The answer reaches every tab
-on the pull request, and each merges it in, the writing tab included.
+thread the forge already has keeps the key this tab gave it, so its card is not
+mounted again. A message that never reached the forge is laid after the forge's
+own messages in that thread, failure and all, rather than lost to a later reply
+that did — and a thread deleted elsewhere stays as this tab drew it while it
+holds such a message, since that text is the reviewer's and nowhere else. After
+a write the forge took — a post, a reply, a delete — the tab asks for the list
+afresh instead of patching it and publishing the result: two tabs patching the
+same old list at once would each erase the other's comment. The answer reaches
+every tab on the review, and each merges it in, the writing tab included.
 
-**A patch and a whole file are kept too, and GitHub says whether they are still
-right.** They are too large for the channel and too large to trust by age, so
-they go to a store of their own, `blobs`, under the same account rules and a
+**A patch and a whole file are kept too, and the forge says whether they are
+still right.** They are too large for the channel and too large to trust by age,
+so they go to a store of their own, `blobs`, under the same account rules and a
 budget of `BLOB_BUDGET_BYTES`, oldest use first out. The next ask sends the
-stored ETag as `If-None-Match`; `/api/diff` and `/api/file` hand it to GitHub,
-and a 304 comes back as a 304 with no body, which is the stored text confirmed
-and none of the quota spent. Both the web diff host and the raw file host answer
-it, and so does the API. A synthesized patch has no ETag and is never stored. A
-tab that waited on another's download takes the stored text if it is younger
-than the share window, and does not ask GitHub at all. A stored copy is read
-under the confirmed account and no other, and a download waits for the
-confirmation the way every request does. The whole read — the store, GitHub, and
-the store again — is asked again when the session moves under it, and never
+stored ETag as `If-None-Match`; `/api/diff` and `/api/file` hand it to the
+forge, and a 304 comes back as a 304 with no body, which is the stored text
+confirmed and none of the quota spent. On GitHub the web diff host, the raw file
+host and the API all answer it. A synthesized patch has no ETag and is never
+stored. A tab that waited on another's download takes the stored text if it is
+younger than the share window, and does not ask the forge at all. A stored copy
+is read under the confirmed account and no other, and a download waits for the
+confirmation the way every request does. The whole read — the store, the forge,
+and the store again — is asked again when the session moves under it, and never
 answers with a copy or a text from a session that is not the one on screen: a
 file load runs outside React Query, and nothing would cancel it. A newer answer
 that cannot be kept — no ETag, or over `MAX_BLOB_BYTES` — deletes the stored
@@ -474,19 +431,31 @@ stored and checked the same way as the screen's own read, with no hook in reach.
 React Query still holds the text for its five minutes; the blob store is what
 the next load and the other tabs start from.
 
-jotai's own `Provider` sits above all of it, in `AppShell`, and it is there for
-the Worker rather than for the browser. Without it every atom would resolve
-against one store held by the module, and a Worker isolate serves many requests
-in turn: a value written while one page rendered would be a value the next
-reader inherited.
-
 **The pull request list is repository, then author, then stack.**
 `groupPullsByRepo` in `src/lib/pulls.ts` produces that shape, `buildPullStacks`
 in `src/lib/pullStacks.ts` produces the stacks, and everything still level with
 something else goes by pull request number, newest first. GitHub has no stack
 object to ask for, so a stack is read off the branches: one open pull request
 whose base branch is another open pull request's head branch is stacked on it.
-Stacks are built inside an author group, so two people never share one chain.
+Stacks are built inside an author group, so two people never share one chain. A
+row links to its review through `reviewTargetFromPull` in the same file.
+
+**A watch list row is `{owner, repo}`.** `formatWatchedRepo` labels it
+`owner/repo`, and `parseWatchedRepo` reads that or a github.com URL back.
+`pulls.list` groups the refs by forge group, and one that fails fails only its
+own rows; a failing group names its repository as `formatRepoRef`.
+
+**A row waiting on the reviewer leads its author group and says so.** GitHub's
+own list answers who is asked — `reviewRequests` — and the mapper compares them
+with the group's own viewer, case-insensitively, the way GitHub treats a login,
+and never against a team, which a request cannot be resolved to without another
+call. The flag rides `PullSummary` as `reviewRequested`, absent on the anonymous
+reads for the same reason `status` is: there is no viewer to compare against,
+and a row must not claim "not requested" about a pull request it never asked
+about. A requested row draws a **Requested** chip in the accent pair beside the
+Draft chip's neutral one, and the author group's roots stable-sort
+requested-first — a stack bubbles as one block when any member is requested,
+because a chain is read top to bottom and is never split for this.
 
 **The list has one scope, and the bar's header is where it is set.**
 `PullScopeSwitch` sits between the name and the collapse button. It is a set of
@@ -571,24 +540,19 @@ requests is not shown them again by a deploy.
 
 **A stack is a block, and both bar widths draw it.** A chain of more than one
 pull request sits on a background of its own under `PullStackBadge`, the layers
-glyph and the count. A pull request that stands alone gets neither, so the
-background means one thing. The narrow bar draws the same block around the same
-squares: which pull requests were chained, and whose they were, were the two
-things collapsing the bar used to throw away. The block is an **inset ring**,
-not a border — a border would indent the rows inside it by a pixel, and a
-stacked row's square must land where a plain row's square lands.
-
-The wide bar names the block. `Stack` sits at the left of the caption row and
-the badge at the right, in the badge's own size and colour, so the two read as
-one quiet line rather than a heading over the rows. The count alone left a
-reader to work out what a background and a layers glyph meant, against an empty
-half-row. The word is `PullRequestList`'s and never `PullStackBadge`'s: the
-collapsed bar is the width of one square, and it draws the badge alone.
+glyph and the count; a pull request that stands alone gets neither, so the
+background means one thing. The block is an **inset ring**, not a border — a
+border would indent the rows inside it by a pixel, and a stacked row's square
+must land where a plain row's square lands. The wide bar names the block:
+`Stack` sits at the left of the caption row and the badge at the right, in the
+badge's own size and colour. The word is `PullRequestList`'s and never
+`PullStackBadge`'s: the collapsed bar is the width of one square, and it draws
+the badge alone.
 
 **A stack's caption opens the whole stack as one diff.** Beside the word,
 `StackCompareLink` reads **Compare with main** — the base the stack lands on,
 whatever its name — and opens the compare range from that base to the head of
-the stack's last pull request, in ghdiff rather than on github.com. A row opens
+the stack's last pull request, in ghdiff rather than on the forge. A row opens
 one layer; this answers what all of them do to main before the first one merges.
 The range is a merge-base range, so main's own later commits are not in it.
 `stackCompareRange` in `src/lib/pullStacks.ts` draws nothing for a stack that
@@ -597,11 +561,11 @@ base repository; a tip opened from a fork would need `owner:branch`, which
 `PullSummary` does not carry.
 
 **A group boundary is a rule, not a heading.** A heading sits closer to the rows
-under it than the rows sit to each other, which is what a heading is for and why
-it cannot also be the boundary: two authors read as one run. Both lists rule off
-between repositories and between authors, and the rule is drawn from the index
-rather than `:first-child`, because an author group is never the first child of
-its section — the repository heading is.
+under it than the rows sit to each other, so it cannot also be the boundary: two
+authors read as one run. Both lists rule off between repositories and between
+authors, and the rule is drawn from the index rather than `:first-child`,
+because an author group is never the first child of its section — the repository
+heading is.
 
 **A name on screen that GitHub has a page for is a link to it, in a new tab.**
 `src/lib/github/urls.ts` builds every one of those addresses, so a query string
@@ -619,11 +583,11 @@ fragment they had built up. An author's arrow keeps its space while it is
 invisible, or every heading would move as the pointer crossed the list.
 
 **A repository answers with at most 100 open pull requests.**
-`MAX_PULLS_PER_REPO` in `src/lib/rpc/router.ts` is 100 because that is the
-largest single page GitHub gives: REST caps `per_page` there and GraphQL caps
-`first`. Both queries sort by most recently updated, so what a busier repository
-loses is what nobody has touched. Raising it past 100 buys nothing without
-pagination.
+`MAX_PULLS_PER_REPO` in `src/lib/server/forges/github.ts` is 100 because that is
+the largest single page GitHub gives: REST caps `per_page` there and GraphQL
+caps `first`. Both queries sort by most recently updated, so what a busier
+repository loses is what nobody has touched. Raising it past 100 buys nothing
+without pagination.
 
 **The review and the check axes need a credential.** `pulls.list` asks GraphQL
 for `latestOpinionatedReviews`, `reviewDecision` and the head commit's
@@ -635,66 +599,69 @@ square sits in is the list's to keep or drop, never one row's: one answer is
 asked with a token or without one, so every row in it has the axes or none does.
 A signed-out list drops the lane on every row and gives the titles its width; a
 signed-in one keeps it on every row, so every number starts on the same pixel.
+`reviewRequested` follows the same rule: the reviewers the list names are
+compared with a viewer only a token names, so the **Requested** chip is absent
+signed out rather than false.
 
-**The review axis is the reviews, and `reviewDecision` only adds to them.** That
-field was the whole of the axis once, and it answers a different question:
-GitHub computes it against the base branch's own rule about who has to approve,
-so an unprotected repository answers `null` for every pull request it has, and
-even a protected one goes stale — two pull requests on one branch each carried
-one approval, in the same minute, and GitHub reported `APPROVED` for the first
-and `null` for the second. So `reviewFromSource` in `src/lib/pullStatus.ts`
-reads `latestOpinionatedReviews`, which is the newest verdict from each
-reviewer, and lets `reviewDecision` contribute `APPROVED` or `CHANGES_REQUESTED`
-on top. `REVIEW_REQUIRED` contributes nothing: it says a rule is unsatisfied,
-and one approval out of the two a rule wants is still somebody's approval.
-`DISMISSED` is the one state in that list which is not an opinion, and it counts
-as unread. A grey square under a header that read **Approved** was the whole
-complaint — `ReviewButton` asks `viewerLatestReview`, which is a review, and the
-two now agree.
+**The review axis is the reviews, and `reviewDecision` only adds to them.**
+GitHub computes that field against the base branch's own rule about who has to
+approve, so an unprotected repository answers `null` for every pull request it
+has, and even a protected one goes stale — two pull requests on one branch each
+carried one approval, in the same minute, and GitHub reported `APPROVED` for the
+first and `null` for the second. So `reviewFromSource` in
+`src/lib/pullStatus.ts` reads `latestOpinionatedReviews`, which is the newest
+verdict from each reviewer, and lets `reviewDecision` contribute `APPROVED` or
+`CHANGES_REQUESTED` on top. `REVIEW_REQUIRED` contributes nothing: it says a
+rule is unsatisfied, and one approval out of the two a rule wants is still
+somebody's approval. `DISMISSED` is the one state in that list which is not an
+opinion, and it counts as unread. `ReviewButton` asks `viewerLatestReview`,
+which is a review, and the two now agree.
 
 **`/setup` is where a 404 gets answered instead of described.** A panel can say
-one sentence and offer one button. What it cannot do is answer the question
-behind the sentence, which is not "what went wrong" but "what is still missing"
-— and under a GitHub App two things can be, in a fixed order. Signed in with no
+one sentence and offer one button; it cannot answer "what is still missing" —
+and under a GitHub App two things can be, in a fixed order. Signed in with no
 installation reads exactly like signed out. An installation on the wrong account
 reads exactly like no installation at all. An installation whose chosen list is
 empty reads like success from every angle and still answers 404 for everything.
-
 So the page checks each in turn, and every step reports its own state from what
-GitHub answered rather than from what the reviewer was told to do — a step is
-done because it is done, and the rail cannot claim progress the App does not
-have. `installations.list` is what it asks: `GET /user/installations` is a
+GitHub answered rather than from what the reviewer was told to do — the rail
+cannot claim progress the App does not have. `stepStatuses` computes the three.
+`installations.list` is what it asks: `GET /user/installations` is a
 user-to-server endpoint, so it answers for this token's own user and this App
 with no App-level JWT, and `src/lib/server/github/installations.ts` counts the
 reach of each chosen list with one further request apiece. That count is the
 whole point of the row — "installed" is the fact the reviewer already believes
-by the time they are reading it, and the figure beside it is what explains the
-404 they are still getting. `describeInstallationReach` gives zero its own
-sentence for the same reason.
+by then, and the figure beside it is what explains the 404 they are still
+getting. `describeInstallationReach` gives zero its own sentence for the same
+reason.
+
+The page shows the three GitHub steps when an App is configured. The instance
+answer arrives with the page in the root route's loader data, so a deployment
+with no App to sign in through gets no sign-in that would 501: the page says
+plainly that there is nothing to set up.
 
 Two callers, and they know different things. The review panel knows the path the
 diff would not load from and sends `from`, which also gives step three somewhere
 to go back to. `PullRequestList` knows only that a repository would not list and
-sends `account` — that list used to print GitHub's own "Could not resolve to a
-Repository" and stop, which was the least useful message in the app for the one
-condition a reviewer meets most. It still cannot say whether the repository is
-absent or merely unreachable, because GitHub deliberately answers both the same
-way, and it does not pretend to: it names the one cause that can be acted on. It
-offers that once, and only when signed in, and only when every failing row
-shares one owner — two accounts failing is a general question, and `undefined`
-is what asks it.
-
-Step three is a plain `<a>` and a whole page load, not a `Link`. The point of
-going back is a fresh request to GitHub under an installation that did not exist
-a minute ago. And nothing polls for step two: a reviewer installs in the other
-tab, comes back knowing they have finished, and presses **Check again**.
+sends `account`; it cannot say whether the repository is absent or merely
+unreachable, because GitHub deliberately answers both the same way, so it names
+the one cause that can be acted on. It offers that once, only when signed in,
+and only when every failing row shares one owner — two accounts failing is a
+general question, and `undefined` is what asks it. Step three is a plain `<a>`
+and a whole page load, not a `Link`: the point of going back is a fresh request
+to GitHub under an installation that did not exist a minute ago. Nothing polls
+for step two: a reviewer installs in the other tab, comes back knowing they have
+finished, and presses **Check again**.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood
 beside it repeated what the list already says — every pull request in the list
 is open — and it took half the leading lane from the one glyph that carries new
 information. `PullStateIcon` survives for `PullDetailsCard`, where the state is
 named in words next to it. The one thing the square cannot carry is draft, so a
-draft row gets a `Draft` chip and an open row pays nothing for it.
+draft row gets a `Draft` chip and an open row pays nothing for it. The other is
+who is waiting on the reviewer: the square answers "has anybody reviewed", not
+"is that you", so a requested row gets a `Requested` chip in the accent pair,
+and a row nobody asked pays nothing for that either.
 
 **The status square is GalvinGao/floodgate's, deliberately.** Left half review,
 right half checks, white `+` when the author pushed after somebody asked for

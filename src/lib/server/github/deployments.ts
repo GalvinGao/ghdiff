@@ -1,20 +1,27 @@
+// The deployments GitHub has on record for the commits under review, read
+// for the header's deployments menu.
+//
+// A caller with a token reads GraphQL: a pull request's newest commits with
+// their deployments and the status of each, in one query. A caller with none
+// reads REST, which GraphQL refuses an anonymous caller for — and REST keeps a
+// deployment's status apart from the deployment, so each one costs a request
+// out of sixty an hour, and only the newest of each environment is read.
+
+import type { Octokit } from '@octokit/core';
+
 import {
   type DeploymentsData,
   readHeadChecks,
   toDeployment,
 } from '@/lib/deployments';
+import type { GitHubTarget } from '@/lib/reviewTarget';
 import {
-  encodeRefForPath,
-  GitHubError,
-  githubGraphQL,
-  githubJson,
-} from '@/lib/server/github/client';
-
-/** The diff under review, less its repository: the RPC input's own shape. */
-export type DeploymentTarget =
-  | { kind: 'github-pull'; number: number }
-  | { kind: 'github-commit'; sha: string }
-  | { kind: 'github-compare'; base: string; head: string };
+  DEPLOYMENTS_OF_COMMIT_QUERY,
+  DEPLOYMENTS_OF_PULL_QUERY,
+} from '@/lib/server/forges/github.gql';
+import type { DeployedCommitFragment } from '@/lib/server/forges/gqlgen/github/graphql';
+import { GitHubError } from '@/lib/server/github/client';
+import { gql } from '@/lib/server/github/octokit';
 
 /**
  * How many of a pull request's commits are asked about. A build of any of them
@@ -28,89 +35,11 @@ const PULL_COMMITS = 20;
  */
 const DEPLOYMENTS_PER_COMMIT = 10;
 /**
- * How many statuses a caller with no token may cost. REST keeps a deployment's
- * status apart from the deployment, so each one is a request of its own out of
- * sixty an hour; the newest deployment of each environment is the one worth
- * one, and three environments is most repositories.
+ * How many statuses a caller with no token may cost. The newest deployment of
+ * each environment is the one worth a request, and three environments is most
+ * repositories.
  */
 const ANONYMOUS_STATUS_READS = 3;
-
-const DEPLOYED_COMMIT = `
-  fragment DeployedCommit on Commit {
-    oid
-    statusCheckRollup { state }
-    deployments(
-      first: ${DEPLOYMENTS_PER_COMMIT}
-      orderBy: { field: CREATED_AT, direction: DESC }
-    ) {
-      nodes {
-        databaseId environment description createdAt state
-        creator { login avatarUrl }
-        ref { name }
-        latestStatus { state environmentUrl logUrl }
-      }
-    }
-  }
-`;
-
-const PULL_QUERY = `
-  query DeploymentsOfPull($owner: String!, $repo: String!, $number: Int!) {
-    repository(owner: $owner, name: $repo) {
-      pullRequest(number: $number) {
-        headRefName
-        headRefOid
-        commits(last: ${PULL_COMMITS}) { nodes { commit { ...DeployedCommit } } }
-      }
-    }
-  }
-  ${DEPLOYED_COMMIT}
-`;
-
-const COMMIT_QUERY = `
-  query DeploymentsOfCommit($owner: String!, $repo: String!, $expression: String!) {
-    repository(owner: $owner, name: $repo) {
-      object(expression: $expression) { ...DeployedCommit }
-    }
-  }
-  ${DEPLOYED_COMMIT}
-`;
-
-interface DeployedCommitNode {
-  oid: string;
-  statusCheckRollup?: { state?: string | null } | null;
-  deployments?: {
-    nodes?: ({
-      databaseId?: number | null;
-      environment?: string | null;
-      description?: string | null;
-      createdAt: string;
-      state?: string | null;
-      creator?: { login?: string | null; avatarUrl?: string | null } | null;
-      ref?: { name?: string | null } | null;
-      latestStatus?: {
-        state?: string | null;
-        environmentUrl?: string | null;
-        logUrl?: string | null;
-      } | null;
-    } | null)[];
-  } | null;
-}
-
-interface PullQueryData {
-  repository?: {
-    pullRequest?: {
-      headRefName?: string | null;
-      headRefOid?: string | null;
-      commits?: {
-        nodes?: ({ commit?: DeployedCommitNode | null } | null)[];
-      } | null;
-    } | null;
-  } | null;
-}
-
-interface CommitQueryData {
-  repository?: { object?: DeployedCommitNode | null } | null;
-}
 
 /**
  * GitHub's answer when the App was never granted Deployments, or an owner has
@@ -122,20 +51,21 @@ function isPermissionRefusal(error: unknown): boolean {
   return (
     error instanceof GitHubError &&
     (error.status === 403 ||
-      /not accessible by integration/i.test(error.message))
+      /not accessible by (integration|personal access token)/i.test(
+        error.message
+      ))
   );
 }
 
 export async function readDeployments(
-  owner: string,
-  repo: string,
-  target: DeploymentTarget,
-  token: string | undefined
+  octokit: Octokit,
+  target: GitHubTarget,
+  authenticated: boolean
 ): Promise<DeploymentsData & { outcome: string }> {
   try {
-    return token == null
-      ? await readAnonymously(owner, repo, target)
-      : await readWithGraphQL(owner, repo, target, token);
+    return authenticated
+      ? await readWithGraphQL(octokit, target)
+      : await readAnonymously(octokit, target);
   } catch (error) {
     if (isPermissionRefusal(error)) {
       return { deployments: [], outcome: 'no-permission' };
@@ -145,18 +75,19 @@ export async function readDeployments(
 }
 
 async function readWithGraphQL(
-  owner: string,
-  repo: string,
-  target: DeploymentTarget,
-  token: string
+  octokit: Octokit,
+  target: GitHubTarget
 ): Promise<DeploymentsData & { outcome: string }> {
   const now = Date.now();
+  const { owner, repo } = target;
   if (target.kind === 'github-pull') {
-    const data = await githubGraphQL<PullQueryData>(
-      PULL_QUERY,
-      { owner, repo, number: target.number },
-      token
-    );
+    const data = await gql(octokit, DEPLOYMENTS_OF_PULL_QUERY, {
+      owner,
+      repo,
+      number: target.number,
+      commits: PULL_COMMITS,
+      deployments: DEPLOYMENTS_PER_COMMIT,
+    });
     const pull = data.repository?.pullRequest;
     const commits = (pull?.commits?.nodes ?? [])
       .map((node) => node?.commit)
@@ -173,15 +104,18 @@ async function readWithGraphQL(
     };
   }
 
-  const data = await githubGraphQL<CommitQueryData>(
-    COMMIT_QUERY,
-    { owner, repo, expression: headExpression(target) },
-    token
-  );
+  const data = await gql(octokit, DEPLOYMENTS_OF_COMMIT_QUERY, {
+    owner,
+    repo,
+    expression: headExpression(target),
+    deployments: DEPLOYMENTS_PER_COMMIT,
+  });
   const commit = data.repository?.object;
   // A compare range typed across two forks names its head `owner:branch`,
   // which no expression resolves. That range has nothing to deploy.
-  if (commit?.oid == null) return { deployments: [], outcome: 'no-commit' };
+  if (!isDeployedCommit(commit)) {
+    return { deployments: [], outcome: 'no-commit' };
+  }
   return {
     headSha: commit.oid,
     headChecks: readHeadChecks(commit.statusCheckRollup?.state),
@@ -190,8 +124,15 @@ async function readWithGraphQL(
   };
 }
 
+/** True for an object the expression resolved to a commit. */
+function isDeployedCommit(
+  object: object | null | undefined
+): object is DeployedCommitFragment {
+  return object != null && 'oid' in object && typeof object.oid === 'string';
+}
+
 function readCommit(
-  commit: DeployedCommitNode,
+  commit: DeployedCommitFragment,
   headBranch: string | undefined,
   now: number
 ) {
@@ -221,7 +162,7 @@ function readCommit(
   });
 }
 
-function headExpression(target: DeploymentTarget): string {
+function headExpression(target: GitHubTarget): string {
   switch (target.kind) {
     case 'github-pull':
       return `refs/pull/${target.number}/head`;
@@ -232,55 +173,38 @@ function headExpression(target: DeploymentTarget): string {
   }
 }
 
-interface RestDeployment {
-  id: number;
-  sha: string;
-  ref?: string;
-  environment?: string;
-  description?: string | null;
-  created_at: string;
-  creator?: { login?: string; avatar_url?: string } | null;
-}
-
-interface RestDeploymentStatus {
-  state?: string;
-  environment_url?: string | null;
-  log_url?: string | null;
-}
-
 /**
  * The head's deployments, read the way a caller with no token can: resolve the
  * head, list what was deployed from it, and read one status per environment.
  * The browser asks for this once and never polls it.
  */
 async function readAnonymously(
-  owner: string,
-  repo: string,
-  target: DeploymentTarget
+  octokit: Octokit,
+  target: GitHubTarget
 ): Promise<DeploymentsData & { outcome: string }> {
-  const base = `/repos/${owner}/${repo}`;
+  const { owner, repo } = target;
   let headSha: string;
   let headBranch: string | undefined;
   if (target.kind === 'github-pull') {
-    const pull = await githubJson<{ head: { sha: string; ref: string } }>(
-      `${base}/pulls/${target.number}`,
-      undefined
+    const { data: pull } = await octokit.request(
+      'GET /repos/{owner}/{repo}/pulls/{pull_number}',
+      { owner, repo, pull_number: target.number }
     );
     headSha = pull.head.sha;
     headBranch = pull.head.ref;
   } else {
-    const commit = await githubJson<{ sha: string }>(
-      `${base}/commits/${encodeRefForPath(headExpression(target))}`,
-      undefined
+    const { data: commit } = await octokit.request(
+      'GET /repos/{owner}/{repo}/commits/{ref}',
+      { owner, repo, ref: headExpression(target) }
     );
     headSha = commit.sha;
   }
 
-  const listed = await githubJson<RestDeployment[]>(
-    `${base}/deployments?sha=${headSha}&per_page=${DEPLOYMENTS_PER_COMMIT}`,
-    undefined
+  const { data: listed } = await octokit.request(
+    'GET /repos/{owner}/{repo}/deployments',
+    { owner, repo, sha: headSha, per_page: DEPLOYMENTS_PER_COMMIT }
   );
-  const newestPerEnvironment = new Map<string, RestDeployment>();
+  const newestPerEnvironment = new Map<string, (typeof listed)[number]>();
   for (const deployment of listed) {
     const environment = deployment.environment ?? 'default';
     if (!newestPerEnvironment.has(environment)) {
@@ -294,22 +218,22 @@ async function readAnonymously(
   const now = Date.now();
   const deployments = await Promise.all(
     chosen.map(async (deployment) => {
-      const [status] = await githubJson<RestDeploymentStatus[]>(
-        `${base}/deployments/${deployment.id}/statuses?per_page=1`,
-        undefined
+      const {
+        data: [status],
+      } = await octokit.request(
+        'GET /repos/{owner}/{repo}/deployments/{deployment_id}/statuses',
+        { owner, repo, deployment_id: Number(deployment.id), per_page: 1 }
       );
       return toDeployment(
         {
-          id: deployment.id,
+          id: Number(deployment.id),
           environment: deployment.environment,
           description: deployment.description,
           sha: deployment.sha,
           // REST names the ref as it was given, which is a sha as often as a
           // branch. Only a branch makes an alias.
           branch:
-            deployment.ref != null && deployment.ref !== deployment.sha
-              ? deployment.ref
-              : headBranch,
+            deployment.ref !== deployment.sha ? deployment.ref : headBranch,
           createdAt: deployment.created_at,
           creatorLogin: deployment.creator?.login,
           creatorAvatarUrl: deployment.creator?.avatar_url,

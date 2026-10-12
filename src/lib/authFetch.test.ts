@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it } from 'vitest';
+import { afterEach, describe, it, vi } from 'vitest';
 
 import { withRefresh } from './authFetch';
 
@@ -121,6 +121,43 @@ describe('withRefresh', () => {
       [200, 200, 200]
     );
     assert.equal(sent.filter((s) => s.url === '/api/auth/refresh').length, 1);
+  });
+
+  it('spends the refresh token inside the browser-wide lock', async () => {
+    const sent = worker({ refresh: 204 });
+    const held: string[] = [];
+    vi.stubGlobal('navigator', {
+      locks: {
+        request: (name: string, spend: () => Promise<Response>) => {
+          held.push(name);
+          return spend();
+        },
+      },
+    });
+    try {
+      const call = request(401, 200);
+      const response = await withRefresh(call.send);
+      assert.equal(response.status, 200);
+      assert.deepEqual(held, ['ghdiff-auth-refresh']);
+      assert.deepEqual(sent, [{ url: '/api/auth/refresh', method: 'POST' }]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('refreshes without the lock when the browser has none', async () => {
+    // The fallback is the same-tab promise alone, and every other test here
+    // already runs that way — this one names it.
+    vi.stubGlobal('navigator', {});
+    try {
+      const sent = worker({ refresh: 204 });
+      const call = request(401, 200);
+      const response = await withRefresh(call.send);
+      assert.equal(response.status, 200);
+      assert.deepEqual(sent, [{ url: '/api/auth/refresh', method: 'POST' }]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('ends the session once, however many retries fail together', async () => {

@@ -1,7 +1,7 @@
 # Platform and tests
 
 The runtime and the tests: the Worker, Node, Vite, Docker, the served counter,
-and the test layers.
+the test layers, and the fixtures and record scripts behind them.
 
 **A serve is counted where the serve happens, and the figure is an estimate on
 purpose.** The footer's **Served** line is one key, `served:total`, and
@@ -34,21 +34,24 @@ DCE removes. vitest.config.ts defines the same target `node` for the tests, so
 they run the in-memory half and the dynamic import never executes.
 
 `/api/diff` takes the count and no other route does, because that route **is**
-the serve: `gitHubResponse` returns only when a source answered, so a 404 and a
-spent quota are not serves, and a target the query could not parse never reaches
-it. `stats.served` is the read half, and it is the one procedure that asks
-GitHub nothing — it carries no token, and it lets a store that cannot answer
-throw. `ServedCount` then prints no figure at all, which is the right answer:
-`Served 0 diffs` is what a failed read would otherwise say.
+the serve: `recordServe` fires only after `forge.diff(target, cred, log)` has
+answered, so a 404 and a spent quota are not serves, and a target the query
+could not parse never reaches it. `stats.served` is the read half, and it is the
+one procedure that asks GitHub nothing — it carries no token, and it lets a
+store that cannot answer throw. `ServedCount` then prints no figure at all,
+which is the right answer: `Served 0 diffs` is what a failed read would
+otherwise say.
 
 ## The Worker
 
 `wrangler.jsonc` sets `main` to `@tanstack/react-start/server-entry` and
-`compatibility_flags: ["nodejs_compat"]`. The flag buys two things this app
-needs: `AsyncLocalStorage` for the request logger, and a populated
-`process.env`, which is where `resolveGitHubToken` finds `GITHUB_TOKEN` and
-`readKeyring` finds `SESSION_SECRET`. Locally that variable comes from
-`.dev.vars`; on Cloudflare it comes from a Worker secret.
+`compatibility_flags: ["nodejs_compat"]`. The flag buys the populated
+`process.env` that `parseDeploymentConfig` reads at each request boundary.
+Locally those variables come from `.dev.vars`; on Cloudflare they come from
+Worker secrets. The build reads one variable and no more — `GHDIFF_TARGET`,
+straight from the process environment, which `pnpm build:node` sets inline — so
+`.dev.vars` is a runtime file, never a build input. Every variable the server
+reads is validated by the one zod schema in `src/lib/server/config.ts`.
 
 `kv_namespaces` binds one namespace, `GHDIFF`, which is this app's own key-value
 store. It holds one key today, the one the footer's **Served** counter reads and
@@ -68,6 +71,13 @@ generates from `wrangler.jsonc` and which is **not** committed — `.gitignore`
 and both oxc tools already skip it. `pnpm typecheck` therefore runs
 `wrangler types` first, so a fresh clone and CI both typecheck without a
 separate step. Re-run it after any change to the bindings.
+
+The GraphQL document types are the opposite arrangement: committed, with no CI
+gate. `pnpm codegen:gql` runs `@graphql-codegen/client-preset` over the
+`graphql()`-tagged documents in the forges' `<forge>.gql.ts` files against the
+vendor's live schema — the URL in `codegen.ts`, so a run needs the network — and
+writes `src/lib/server/forges/gqlgen/`, which both oxc tools skip like
+`src/routeTree.gen.ts`.
 
 `vite build` writes `dist/client` (the static assets, which the generated
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
@@ -89,25 +99,28 @@ uploaded as assets. They cost the script nothing.
 
 ## Tests
 
-`pnpm test:lib` runs vitest over `src/lib/` and `cli/src/` — two projects in
-`vitest.config.ts`, which vitest reads instead of `vite.config.ts`, so the app's
-Cloudflare and Start plugins never load for a test. Only pure logic in
-`src/lib/` is unit tested; the surface is checked in a browser. `pnpm test` is
-the wildcard over every `test:` script.
+`pnpm test:lib` runs vitest's `lib` project over `src/lib/**/*.test.ts`, through
+the same Vite pipeline the app builds with — imports carry no `.ts` extension
+and no `/index.ts`, and cross-directory imports go through the `@/` and `@test/`
+aliases, whose single definition is `tsconfig.json`'s `paths` (read by tsc,
+Vite, and vitest's `resolve.tsconfigPaths` alike). oxlint's
+`import/no-relative-parent-imports` holds the line on `../`.
 
-Vitest resolves imports the way the bundler does, through `tsconfig.json`'s
-`paths`, so a test imports exactly what the module beside it imports: `@/` for
-`src/`, a same-directory `./x` for a sibling, and never a `.ts` suffix.
+A test that needs a particular deployment constructs it as a plain value:
+`parseDeploymentConfig({ GITHUB_TOKEN: '...' })` parses one from env-shaped
+input. Everything below the request boundaries takes the config as a parameter —
+there is no process-wide cache, so there is nothing to override and nothing to
+reset.
 
-`cli/src/` is the `cli` project. Three of its modules are pure and tested — the
-argument parser, the git argument vectors, and the host and token guards; the
-path check it imports is `src/lib/filePath.ts`, tested in the `lib` project.
-`git.ts`, `repo.ts`, `server.ts` and `main.ts` are not: they spawn processes and
-bind sockets, and they are checked by running the command.
+Three layers, and they answer different questions. Pure domain logic in
+`src/lib/` is unit tested as it always was. The RPC procedures are tested
+against an in-memory fake forge (`src/lib/rpc/router.test.ts`, through the
+registry's `registerForge`): dispatch, credential forwarding, capability gates,
+and the status mapping, with no network. The GitHub forge is tested against HTTP
+itself, through msw handlers (`test/msw/`) whose fixtures are recorded from the
+real API where anonymity allows (`test/fixtures/`), so a shape this repository
+invented cannot pass for a real one.
 
-`args.test.ts` carries more than the decisions now, because citty parses
-loosely: it asks `node:util.parseArgs` for `strict: false`, so an option this
-command does not have arrives as a key on the parsed object rather than as an
-error. The set `parseArgs` compares against is built from the declaration, and
-the test that pins the declaration's own keys is what keeps the two from
-drifting apart.
+The fixtures are recorded by the scripts in `test/fixtures/record/`, which share
+one scaffold (`record/lib.mjs`): the retry, the file per source, and the
+`_meta.json` manifest.

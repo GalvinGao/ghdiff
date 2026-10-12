@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { usePublish, useSessionTicket, useSharedQuery } from './useSharedQuery';
+import { type PullRef, refQueryKey } from '@/lib/forges';
 import type {
   ReviewEvent,
   SubmittedReview,
@@ -45,19 +46,15 @@ export interface SubmitReviewState {
 
 const NO_REVIEWS: TeamReview[] = [];
 
-export function useSubmitReview(options: {
-  number?: number;
-  owner?: string;
-  repo?: string;
-}): SubmitReviewState {
-  const { number, owner, repo } = options;
+export function useSubmitReview(options: { ref?: PullRef }): SubmitReviewState {
+  const { ref } = options;
   const [pending, setPending] = useState<ReviewEvent | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [submitted, setSubmitted] = useState<SubmittedReview | undefined>(
     undefined
   );
 
-  // What GitHub already has. It is one extra fact about a pull request whose
+  // What the forge already has. It is one extra fact about a pull request whose
   // diff is the screen, so a failure to read it is reported nowhere: the header
   // goes on offering a first review, which is what it would have said anyway.
   // The same holds for the team's verdicts: the dialog lists none, which is
@@ -66,14 +63,13 @@ export function useSubmitReview(options: {
   // Both are shared between tabs and kept on disk. Neither carries a signed
   // address, and a verdict a reviewer gave in one tab is a verdict the header
   // of every other tab on the same pull request should say.
-  const enabled = owner != null && repo != null && number != null;
+  const enabled = ref != null;
   const pullRef = () => {
-    if (owner == null || repo == null || number == null) {
-      throw new Error('No pull request to ask about.');
-    }
-    return { number, owner, repo };
+    if (ref == null) throw new Error('No pull request to ask about.');
+    return ref;
   };
-  const mineKey = ['reviews.mine', owner, repo, number];
+  const refKey = ref == null ? [] : refQueryKey(ref);
+  const mineKey = ['reviews.mine', ...refKey];
   const mine = useSharedQuery({
     queryKey: mineKey,
     fetch: (signal) => rpc.reviews.mine(pullRef(), { signal }),
@@ -81,12 +77,13 @@ export function useSubmitReview(options: {
     persist: true,
   });
   const teamQuery = useSharedQuery({
-    queryKey: ['reviews.team', owner, repo, number],
+    queryKey: ['reviews.team', ...refKey],
     fetch: (signal) => rpc.reviews.team(pullRef(), { signal }),
     enabled,
     persist: true,
   });
   const latest = mine.data?.review;
+  const refetchMine = mine.refetch;
   const team = teamQuery.data?.reviews ?? NO_REVIEWS;
   const publish = usePublish();
   const sessionTicket = useSessionTicket();
@@ -94,20 +91,17 @@ export function useSubmitReview(options: {
 
   const submit = useCallback(
     async (event: ReviewEvent, body: string) => {
-      if (owner == null || repo == null || number == null) return undefined;
+      if (ref == null) return undefined;
       setPending(event);
       setError(undefined);
       // The verdict belongs to the session it is sent under, which may not be
       // the one on screen by the time GitHub answers.
       const ticket = sessionTicket();
       try {
-        const review = await rpc.reviews.submit({
-          body,
-          event,
-          number,
-          owner,
-          repo,
-        });
+        // The drafts the verdict publishes are the forge's own by now, so the
+        // call carries none — publishing them is the forge's half of the
+        // submit.
+        const review = await rpc.reviews.submit({ ...ref, body, event });
         setSubmitted(review);
         // The verdict just sent is now the verdict on record, and GitHub has
         // said so in its answer, so nothing is asked again to find that out —
@@ -130,12 +124,15 @@ export function useSubmitReview(options: {
             m.use_submit_review_could_not_submit_this_review()
           )
         );
+        // A submit can fail after the forge recorded it, so the verdict on
+        // record is read again rather than assumed unchanged.
+        void refetchMine();
         return undefined;
       } finally {
         setPending(undefined);
       }
     },
-    [mineHash, number, owner, publish, repo, sessionTicket]
+    [mineHash, publish, ref, refetchMine, sessionTicket]
   );
 
   // The verdict on record survives this, because it is a fact about the pull

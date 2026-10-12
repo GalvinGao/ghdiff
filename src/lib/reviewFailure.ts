@@ -1,20 +1,33 @@
+import type { FailureMeta, FailureReason } from './failure';
 import { isRateLimited } from './rateLimit';
 import { m } from '@/paraglide/messages.js';
 
 // What the review panel says, and which button it offers, when the diff does
 // not arrive.
 //
-// Two actions, not three. There used to be one for "sign in" and one for
-// "install", and they both now lead to `/setup` — the page that can tell those
-// two apart, because it asks GitHub which of them is missing instead of guessing
-// from a status code. So the panel offers one button and the wording is where the
-// difference lives.
+// The panel decides by the typed reason the server attached when there is one
+// — the `x-ghdiff-failure` header on the plain routes' answers, the RPC
+// error's data — because a status alone cannot say which failures the reviewer
+// can act on: GitHub answers 404 for a missing diff and an invisible one alike,
+// and a 401 is GitHub asking for an account only when the caller is anonymous,
+// while a signed-in grant that died is `auth-expired`. An answer that carries no reason falls back to the
+// status reading, which is where callers that never learned the header keep
+// working.
+//
+// Two actions. `setup` leads to `/setup` — the page that can tell a missing
+// sign-in from a missing installation apart, because it asks GitHub which of
+// them is missing instead of guessing from a status code. Both of those
+// failures arrive as `setup`, and the wording is where the difference lives.
+// `retry` is the offer when there is nothing to grant. A deployment with no
+// GitHub App has no setup to offer at all: `githubOAuth: false` turns those
+// actions into `retry` and the copy drops its setup clause, rather than send
+// a reviewer down a path that ends in a 501.
 //
 // A rate limit is the one failure a reviewer can fix in the moment, and the fix
-// is not "Try again". Against a spent signed-out quota that does nothing for the
-// rest of the hour, while signing in raises the ceiling from 60 requests to 5,000
-// and takes effect on the next one. A signed-in reviewer over quota gets the
-// retry alone: there is no second account to add, and the wait is all there is.
+// is not "Try again". Against a spent signed-out quota that does nothing for
+// the rest of the hour, while signing in raises the ceiling from 60 requests to
+// 5,000 and takes effect on the next one. A signed-in reviewer over quota gets
+// the retry alone: there is no second account to add, and the wait is all there is.
 //
 // Not Found is the other failure with a fix, and the one that does not look like
 // it has one. GitHub answers 404 for a diff that is not there and for a diff the
@@ -47,6 +60,17 @@ const FALLBACK_MESSAGE =
 const UNAUTHORIZED = 401;
 const NOT_FOUND = 404;
 
+/** The fallback panel: nothing to grant — just try again. */
+function couldNotLoadDiff(message?: string): ReviewFailure {
+  return {
+    action: 'retry',
+    message: message ?? FALLBACK_MESSAGE(),
+    get title() {
+      return m.review_failure_could_not_load_the_diff();
+    },
+  };
+}
+
 export function describeReviewFailure(input: {
   /** Whether GitHub answered for a credential on this browser's requests. */
   signedIn: boolean;
@@ -54,56 +78,176 @@ export function describeReviewFailure(input: {
   message?: string;
   /** The status the request failed with. Absent for a network failure. */
   status?: number;
+  /**
+   * Whether this deployment offers GitHub sign-in. When it does not, every
+   * GitHub failure that would offer `/setup` degrades to the retry: the cause
+   * stays, the path that would 501 goes.
+   */
+  githubOAuth?: boolean;
+  /**
+   * The typed failure the server attached, read from the response's
+   * `x-ghdiff-failure` header or the RPC error's data. When present it decides
+   * the panel; `status` is only the fallback for answers that carry none.
+   */
+  failure?: FailureMeta | null;
 }): ReviewFailure {
-  const { signedIn, message, status } = input;
-
-  if (isRateLimited(status)) {
-    // GitHub's own body names an address and recommends authentication, which
-    // is the right advice in the wrong voice: this panel can offer the button
-    // instead of describing it. So the copy here replaces it.
-    return signedIn
-      ? {
-          action: 'retry',
-          get message() {
-            return m.review_failure_you_used_all_5_000_github_requests_for();
-          },
-          get title() {
-            return m.review_failure_hourly_github_rate_limit_reached();
-          },
-        }
-      : {
-          action: 'setup',
-          get message() {
-            return m.review_failure_github_limits_unauthenticated_requests_to_60_per_hour();
-          },
-          get title() {
-            return m.review_failure_github_rate_limit_reached();
-          },
-        };
+  const reason = input.failure?.reason;
+  if (reason != null) {
+    return describeByReason(input, reason);
   }
+  return gitHubByStatus(input, input.status);
+}
 
+/** The panel for a failure the server typed. One branch per reason. */
+function describeByReason(
+  input: {
+    signedIn: boolean;
+    message?: string;
+    githubOAuth?: boolean;
+  },
+  reason: FailureReason
+): ReviewFailure {
+  const githubOAuth = input.githubOAuth ?? true;
+  switch (reason) {
+    case 'not-served':
+      // The forge gate's own sentence says what this deployment serves, and
+      // there is nothing the reviewer can grant that changes it.
+      return couldNotLoadDiff(input.message);
+    case 'auth-expired':
+      return gitHubAuthExpired(githubOAuth);
+    case 'auth-required':
+      return gitHubAuthRequired(githubOAuth);
+    case 'permission-denied':
+      // The forge refused the credential's permission, and its own sentence
+      // says what was refused — the panel has nothing to add.
+      return couldNotLoadDiff(input.message);
+    case 'not-found':
+      return gitHubNotFound(input.signedIn, githubOAuth);
+    case 'rate-limited':
+      return gitHubRateLimited(input.signedIn, githubOAuth);
+    case 'bad-request':
+      return couldNotLoadDiff(input.message);
+  }
+}
+
+/** The GitHub reading of the failures, for an answer that carries no reason. */
+function gitHubByStatus(
+  input: { signedIn: boolean; message?: string; githubOAuth?: boolean },
+  status: number | undefined
+): ReviewFailure {
+  const githubOAuth = input.githubOAuth ?? true;
+  if (isRateLimited(status)) {
+    return gitHubRateLimited(input.signedIn, githubOAuth);
+  }
   if (status === UNAUTHORIZED) {
-    // The Worker answers 401 for a cookie whose token is spent, and the browser
-    // refreshes it and asks again before this panel sees the status. So a 401
-    // that reaches here is a refresh that failed, and the session behind it is
-    // gone — whatever `signedIn` still says, since that was read before it went.
-    // The next step is the sign-in, and `/setup` is where that happens.
+    return gitHubAuthExpired(githubOAuth);
+  }
+  if (status === NOT_FOUND) {
+    return gitHubNotFound(input.signedIn, githubOAuth);
+  }
+  return couldNotLoadDiff(input.message);
+}
+
+function gitHubRateLimited(
+  signedIn: boolean,
+  githubOAuth: boolean
+): ReviewFailure {
+  // GitHub's own body names an address and recommends authentication, which
+  // is the right advice in the wrong voice: this panel can offer the button
+  // instead of describing it. So the copy here replaces it.
+  if (signedIn) {
     return {
-      action: 'setup',
+      action: 'retry',
       get message() {
-        return m.review_failure_your_github_sign_in_is_no_longer_valid();
+        return m.review_failure_you_used_all_5_000_github_requests_for();
       },
       get title() {
-        return m.review_failure_github_sign_in_expired();
+        return m.review_failure_hourly_github_rate_limit_reached();
       },
     };
   }
+  return githubOAuth
+    ? {
+        action: 'setup',
+        get message() {
+          return m.review_failure_github_limits_unauthenticated_requests_to_60_per_hour();
+        },
+        get title() {
+          return m.review_failure_github_rate_limit_reached();
+        },
+      }
+    : {
+        action: 'retry',
+        get message() {
+          return m.review_failure_github_limits_unauthenticated_requests_to_60_per_hour_wait();
+        },
+        get title() {
+          return m.review_failure_github_rate_limit_reached();
+        },
+      };
+}
 
-  if (status === NOT_FOUND) {
-    // GitHub's own body is the single word "Not Found", which is true and
-    // useless. What the reviewer needs is the reason it is the same word for
-    // both cases, and the one thing they can do about it.
-    return signedIn
+function gitHubAuthExpired(githubOAuth: boolean): ReviewFailure {
+  // The Worker answers 401 for a cookie whose token is spent, and the browser
+  // refreshes it and asks again before this panel sees the status. So a 401
+  // that reaches here is a refresh that failed, and the session behind it is
+  // gone — whatever `signedIn` still says, since that was read before it went.
+  // The next step is the sign-in, and `/setup` is where that happens — when
+  // this deployment has one to offer.
+  return githubOAuth
+    ? {
+        action: 'setup',
+        get message() {
+          return m.review_failure_your_github_sign_in_is_no_longer_valid();
+        },
+        get title() {
+          return m.review_failure_github_sign_in_expired();
+        },
+      }
+    : {
+        action: 'retry',
+        get message() {
+          return m.review_failure_your_github_sign_in_is_no_longer_valid_and();
+        },
+        get title() {
+          return m.review_failure_github_sign_in_expired();
+        },
+      };
+}
+
+function gitHubAuthRequired(githubOAuth: boolean): ReviewFailure {
+  // GitHub asked for an account nobody offered it: the caller is anonymous
+  // and the target is not publicly readable. The fix is the sign-in.
+  return githubOAuth
+    ? {
+        action: 'setup',
+        get message() {
+          return m.review_failure_github_asks_for_a_sign_in_to_view_this();
+        },
+        get title() {
+          return m.review_failure_github_requires_a_sign_in();
+        },
+      }
+    : {
+        action: 'retry',
+        get message() {
+          return m.review_failure_github_asks_for_a_sign_in_to_view_this_2();
+        },
+        get title() {
+          return m.review_failure_github_requires_a_sign_in();
+        },
+      };
+}
+
+function gitHubNotFound(
+  signedIn: boolean,
+  githubOAuth: boolean
+): ReviewFailure {
+  // GitHub's own body is the single word "Not Found", which is true and
+  // useless. What the reviewer needs is the reason it is the same word for
+  // both cases, and the one thing they can do about it — when there is one.
+  if (signedIn) {
+    return githubOAuth
       ? {
           action: 'setup',
           get message() {
@@ -114,21 +258,32 @@ export function describeReviewFailure(input: {
           },
         }
       : {
-          action: 'setup',
+          action: 'retry',
           get message() {
-            return m.review_failure_github_returns_not_found_for_private_repositories_when();
+            return m.review_failure_github_returned_not_found_because_ghdiff_is_not_installed();
           },
           get title() {
-            return m.review_failure_repository_not_found_or_private();
+            return m.review_failure_ghdiff_needs_access_to_this_repository();
           },
         };
   }
-
-  return {
-    action: 'retry',
-    message: message ?? FALLBACK_MESSAGE(),
-    get title() {
-      return m.review_failure_could_not_load_the_diff();
-    },
-  };
+  return githubOAuth
+    ? {
+        action: 'setup',
+        get message() {
+          return m.review_failure_github_returns_not_found_for_private_repositories_when();
+        },
+        get title() {
+          return m.review_failure_repository_not_found_or_private();
+        },
+      }
+    : {
+        action: 'retry',
+        get message() {
+          return m.review_failure_github_returns_not_found_for_private_repositories_when_you();
+        },
+        get title() {
+          return m.review_failure_repository_not_found_or_private();
+        },
+      };
 }

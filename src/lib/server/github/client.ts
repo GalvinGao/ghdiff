@@ -6,19 +6,25 @@
 // ahead of that, which is what keeps curl and a script working; and
 // GITHUB_TOKEN is the last fallback, so a single-user deployment can skip the
 // browser step. `resolveGitHubToken` is where those three meet.
+
+import type { FailureMeta } from '@/lib/failure';
 import { gitHubErrorMessage } from '@/lib/github/error';
 import { rateLimitedStatus } from '@/lib/rateLimit';
-import { parseDeploymentConfig } from '@/lib/server/config';
-import { readKeyring, SessionSeal } from '@/lib/server/session';
-import { accessTokenUsable, refreshDue, withinMaxAge } from '@/lib/session';
+import type { DeploymentConfig } from '@/lib/server/config';
+import {
+  accessTokenUsable,
+  refreshDue,
+  type SessionPayload,
+  withinMaxAge,
+} from '@/lib/session';
 import { m } from '@/paraglide/messages.js';
 
 const GITHUB_API_ROOT = 'https://api.github.com';
-const GITHUB_API_VERSION = '2022-11-28';
+export const GITHUB_API_VERSION = '2022-11-28';
 // GitHub answers 403 "Request forbidden by administrative rules" to a request
 // that carries no User-Agent. Node's fetch sends one of its own; workerd sends
 // none, so every request from this client names itself. Exported because the
-// App's own three calls in `./githubApp.ts` go to two hosts this module does
+// App's own three calls in `./app.ts` go to two hosts this module does
 // not, and the rule is about every request to GitHub rather than about this
 // client.
 export const USER_AGENT = 'ghdiff';
@@ -46,20 +52,21 @@ export interface ResolvedToken {
 }
 
 /**
- * What a request that is due a refresh answers with, when the answer is read at
- * all. The browser refreshes and asks again before a reviewer sees it, so this
- * reaches a screen only when the refresh itself failed — and then the session
- * behind it is gone, and the sentence is true.
+ * The error every forge's failure travels as — the forge's own, the media
+ * proxy's — so no caller asks which SDK threw. `failure` is the typed reason
+ * the client acts on, attached where the throw site knows it (the forge gate's
+ * `not-served`); a bare status is mapped to one downstream by
+ * `failureForStatus` where only the status is known.
  */
-export const SIGN_IN_EXPIRED = m.github_your_github_sign_in_is_no_longer_valid;
-
 export class GitHubError extends Error {
   readonly status: number;
+  readonly failure?: FailureMeta;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, failure?: FailureMeta) {
     super(message);
     this.name = 'GitHubError';
     this.status = status;
+    this.failure = failure;
   }
 }
 
@@ -93,6 +100,8 @@ export class GitHubError extends Error {
  * the cookie does. Nothing else in the app reads it.
  */
 export async function resolveGitHubToken(
+  config: DeploymentConfig,
+  session: SessionPayload | undefined,
   request: Request
 ): Promise<ResolvedToken> {
   const header = request.headers.get('authorization');
@@ -101,28 +110,27 @@ export async function resolveGitHubToken(
     return { token: bearer, fromSession: false, refreshDue: false };
   }
 
-  const deployment = parseDeploymentConfig(process.env);
-  const keyring = readKeyring(deployment);
-  if (keyring != null) {
-    const session = await new SessionSeal(keyring).readSession(request);
-    const now = Date.now();
-    const github = session?.github;
-    if (session != null && github != null) {
-      if (withinMaxAge(session, now) && accessTokenUsable(github, now)) {
-        return {
-          token: github.accessToken,
-          fromSession: true,
-          refreshDue: false,
-        };
-      }
-      if (refreshDue(session, now)) {
-        return { token: undefined, fromSession: false, refreshDue: true };
-      }
+  const now = Date.now();
+  if (session != null) {
+    const github = session.github;
+    if (
+      github != null &&
+      withinMaxAge(session, now) &&
+      accessTokenUsable(github, now)
+    ) {
+      return {
+        token: github.accessToken,
+        fromSession: true,
+        refreshDue: false,
+      };
+    }
+    if (refreshDue(session, now)) {
+      return { token: undefined, fromSession: false, refreshDue: true };
     }
   }
 
   return {
-    token: deployment.github.token,
+    token: config.github.token,
     fromSession: false,
     refreshDue: false,
   };
@@ -162,86 +170,6 @@ export async function githubJson<T>(
     );
   }
   return (await response.json()) as T;
-}
-
-export async function githubWrite<T>(
-  method: 'POST' | 'PATCH' | 'DELETE',
-  path: string,
-  token: string | undefined,
-  body?: unknown
-): Promise<T | undefined> {
-  const response = await fetch(`${GITHUB_API_ROOT}${path}`, {
-    method,
-    cache: 'no-store',
-    headers: {
-      ...headers(token, JSON_MEDIA_TYPE),
-      ...(body == null ? {} : { 'content-type': 'application/json' }),
-    },
-    body: body == null ? undefined : JSON.stringify(body),
-  });
-  if (!response.ok) {
-    throw new GitHubError(
-      rateLimitedStatus(response.status, response.headers),
-      await readErrorMessage(response)
-    );
-  }
-  if (response.status === 204) {
-    return undefined;
-  }
-  return (await response.json()) as T;
-}
-
-/**
- * POST a GraphQL query. Throws GitHubError on a transport failure, on a
- * response that carries `errors`, and on a null `data`.
- *
- * REST has no field for a review decision and no field for a check rollup, so
- * the open pull request list asks GraphQL for both in one request per
- * repository. GraphQL refuses an anonymous caller outright, which is why the
- * REST path stays as the fallback for a reviewer with no token.
- */
-export async function githubGraphQL<T>(
-  query: string,
-  variables: Record<string, unknown>,
-  token: string
-): Promise<T> {
-  const response = await fetch(`${GITHUB_API_ROOT}/graphql`, {
-    method: 'POST',
-    cache: 'no-store',
-    // Through `headers()`, so the GraphQL endpoint gets the same User-Agent as
-    // every other call. workerd sends none of its own, and GitHub answers a
-    // header-less request with 403.
-    headers: {
-      ...headers(token, JSON_MEDIA_TYPE),
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({ query, variables }),
-  });
-  if (!response.ok) {
-    throw new GitHubError(
-      rateLimitedStatus(response.status, response.headers),
-      await readErrorMessage(response)
-    );
-  }
-  const body = (await response.json()) as {
-    data?: T | null;
-    errors?: { message?: string }[];
-  };
-  // GraphQL answers 200 with an `errors` array for a repository the token
-  // cannot read, so the status alone does not say whether this worked.
-  if (body.errors != null && body.errors.length > 0) {
-    throw new GitHubError(
-      200,
-      body.errors[0]?.message ?? m.github_github_rejected_that_query()
-    );
-  }
-  if (body.data == null) {
-    throw new GitHubError(
-      200,
-      m.github_github_returned_no_data_for_that_query()
-    );
-  }
-  return body.data;
 }
 
 /**
@@ -301,62 +229,6 @@ export function githubRaw(
   return githubStream(path, token, RAW_MEDIA_TYPE, ifNoneMatch);
 }
 
-export interface GitHubUser {
-  login: string;
-  avatar_url?: string;
-  name?: string | null;
-  /** 'User', 'Organization', or 'Bot' for a GitHub App. */
-  type?: string;
-}
-
-export interface GitHubPullRequest {
-  number: number;
-  title: string;
-  draft?: boolean;
-  state?: string;
-  merged_at?: string | null;
-  html_url: string;
-  created_at: string;
-  updated_at: string;
-  /** Only the single-pull endpoint returns this; a list omits it. */
-  body?: string | null;
-  /** Only sent for `FULL_JSON_MEDIA_TYPE`. */
-  body_html?: string | null;
-  user: GitHubUser | null;
-  head: { sha: string; ref: string };
-  base: { ref: string; sha: string };
-  additions?: number;
-  deletions?: number;
-  changed_files?: number;
-  commits?: number;
-}
-
-/** What `POST /pulls/{n}/reviews` answers with. */
-export interface GitHubReview {
-  id: number;
-  state: string;
-  submitted_at?: string | null;
-  html_url?: string;
-}
-
-export interface GitHubReviewComment {
-  id: number;
-  path: string;
-  body: string;
-  /** Only sent for `FULL_JSON_MEDIA_TYPE`. */
-  body_html?: string | null;
-  line: number | null;
-  start_line: number | null;
-  original_line: number | null;
-  original_start_line: number | null;
-  side: string | null;
-  start_side: string | null;
-  created_at: string;
-  html_url: string;
-  user: GitHubUser | null;
-  in_reply_to_id?: number;
-}
-
 export function encodeRefForPath(ref: string): string {
   // Branch names can hold a slash, which must survive as a path segment.
   return ref.split('/').map(encodeURIComponent).join('/');
@@ -395,13 +267,6 @@ export function encodeRefForPath(ref: string): string {
 // in front of everybody.
 
 const GITHUB_WEB_HOST = 'https://github.com';
-
-export interface GitHubDiffTargetPath {
-  /** Path on github.com, without the .diff suffix. */
-  webPath: string;
-  /** Path on api.github.com for the diff media type. */
-  apiPath: string;
-}
 
 /** Fetches the web `.diff` URL. Throws GitHubError on a non-2xx response. */
 export async function githubWebDiff(

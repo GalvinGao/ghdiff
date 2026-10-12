@@ -36,6 +36,7 @@
     ".wrangler",
     "pnpm-lock.yaml",
     "src/routeTree.gen.ts",
+    "src/lib/server/forges/gqlgen/",
     "worker-configuration.d.ts",
     "*.patch",
     "*.diff",

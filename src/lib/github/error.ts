@@ -23,6 +23,11 @@ interface GitHubErrorBody {
 function firstDetail(errors: unknown): string | undefined {
   if (!Array.isArray(errors)) return undefined;
   for (const entry of errors) {
+    // Some endpoints put the sentences in the array itself — the reviews
+    // endpoint's `errors` is strings, not objects.
+    if (typeof entry === 'string' && entry.trim().length > 0) {
+      return entry.trim();
+    }
     if (typeof entry !== 'object' || entry == null) continue;
     const message = (entry as { message?: unknown }).message;
     if (typeof message === 'string' && message.trim().length > 0) {
@@ -43,17 +48,34 @@ function firstDetail(errors: unknown): string | undefined {
  * status name is better than a blank panel.
  */
 export function gitHubErrorMessage(body: string, fallback: string): string {
+  const text = body.trim();
   try {
-    const parsed = JSON.parse(body) as GitHubErrorBody;
-    if (typeof parsed === 'object' && parsed != null) {
-      const detail = firstDetail(parsed.errors);
-      if (detail != null) return detail;
-      if (typeof parsed.message === 'string' && parsed.message.length > 0) {
-        return parsed.message;
-      }
-    }
+    return gitHubErrorMessageFromData(
+      JSON.parse(text),
+      text.length > 0 ? text : fallback
+    );
   } catch {
     // Not JSON. The raw body is the next best thing, and the status text after.
+    return text.length > 0 ? text : fallback;
   }
-  return body.trim().length > 0 ? body.trim() : fallback;
+}
+
+/**
+ * The same answer for a body that is already parsed — which is how octokit's
+ * `RequestError` carries it. A body that holds no sentence falls back to the
+ * caller's own.
+ */
+export function gitHubErrorMessageFromData(
+  data: unknown,
+  fallback: string
+): string {
+  if (typeof data === 'object' && data != null) {
+    const body = data as GitHubErrorBody;
+    const detail = firstDetail(body.errors);
+    if (detail != null) return detail;
+    if (typeof body.message === 'string' && body.message.length > 0) {
+      return body.message;
+    }
+  }
+  return fallback;
 }

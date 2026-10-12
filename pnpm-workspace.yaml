@@ -17,4 +17,7 @@ minimumReleaseAgeExclude:
 # the server on, so the build must run.
 allowBuilds:
   esbuild: true
+  # msw's postinstall sets up browser service workers, which only its browser
+  # usage needs; the forge tests run it in node.
+  msw: false
   workerd: true

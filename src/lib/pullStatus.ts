@@ -98,15 +98,11 @@ function reviewFromSource(source: PullStatusSource): ReviewState {
 }
 
 /**
- * Reads a status out of the GraphQL node. Every missing field maps to a defined
- * value, so a partial answer from GitHub still produces a status rather than an
- * exception.
+ * The check axis alone: the rollup on the head commit, narrowed to the four
+ * outcomes worth a colour. This is the half of `normalizePullStatus` a single
+ * pull request's details read, where the review axis is not asked for.
  */
-export function normalizePullStatus(
-  source: PullStatusSource
-): PullReviewStatus {
-  const review = reviewFromSource(source);
-
+export function checkStateFromSource(source: PullStatusSource): CheckState {
   // The rollup is only the truth about the branch if it belongs to the head
   // commit. A rollup on an older commit says nothing about what is there now.
   const commit = source.commits?.nodes?.[0]?.commit;
@@ -115,7 +111,20 @@ export function normalizePullStatus(
     (source.headRefOid == null || commit.oid === source.headRefOid);
   const rollup = isHead ? commit?.statusCheckRollup?.state : undefined;
   // A null rollup is 'none' — the branch has no checks — which is not 'pending'.
-  const check: CheckState = (rollup && ROLLUP_CHECK[rollup]) || 'none';
+  return (rollup && ROLLUP_CHECK[rollup]) || 'none';
+}
+
+/**
+ * Reads a status out of the GraphQL node. Every missing field maps to a defined
+ * value, so a partial answer from GitHub still produces a status rather than an
+ * exception.
+ */
+export function normalizePullStatus(
+  source: PullStatusSource
+): PullReviewStatus {
+  const review = reviewFromSource(source);
+  const check = checkStateFromSource(source);
+  const commit = source.commits?.nodes?.[0]?.commit;
 
   const status: PullReviewStatus = { review, check };
   if (review === 'changes') {

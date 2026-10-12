@@ -11,8 +11,10 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
+import { useCurrentReviewTarget } from '@/hooks/useCurrentPull';
 import { resolveAttachment, type SignedAttachment } from '@/lib/attachments';
 import { cn } from '@/lib/cn';
+import { mediaSrc } from '@/lib/mediaUrl';
 import { m } from '@/paraglide/messages.js';
 
 // GFM for comment bodies: tables, task lists, strikethrough, autolinks, fences.
@@ -129,17 +131,25 @@ const MEDIA_CLASS =
 // GitHub writes the pixel width of the original, which is wider than any
 // surface here.
 //
-// An attachment on a private repository is loaded from the address GitHub
-// signed for it, because the address in the markdown answers only github.com's
-// own cookie. See `@/lib/attachments`.
+// An attachment on a private GitHub repository is loaded from the address
+// GitHub signed for it, because the address in the markdown answers only
+// github.com's own cookie. See `@/lib/attachments`. Anything else goes through
+// `mediaSrc`: a forge-hosted image on a private repository answers only the
+// forge's own session cookie, and the reviewer's grant is sealed on the
+// server, so the media proxy fetches it with that grant. The target is read
+// off the path here rather than threaded down as a prop, the way every other
+// reader of it gets it, and the memoized body parse above is untouched.
 function BodyImage({ alt, src }: ComponentProps<'img'>) {
   const attachments = useContext(AttachmentContext);
+  const target = useCurrentReviewTarget();
   const address = typeof src === 'string' ? src : undefined;
   const signed = resolveAttachment(address, attachments.byId);
   return (
     <img
       alt={alt ?? ''}
-      src={signed?.url ?? address}
+      src={
+        signed?.url ?? (address == null ? undefined : mediaSrc(address, target))
+      }
       loading="lazy"
       onError={signed == null ? undefined : attachments.onError}
       className={MEDIA_CLASS}

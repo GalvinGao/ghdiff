@@ -27,7 +27,7 @@ import {
   newestFirst,
 } from '@/lib/deployments';
 import { describeAge } from '@/lib/pullDetails';
-import type { GitHubReviewTarget } from '@/lib/reviewTarget';
+import type { ForgeTarget } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 
 /**
@@ -127,7 +127,7 @@ export function DeploymentMenu({
   target,
 }: {
   session: GitHubSessionState;
-  target: GitHubReviewTarget;
+  target: ForgeTarget;
 }) {
   const query = useDeployments({
     target,

@@ -54,7 +54,7 @@ export function CommentAuthorFilterBar({
       </SegmentedItem>
       <SegmentedItem
         className="h-6 px-1.5"
-        title={m.comment_author_filter_bar_comments_a_github_app_opened()}
+        title={m.comment_author_filter_bar_comments_a_bot_opened()}
         value="bots"
       >
         <HubotIcon size={12} />

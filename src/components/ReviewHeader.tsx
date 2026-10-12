@@ -8,6 +8,7 @@ import {
   IconGear,
   IconGearFill,
   IconInReview,
+  IconRefresh,
   IconSymbolDiffstat,
 } from '@pierre/icons';
 import { GitMergeIcon } from '@primer/octicons-react/GitMergeIcon';
@@ -38,6 +39,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
+import { SegmentedCount } from '@/components/ui/Segmented';
 import type { CodeFontState } from '@/hooks/useCodeFont';
 import type { ColorModeState } from '@/hooks/useColorMode';
 import { useEdgeFade } from '@/hooks/useEdgeFade';
@@ -46,6 +48,8 @@ import type { PullDetailsState } from '@/hooks/usePullDetails';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { cn } from '@/lib/cn';
 import { CODE_FONTS, type CodeFontId } from '@/lib/codeFonts';
+import type { StagedReviewComment } from '@/lib/comments';
+import { forgeLabel, type ForgeName, forgeOfTarget } from '@/lib/forges';
 import { reviewTargetUrl } from '@/lib/github/urls';
 import type { PullState } from '@/lib/pulls';
 import {
@@ -56,7 +60,7 @@ import {
 } from '@/lib/reviewDecision';
 import {
   describeReviewTarget,
-  isGitHubTarget,
+  isForgeTarget,
   type ReviewTarget,
 } from '@/lib/reviewTarget';
 import type { StackPosition } from '@/lib/stackReview';
@@ -109,6 +113,10 @@ interface ReviewHeaderProps {
   codeFont: CodeFontState;
   colorMode: ColorModeState;
   controls: ViewerControls;
+  /** Set when the comment store could not be read; the dialog gates on it. */
+  commentsError?: string;
+  /** True once the comment store's contents are known; a verdict gates on it. */
+  commentsReady?: boolean;
   /** True while the file list covers the diff. The phone layout reads it. */
   filesOpen?: boolean;
   onControlsChange(next: ViewerControls): void;
@@ -135,13 +143,32 @@ interface ReviewHeaderProps {
    * `linkCopied` says whether an approval's link reached the clipboard.
    */
   onReviewSubmitted?(event: ReviewEvent, linkCopied?: boolean): void;
+  /** Called once a verdict attempt settles, so the caller can reconcile what
+      it touched — success or failure alike. */
+  onReviewSettled?(): void;
+  /** Re-reads the comment store: the dialog's explicit retry. */
+  onRetryComments?(): void;
+  /** Fetches the diff and the pull's details again. Absent only where there
+      is nothing to fetch again. */
+  onRefreshDiff?(): void;
+  /** True while the diff is already on its way, when a press would only
+      abort it to start the same read over. */
+  refreshDisabled?: boolean;
   /** Absent unless the target is a pull request. */
   pull?: PullDetailsState;
   /** Absent unless the target is a pull request, which is the only one to
       have a review to submit. */
   review?: SubmitReviewState;
+  /** The login the review flow compares the author against. */
+  reviewViewerLogin?: string;
   /** True when the left bar is not on screen and the way home has to be here. */
   showBrand?: boolean;
+  /** The draft threads waiting for the verdict, for the submit dialog. */
+  staged?: StagedReviewComment[];
+  /** How many are waiting, so the button can say `Review (N)`. */
+  stagedCount?: number;
+  /** The target as the JSONL export names it: `github.com:owner/repo#123`. */
+  stagedTarget?: string;
   /** Where the pull request sits in its stack, when it is in one. */
   stack?: StackPosition;
   /**
@@ -164,26 +191,45 @@ interface ReviewHeaderProps {
     shown: boolean;
     onShownChange(shown: boolean): void;
   };
+  /** True while a comment write is on the wire; the dialog's verdicts wait. */
+  writesPending?: boolean;
 }
 
 export function ReviewHeader({
   codeFont,
   colorMode,
+  commentsError,
+  commentsReady,
   controls,
   filesOpen = false,
   lenses,
   onControlsChange,
+  onRefreshDiff,
+  onRetryComments,
+  onReviewSettled,
   onReviewSubmitted,
   onToggleFiles,
   pull,
+  refreshDisabled = false,
   review,
+  reviewViewerLogin,
   showBrand = false,
   stack,
+  staged,
+  stagedCount = 0,
+  stagedTarget,
   target,
   session,
   untracked,
+  writesPending = false,
 }: ReviewHeaderProps) {
-  const gitHubTarget = isGitHubTarget(target) ? target : undefined;
+  const forgeTarget = isForgeTarget(target) ? target : undefined;
+  // The target's own forge, which names the links out and the verdicts on
+  // offer. A local diff has none, and draws none of the controls about one.
+  const forge: ForgeName | undefined =
+    forgeTarget == null ? undefined : forgeOfTarget(forgeTarget);
+  const targetUrl =
+    forgeTarget == null ? undefined : reviewTargetUrl(forgeTarget);
   const targetLabel = describeReviewTarget(target);
   const split = controls.diffStyle === 'split';
   const [reviewing, setReviewing] = useState(false);
@@ -214,7 +260,9 @@ export function ReviewHeader({
           the server answers that hook with the wide layout, so a control gated
           on it was missing from the phone's first paint and arrived only once
           the review route had hydrated. */}
-      <PullListButton className="phone:hidden shrink-0" />
+      {/* The pull list is also there on a portrait screen, where the bar is
+          not drawn either. */}
+      <PullListButton className="phone:landscape:hidden shrink-0" />
       <Button
         aria-expanded={filesOpen}
         aria-label={
@@ -246,39 +294,45 @@ export function ReviewHeader({
       {/* The one place the review names itself, so it is also the way to the
           page it was taken from — when there is one. A local diff has no page
           anywhere, so it says its name and links nowhere. */}
-      {gitHubTarget == null ? (
+      {targetUrl == null ? (
         <span className={TARGET_LABEL_CLASS} title={targetLabel}>
           {targetLabel}
         </span>
       ) : (
         <GitHubTextLink
           className={TARGET_LABEL_CLASS}
-          href={reviewTargetUrl(gitHubTarget)}
-          title={m.review_header_open_on_github({ targetLabel })}
+          href={targetUrl}
+          title={m.review_header_open_on_forge({
+            forge: forgeLabel(forge),
+            targetLabel,
+          })}
         >
           {targetLabel}
         </GitHubTextLink>
       )}
-      {pull != null && <PullTitle pull={pull} />}
+      {pull != null && <PullTitle forge={forge ?? 'github'} pull={pull} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-0.5">
         {/* First in the group, because it is drawn while GitHub is asked and
             then only if something is deployed: the group is pinned to the
             right edge, so a control that comes and goes at its left end moves
             nothing else. */}
-        {gitHubTarget != null && (
-          <DeploymentMenu session={session} target={gitHubTarget} />
+        {forgeTarget != null && (
+          <DeploymentMenu session={session} target={forgeTarget} />
         )}
         {/* Only a pull request has a review to submit. A commit and a compare
             range have no thread on GitHub for a verdict to land in. */}
         {review != null && (
           <>
             <ReviewButton
+              forge={forge ?? 'github'}
               review={review}
+              stagedCount={stagedCount}
               state={pull?.data?.state}
               popoverId={reviewPopoverId}
             />
             <ReviewSubmitDialog
+              forge={forge ?? 'github'}
               open={reviewing}
               id={reviewPopoverId}
               onOpenChange={setReviewing}
@@ -288,15 +342,39 @@ export function ReviewHeader({
               // request, so the buttons need to know before they offer one.
               ownPullRequest={isOwnPullRequest(
                 pull?.data?.author,
-                session.viewer?.login
+                reviewViewerLogin
               )}
               review={review}
               stack={stack}
+              staged={staged ?? []}
+              target={stagedTarget ?? targetLabel}
+              url={pull?.data?.htmlUrl ?? targetUrl ?? ''}
+              title={pull?.data?.title}
+              author={reviewViewerLogin}
               targetLabel={targetLabel}
+              commentsError={commentsError}
+              commentsReady={commentsReady}
+              onRetryComments={onRetryComments}
+              writesPending={writesPending}
               onClose={() => setReviewing(false)}
+              onSettled={onReviewSettled}
               onSubmitted={onReviewSubmitted}
             />
           </>
+        )}
+        {/* The bar renders in every patch state, so an errored diff retries
+            from here as well as from the status panel's "Try again". */}
+        {onRefreshDiff != null && (
+          <Button
+            aria-label={m.review_header_refresh_diff()}
+            disabled={refreshDisabled}
+            size="icon"
+            title={m.review_header_refresh_diff()}
+            variant="chrome"
+            onClick={onRefreshDiff}
+          >
+            <IconRefresh size={15} />
+          </Button>
         )}
         <Button
           aria-label={
@@ -513,9 +591,9 @@ export function ReviewHeader({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Nothing on a local diff reaches GitHub, so there is no account for
-            this control to name and no access for it to set up. */}
-        {gitHubTarget != null && (
+        {/* Nothing on a local diff reaches a forge, so there is no account
+            for this control to name and no access for it to set up. */}
+        {forgeTarget != null && (
           <>
             <span aria-hidden="true" className="bg-line mx-1 h-4 w-px" />
             <GitHubAccountControl session={session} />
@@ -557,12 +635,17 @@ const SETTLED: Partial<
  * the newest one is the one that counts.
  */
 function ReviewButton({
+  forge,
   popoverId,
   review,
+  stagedCount = 0,
   state,
 }: {
+  forge: ForgeName;
   popoverId: string;
   review: SubmitReviewState;
+  /** Draft threads waiting for the verdict: the label counts them. */
+  stagedCount?: number;
   state?: PullState;
 }) {
   const { latest } = review;
@@ -585,9 +668,9 @@ function ReviewButton({
     );
   }
 
-  // Also the first paint of every review, before GitHub has answered. The
+  // Also the first paint of every review, before the forge has answered. The
   // button is pressable throughout, because the verdict on record changes what
-  // it says and never what it does.
+  // it says and never what it does. The tooltip names the verdicts on offer.
   if (latest == null || verdict == null) {
     return (
       <Button
@@ -599,7 +682,9 @@ function ReviewButton({
         aria-haspopup="dialog"
       >
         <IconInReview size={14} />
-        {m.review_header_review()}
+        {stagedCount > 0
+          ? m.review_header_review_with_count({ count: stagedCount })
+          : m.review_header_review()}
       </Button>
     );
   }
@@ -609,7 +694,7 @@ function ReviewButton({
     <Button
       size="sm"
       title={m.review_header_review_it_again({
-        value: describeSubmittedReview(latest),
+        value: describeSubmittedReview(latest, forge),
       })}
       variant="chrome"
       id={`${popoverId}-trigger`}
@@ -618,6 +703,9 @@ function ReviewButton({
     >
       <Icon className={cn('shrink-0', VERDICT_COLOR[verdict.tone])} size={14} />
       {verdict.label}
+      {/* Drafts waiting go up with the next verdict, so the count stays on
+          the button after one is on record, too. */}
+      {stagedCount > 0 && <SegmentedCount>{stagedCount}</SegmentedCount>}
     </Button>
   );
 }
@@ -627,7 +715,13 @@ function ReviewButton({
  * space between the switcher and the controls, and truncates rather than push
  * anything off the bar.
  */
-function PullTitle({ pull }: { pull: PullDetailsState }) {
+function PullTitle({
+  forge,
+  pull,
+}: {
+  forge: ForgeName;
+  pull: PullDetailsState;
+}) {
   // Stamped when the card opens, so the ages it shows are read from one instant
   // and no clock runs behind a closed menu.
   const [openedAt, setOpenedAt] = useState<number | null>(null);
@@ -673,6 +767,7 @@ function PullTitle({ pull }: { pull: PullDetailsState }) {
         <PullDetailsCard
           details={pull.data}
           error={pull.error}
+          forge={forge}
           loading={pull.loading}
           now={openedAt}
           onAttachmentError={pull.renewAttachments}

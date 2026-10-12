@@ -3,7 +3,7 @@ import { useRef } from 'react';
 
 import { useSharedQuery } from './useSharedQuery';
 import { type DeploymentsData, deploymentsInFlight } from '@/lib/deployments';
-import type { GitHubReviewTarget } from '@/lib/reviewTarget';
+import { type ForgeTarget, reviewTargetKey } from '@/lib/reviewTarget';
 import { rpc } from '@/lib/rpc/client';
 
 /**
@@ -43,36 +43,27 @@ const MAX_BACKOFF = 8;
  * the pull request list need the rest.
  */
 export function useDeployments(options: {
-  target?: GitHubReviewTarget;
+  target?: ForgeTarget;
   signedIn: boolean;
   /** True until the session has answered, so a signed-in reviewer is not
       first asked about anonymously. */
   checking: boolean;
 }) {
   const { target, signedIn, checking } = options;
-  const source = target == null ? undefined : deploymentSource(target);
+  // The target as strings, for the key: the target object is rebuilt on every
+  // read of the route, and a key that changed with it would refetch on every
+  // render. The query the routes take is the target's whole identity, the
+  // forge's host included.
+  const targetKey = target == null ? undefined : reviewTargetKey(target);
   // The head a poll is running for, and since when. Read and written inside
   // the scheduler only, never while rendering.
   const pollRef = useRef<{ head?: string; since: number } | null>(null);
 
   return useSharedQuery<DeploymentsData>({
-    // Strings, not the target: the target object is rebuilt on every read of
-    // the route, and a key that changed with it would refetch on every render.
-    queryKey: [
-      'deployments',
-      target?.owner,
-      target?.repo,
-      source == null ? undefined : sourceKey(source),
-      signedIn,
-    ],
+    queryKey: ['deployments', targetKey, signedIn],
     fetch: (signal) => {
-      if (target == null || source == null) {
-        throw new Error('No target to ask about.');
-      }
-      return rpc.deployments.list(
-        { owner: target.owner, repo: target.repo, source },
-        { signal }
-      );
+      if (target == null) throw new Error('No target to ask about.');
+      return rpc.deployments.list({ target }, { signal });
     },
     enabled: target != null && !checking,
     shareWindowMs: POLL_MS - 1_000,
@@ -100,28 +91,4 @@ export function useDeployments(options: {
       return POLL_MS * backoff;
     },
   });
-}
-
-type DeploymentSource = Parameters<typeof rpc.deployments.list>[0]['source'];
-
-function deploymentSource(target: GitHubReviewTarget): DeploymentSource {
-  switch (target.kind) {
-    case 'github-pull':
-      return { kind: target.kind, number: target.number };
-    case 'github-commit':
-      return { kind: target.kind, sha: target.sha };
-    case 'github-compare':
-      return { kind: target.kind, base: target.base, head: target.head };
-  }
-}
-
-function sourceKey(source: DeploymentSource): string {
-  switch (source.kind) {
-    case 'github-pull':
-      return `pull:${source.number}`;
-    case 'github-commit':
-      return `commit:${source.sha}`;
-    case 'github-compare':
-      return `compare:${source.base}...${source.head}`;
-  }
 }

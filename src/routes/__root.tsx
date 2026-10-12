@@ -14,11 +14,16 @@ import { PageError } from '@/components/PageError';
 import { WatchedReposScript } from '@/components/WatchedReposScript';
 import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import appCss from '@/globals.css?url';
+import { getInstanceInfo } from '@/lib/instance';
 import { textDirection } from '@/lib/locale';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 
 export const Route = createRootRoute({
+  // What this deployment serves, read on the server for the first paint and
+  // dehydrated with the document: every screen renders against one certain
+  // answer instead of asking after mount. See `src/lib/instance.ts`.
+  loader: () => getInstanceInfo(),
   head: () => ({
     meta: [
       { charSet: 'utf-8' },

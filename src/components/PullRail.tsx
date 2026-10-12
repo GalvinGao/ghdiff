@@ -47,10 +47,13 @@ import { textDirection } from '@/lib/locale';
 import {
   flattenStacks,
   groupPullsByRepo,
+  repoLabel,
+  reviewTargetFromPull,
   type PullSummary,
   type WatchedRepo,
 } from '@/lib/pulls';
-import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
+import type { PullTarget } from '@/lib/pullScope';
+import { reviewTargetSplat } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 
@@ -145,15 +148,17 @@ export function PullRail() {
         // would leave the bar behind the pointer. The handle carries
         // `data-resizing` for the length of the drag, and it is a child of this
         // element, so `has-` is the whole test.
-        // `max-phone:hidden`: a phone has no column to spare beside a diff —
-        // 272px of an iPhone's 402 leaves 130 for the review — so below that
-        // width the bar is not drawn at all and `PullListButton` stands in for
-        // it from the leftmost control on the screen. Hidden rather than
-        // unmounted, so the width, the collapse and the scroll a reviewer left
-        // it at are all still there when the window widens again.
+        // `max-phone:hidden portrait:hidden`: a phone has no column to spare
+        // beside a diff — 272px of an iPhone's 402 leaves 130 for the review —
+        // and a portrait screen is a diff standing on its full width with the
+        // file list as a band above it. On both, the bar is not drawn at all
+        // and `PullListButton` stands in for it from the leftmost control on
+        // the screen. Hidden rather than unmounted, so the width, the collapse
+        // and the scroll a reviewer left it at are all still there when the
+        // window widens again.
         className={cn(
           'border-line bg-surface relative flex h-full shrink-0 flex-col border-r',
-          'max-phone:hidden',
+          'max-phone:hidden portrait:hidden',
           'transition-[width]',
           'has-[[data-resizing]]:transition-none motion-reduce:transition-none'
         )}
@@ -242,7 +247,7 @@ export function PullRail() {
 
 interface RailContentProps {
   collapsed: boolean;
-  current?: GitHubPullTarget;
+  current?: PullTarget;
   /**
    * Present on the ghost — the fading copy of the layout being left. The copy
    * clips instead of scrolling, and carries the scroll it was read at as a
@@ -455,14 +460,14 @@ function CollapsedMarks({
   repos,
   state,
 }: {
-  current?: GitHubPullTarget;
+  current?: PullTarget;
   repos: readonly WatchedRepo[];
   state: OpenPullsState;
 }) {
   const { pulls } = usePullScope(state, current);
   const groups = useMemo<CollapsedGroup[]>(() => {
     if (state.data == null) return [];
-    return groupPullsByRepo(pulls, state.data.viewer, {
+    return groupPullsByRepo(pulls, state.data.viewers, {
       order: repos,
     }).flatMap((group) =>
       group.authors.map((author) => ({
@@ -528,23 +533,16 @@ function CollapsedMark({
   current,
   pull,
 }: {
-  current?: GitHubPullTarget;
+  current?: PullTarget;
   pull: PullSummary;
 }) {
   const hoverCard = usePullHoverCard();
   const isCurrent = isCurrentPull(pull, current);
-  const label = `${pull.owner}/${pull.repo} #${String(pull.number)} — ${pull.title}`;
+  const label = `${repoLabel(pull)} #${String(pull.number)} — ${pull.title}`;
   return (
     <Link
       to="/$"
-      params={{
-        _splat: reviewTargetSplat({
-          kind: 'github-pull',
-          owner: pull.owner,
-          repo: pull.repo,
-          number: pull.number,
-        }),
-      }}
+      params={{ _splat: reviewTargetSplat(reviewTargetFromPull(pull)) }}
       aria-current={isCurrent ? 'page' : undefined}
       aria-label={label}
       className={cn(

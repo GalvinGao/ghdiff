@@ -8,21 +8,27 @@ import { SetupScreen } from '@/components/SetupScreen';
 // splat mirrors github.com's own paths, so every static route at the root takes a
 // name a repository owner could have. `github.com/setup` **is** a real account —
 // but ghdiff has no route for a user profile at all, and never did.
-// `gitHubTargetFromSegments(['setup'])` answers with nothing, so `/setup` was a
+// `reviewTargetFromSegments(['setup'])` answers with nothing, so `/setup` was a
 // 404 before this file existed. It claims a dead address and shadows nothing a
 // reviewer could have reached.
 //
+// What the page sets up is the three GitHub steps — sign in, grant the App its
+// reach, open the diff. They render only when the deployment has a sign-in to
+// offer: the instance answer arrives with the page in the root route's loader
+// data.
+//
 // Two search parameters, because two places send a reviewer here and they know
 // different things. The review panel knows the path a diff would not load from,
-// so it sends `from` — which also gives step three somewhere to go back to. The
-// left bar knows only that a repository would not list, so it sends `account`.
-// The screen reads the account out of `from` when only `from` came, so neither
-// caller has to work out the other's answer.
+// so it sends `from` — which also gives the last step somewhere to go back to.
+// The left bar knows only that a repository would not list, so it sends
+// `account`. The screen reads the account out of `from` when only `from` came,
+// so neither caller has to work out the other's answer.
 //
 // `migrated` is the third, and it is written by nothing a reviewer can press:
 // `useGitHubSession` sets it on the one redirect it makes, when it finds a
 // personal access token this browser was still holding from before the GitHub
-// App. It only changes what the page says, never what it does.
+// App. It only changes what the page says, never what it does, and only the
+// GitHub section reads it.
 //
 // All three arrive as search parameters rather than being remembered, so the
 // address is the whole state and this page can be sent to somebody else and

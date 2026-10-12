@@ -6,13 +6,14 @@ import {
   type SignedAttachment,
   type SignedAttachments,
 } from '@/lib/attachments';
+import { type PullRef, refQueryKey } from '@/lib/forges';
 import type { ConversationEntry } from '@/lib/pullConversation';
 import { entriesWithoutAttachments } from '@/lib/queryCache/persist';
 import { rpc } from '@/lib/rpc/client';
 
-// What was said about one pull request as a whole, for the top of the comment
-// list. Only a pull request has a conversation: a commit and a compare range
-// have no thread on GitHub above their lines.
+// What was said about one pull request as a whole, for the
+// top of the comment list. Only those have a conversation: a commit and a
+// compare range have no thread on their forge above their lines.
 //
 // A failure to read it is reported nowhere. The list is a companion to the line
 // threads, which have their own error, and an absent conversation draws exactly
@@ -38,12 +39,13 @@ const NO_ATTACHMENTS: SignedAttachments = { byId: {} };
 const RENEW_MARGIN_MS = 30_000;
 
 export function usePullConversation(options: {
-  number?: number;
-  owner?: string;
-  repo?: string;
+  ref?: PullRef;
 }): PullConversationState {
-  const { number, owner, repo } = options;
-  const queryKey = ['comments.conversation', owner, repo, number];
+  const { ref } = options;
+  const queryKey = [
+    'comments.conversation',
+    ...(ref == null ? [] : refQueryKey(ref)),
+  ];
   const pullHash = JSON.stringify(queryKey);
 
   // Shared between tabs, and kept on disk without the signed addresses — see
@@ -52,12 +54,10 @@ export function usePullConversation(options: {
   const query = useSharedQuery<ConversationEntry[]>({
     queryKey,
     fetch: (signal) => {
-      if (owner == null || repo == null || number == null) {
-        throw new Error('No pull request to ask about.');
-      }
-      return rpc.comments.conversation({ number, owner, repo }, { signal });
+      if (ref == null) throw new Error('No pull request to ask about.');
+      return rpc.comments.conversation(ref, { signal });
     },
-    enabled: owner != null && repo != null && number != null,
+    enabled: ref != null,
     persist: entriesWithoutAttachments,
   });
   const entries = query.data ?? NO_ENTRIES;
@@ -93,12 +93,12 @@ export function usePullConversation(options: {
   const lifetimeMs = attachments.lifetimeMs;
   const renewAttachments = useCallback(() => {
     if (lifetimeMs == null || renewingRef.current) return;
-    if (owner == null || repo == null || number == null) return;
+    if (ref == null) return;
     if (Date.now() - signedAt < lifetimeMs - RENEW_MARGIN_MS) return;
     renewingRef.current = true;
     void (async () => {
       try {
-        const answer = await rpc.comments.conversation({ number, owner, repo });
+        const answer = await rpc.comments.conversation(ref);
         setRenewed({
           pull: pullHash,
           signedAt: Date.now(),
@@ -112,7 +112,7 @@ export function usePullConversation(options: {
         renewingRef.current = false;
       }
     })();
-  }, [lifetimeMs, number, owner, pullHash, repo, signedAt]);
+  }, [lifetimeMs, pullHash, ref, signedAt]);
 
   return {
     entries,

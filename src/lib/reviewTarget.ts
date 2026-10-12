@@ -1,18 +1,31 @@
-import { m } from '@/paraglide/messages.js';
 // What reviewer is looking at.
 //
-// Three of the four targets are a place on GitHub that resolves to one unified
-// diff. A pull request is the only one that can carry comments upstream,
-// because it is the only one GitHub has a review-comment thread for. A commit
-// and a compare range keep their comments in the browser.
+// Every target is a place on a git forge that resolves to one unified diff.
+// On GitHub that is a pull request, a commit, or a compare range. A pull
+// request is the only one that can carry comments upstream, because it is the
+// only one GitHub has a review-comment thread for. A commit and a compare range
+// keep their comments in the browser.
 //
-// The fourth is a diff that is on a developer's own disk and nowhere else, and
-// it exists because the `ghdiff` command serves one. The Worker can never
-// answer for it — workerd spawns no process and reads no host path — so the
-// two `/api` routes turn it away and the command's own server is the only
-// thing that answers. Everything above those routes is target-agnostic: the
-// viewer, the filter, the fragment grammar and the browser-stored comments all
-// read the same shapes they already read for a commit.
+// A target's URL names its host: the canonical path glues it to the first path
+// segment with a colon — `/github.com:owner/repo/pull/123`. Hostless paths are
+// entry points, never targets: `classifyRouteSegments` sends the loader's
+// answer — canonicalize or 404. And a colon host the deployment does not serve
+// still parses here: membership is enforced where data is fetched, by the
+// server-side forge gate, whose 404 names what this deployment serves.
+//
+// One target is on no forge at all: a diff on a developer's own disk, which
+// exists because the `ghdiff` command serves one. The Worker can never answer
+// for it — workerd spawns no process and reads no host path — so the two
+// `/api` routes turn it away and the command's own server is the only thing
+// that answers. Everything above those routes is target-agnostic: the viewer,
+// the filter, the fragment grammar and the browser-stored comments all read
+// the same shapes they already read for a commit.
+
+import * as z from 'zod';
+
+import { forgeOfHost } from './forges';
+import { GITHUB_HOSTS } from './github/hosts';
+import { m } from '@/paraglide/messages.js';
 
 export interface GitHubRepoRef {
   owner: string;
@@ -63,26 +76,27 @@ export interface LocalDiffTarget {
  */
 export const LOCAL_TARGET_NOT_SERVED = m.local_diff_remote;
 
-/** The three targets github.com has a page for. */
-export type GitHubReviewTarget =
+/** The targets a forge answers for: every one but the local diff. */
+export type ForgeTarget =
   | GitHubPullTarget
   | GitHubCommitTarget
   | GitHubCompareTarget;
 
-export type ReviewTarget = GitHubReviewTarget | LocalDiffTarget;
+export type ReviewTarget = ForgeTarget | LocalDiffTarget;
+
+/** The targets GitHub answers for. */
+export type GitHubTarget = ForgeTarget;
 
 const OWNER_REPO_PATTERN = /^[A-Za-z0-9._-]+$/;
 const SHA_PATTERN = /^[0-9a-f]{7,40}$/i;
 
 /**
- * True when this target is somewhere on github.com, which is what every
- * address, every REST call and the whole account surface is about. The one
- * target that answers false is served by the local command, from a repository
- * GitHub has never been told about.
+ * True when this target is somewhere on a forge, which is what every address,
+ * every forge call and the whole account surface is about. The one target that
+ * answers false is served by the local command, from a repository no forge has
+ * ever been told about.
  */
-export function isGitHubTarget(
-  target: ReviewTarget
-): target is GitHubReviewTarget {
+export function isForgeTarget(target: ReviewTarget): target is ForgeTarget {
   return target.kind !== 'local-diff';
 }
 
@@ -132,17 +146,6 @@ function labelLocalRange(range: LocalDiffRange): string {
 }
 
 /**
- * True when comments on this target belong to a GitHub review thread. Only a
- * pull request qualifies: GitHub has no comment thread for a bare compare
- * range, and commit comments are a different API with no line ranges.
- */
-export function supportsGitHubComments(
-  target: ReviewTarget
-): target is GitHubPullTarget {
-  return target.kind === 'github-pull';
-}
-
-/**
  * Stable key for caches and for browser-side comment storage.
  *
  * A local diff keys off the **absolute repository path** and the range, and off
@@ -181,34 +184,68 @@ export function describeReviewTarget(target: ReviewTarget): string {
   }
 }
 
-/**
- * The splat for the `/$` route, which is the whole path. The router
- * percent-encodes each segment on the way out and decodes it on the way back,
- * so this function writes the path plainly and `gitHubTargetFromSegments`
- * reads it back.
- */
-export function reviewTargetSplat(target: GitHubReviewTarget): string {
+/** The kind of diff a target is, for the favicon's type badge. */
+export type ReviewTabType = 'pull' | 'commit' | 'compare';
+
+/** Which badge the favicon paints for this target. */
+export function reviewTabType(target: ReviewTarget): ReviewTabType {
   switch (target.kind) {
     case 'github-pull':
-      return `${target.owner}/${target.repo}/pull/${target.number}`;
+      return 'pull';
     case 'github-commit':
-      return `${target.owner}/${target.repo}/commit/${target.sha}`;
+      return 'commit';
     case 'github-compare':
-      return `${target.owner}/${target.repo}/compare/${target.base}...${target.head}`;
+      return 'compare';
+    case 'local-diff':
+      return target.range.mode === 'commit' ? 'commit' : 'compare';
   }
 }
 
 /**
- * The path a reviewer would type, for showing rather than for routing. It is
- * `reviewTargetSplat` with a commit SHA cut to seven characters: a row that
- * prints all forty spends its width on a hash nobody reads, and the link under
- * it still carries the whole one.
+ * The browser tab's title for a review, in the forges' own habit of naming
+ * the change and where it lives: the pull request's title when it has been
+ * read, then the host and the path with the forge's own `#` marker, then the
+ * app's name — a ghdiff tab reads as a
+ * ghdiff tab next to the forge's own.
  */
-export function reviewTargetDisplayPath(target: GitHubReviewTarget): string {
-  if (target.kind === 'github-commit') {
-    return `${target.owner}/${target.repo}/commit/${target.sha.slice(0, 7)}`;
+export function reviewTabTitle(
+  target: ReviewTarget,
+  pullTitle?: string
+): string {
+  const brand = 'ghdiff';
+  switch (target.kind) {
+    case 'github-pull': {
+      const place = `${GITHUB_HOSTS[0]}/${target.owner}/${target.repo} #${target.number}`;
+      return pullTitle == null
+        ? `${place} · ${brand}`
+        : `${pullTitle} · ${place} · ${brand}`;
+    }
+    case 'github-commit':
+      return `${GITHUB_HOSTS[0]}/${target.owner}/${target.repo} @ ${target.sha.slice(0, 7)} · ${brand}`;
+    case 'github-compare':
+      return `${GITHUB_HOSTS[0]}/${target.owner}/${target.repo} ${target.base}...${target.head} · ${brand}`;
+    case 'local-diff':
+      return `${describeReviewTarget(target)} · ${brand}`;
   }
-  return reviewTargetSplat(target);
+}
+
+/**
+ * The splat for the `/$` route, which is the whole path, in the canonical
+ * form: the host glued to the first segment with a colon. The router
+ * percent-encodes each segment on the way out and decodes it on the way back
+ * — with `:` kept literal, because the router names it in
+ * `pathParamsAllowedCharacters` — so this function writes the path plainly
+ * and `reviewTargetFromSegments` reads it back.
+ */
+export function reviewTargetSplat(target: ForgeTarget): string {
+  switch (target.kind) {
+    case 'github-pull':
+      return `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}/pull/${target.number}`;
+    case 'github-commit':
+      return `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}/commit/${target.sha}`;
+    case 'github-compare':
+      return `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}/compare/${target.base}...${target.head}`;
+  }
 }
 
 /** The query the `/api/diff` route expects for this target. */
@@ -245,76 +282,60 @@ export function reviewTargetQuery(target: ReviewTarget): URLSearchParams {
   }
 }
 
-/** Rebuilds a target from the `/api/diff` query. Returns undefined if invalid. */
+const ownerRepoSchema = z.string().regex(OWNER_REPO_PATTERN);
+const shaSchema = z.string().regex(SHA_PATTERN);
+const numberSchema = z.coerce.number().int().positive();
+
+/**
+ * The `/api/diff` family's query string as a zod schema: the raw search
+ * params in, the parsed target out — structurally the `ReviewTarget` union.
+ * Unknown keys strip. `base`/`head` are required but may be empty, the same
+ * tolerance the old parser had.
+ */
+export const reviewTargetSearch = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('github-pull'),
+    owner: ownerRepoSchema,
+    repo: ownerRepoSchema,
+    number: numberSchema,
+  }),
+  z.object({
+    kind: z.literal('github-commit'),
+    owner: ownerRepoSchema,
+    repo: ownerRepoSchema,
+    sha: shaSchema,
+  }),
+  z.object({
+    kind: z.literal('github-compare'),
+    owner: ownerRepoSchema,
+    repo: ownerRepoSchema,
+    base: z.string(),
+    head: z.string(),
+  }),
+]);
+
+/**
+ * The hosted `/api` routes' query: a forge target, or a local one, which they
+ * recognize only to turn away with `LOCAL_TARGET_NOT_SERVED` — it reaches them
+ * only from a link pasted out of a local run, and the sentence that names the
+ * command is worth more than "not valid".
+ */
+export const hostedTargetSearch = z.discriminatedUnion('kind', [
+  ...reviewTargetSearch.options,
+  z.object({ kind: z.literal('local-diff') }),
+]);
+
+/**
+ * Rebuilds a target from the query `reviewTargetQuery` wrote: a forge target
+ * through the same schema the routes validate with, and a local one by hand.
+ * The command's own server reads it this way, and so does the client that
+ * rebuilds its own target from the address.
+ */
 export function reviewTargetFromQuery(
   params: URLSearchParams
 ): ReviewTarget | undefined {
-  const kind = params.get('kind');
-  if (kind === 'local-diff') return localTargetFromQuery(params);
-
-  const owner = params.get('owner');
-  const repo = params.get('repo');
-  if (
-    owner == null ||
-    repo == null ||
-    !OWNER_REPO_PATTERN.test(owner) ||
-    !OWNER_REPO_PATTERN.test(repo)
-  ) {
-    return undefined;
-  }
-
-  if (kind === 'github-pull') {
-    const number = Number(params.get('number'));
-    if (!Number.isInteger(number) || number <= 0) return undefined;
-    return { kind, owner, repo, number };
-  }
-  if (kind === 'github-commit') {
-    const sha = params.get('sha');
-    if (sha == null || !SHA_PATTERN.test(sha)) return undefined;
-    return { kind, owner, repo, sha };
-  }
-  if (kind === 'github-compare') {
-    const base = params.get('base');
-    const head = params.get('head');
-    if (base == null || head == null) return undefined;
-    return { kind, owner, repo, base, head };
-  }
-  return undefined;
-}
-
-/**
- * Rebuilds a GitHub target from the route's path segments, which mirror
- * github.com's own paths.
- */
-export function gitHubTargetFromSegments(
-  segments: readonly string[]
-): GitHubReviewTarget | undefined {
-  const [owner, repo, kind, ...rest] = segments;
-  if (
-    owner == null ||
-    repo == null ||
-    !OWNER_REPO_PATTERN.test(owner) ||
-    !OWNER_REPO_PATTERN.test(repo)
-  ) {
-    return undefined;
-  }
-
-  if (kind === 'pull' || kind === 'pulls') {
-    const number = Number(rest[0]);
-    if (!Number.isInteger(number) || number <= 0) return undefined;
-    return { kind: 'github-pull', owner, repo, number };
-  }
-  if (kind === 'commit' || kind === 'commits') {
-    const sha = rest[0];
-    if (sha == null || !SHA_PATTERN.test(sha)) return undefined;
-    return { kind: 'github-commit', owner, repo, sha };
-  }
-  if (kind === 'compare') {
-    const parsed = parseCompareRange(decodeRange(rest.join('/')));
-    if (parsed == null) return undefined;
-    return { kind: 'github-compare', owner, repo, ...parsed };
-  }
-  return undefined;
+  if (params.get('kind') === 'local-diff') return localTargetFromQuery(params);
+  return reviewTargetSearch.safeParse(Object.fromEntries(params)).data;
 }
 
 /**
@@ -359,24 +380,159 @@ function localRangeFromQuery(
 }
 
 /**
- * A compare range reaches this function decoded, because the router decodes the
- * splat. A range typed straight into the address bar does not, so it is decoded
- * here. A literal `%` in a branch name makes `decodeURIComponent` throw, and
- * the raw text is the right answer in that case.
+ * The canonical glue, split: `host:first-path-segment`. The port-safe order
+ * matters — `git.example:8443:owner` is host `git.example:8443` with first
+ * segment `owner`, while `git.example:8443` alone is a host with a port and no
+ * path at all: an all-digits right side of a single colon is the port, so that
+ * segment is not the colon form. The host lowercases, the way a URL's hostname
+ * does.
  */
-function decodeRange(range: string): string {
-  try {
-    return decodeURIComponent(range);
-  } catch {
-    return range;
+const HOST_PORT_COLON_PATTERN = /^([a-z0-9.-]+:\d+):(.+)$/i;
+const HOST_COLON_PATTERN = /^([a-z0-9.-]+):(.+)$/i;
+
+export function splitColonHost(
+  segment: string
+): { host: string; first: string } | undefined {
+  const withPort = HOST_PORT_COLON_PATTERN.exec(segment);
+  if (withPort != null) {
+    return { host: withPort[1].toLowerCase(), first: withPort[2] };
+  }
+  const plain = HOST_COLON_PATTERN.exec(segment);
+  if (plain != null && !/^\d+$/.test(plain[2])) {
+    return { host: plain[1].toLowerCase(), first: plain[2] };
+  }
+  return undefined;
+}
+
+/**
+ * The one shape a review path can have, read in a single match: GitHub's
+ * `owner/repo/page/…`, with every parameter captured by name — the review
+ * number, the commit sha, the compare range's base and head. The host is not
+ * read here: it arrives glued with a colon (splitColonHost), from a URL's
+ * hostname, or not at all — and which grammar it speaks is `forgeOfHost`'s
+ * answer, not this pattern's. Nobody matches against the pattern directly;
+ * `pathShapeOf` is the typed way in.
+ */
+const PATH_SHAPE =
+  /^(?<owner>[\w.-]+)\/(?<repo>[\w.-]+)\/(?:(?<githubPull>pulls?\/(?<pullNumber>[1-9]\d*))|(?<githubCommit>commits?\/(?<githubSha>[0-9a-fA-F]{7,40}))|(?<githubCompare>compare\/(?<githubBase>.+?)\.\.\.?(?<githubHead>.+)))(?:\/.*)?$/;
+
+/** The page a review path names, with its parameters read. */
+export type PathPage =
+  | { kind: 'pull'; number: number }
+  | { kind: 'commit'; sha: string }
+  | { kind: 'compare'; base: string; head: string };
+
+/**
+ * What a review path says it is: the GitHub shape with its owner and repo,
+ * and the page's parameters already read. Undefined when the path is no
+ * review's shape.
+ */
+export type PathShape = {
+  forge: 'github';
+  owner: string;
+  repo: string;
+  page: PathPage;
+};
+
+/** What a review path says it is, or undefined when it is no review's shape. */
+export function pathShapeOf(path: string): PathShape | undefined {
+  const g = PATH_SHAPE.exec(path)?.groups ?? {};
+  if (g.owner != null && g.repo != null) {
+    const page = gitHubPage(g);
+    return page == null
+      ? undefined
+      : { forge: 'github', owner: g.owner, repo: g.repo, page };
+  }
+  return undefined;
+}
+
+function gitHubPage(g: Record<string, string>): PathPage | undefined {
+  if (g.githubPull != null) {
+    return { kind: 'pull', number: Number(g.pullNumber) };
+  }
+  if (g.githubCommit != null) return { kind: 'commit', sha: g.githubSha };
+  if (g.githubCompare != null) {
+    return {
+      kind: 'compare',
+      base: decodeRange(g.githubBase),
+      head: decodeRange(g.githubHead),
+    };
+  }
+  return undefined;
+}
+
+/**
+ * The target a path's shape stands for on a host — the two must agree: a
+ * GitHub page belongs to a GitHub-speaking host, or to no host at all, the
+ * hostless form the route canonicalizes. Anything else is no target.
+ */
+export function targetFromPathShape(
+  shape: PathShape,
+  host: string | undefined
+): ForgeTarget | undefined {
+  if (host != null && forgeOfHost(host) !== 'github') return undefined;
+  switch (shape.page.kind) {
+    case 'pull':
+      return {
+        kind: 'github-pull',
+        owner: shape.owner,
+        repo: shape.repo,
+        number: shape.page.number,
+      };
+    case 'commit':
+      return {
+        kind: 'github-commit',
+        owner: shape.owner,
+        repo: shape.repo,
+        sha: shape.page.sha,
+      };
+    case 'compare':
+      return {
+        kind: 'github-compare',
+        owner: shape.owner,
+        repo: shape.repo,
+        base: shape.page.base,
+        head: shape.page.head,
+      };
   }
 }
 
 /**
+ * The path segments of an input a reviewer typed, or of a `from` path the
+ * setup page reads: trimmed, a scheme and a leading slash stripped, split on
+ * `/` with the empties gone.
+ */
+export function segmentsFromPath(input: string): string[] {
+  return input
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/^\//, '')
+    .split('/')
+    .filter((segment) => segment.length > 0);
+}
+
+/**
+ * Rebuilds a target from the route's path segments, in the canonical colon
+ * form alone: the first segment carries the host glued on with a colon, and
+ * the rest reads `owner/repo/pull/123` the way github.com does. A host that
+ * speaks no forge's grammar is no target.
+ */
+export function reviewTargetFromSegments(
+  segments: readonly string[]
+): ForgeTarget | undefined {
+  const first = segments[0];
+  if (first == null) return undefined;
+  const split = splitColonHost(first);
+  if (split == null) return undefined;
+  const shape = pathShapeOf([split.first, ...segments.slice(1)].join('/'));
+  return shape == null ? undefined : targetFromPathShape(shape, split.host);
+}
+
+/**
  * Splits `base..head` or `base...head`, the two spellings a range is written
- * in — in a github.com compare path, and in the `ghdiff` command's own
- * argument alike. Both mean the merge-base range here, which is what a branch
- * review is and what github.com's compare page shows.
+ * in — in a forge's compare path, and in the `ghdiff` command's own argument
+ * alike. Both mean the merge-base range here, which is what a branch review is
+ * and what a forge's compare page shows.
  */
 export function parseCompareRange(
   range: string
@@ -391,51 +547,56 @@ export function parseCompareRange(
 }
 
 /**
- * Parses whatever the user pasted into the open-a-review box: a github.com
- * URL, or the `owner/repo#123` shorthand.
+ * A compare range reaches this function decoded, because the router decodes the
+ * splat. A range typed straight into the address bar does not, so it is decoded
+ * here. A literal `%` in a branch name makes `decodeURIComponent` throw, and
+ * the raw text is the right answer in that case.
  */
-export function parseGitHubInput(
-  input: string
-): GitHubReviewTarget | undefined {
-  const trimmed = input.trim();
-  if (trimmed.length === 0) return undefined;
+function decodeRange(range: string): string {
+  try {
+    return decodeURIComponent(range);
+  } catch {
+    return range;
+  }
+}
 
-  const shorthand = /^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+)#(\d+)$/.exec(
-    trimmed
-  );
-  if (shorthand != null) {
+/** What the `/$` loader does with a path, before any target exists. */
+export type RouteParse =
+  | { kind: 'target'; target: ForgeTarget }
+  | { kind: 'redirect'; splat: string; status: 302 }
+  | { kind: 'none' };
+
+/**
+ * Classifies the route's path segments for the `/$` loader. Pure and
+ * client-safe — no config, no network: whether this deployment serves GitHub
+ * is the server-side forge gate's to answer, so a colon target is a target
+ * here and may be a 404 there.
+ *
+ * - The canonical colon form parses to a target, or to nothing when the rest
+ *   of the path holds no grammar.
+ * - A hostless GitHub-shaped path redirects to the one GitHub host.
+ */
+export function classifyRouteSegments(segments: readonly string[]): RouteParse {
+  const first = segments[0];
+  if (first == null) return { kind: 'none' };
+  const splat = segments.join('/');
+
+  const split = splitColonHost(first);
+  if (split != null) {
+    const shape = pathShapeOf([split.first, ...segments.slice(1)].join('/'));
+    const target =
+      shape == null ? undefined : targetFromPathShape(shape, split.host);
+    return target == null ? { kind: 'none' } : { kind: 'target', target };
+  }
+
+  const shape = pathShapeOf(splat);
+  if (shape != null) {
+    // A GitHub shape with no host: the one GitHub host is the canonical one.
     return {
-      kind: 'github-pull',
-      owner: shorthand[1],
-      repo: shorthand[2],
-      number: Number(shorthand[3]),
+      kind: 'redirect',
+      splat: `${GITHUB_HOSTS[0]}:${splat}`,
+      status: 302,
     };
   }
-
-  let url: URL;
-  try {
-    url = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
-  } catch {
-    return undefined;
-  }
-  if (url.hostname !== 'github.com' && url.hostname !== 'www.github.com') {
-    return undefined;
-  }
-
-  const segments = url.pathname
-    .split('/')
-    .filter((segment) => segment.length > 0)
-    // github.com/o/r/pull/1/files and /commits both point at the same diff.
-    .filter(
-      (segment, index) =>
-        !(index >= 4 && (segment === 'files' || segment === 'changes'))
-    );
-
-  // A trailing `.diff` or `.patch` on a pull URL still names the pull.
-  const last = segments[segments.length - 1];
-  if (last != null && /\.(diff|patch)$/.test(last)) {
-    segments[segments.length - 1] = last.replace(/\.(diff|patch)$/, '');
-  }
-
-  return gitHubTargetFromSegments(segments);
+  return { kind: 'none' };
 }

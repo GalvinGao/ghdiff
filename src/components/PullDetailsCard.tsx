@@ -3,6 +3,7 @@ import { IconShare } from '@pierre/icons';
 import { CommentBody } from '@/components/CommentBody';
 import { PullStateIcon, pullStateLabel } from '@/components/PullStateIcon';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { forgeLabel, type ForgeName } from '@/lib/forges';
 import { formatNumber } from '@/lib/locale';
 import { describeAge, type PullDetails } from '@/lib/pullDetails';
 import { m } from '@/paraglide/messages.js';
@@ -14,12 +15,15 @@ import { m } from '@/paraglide/messages.js';
 export function PullDetailsCard({
   details,
   error,
+  forge,
   loading,
   now,
   onAttachmentError,
 }: {
   details?: PullDetails;
   error?: string;
+  /** The pull request's own forge, for the link out to it. */
+  forge: ForgeName;
   loading: boolean;
   /**
    * The instant the ages are measured from, stamped by whoever opened the card.
@@ -65,7 +69,7 @@ export function PullDetailsCard({
           rel="noreferrer"
           target="_blank"
         >
-          GitHub
+          {forgeLabel(forge)}
           <IconShare size={12} />
         </a>
       </div>

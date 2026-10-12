@@ -1,13 +1,14 @@
-import { m } from '@/paraglide/messages.js';
 // Every address the ghdiff GitHub App has on github.com, built in one place.
 //
-// This is the same rule `githubUrls.ts` holds for the addresses of a repository:
+// This is the same rule `./urls.ts` holds for the addresses of a repository:
 // a query string assembled at one call site cannot then differ from the next.
 // It replaces `githubToken.ts`, which built a pre-filled form asking for four
 // permissions on a personal access token. Nothing here asks for a permission:
 // GitHub is told the App's permissions once, when it is registered, and its own
 // consent screen is what names them to a reviewer. Which permissions those are
 // is written in CLAUDE.md, beside the rest of the registration.
+
+import { m } from '@/paraglide/messages.js';
 
 const GITHUB_WEB = 'https://github.com';
 
@@ -61,9 +62,10 @@ export function authorizeUrl(input: {
 // The callback has nowhere to draw a panel: it is a redirect, and the page that
 // draws things is the one it redirects to. So the reason travels as a query
 // parameter and the screen reads it, says its line, and takes it back out of the
-// address. Four reasons, because there are four ways this ends badly and they
-// are not the same advice: three of them are "start again" and one of them is
-// the reviewer having decided not to.
+// address. One reason per way this ends badly, and they are not the same advice:
+// three of them are "start again" and one of them is the reviewer having decided
+// not to. The three shared reasons name no forge; the forge's own failure is
+// one reason per forge.
 
 /** The query parameter a failed sign-in leaves on the page it returns to. */
 export const AUTH_ERROR_PARAM = 'ghdiff_auth';
@@ -72,13 +74,13 @@ export type AuthFailure = 'denied' | 'expired' | 'mismatch' | 'github';
 
 const AUTH_FAILURE_MESSAGE: Record<AuthFailure, string> = {
   get denied() {
-    return m.github_app_sign_in_was_not_completed_on_github_try();
+    return m.github_app_sign_in_was_not_completed_try_again();
   },
   get expired() {
-    return m.github_app_the_sign_in_session_timed_out_on_github();
+    return m.github_app_the_sign_in_session_timed_out_start();
   },
   get mismatch() {
-    return m.github_app_security_verification_failed_during_github_sign_in_start();
+    return m.github_app_security_verification_failed_during_sign_in();
   },
   get github() {
     return m.github_app_github_could_not_complete_the_sign_in_try();
