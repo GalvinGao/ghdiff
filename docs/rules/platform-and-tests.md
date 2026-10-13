@@ -77,7 +77,8 @@ gate. `pnpm codegen:gql` runs `@graphql-codegen/client-preset` over the
 `graphql()`-tagged documents in the forges' `<forge>.gql.ts` files against the
 vendors' live schemas — the URLs in `codegen.ts`, so a run needs the network —
 and writes `src/lib/server/forges/gqlgen/`, which both oxc tools skip like
-`src/routeTree.gen.ts`.
+`src/routeTree.gen.ts`. The e2e layer is what answers for a self-hosted instance
+whose schema lags gitlab.com's.
 
 `vite build` writes `dist/client` (the static assets, which the generated
 `dist/server/wrangler.json` binds) and `dist/server` (the Worker). Nothing in
@@ -115,7 +116,7 @@ config as a parameter — there is no process-wide cache, so there is nothing to
 override and nothing to reset. Client modules take the host list as a parameter
 the same way.
 
-Three layers, and they answer different questions. Pure domain logic in
+Four layers, and they answer different questions. Pure domain logic in
 `src/lib/` is unit tested as it always was. The RPC procedures are tested
 against an in-memory fake forge (`src/lib/rpc/router.test.ts`, through the
 registry's `registerForge`): dispatch, credential forwarding, capability gates,
@@ -123,6 +124,83 @@ and the status mapping, with no network. The GitHub forge is tested against HTTP
 itself, through msw handlers (`test/msw/`) whose fixtures are recorded from the
 real API where anonymity allows (`test/fixtures/`), so a shape this repository
 invented cannot pass for a real one.
+
+The fourth layer asks the question the fakes cannot: whether the served app
+still agrees with the forges as they are today. It lives in `test/e2e/` as one
+Vitest workspace (`vitest.config.ts`) whose two node-environment projects,
+`gitlab` and `github`, run against a live server and two fixture repositories —
+a fixture project on a GitLab instance and a private fixture repository on
+github.com, both named by the environment. Nothing in this repository creates
+them; each holds the same matrix, which the suites assert:
+
+- **#1**, `feature/rework` into `main`: twelve files — `docs/guide.md` renamed
+  to `docs/manual.md`, `src/rename-me.ts` renamed, a file added, a file deleted,
+  and a whitespace-only reindent — with one review thread of a root and a reply,
+  and one note on the pull request or merge request itself. On GitLab, the
+  fixture account also holds two draft notes there.
+- **#2**, two files stacked on `feature/rework`.
+- **#3**, a draft of one file.
+- **One commit** of one file, and the compare `main...feature/rework`, which is
+  #1's twelve files again.
+
+`pnpm test:e2e` runs both legs; `pnpm test:e2e:gitlab` and `:github` run one.
+`pnpm test` is the wildcard over the two (`test:lib` included) — the single-leg
+scripts sit it out, so nothing runs twice.
+
+Each project carries its own `globalSetup` (`test/e2e/github/setup.ts`,
+`test/e2e/gitlab/setup.ts`): the preflight the legs share — the app must answer,
+and it must not answer anonymous calls as a signed-in viewer, which the
+`GITHUB_TOKEN` fallback would do — then a reset of that leg's fixture to its
+seeded state, so a single-forge run never touches the other forge. Files
+serialize (`fileParallelism: false`) because the fixtures are shared, live
+repositories.
+
+Each leg's `features.test.ts` covers what upstream added after the fork, as that
+forge answers it: the team's verdicts, the conversation, an issue filed from a
+note (deleted again by its marker), the deployments menu, the 304 a patch and a
+whole file answer to their own ETag, and the local target the hosted routes
+refuse. The GitLab leg adds the session's 180-day `Max-Age`; the GitHub leg, the
+502 a GraphQL refusal surfaces as.
+
+Credentials never enter the tree. The API legs send the fixture PATs as
+`Authorization: Bearer`, read from the environment — `GITHUB_TOKEN` for the
+GitHub leg, `GITLAB_TOKEN` for the GitLab one — and the fixtures are named there
+too: `E2E_GITHUB_REPO` as `owner/repo`, and `E2E_GITLAB_HOST` with
+`E2E_GITLAB_PROJECT`, so no instance is baked into the suite. A missing variable
+is a loud failure at import, naming what is absent. Every e2e file reaches the
+app's modules through the `@/` alias, read out of `tsconfig.json`'s `paths` the
+same way the app build reads it.
+
+Everything the suites create on a forge carries a body starting with
+`[e2e <13-digit clock>]`, and a run begins by deleting every artifact with that
+marker — `MARKED` in `test/e2e/lib/util.ts`, anchored and closed, so seeded
+content and anything a human wrote, `[e2e planning]` included, are never
+matched. Every list is read in full, page by page, before the first delete. A
+pending review is deleted only on positive marker evidence: the body blank or
+marked, and every comment on it marked, read through the review's own endpoint
+before anything is deleted; a mixed or unidentified review stays. A `FIND` title
+marks a behavioral difference between the forges that is reported, not judged.
+Nine `[e2e]`/`[probe]` reviews stay on the GitHub pulls by design — a submitted
+COMMENTED review can be neither dismissed nor deleted through the API, and the
+reset's marker regex already keeps them out of the assertions' way.
+
+The deployment under test is part of the fixture. The dev server must list the
+GitLab host in `GITLAB_HOSTS` and set `SESSION_SECRET`, and it must not set
+`GITHUB_TOKEN`: the fallback token authenticates every request, and the
+anonymous-path tests could no longer tell an anonymous caller apart — the
+workspace's global setup refuses to start against such a server and says why.
+GitHub is served through placeholder App credentials
+(`GITHUB_APP_CLIENT_ID`/`GITHUB_APP_CLIENT_SECRET`): the forge gate serves
+GitHub only with an App or the fallback token, and a placeholder App — never
+exercised by any test — is the one shape that keeps anonymous calls carrying no
+credential at all. The OAuth round trips (`/api/auth/start`, `callback`,
+`refresh`) are the one surface no e2e leg covers: placeholder credentials take
+nobody through them. Each suite pins its fixture commit by sha — in
+`diff-routes.test.ts` and `errors.test.ts`, and on GitLab in `features.test.ts`
+as well — so a fixture rebuilt from scratch needs its new commit's sha written
+into those files. And the whole layer is local-only on purpose: the PATs are
+personal, the GitLab host is not CI's to reach, and CI's four checks stay
+hermetic.
 
 The fixtures are recorded by the scripts in `test/fixtures/record/`, which share
 one scaffold (`record/lib.mjs`): the retry, the file per source, and the
