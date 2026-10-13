@@ -111,12 +111,14 @@ export function synthesizePatch(
 /** One line the UI can show when the fallback could not carry everything. */
 export function describeSynthesisGaps(
   result: SynthesizedPatch,
-  truncatedFileList: boolean
+  truncatedFileList: boolean,
+  forge: 'GitHub' | 'GitLab' = 'GitHub'
 ): string | undefined {
   const notes: string[] = [];
   if (truncatedFileList) {
     notes.push(
-      m.github_patch_github_lists_at_most_files_for_this_diff({
+      m.github_patch_forge_lists_at_most_files_for_this_diff({
+        forge,
         fileCount: result.fileCount,
       })
     );
@@ -124,7 +126,8 @@ export function describeSynthesisGaps(
   const missing = result.filesWithoutPatch.length;
   if (missing > 0) {
     notes.push(
-      m.github_patch_missing_files({
+      m.github_patch_forge_missing_files({
+        forge,
         count: missing,
         path: result.filesWithoutPatch[0] ?? '',
       })

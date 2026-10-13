@@ -1,6 +1,7 @@
 import { useLocation } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
+import { isGitLabTarget } from '@/lib/forges';
 import type { PullTarget } from '@/lib/pullScope';
 import {
   type ReviewTarget,
@@ -28,10 +29,12 @@ export function useCurrentReviewTarget(): ReviewTarget | undefined {
   }, [pathname]);
 }
 
-/** The pull request the path names, if it names one. */
+/** The pull request or merge request the path names, if it names one. */
 export function useCurrentPull(): PullTarget | undefined {
   const target = useCurrentReviewTarget();
-  return target?.kind === 'github-pull' ? target : undefined;
+  return target?.kind === 'github-pull' || target?.kind === 'gitlab-mr'
+    ? target
+    : undefined;
 }
 
 /**
@@ -45,7 +48,11 @@ export function useCurrentPull(): PullTarget | undefined {
  */
 export function useCurrentAccount(): string | undefined {
   const target = useCurrentReviewTarget();
-  return target != null && target.kind !== 'local-diff'
+  // A GitLab namespace is not a GitHub account, and the menu's rows are
+  // GitHub installations — so only a GitHub target has a row to mark.
+  return target != null &&
+    target.kind !== 'local-diff' &&
+    !isGitLabTarget(target)
     ? target.owner
     : undefined;
 }

@@ -15,6 +15,7 @@ import {
   buildLocalizationModel,
   type LocalizationModel,
 } from './localization/model';
+import { isGitLabTarget } from '@/lib/forges';
 import type { ReviewTarget } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 
@@ -116,6 +117,11 @@ export const EMPTY_REPO_LENS_STORE: RepoLensStore = {};
  */
 export function repoLensKey(target: ReviewTarget): string {
   if (target.kind === 'local-diff') return `local:${target.root}`;
+  // A GitLab project keeps its host, since two instances can each hold a
+  // project of the same path; GitHub's one host goes unsaid, as it always has.
+  if (isGitLabTarget(target)) {
+    return `${target.host}/${target.project}`.toLowerCase();
+  }
   return `${target.owner}/${target.repo}`.toLowerCase();
 }
 

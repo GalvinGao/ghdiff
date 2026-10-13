@@ -5,7 +5,12 @@
 // `SESSION_MAX_AGE_MS`, so 180 days after the migration deploys every one
 // of them has expired and this file, and the branch that calls it, can go.
 
-import type { GitHubGrant, OAuthHandoff, SessionPayload } from '@/lib/session';
+import type {
+  GitHubGrant,
+  GitLabGrant,
+  OAuthHandoff,
+  SessionPayload,
+} from '@/lib/session';
 
 /**
  * The first byte of every sealed value. It is not a version of the cipher — a
@@ -133,10 +138,19 @@ export function asSessionPayload(raw: unknown): SessionPayload | undefined {
   const fields = record(raw);
   if (fields == null) return undefined;
   const issuedAt = moment(fields.issuedAt);
-  // A session is its credential, and issuedAt is the ceiling's anchor: without
-  // both there is nothing here to honour.
-  if (issuedAt == null || text(fields.accessToken) == null) return undefined;
-  return { issuedAt, github: asGitHubGrant(fields) };
+  const gitlab = asGitLabGrants(fields.gitlab);
+  const grants = gitlab == null ? 0 : Object.keys(gitlab).length;
+  // A session is its credentials: the GitHub token, or at least one GitLab
+  // grant. issuedAt is the ceiling's anchor, and without either there is
+  // nothing here to honour.
+  if (issuedAt == null || (text(fields.accessToken) == null && grants === 0)) {
+    return undefined;
+  }
+  return {
+    issuedAt,
+    github: asGitHubGrant(fields),
+    gitlab,
+  };
 }
 
 /**
@@ -160,6 +174,42 @@ function asGitHubGrant(
   };
 }
 
+/** The GitLab grants, entry by entry; a malformed one is dropped, not fatal. */
+function asGitLabGrants(raw: unknown): Record<string, GitLabGrant> | undefined {
+  const fields = record(raw);
+  if (fields == null) return undefined;
+  const grants: Record<string, GitLabGrant> = {};
+  for (const [host, value] of Object.entries(fields)) {
+    const grant = asGitLabGrant(value);
+    if (grant != null) grants[host] = grant;
+  }
+  return grants;
+}
+
+function asGitLabGrant(raw: unknown): GitLabGrant | undefined {
+  const fields = record(raw);
+  if (fields == null) return undefined;
+  if (fields.type === 'pat') {
+    const token = text(fields.token);
+    return token == null ? undefined : { type: 'pat', token };
+  }
+  if (fields.type === 'oauth') {
+    const accessToken = text(fields.accessToken);
+    if (accessToken == null) return undefined;
+    const accessExpiresAt = moment(fields.accessExpiresAt);
+    const refreshToken = text(fields.refreshToken);
+    const refreshExpiresAt = moment(fields.refreshExpiresAt);
+    return {
+      type: 'oauth',
+      accessToken,
+      accessExpiresAt,
+      refreshToken,
+      refreshExpiresAt,
+    };
+  }
+  return undefined;
+}
+
 export function asOAuthHandoff(raw: unknown): OAuthHandoff | undefined {
   const fields = record(raw);
   if (fields == null) return undefined;
@@ -167,5 +217,7 @@ export function asOAuthHandoff(raw: unknown): OAuthHandoff | undefined {
   const verifier = text(fields.verifier);
   const returnTo = text(fields.returnTo);
   if (state == null || verifier == null || returnTo == null) return undefined;
-  return { state, verifier, returnTo };
+  const forge = fields.forge === 'gitlab' ? 'gitlab' : undefined;
+  const host = forge === 'gitlab' ? text(fields.host) : undefined;
+  return { state, verifier, returnTo, forge, host };
 }

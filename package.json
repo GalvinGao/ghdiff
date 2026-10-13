@@ -37,6 +37,8 @@
     "@fontsource-variable/fira-code": "5.3.0",
     "@fontsource-variable/geist-mono": "5.3.0",
     "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@gitbeaker/core": "^43.8.0",
+    "@gitbeaker/requester-utils": "^43.8.0",
     "@hono/node-server": "^2.1.1",
     "@inlang/paraglide-js": "^2.25.0",
     "@inlang/paraglide-js-react": "^1.0.3",

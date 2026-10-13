@@ -10,6 +10,7 @@ import { usePreference, watchOfferPreference } from '@/hooks/preferences';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import {
   formatWatchedRepo,
+  gluedWatchedRepo,
   isSameWatchedRepo,
   type WatchedRepo,
 } from '@/lib/pulls';
@@ -168,7 +169,7 @@ export function WatchOfferDialog({
 }: {
   /** True once the diff is on screen. Nothing is asked before that. */
   ready: boolean;
-  /** The repository the diff on screen belongs to. */
+  /** The repository the diff on screen belongs to, on its own forge. */
   subject: WatchedRepo;
 }) {
   const { watched } = useAppData();
@@ -191,6 +192,9 @@ export function WatchOfferDialog({
   // Destructured, so nothing reads a property of the state object while this
   // component renders.
   const { hydrated: watchedHydrated, repos } = watched;
+  // The repository's own forge: the offer names its merge requests on GitLab,
+  // its pull requests on GitHub.
+  const forge = subject.forge === 'gitlab' ? 'gitlab' : 'github';
   // The caller memoizes `subject` per target, so holding the object in the
   // dependencies costs no re-runs; the label is what the window latches.
   const subjectKey = formatWatchedRepo(subject);
@@ -236,7 +240,13 @@ export function WatchOfferDialog({
       {added ? (
         <>
           <p className="text-ink-muted text-sm">
-            {isPhone ? m.watch_offer_added_phone() : m.watch_offer_added_wide()}
+            {forge === 'gitlab'
+              ? isPhone
+                ? m.watch_offer_added_phone_gitlab()
+                : m.watch_offer_added_wide_gitlab()
+              : isPhone
+                ? m.watch_offer_added_phone()
+                : m.watch_offer_added_wide()}
           </p>
           {/* The way back to the editor is in the same two places the list is,
               so this sentence follows the screen as well: on a phone the
@@ -269,9 +279,13 @@ export function WatchOfferDialog({
       ) : (
         <>
           <p className="text-ink-muted text-sm">
-            {isPhone
-              ? m.watch_offer_preview_phone()
-              : m.watch_offer_preview_wide()}
+            {forge === 'gitlab'
+              ? isPhone
+                ? m.watch_offer_preview_phone_gitlab()
+                : m.watch_offer_preview_wide_gitlab()
+              : isPhone
+                ? m.watch_offer_preview_phone()
+                : m.watch_offer_preview_wide()}
           </p>
           <WatchOfferPreview />
           <p className="text-ink-faint text-xs">
@@ -296,12 +310,12 @@ export function WatchOfferDialog({
               size="md"
               variant="solid"
               onClick={() => {
-                // The label reads back through `parseWatchedRepo`, so this
-                // cannot refuse. If it ever did, the window stays on the
-                // question, which is the true answer.
+                // The glue reads back through `parseWatchedRepo` for every
+                // host shape, so this cannot refuse. If it ever did, the
+                // window stays on the question, which is the true answer.
                 if (
                   subjectLabel != null &&
-                  watched.add(formatWatchedRepo(subject))
+                  watched.add(gluedWatchedRepo(subject))
                 ) {
                   setAdded(true);
                 }

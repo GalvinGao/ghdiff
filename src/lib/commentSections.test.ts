@@ -2,8 +2,12 @@ import type { CodeViewDiffItem, DiffLineAnnotation } from '@pierre/diffs';
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
+import { countCommentAuthors } from './commentAuthors';
 import type { CommentMetadata } from './comments';
-import { buildCommentSections } from './commentSections';
+import {
+  buildCommentSections,
+  buildMergeRequestSection,
+} from './commentSections';
 import type { ReviewFileEntry } from './reviewData';
 
 function threadAnnotation(
@@ -125,6 +129,61 @@ describe('buildCommentSections', () => {
       range: { start: 1, end: 1, side: 'additions', endSide: 'additions' },
       pending: true,
       error: 'boom',
+    });
+  });
+});
+
+describe('buildMergeRequestSection', () => {
+  it('answers nothing when there are no threads', () => {
+    assert.equal(buildMergeRequestSection([]), undefined);
+  });
+
+  it('maps threads to rows with no line and the root’s own bot flag', () => {
+    const section = buildMergeRequestSection([
+      threadAnnotation('t1', {
+        author: 'project_9_bot_ab12cd',
+        authorIsBot: true,
+        replies: 2,
+        pending: true,
+        error: 'boom',
+      }),
+    ]);
+    assert.equal(section?.path, 'Merge request');
+    const row = section?.threads[0];
+    assert.equal(row?.scope, 'merge-request');
+    assert.equal(row?.lineNumber, undefined);
+    assert.equal(row?.authorIsBot, true);
+    assert.equal(row?.replyCount, 2);
+    assert.equal(row?.pending, true);
+    assert.equal(row?.error, 'boom');
+    assert.deepEqual(row?.participants, [
+      'project_9_bot_ab12cd',
+      'someone-else',
+    ]);
+  });
+
+  it('sorts resolved threads after the open ones and counts bots', () => {
+    const section = buildMergeRequestSection([
+      threadAnnotation('resolved', {
+        author: 'project_9_bot_ab12cd',
+        authorIsBot: true,
+        resolved: true,
+      }),
+      threadAnnotation('open-bot', {
+        author: 'project_9_bot_ab12cd',
+        authorIsBot: true,
+      }),
+      threadAnnotation('open-person', { author: 'gl', authorIsBot: false }),
+    ]);
+    assert.ok(section != null);
+    assert.deepEqual(
+      section.threads.map((thread) => thread.key),
+      ['open-bot', 'open-person', 'resolved']
+    );
+    // The People and Bots totals count the merge-request rows too.
+    assert.deepEqual(countCommentAuthors([section]), {
+      people: 1,
+      bots: 2,
     });
   });
 });

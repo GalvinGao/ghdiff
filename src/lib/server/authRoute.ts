@@ -7,6 +7,12 @@
 // with two `set-cookie` keys keeps one of them, and which one it keeps is not
 // something to find out in production.
 
+import {
+  type DeploymentConfig,
+  gitLabHostFor,
+  gitLabHostsLabel,
+  servesSentence,
+} from './config';
 import { textResponse } from './plainText';
 import { m } from '@/paraglide/messages.js';
 
@@ -15,6 +21,38 @@ export function notConfigured(): Response {
   return textResponse(m.auth_route_this_ghdiff_has_no_github_app_set_up(), {
     status: 501,
   });
+}
+
+/**
+ * What a GitLab auth route answers on a deployment with no GitLab hosts: not
+ * "no App", which would send a reviewer to set one up, but what this instance
+ * does serve.
+ */
+export function notThisGitLab(config: DeploymentConfig): Response {
+  return textResponse(
+    m.auth_route_no_gitlab_to_connect({ serves: servesSentence(config) }),
+    { status: 404 }
+  );
+}
+
+/**
+ * What a GitLab OAuth start answers when it cannot go. The host names one of
+ * this deployment's instances but the instance has no OAuth application to
+ * send the reviewer to — a personal access token is the way in there. Or the
+ * host names no instance this deployment serves, and the sentence says which
+ * ones it does.
+ */
+export function noGitLabOAuth(
+  config: DeploymentConfig,
+  host: string | undefined
+): Response {
+  const known = host != null && gitLabHostFor(config, host) != null;
+  const message = known
+    ? m.auth_route_no_gitlab_oauth_use_a_token()
+    : m.auth_route_no_gitlab_oauth_serves_hosts({
+        hosts: gitLabHostsLabel(config),
+      });
+  return textResponse(message, { status: 501 });
 }
 
 /**

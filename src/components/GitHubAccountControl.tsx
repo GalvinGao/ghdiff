@@ -1,4 +1,3 @@
-import { IconBrandGithub } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
 import { useAppData } from '@/components/AppDataProvider';
@@ -21,8 +20,8 @@ import { m } from '@/paraglide/messages.js';
  * first of two things a reviewer needs, and a control that jumped straight to
  * GitHub left them to discover the second one as a 404 — so the label says where
  * it goes rather than promising a redirect it no longer makes. A deployment
- * with nothing to set up — no GitHub App — gets no link at all: there is no
- * page behind it.
+ * with nothing to set up — no GitHub App, no GitLab hosts — gets no link at
+ * all: there is no page behind it.
  *
  * Signed in it is a menu, because there is something to see — the account every
  * comment will be posted as — and something to do about it.
@@ -32,6 +31,10 @@ import { m } from '@/paraglide/messages.js';
  * statement to every reviewer who already is. The home page keeps its button
  * through the wait instead: it is a row of the page's own content there, and a
  * gap that fills in reads worse than a label that settles.
+ *
+ * Whose account it shows is whichever the session holds: the GitHub viewer, or
+ * the first GitLab connection's when there is none. The panel behind it lists
+ * them all.
  */
 export function GitHubAccountControl({
   session,
@@ -39,19 +42,20 @@ export function GitHubAccountControl({
   session: GitHubSessionState;
 }) {
   const { instance } = useAppData();
-  const viewer = session.viewer;
+  const viewer = session.viewer ?? session.gitlab[0]?.viewer;
 
   if (session.checking) return null;
 
   if (viewer == null) {
-    if (!instance.github.oauth) return null;
+    if (!instance.github.oauth && instance.gitlab.hosts.length === 0) {
+      return null;
+    }
     return (
       <Link
         className={buttonClass({ size: 'sm', variant: 'outline' })}
         search={{ account: undefined, from: undefined, migrated: undefined }}
         to="/setup"
       >
-        <IconBrandGithub aria-hidden="true" size={14} />
         {m.git_hub_account_control_set_up_access()}
       </Link>
     );

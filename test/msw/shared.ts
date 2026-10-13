@@ -181,7 +181,7 @@ export async function callDiff(
 }
 
 /** One recorded fixture of the given forge, parsed. */
-export function fixture<T>(forge: 'github', name: string): T {
+export function fixture<T>(forge: 'github' | 'gitlab', name: string): T {
   return JSON.parse(
     readFileSync(
       new URL(`../fixtures/${forge}/${name}`, import.meta.url),

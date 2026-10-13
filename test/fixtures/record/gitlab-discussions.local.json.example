@@ -1,0 +1,25 @@
+{
+  "mergeRequests": [
+    { "file": "mr-discussions-bot.json", "project": 1234, "iid": 56 },
+    {
+      "file": "mr-discussions-threads.json",
+      "project": 5678,
+      "iid": 90,
+      "wanted": ["0123abcd", "5678efgh"]
+    }
+  ],
+  "users": [
+    { "file": "user-project-bot.json", "id": 123 },
+    { "file": "user-review-bot.json", "id": 456 },
+    { "file": "user-human.json", "id": 789 },
+    { "file": "user-human-two.json", "id": 1011 },
+    { "file": "user-human-three.json", "id": 1213 }
+  ],
+  "usernames": {
+    "the-review-bot's-real-username": "review-bot",
+    "a-person's-real-username": "reviewer-one",
+    "another-person's-real-username": "reviewer-two",
+    "a-third-person's-real-username": "reviewer-three",
+    "the-access-token-bot's-real-username": "project_1000_bot_1a2b3c4d5e6f708192a3b4c5d6e7f809"
+  }
+}

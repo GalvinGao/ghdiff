@@ -9,6 +9,7 @@
 import {
   FAILURE_FORGE_HEADER,
   FAILURE_HEADER,
+  FAILURE_HOST_HEADER,
   type FailureMeta,
 } from '@/lib/failure';
 
@@ -45,6 +46,9 @@ export function textResponse(
     headers[FAILURE_HEADER] = options.failure.reason;
     if (options.failure.forge != null) {
       headers[FAILURE_FORGE_HEADER] = options.failure.forge;
+    }
+    if (options.failure.host != null) {
+      headers[FAILURE_HOST_HEADER] = options.failure.host;
     }
   }
   if (options.etag != null) {

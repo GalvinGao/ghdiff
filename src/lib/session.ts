@@ -1,5 +1,5 @@
-// The reviewer's credential, as it travels between requests: one GitHub grant,
-// keyed by forge so a second forge's grants have a place beside it.
+// The reviewer's credentials, as they travel between requests: one GitHub
+// grant, and any number of GitLab ones keyed by instance host.
 //
 // This is the half of the session with no cipher in it: what the cookie carries,
 // what the cookie is called, the two clocks that decide when it is spent, and
@@ -17,8 +17,17 @@ export interface SessionPayload {
    * every eight hours.
    */
   issuedAt: number;
-  /** The GitHub credential. */
+  /**
+   * The GitHub credential. Absent for a GitLab-only session: a reviewer who
+   * connected a GitLab instance and never signed in to GitHub has grants
+   * below and no credential here.
+   */
   github?: GitHubGrant;
+  /**
+   * The GitLab credentials, keyed by instance host. Additive: a cookie sealed
+   * before GitLab existed simply has no key here, and parses as no grants.
+   */
+  gitlab?: Record<string, GitLabGrant>;
 }
 
 /** A GitHub credential: the user-to-server token, its clocks, and the refresh. */
@@ -37,6 +46,73 @@ export interface GitHubGrant {
   refreshExpiresAt?: number;
 }
 
+/** A GitLab credential: an OAuth grant with its clocks, or a bare PAT. */
+export type GitLabGrant =
+  | {
+      type: 'oauth';
+      accessToken: string;
+      accessExpiresAt?: number;
+      refreshToken?: string;
+      refreshExpiresAt?: number;
+    }
+  | { type: 'pat'; token: string };
+
+/**
+ * The session with one GitLab grant joined to it: the grants it already held
+ * plus this one under its host. `issuedAt` stays the session's own, so a
+ * connection added on day twenty does not buy the ceiling ten more days; a
+ * session that starts here dates from now. Every route that seals a GitLab
+ * grant goes through this, which is what keeps one forge's sign-in from
+ * dropping the other's.
+ */
+export function withGitLabGrant(
+  existing: SessionPayload | undefined,
+  host: string,
+  grant: GitLabGrant,
+  now: number
+): SessionPayload {
+  return {
+    ...existing,
+    gitlab: { ...(existing?.gitlab ?? {}), [host]: grant },
+    issuedAt: existing?.issuedAt ?? now,
+  };
+}
+
+/**
+ * The session with its GitHub credential taken away: the GitLab grants it
+ * still holds, and nothing else. The GitLab half has no equivalent — it is
+ * `withoutGitLabGrant` below, because it is keyed.
+ */
+export function withoutGitHubGrant(payload: SessionPayload): SessionPayload {
+  return { issuedAt: payload.issuedAt, gitlab: payload.gitlab };
+}
+
+/**
+ * The session with one GitLab grant taken away: the grants it still holds,
+ * minus this host's. A host the session does not hold is answered with the
+ * session as it is.
+ */
+export function withoutGitLabGrant(
+  payload: SessionPayload,
+  host: string
+): SessionPayload {
+  const gitlab = { ...(payload.gitlab ?? {}) };
+  delete gitlab[host];
+  return {
+    ...payload,
+    gitlab: Object.keys(gitlab).length > 0 ? gitlab : undefined,
+  };
+}
+
+/**
+ * Whether the session still authenticates anything: the GitHub token, or at
+ * least one GitLab grant. A disconnect that takes the last one ends the
+ * session rather than resealing an empty one.
+ */
+export function hasCredentials(payload: SessionPayload): boolean {
+  return payload.github != null || Object.keys(payload.gitlab ?? {}).length > 0;
+}
+
 /** What the handoff cookie carries across the forge's half of the flow. */
 export interface OAuthHandoff {
   /** Echoed back by the forge, and compared to prove the callback is ours. */
@@ -45,6 +121,10 @@ export interface OAuthHandoff {
   verifier: string;
   /** Where the reviewer was, fragment included. */
   returnTo: string;
+  /** Which forge this sign-in is for. Absent on an older cookie: GitHub. */
+  forge?: 'github' | 'gitlab';
+  /** For a GitLab sign-in, the instance's host. */
+  host?: string;
 }
 
 // `__Host-` is a prefix the browser enforces rather than a name this app chose.
@@ -271,6 +351,15 @@ export function safeReturnTo(raw: string | null | undefined): string {
   } catch {
     return HOME;
   }
+}
+
+/**
+ * Where a GitLab OAuth sign-in begins, for one instance host. The start route
+ * does the rest: it checks the host against the instances this deployment
+ * serves and sends the reviewer to its consent screen.
+ */
+export function gitLabAuthStartUrl(host: string, returnTo: string): string {
+  return `/api/auth/start?${new URLSearchParams({ forge: 'gitlab', host, returnTo })}`;
 }
 
 /**

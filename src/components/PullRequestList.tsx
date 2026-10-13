@@ -13,7 +13,9 @@ import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
 import { forgeLabel } from '@/lib/forges';
 import { accountAvatarUrl, repoPullsUrl, repoUrl } from '@/lib/github/urls';
+import { gitLabMergeRequestsUrl, gitLabProjectUrl } from '@/lib/gitlab/urls';
 import { formatList, formatNumber } from '@/lib/locale';
+import type { PullRepoGroup } from '@/lib/pulls';
 import {
   formatWatchedRepo,
   anyViewer,
@@ -26,6 +28,23 @@ import type { PullTarget } from '@/lib/pullScope';
 import { countStackNodes, stackCompareRange } from '@/lib/pullStacks';
 import { reviewTargetSplat } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
+
+/** The repository's own page, on whichever forge it is. */
+function projectUrl(group: PullRepoGroup): string {
+  return group.forge === 'gitlab'
+    ? gitLabProjectUrl({ host: group.host ?? '', project: group.project ?? '' })
+    : repoUrl(group);
+}
+
+/** Its open pull requests or merge requests, narrowed to an author when given. */
+function mergeRequestsUrl(group: PullRepoGroup, author?: string): string {
+  return group.forge === 'gitlab'
+    ? gitLabMergeRequestsUrl(
+        { host: group.host ?? '', project: group.project ?? '' },
+        { author }
+      )
+    : repoPullsUrl(group, { author });
+}
 
 interface PullRequestListProps {
   /** The pull request under review, which the list marks. */
@@ -170,15 +189,22 @@ export function PullRequestList({
                   square that a circle would cut. */}
               <AuthorAvatar
                 author={group.owner}
-                avatarUrl={accountAvatarUrl(group.owner, 32)}
+                avatarUrl={
+                  // github.com answers an account's picture by its login; a
+                  // GitLab namespace has no such address, and draws its
+                  // initial instead.
+                  group.forge === 'gitlab'
+                    ? undefined
+                    : accountAvatarUrl(group.owner, 32)
+                }
                 className="rounded-sm"
                 size={16}
               />
               <GitHubTextLink
                 className="min-w-0 truncate text-[13px] [direction:ltr]"
-                href={repoUrl(group)}
+                href={projectUrl(group)}
                 title={m.pull_request_list_open_on_forge({
-                  forge: forgeLabel(),
+                  forge: forgeLabel(group.forge),
                   owner: group.owner,
                   repo: group.repo,
                 })}
@@ -190,10 +216,16 @@ export function PullRequestList({
               </GitHubTextLink>
               <GitHubTextLink
                 className="text-ink-faint ml-auto shrink-0 text-xs tabular-nums"
-                href={repoPullsUrl(group)}
-                title={m.pull_request_list_open_the_open_pull_requests_on_github(
-                  { count: group.count }
-                )}
+                href={mergeRequestsUrl(group)}
+                title={
+                  group.forge === 'gitlab'
+                    ? m.pull_request_list_open_the_open_merge_requests_on_gitlab(
+                        { count: group.count }
+                      )
+                    : m.pull_request_list_open_the_open_pull_requests_on_github(
+                        { count: group.count }
+                      )
+                }
               >
                 {formatNumber(group.count)}
               </GitHubTextLink>
@@ -219,8 +251,10 @@ export function PullRequestList({
                     </span>
                   )}
                   <GitHubIconLink
-                    href={repoPullsUrl(group, { author: author.author })}
-                    label={m.pull_request_list_open_s_open_pull_requests_in_on_github(
+                    href={mergeRequestsUrl(group, author.author)}
+                    label={(group.forge === 'gitlab'
+                      ? m.pull_request_list_open_s_open_merge_requests_in_on_gitlab
+                      : m.pull_request_list_open_s_open_pull_requests_in_on_github)(
                       {
                         author: author.author,
                         owner: group.owner,
@@ -285,14 +319,14 @@ export function PullRequestList({
           square, the mark on the reviewer's own pull requests, and the chip on
           the ones asking for their review — so under an empty list it asks for
           a sign-in and promises nothing. And only when this deployment offers
-          one: with no App there is no account to add, and the gain is
-          promised nowhere. */}
+          one: with no App and no GitLab hosts there is no account to add, and
+          the gain is promised nowhere. */}
       {groups.length > 0 &&
         data != null &&
         !anyViewer(data.viewers) &&
-        instance.github.oauth && (
+        (instance.github.oauth || instance.gitlab.hosts.length > 0) && (
           <p className="text-ink-faint border-line mt-1 border-t px-2 py-1.5 text-xs">
-            {m.pull_request_list_signed_out_no_row_shows_a_status_square()}
+            {m.pull_request_list_signed_out_or_not_connected_no_row_shows()}
           </p>
         )}
     </>
@@ -399,12 +433,23 @@ function StackCompareLink({
       // the caption row keeps the height it had before the link arrived.
       className="text-ink-faint hover:text-ink -my-1 min-w-0 truncate rounded px-1 py-1 text-[10px] leading-none font-medium underline-offset-2 hover:underline"
       params={{
-        _splat: reviewTargetSplat({
-          kind: 'github-compare',
-          owner: root.pull.owner,
-          repo: root.pull.repo,
-          ...range,
-        }),
+        // The forge's own compare range: a GitLab stack compares on its
+        // instance the way a GitHub one does on github.com.
+        _splat: reviewTargetSplat(
+          root.pull.forge === 'gitlab'
+            ? {
+                kind: 'gitlab-compare',
+                host: root.pull.host ?? '',
+                project: root.pull.project ?? '',
+                ...range,
+              }
+            : {
+                kind: 'github-compare',
+                owner: root.pull.owner,
+                repo: root.pull.repo,
+                ...range,
+              }
+        ),
       }}
       title={m.pull_request_list_compare_stack_title({ base: range.base })}
       to="/$"

@@ -1,0 +1,62 @@
+{
+  "extends": ["plugin:@gitlab/default", "plugin:@gitlab/typescript"],
+  "ignorePatterns": ["node_modules/", "webviews/", "out", "dist-*"],
+  "parser": "vue-eslint-parser",
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".mjs", ".ts"]
+      }
+    }
+  },
+  "rules": {
+    "promise/param-names": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "scripts/**/*",
+          "**/*.test.js",
+          "**/*.test.ts",
+          "test/**/*",
+          "jest_*.js"
+        ]
+      }
+    ],
+    "import/no-unresolved": [
+      2,
+      {
+        // ignoring `graphql-request` due to a bug in eslint-plugin-import
+        // https://github.com/import-js/eslint-plugin-import/issues/2703
+        "ignore": ["vscode", "graphql-request", "^uuid$"]
+      }
+    ],
+    "import/no-deprecated": "warn",
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "src/common/**",
+            "from": ["src/desktop/**", "src/browser/**"],
+            "message": "Code in src/common can't import desktop-specific or browser-specific code."
+          }
+        ]
+      }
+    ],
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "no-public"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.mjs"],
+      "rules": {
+        "import/extensions": ["error", "ignorePackages"]
+      }
+    }
+  ]
+}

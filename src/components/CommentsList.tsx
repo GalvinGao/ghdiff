@@ -9,7 +9,11 @@ import type { CommentStore } from '@/hooks/useReviewComments';
 import type { SignedAttachment } from '@/lib/attachments';
 import { cn } from '@/lib/cn';
 import { commentPreviewText } from '@/lib/commentHeight';
-import { type CommentListEntry, type CommentListSection } from '@/lib/comments';
+import {
+  type CommentListEntry,
+  type CommentListSection,
+  MERGE_REQUEST_ITEM_ID,
+} from '@/lib/comments';
 import { forgeLabel, type ForgeName } from '@/lib/forges';
 import type { ConversationEntry } from '@/lib/pullConversation';
 import { reviewVerdict } from '@/lib/reviewDecision';
@@ -30,7 +34,7 @@ interface CommentsListProps {
   /** The heading of a group is the file's name, so it opens that file. */
   onSelectFile(itemId: string): void;
   /** The anchor is the row itself, for a thread the diff cannot show. */
-  onSelectThread(thread: CommentListEntry): void;
+  onSelectThread(thread: CommentListEntry, anchor?: HTMLElement): void;
   sections: readonly CommentListSection[];
   store: CommentStore;
 }
@@ -88,6 +92,7 @@ export function CommentsList({
     let digits = 1;
     for (const section of sections) {
       for (const thread of section.threads) {
+        if (thread.lineNumber == null) continue;
         digits = Math.max(digits, String(thread.lineNumber).length);
       }
     }
@@ -125,17 +130,27 @@ export function CommentsList({
       )}
       {sections.map((section) => (
         <section key={section.itemId} className="min-w-0">
-          <SectionHeading
-            path={section.path}
-            onSelect={() => onSelectFile(section.itemId)}
-          />
+          {section.itemId === MERGE_REQUEST_ITEM_ID ? (
+            // The threads on the merge request itself: no file to open, so
+            // the heading is a label and not a control.
+            <h3 className="bg-surface text-ink-faint sticky top-0 z-10 px-3 py-1 font-mono text-[11px]">
+              {section.path}
+            </h3>
+          ) : (
+            <SectionHeading
+              path={section.path}
+              onSelect={() => onSelectFile(section.itemId)}
+            />
+          )}
           <ul className="min-w-0">
             {section.threads.map((thread) => (
               <li key={thread.key} className="min-w-0">
                 <button
                   type="button"
                   aria-current={thread.key === activeKey ? 'true' : undefined}
-                  onClick={() => onSelectThread(thread)}
+                  onClick={(event) =>
+                    onSelectThread(thread, event.currentTarget)
+                  }
                   style={{ height: ROW_HEIGHT }}
                   className={cn(
                     'flex w-full min-w-0 items-center gap-2 overflow-hidden px-3 text-left',
@@ -523,6 +538,8 @@ function PathReveal({
 }
 
 function lineLabel(thread: CommentListEntry): string {
+  // A merge-request thread has no line to name.
+  if (thread.lineNumber == null) return '';
   if (thread.lineType === 'context') {
     return `L${thread.lineNumber}`;
   }

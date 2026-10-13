@@ -21,6 +21,9 @@ coverage/
 Thumbs.db
 .playwright-mcp/
 
+# The de-anonymization key for a private-instance re-record — never committed.
+test/fixtures/record/gitlab-discussions.local.json
+
 # Compiled from messages/*.json before development, tests, and builds.
 src/paraglide/
 project.inlang/cache/

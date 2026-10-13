@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
 import { codeChallenge, randomToken, readKeyring, SessionSeal } from './';
-import { parseDeploymentConfig } from '@/lib/server/config';
+import { MAX_GITLAB_HOSTS, parseDeploymentConfig } from '@/lib/server/config';
 import {
   SESSION_COOKIE,
   SESSION_MAX_AGE_MS,
@@ -103,6 +103,39 @@ describe('writeSession', () => {
   });
 });
 
+describe('the cookie size', () => {
+  it('holds a GitHub grant and a GitLab sign-in on every host allowed', async () => {
+    // The sum MAX_GITLAB_HOSTS rests on: realistic token lengths — `ghu_` and
+    // `ghr_` at GitHub's, GitLab's 64-character pair — and hosts of 36
+    // characters, sealed whole, attributes and all, under the 4096 bytes a
+    // browser keeps.
+    const gitlab: NonNullable<SessionPayload['gitlab']> = {};
+    for (let i = 0; i < MAX_GITLAB_HOSTS; i++) {
+      gitlab[`gitlab-${i}.engineering.example.com:8443`] = {
+        type: 'oauth',
+        accessToken: 'a'.repeat(64),
+        accessExpiresAt: NOW + 2 * HOUR,
+        refreshToken: 'r'.repeat(64),
+        refreshExpiresAt: NOW + 90 * 24 * HOUR,
+      };
+    }
+    const line = await new SessionSeal([KEY]).writeSession(
+      {
+        issuedAt: NOW,
+        github: {
+          accessToken: `ghu_${'x'.repeat(36)}`,
+          accessExpiresAt: NOW + 8 * HOUR,
+          refreshToken: `ghr_${'y'.repeat(76)}`,
+          refreshExpiresAt: NOW + 180 * 24 * HOUR,
+        },
+        gitlab,
+      },
+      NOW
+    );
+    assert.ok(line.length < 4096, `${line.length} bytes`);
+  });
+});
+
 describe('clearSession', () => {
   it('names the session cookie and expires it', () => {
     const line = new SessionSeal([KEY]).clearSession();
@@ -142,10 +175,10 @@ describe('readSession', () => {
   it('keeps the cookie value readable through cookieValue', async () => {
     const seal = new SessionSeal([KEY]);
     const line = await seal.writeSession(PAYLOAD, NOW);
-    assert.deepEqual(
-      await seal.readSession(requestWith(cookieValue(line))),
-      PAYLOAD
-    );
+    assert.deepEqual(await seal.readSession(requestWith(cookieValue(line))), {
+      ...PAYLOAD,
+      gitlab: undefined,
+    });
   });
 });
 

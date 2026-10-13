@@ -11,7 +11,8 @@
 //   "iat": 1789000000,
 //   "exp": 1804552000,
 //   "auth": {
-//     "github": { "github.com": { "accessToken": "ghu_…", "refreshToken": "ghr_…" } }
+//     "github": { "github.com": { "accessToken": "ghu_…", "refreshToken": "ghr_…" } },
+//     "gitlab": { "gitlab.com": { "type": "oauth", "accessToken": "…" } }
 //   }
 // }
 // ```
@@ -28,6 +29,7 @@ import { z } from 'zod';
 
 import { GITHUB_HOSTS } from '@/lib/github/hosts';
 import {
+  type GitLabGrant,
   OAUTH_MAX_AGE_MS,
   type OAuthHandoff,
   SESSION_MAX_AGE_MS,
@@ -46,12 +48,25 @@ const gitHubGrantSchema = z.object({
   refreshExpiresAt: moment.optional(),
 });
 
+const gitLabGrantSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('oauth'),
+    accessToken: token,
+    accessExpiresAt: moment.optional(),
+    refreshToken: token.optional(),
+    refreshExpiresAt: moment.optional(),
+  }),
+  z.object({ type: z.literal('pat'), token: token }),
+]);
+
 // A grant that fails its shape parses as no grant — dropped, not fatal, the
-// same leniency the legacy reader has. Another forge's key is not this
-// schema's to read, and is dropped the same way.
+// same leniency the legacy reader has.
 const authSchema = z.object({
   github: z
     .record(z.string(), gitHubGrantSchema.optional().catch(undefined))
+    .optional(),
+  gitlab: z
+    .record(z.string(), gitLabGrantSchema.optional().catch(undefined))
     .optional(),
 });
 
@@ -68,6 +83,8 @@ export const handoffClaimsSchema = z.object({
   state: token,
   verifier: token,
   returnTo: token,
+  forge: z.enum(['github', 'gitlab']).optional(),
+  host: token.optional(),
 });
 export type HandoffClaims = z.infer<typeof handoffClaimsSchema>;
 
@@ -81,6 +98,10 @@ export function sessionToClaims(payload: SessionPayload): SessionClaims {
   const auth: SessionClaims['auth'] = {};
   if (payload.github != null) {
     auth.github = { [GITHUB_HOST]: payload.github };
+  }
+  const gitlab = payload.gitlab;
+  if (gitlab != null && Object.keys(gitlab).length > 0) {
+    auth.gitlab = gitlab;
   }
   return {
     iat: Math.round(payload.issuedAt / 1000),
@@ -98,15 +119,35 @@ export function sessionFromClaims(
   claims: SessionClaims
 ): SessionPayload | undefined {
   const github = claims.auth.github?.[GITHUB_HOST];
-  if (github == null) return undefined;
+
+  const gitlab: Record<string, GitLabGrant> = {};
+  for (const [host, grant] of Object.entries(claims.auth.gitlab ?? {})) {
+    if (grant == null) continue;
+    gitlab[host] =
+      grant.type === 'pat'
+        ? { type: 'pat', token: grant.token }
+        : {
+            type: 'oauth',
+            accessToken: grant.accessToken,
+            accessExpiresAt: grant.accessExpiresAt,
+            refreshToken: grant.refreshToken,
+            refreshExpiresAt: grant.refreshExpiresAt,
+          };
+  }
+
+  if (github == null && Object.keys(gitlab).length === 0) return undefined;
   return {
     issuedAt: Math.round(claims.iat * 1000),
-    github: {
-      accessToken: github.accessToken,
-      accessExpiresAt: github.accessExpiresAt,
-      refreshToken: github.refreshToken,
-      refreshExpiresAt: github.refreshExpiresAt,
-    },
+    github:
+      github == null
+        ? undefined
+        : {
+            accessToken: github.accessToken,
+            accessExpiresAt: github.accessExpiresAt,
+            refreshToken: github.refreshToken,
+            refreshExpiresAt: github.refreshExpiresAt,
+          },
+    gitlab: Object.keys(gitlab).length > 0 ? gitlab : undefined,
   };
 }
 
@@ -128,5 +169,7 @@ export function handoffFromClaims(claims: HandoffClaims): OAuthHandoff {
     state: claims.state,
     verifier: claims.verifier,
     returnTo: claims.returnTo,
+    forge: claims.forge,
+    host: claims.host,
   };
 }

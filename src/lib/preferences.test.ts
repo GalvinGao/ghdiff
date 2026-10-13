@@ -114,6 +114,18 @@ describe('the watch list', () => {
     );
   });
 
+  it('reads a GitLab row and keeps a bare GitHub row beside it', () => {
+    assert.deepEqual(
+      WATCHED_REPOS_PREFERENCE.decode(
+        '[{"forge":"gitlab","host":"gitlab.corp.com","project":"team/repo"},{"owner":"a","repo":"one"},{"forge":"gitlab","host":"","project":"x"}]'
+      ),
+      [
+        { forge: 'gitlab', host: 'gitlab.corp.com', project: 'team/repo' },
+        { owner: 'a', repo: 'one' },
+      ]
+    );
+  });
+
   it('drops a repository listed twice, whatever its case', () => {
     assert.deepEqual(
       WATCHED_REPOS_PREFERENCE.decode(

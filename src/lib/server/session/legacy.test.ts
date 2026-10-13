@@ -112,10 +112,10 @@ describe('the legacy seal, read-only since the JWE migration', () => {
     const value = await sealLegacy(LEGACY_JSON, [KEY]);
     assert.equal(value.split('.').length, 1, value);
     const request = requestWith(SESSION_COOKIE, value);
-    assert.deepEqual(
-      await new SessionSeal([KEY]).readSession(request),
-      PAYLOAD
-    );
+    assert.deepEqual(await new SessionSeal([KEY]).readSession(request), {
+      ...PAYLOAD,
+      gitlab: undefined,
+    });
   });
 
   it('maps the old top-level GitHub fields into the keyed grant', async () => {
@@ -134,10 +134,10 @@ describe('the legacy seal, read-only since the JWE migration', () => {
   it('still opens an older cookie after a rotation', async () => {
     const value = await sealLegacy(LEGACY_JSON, [OTHER]);
     const request = requestWith(SESSION_COOKIE, value);
-    assert.deepEqual(
-      await new SessionSeal([KEY, OTHER]).readSession(request),
-      PAYLOAD
-    );
+    assert.deepEqual(await new SessionSeal([KEY, OTHER]).readSession(request), {
+      ...PAYLOAD,
+      gitlab: undefined,
+    });
   });
 
   it('answers nothing for a value one byte of which moved', async () => {
@@ -188,8 +188,47 @@ describe('the legacy seal, read-only since the JWE migration', () => {
     assert.equal(read?.github?.accessExpiresAt, undefined);
   });
 
+  it('keeps GitLab grants through the seal and the open', async () => {
+    const legacy = {
+      ...LEGACY_JSON,
+      gitlab: {
+        'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+        'gitlab.com': {
+          type: 'oauth',
+          accessToken: 'tok',
+          accessExpiresAt: NOW + 60_000,
+          refreshToken: 'ref',
+          refreshExpiresAt: undefined,
+        },
+      },
+    };
+    const value = await sealLegacy(legacy, [KEY]);
+    const request = requestWith(SESSION_COOKIE, value);
+    assert.deepEqual(await new SessionSeal([KEY]).readSession(request), {
+      ...PAYLOAD,
+      gitlab: legacy.gitlab,
+    });
+  });
+
+  it('drops a malformed grant and keeps the good one', async () => {
+    const legacy = {
+      ...LEGACY_JSON,
+      gitlab: {
+        'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+        'bad.example.com': { type: 'pat' },
+        'worse.example.com': 'a string, not a grant',
+      },
+    };
+    const value = await sealLegacy(legacy, [KEY]);
+    const request = requestWith(SESSION_COOKIE, value);
+    const session = await new SessionSeal([KEY]).readSession(request);
+    assert.deepEqual(session?.gitlab, {
+      'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+    });
+  });
+
   it('refuses a session with no credential in it at all', async () => {
-    const value = await sealLegacy({ issuedAt: NOW }, [KEY]);
+    const value = await sealLegacy({ issuedAt: NOW, gitlab: {} }, [KEY]);
     const request = requestWith(SESSION_COOKIE, value);
     assert.equal(await new SessionSeal([KEY]).readSession(request), undefined);
   });
@@ -197,10 +236,11 @@ describe('the legacy seal, read-only since the JWE migration', () => {
   it('still opens a handoff a pre-migration build sealed', async () => {
     const value = await sealLegacy(HANDOFF, [KEY]);
     const request = requestWith(OAUTH_COOKIE, value);
-    assert.deepEqual(
-      await new SessionSeal([KEY]).readHandoff(request),
-      HANDOFF
-    );
+    assert.deepEqual(await new SessionSeal([KEY]).readHandoff(request), {
+      ...HANDOFF,
+      forge: undefined,
+      host: undefined,
+    });
   });
 
   it('refuses a handoff missing any of its three parts', async () => {
@@ -216,5 +256,15 @@ describe('the legacy seal, read-only since the JWE migration', () => {
         missing
       );
     }
+  });
+
+  it('keeps a GitLab forge and host, and reads an old handoff as GitHub', async () => {
+    const gitlab = {
+      ...HANDOFF,
+      forge: 'gitlab' as const,
+      host: 'gitlab.corp.com',
+    };
+    const request = requestWith(OAUTH_COOKIE, await sealLegacy(gitlab, [KEY]));
+    assert.deepEqual(await new SessionSeal([KEY]).readHandoff(request), gitlab);
   });
 });

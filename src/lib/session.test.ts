@@ -18,6 +18,11 @@ import {
   sessionCookieMaxAge,
   sessionLive,
   setCookieHeader,
+  type GitLabGrant,
+  hasCredentials,
+  withGitLabGrant,
+  withoutGitHubGrant,
+  withoutGitLabGrant,
   withinMaxAge,
 } from './session';
 
@@ -309,5 +314,107 @@ describe('originAllowed', () => {
     // app asking.
     assert.equal(originAllowed(null, 'https://ghdiff.com/x'), false);
     assert.equal(originAllowed(undefined, 'https://ghdiff.com/x'), false);
+  });
+});
+
+describe('withGitLabGrant', () => {
+  const pat: GitLabGrant = { type: 'pat', token: 'glpat-abc' };
+
+  it('joins a grant to the session the browser already holds', () => {
+    const existing = session({
+      gitlab: { 'gitlab.com': { type: 'pat', token: 'glpat-old' } },
+    });
+
+    const next = withGitLabGrant(existing, 'gitlab.corp.com', pat, NOW);
+
+    assert.deepEqual(next, {
+      ...existing,
+      gitlab: {
+        'gitlab.com': { type: 'pat', token: 'glpat-old' },
+        'gitlab.corp.com': pat,
+      },
+    });
+  });
+
+  it("keeps the session's own issuedAt, so a late connection buys no ceiling", () => {
+    const existing = session({ issuedAt: NOW - 7 * 24 * HOUR });
+
+    const next = withGitLabGrant(existing, 'gitlab.corp.com', pat, NOW);
+
+    assert.equal(next.issuedAt, existing.issuedAt);
+  });
+
+  it('dates a session that starts here from now', () => {
+    const next = withGitLabGrant(undefined, 'gitlab.corp.com', pat, NOW);
+
+    assert.deepEqual(next, {
+      gitlab: { 'gitlab.corp.com': pat },
+      issuedAt: NOW,
+    });
+  });
+});
+
+describe('withoutGitHubGrant', () => {
+  it('keeps only the GitLab grants and the ceiling', () => {
+    const withBoth = session({
+      gitlab: { 'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' } },
+    });
+
+    assert.deepEqual(withoutGitHubGrant(withBoth), {
+      issuedAt: NOW,
+      gitlab: { 'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' } },
+    });
+  });
+});
+
+describe('withoutGitLabGrant', () => {
+  const pat = { type: 'pat', token: 'glpat-abc' } as const;
+
+  it('takes one host away and keeps the rest', () => {
+    const withTwo = session({
+      gitlab: { 'gitlab.com': pat, 'gitlab.corp.com': pat },
+    });
+
+    assert.deepEqual(withoutGitLabGrant(withTwo, 'gitlab.com').gitlab, {
+      'gitlab.corp.com': pat,
+    });
+  });
+
+  it('answers no gitlab key when the last grant goes', () => {
+    const withOne = session({ gitlab: { 'gitlab.com': pat } });
+
+    const next = withoutGitLabGrant(withOne, 'gitlab.com');
+
+    assert.equal(next.gitlab, undefined);
+    assert.deepEqual(next.github, withOne.github);
+  });
+
+  it('answers with the session as it is for a host it does not hold', () => {
+    const withOne = session({ gitlab: { 'gitlab.com': pat } });
+
+    assert.deepEqual(withoutGitLabGrant(withOne, 'gitlab.corp.com'), withOne);
+  });
+});
+
+describe('hasCredentials', () => {
+  it('is true for the GitHub grant or any GitLab grant, and false for neither', () => {
+    assert.equal(hasCredentials(session()), true);
+    assert.equal(
+      hasCredentials(
+        session({
+          github: undefined,
+          gitlab: { 'gitlab.com': { type: 'pat', token: 'glpat-abc' } },
+        })
+      ),
+      true
+    );
+    assert.equal(
+      hasCredentials(session({ github: undefined, gitlab: undefined })),
+      false
+    );
+    assert.equal(
+      hasCredentials(session({ github: undefined, gitlab: {} })),
+      false
+    );
   });
 });

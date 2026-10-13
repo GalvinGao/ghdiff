@@ -3,7 +3,7 @@ import { gitHubErrorMessage } from '@/lib/github/error';
 import { GitHubError, USER_AGENT } from '@/lib/server/github/client';
 import { m } from '@/paraglide/messages.js';
 
-// The streaming half of the media proxy, shared by every forge. What differs
+// The streaming half of the media proxy, shared by both forges. What differs
 // per forge is where an image address resolves and how the credential travels;
 // what does not is here: redirects followed by hand, the image gate, and the
 // extension map for an answer whose type was never recorded.

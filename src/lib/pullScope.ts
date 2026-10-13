@@ -8,8 +8,9 @@
 // what `all` already means. So the switch is a set of tabs with one always
 // chosen, and `all` is a tab of its own rather than the absence of a press.
 //
-// "Mine" is asked of each row's own forge group, so the viewers travel as one
-// map keyed by `forgeGroupKey` and a row reads its own.
+// "Mine" is asked of each row's own forge group: a GitHub viewer names nobody
+// on GitLab, and one GitLab host's viewer names nobody on another, so the
+// viewers travel as one map keyed by `forgeGroupKey` and a row reads its own.
 //
 // A scope the moment cannot honour falls back to everything rather than to an
 // empty list. `stack` is stored like the other three, and the home page has no
@@ -26,10 +27,13 @@ import {
   repoLabel,
 } from './pulls';
 import { buildPullStacks } from './pullStacks';
-import type { GitHubPullTarget } from './reviewTarget';
+import type {
+  GitHubPullTarget,
+  GitLabMergeRequestTarget,
+} from './reviewTarget';
 
-/** A pull request on screen, the one the stack is about. */
-export type PullTarget = GitHubPullTarget;
+/** A pull request or a merge request on screen, the one the stack is about. */
+export type PullTarget = GitHubPullTarget | GitLabMergeRequestTarget;
 
 /** The viewer of each forge group a list answered for, by `forgeGroupKey`. */
 export type PullViewers = Readonly<Record<string, string>>;
@@ -179,7 +183,14 @@ export function scopePulls(
 }
 
 function sameRepo(pull: PullSummary, target: PullTarget): boolean {
-  const label = repoLabel({ owner: target.owner, repo: target.repo });
+  const label =
+    target.kind === 'gitlab-mr'
+      ? repoLabel({
+          forge: 'gitlab',
+          host: target.host,
+          project: target.project,
+        })
+      : repoLabel({ owner: target.owner, repo: target.repo });
   return repoLabel(pull).toLowerCase() === label.toLowerCase();
 }
 

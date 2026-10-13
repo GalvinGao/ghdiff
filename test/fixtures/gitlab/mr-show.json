@@ -1,0 +1,210 @@
+{
+  "id": 526549062,
+  "iid": 3334,
+  "project_id": 5261717,
+  "title": "chore: replace Babel with esbuild",
+  "description": "Babel earns its keep in exactly two places in this repo, neither of which touches production code: `babel-jest` transforms a handful of ESM-only `node_modules` for unit tests, and `@babel/cli` transpiles three of them to CommonJS so the CJS integration tests can `require()` them. `esbuild`, which already builds the whole extension, does both jobs — so this MR removes `@babel/cli`, `@babel/core` and `@babel/preset-env` and deletes `babel.config.js`. The lockfile loses **99 packages** and **no new dependency is added** (`esbuild` and `glob` were already devDependencies).\n\nThe trigger was https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/merge_requests/3259+, the Renovate MR bumping `@babel/preset-env` to v8. Making that one green needed a `@babel/core` v8 bump, a `ts-jest` peer dependency `override`, a `babel.config.js` change (Babel 8 no longer transforms ES modules to CommonJS by default), and a ~4.5k-line lockfile diff — all to keep a dev-only tool alive. Removing Babel instead makes that MR, and every future Babel MR, unnecessary.\n\n## What changed\n\n- **`jest_esm_transformer.js` (new)** — a 15-line Jest transformer calling `esbuild.transformSync({ format: 'cjs' })`, following the existing `jest_html_transformer.js` pattern. `jest.config.js` points the ESM `node_modules` pattern at it instead of `babel-jest`.\n- **`scripts/transpile_es_to_cjs_for_integration_tests.mjs`** — the `babel` CLI call is replaced by a per-file `esbuild.transform` that keeps the directory layout. Per-file rather than bundling, because these packages have relative imports between files and deep entry points (e.g. `uuid/dist/esm/*`) that the integration test workspace resolves directly.\n- **`package.json` / `package-lock.json`** — the three `@babel/*` devDependencies are gone; 2281 → 2182 lockfile packages.\n- **`.eslintrc.json`** — allow devDependency imports from `jest_*.js`, same as the existing allowance for `scripts/**`.\n\n`@babel/*` still appears in the lockfile transitively, via `jest` (`babel-jest`, `babel-plugin-istanbul`) and `@sentry/vite-plugin`. Those are not ours to remove. `webviews/vue2` keeps its own Babel setup and is untouched.\n\n## How has this been tested\n\nAll of the following were run locally on this branch:\n\n- `npm run test:unit` — 293 suites, 2518 tests pass. (One suite intermittently reports `FAIL` with zero failing tests, the pre-existing \"worker process failed to exit gracefully\" flake; it passes when run alone.)\n- `npm run build:desktop` — succeeds.\n- `npm run build:transpile-es-to-cjs-for-integration-tests` — succeeds, and the output is genuinely CommonJS: `rg \"^export |^import \"` over `dist-desktop/node_modules/{nanoevents,@anycable/core,uuid}` finds nothing, and I `require()`d each transpiled package from Node and called into it.\n- `npm run test:integration` — ran against the real VS Code 1.92.2: 61 passing, 1 pending, exit 0.\n- `npm run lint` and `prettier --check` — no errors on the touched files.\n- Lockfile validity — `npm ci --ignore-scripts` from a clean directory with both npm 10.9.2 (the npm bundled with the node 22.14.0 we pin in `.tool-versions` and use in CI) and npm 11.\n\n<details>\n<summary>Lockfile diff audit</summary>\n\nI diffed the `.packages` key sets of the old and new lockfile rather than eyeballing 2.6k lines:\n\n- 99 entries removed, 0 added\n- every removed entry is Babel-only: `@babel/*`, `regexpu-core`, `unicode-*`, `regenerate*`, `regjs*`, the `browserslist`/`caniuse-lite`/`electron-to-chromium`/`node-releases` data packages, plus `@babel/cli`'s `@nicolo-ribaudo/chokidar-2`, `fs-readdir-recursive` and `lodash.debounce`\n- no non-Babel package changed version\n\n</details>\n\n<details>\n<summary>Why esbuild and not @swc/jest</summary>\n\n`@swc/jest` would work too, but `esbuild` is already a direct devDependency and already the build tool for the extension, the browser build and the integration-test transpile. Using it keeps the toolchain to one transpiler and adds nothing to the dependency tree.\n\n</details>",
+  "state": "merged",
+  "created_at": "2026-09-01T12:47:52.666Z",
+  "updated_at": "2026-09-04T10:13:58.053Z",
+  "merged_by": {
+    "id": 3457201,
+    "username": "viktomas",
+    "public_email": "tvik@gitlab.com",
+    "name": "Tomas Vik",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/3457201/avatar.png?v=1788827156",
+    "web_url": "https://gitlab.com/viktomas"
+  },
+  "merge_user": {
+    "id": 3457201,
+    "username": "viktomas",
+    "public_email": "tvik@gitlab.com",
+    "name": "Tomas Vik",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/3457201/avatar.png?v=1788827156",
+    "web_url": "https://gitlab.com/viktomas"
+  },
+  "merged_at": "2026-09-03T11:44:16.862Z",
+  "closed_by": null,
+  "closed_at": null,
+  "target_branch": "main",
+  "source_branch": "tv/2026-09/drop-babel",
+  "user_notes_count": 4,
+  "upvotes": 0,
+  "downvotes": 0,
+  "author": {
+    "id": 3457201,
+    "username": "viktomas",
+    "public_email": "tvik@gitlab.com",
+    "name": "Tomas Vik",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/3457201/avatar.png?v=1788827156",
+    "web_url": "https://gitlab.com/viktomas"
+  },
+  "assignees": [
+    {
+      "id": 3457201,
+      "username": "viktomas",
+      "public_email": "tvik@gitlab.com",
+      "name": "Tomas Vik",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/3457201/avatar.png?v=1788827156",
+      "web_url": "https://gitlab.com/viktomas"
+    }
+  ],
+  "assignee": {
+    "id": 3457201,
+    "username": "viktomas",
+    "public_email": "tvik@gitlab.com",
+    "name": "Tomas Vik",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/3457201/avatar.png?v=1788827156",
+    "web_url": "https://gitlab.com/viktomas"
+  },
+  "reviewers": [
+    {
+      "id": 4339707,
+      "username": "ohoral",
+      "public_email": "ohoralkoretska@gitlab.com",
+      "name": "Olena Horal-Koretska",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/2ea5c5ffcaa1cad491b149a16ca7e9e3be854584a9ae2d51446ae8b320cb50cb?s=80&d=identicon",
+      "web_url": "https://gitlab.com/ohoral"
+    },
+    {
+      "id": 21826781,
+      "username": "GitLabDuo",
+      "public_email": null,
+      "name": "GitLab Duo",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/21826781/duo-bot.png?v=1781708173",
+      "web_url": "https://gitlab.com/GitLabDuo"
+    }
+  ],
+  "source_project_id": 5261717,
+  "target_project_id": 5261717,
+  "labels": [
+    "Category:Editor Extensions",
+    "Editor Extensions::VS Code",
+    "devops::ai-powered",
+    "group::editor extensions",
+    "section::dev",
+    "type::maintenance"
+  ],
+  "draft": false,
+  "imported": false,
+  "imported_from": "none",
+  "work_in_progress": false,
+  "milestone": null,
+  "merge_when_pipeline_succeeds": true,
+  "merge_status": "can_be_merged",
+  "detailed_merge_status": "not_open",
+  "merge_after": null,
+  "sha": "ee095772260696052b74058d58bb7adf2b1aead9",
+  "merge_commit_sha": "0f39054506159d78e1499b9444cf4787d556ca71",
+  "squash_commit_sha": "4143147aac03e41c6b5ce928bad7fd03d94fb83a",
+  "discussion_locked": null,
+  "should_remove_source_branch": true,
+  "force_remove_source_branch": true,
+  "prepared_at": "2026-09-01T12:48:00.067Z",
+  "reference": "!3334",
+  "references": {
+    "short": "!3334",
+    "relative": "!3334",
+    "full": "gitlab-org/gitlab-vscode-extension!3334"
+  },
+  "web_url": "https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/merge_requests/3334",
+  "time_stats": {
+    "time_estimate": 0,
+    "total_time_spent": 0,
+    "human_time_estimate": null,
+    "human_total_time_spent": null
+  },
+  "squash": true,
+  "squash_on_merge": true,
+  "task_completion_status": {
+    "count": 0,
+    "completed_count": 0
+  },
+  "has_conflicts": false,
+  "blocking_discussions_resolved": true,
+  "approvals_before_merge": null,
+  "subscribed": false,
+  "changes_count": "7",
+  "latest_build_started_at": "2026-09-03T10:59:13.114Z",
+  "latest_build_finished_at": "2026-09-03T11:44:13.408Z",
+  "first_deployed_to_production_at": null,
+  "pipeline": {
+    "id": 2816421723,
+    "iid": 14733,
+    "project_id": 5261717,
+    "sha": "bdb4fad91339f60e6889822933d7474ef308058b",
+    "ref": "refs/merge-requests/3334/train",
+    "status": "success",
+    "source": "merge_request_event",
+    "created_at": "2026-09-03T10:59:11.764Z",
+    "updated_at": "2026-09-03T11:44:13.425Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/pipelines/2816421723"
+  },
+  "head_pipeline": {
+    "id": 2816421723,
+    "iid": 14733,
+    "project_id": 5261717,
+    "sha": "bdb4fad91339f60e6889822933d7474ef308058b",
+    "ref": "refs/merge-requests/3334/train",
+    "status": "success",
+    "source": "merge_request_event",
+    "created_at": "2026-09-03T10:59:11.764Z",
+    "updated_at": "2026-09-03T11:44:13.425Z",
+    "web_url": "https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/pipelines/2816421723",
+    "before_sha": "bdb4fad91339f60e6889822933d7474ef308058b",
+    "tag": false,
+    "yaml_errors": null,
+    "user": {
+      "id": 3457201,
+      "username": "viktomas",
+      "public_email": "tvik@gitlab.com",
+      "name": "Tomas Vik",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/3457201/avatar.png?v=1788827156",
+      "web_url": "https://gitlab.com/viktomas"
+    },
+    "started_at": "2026-09-03T10:59:13.114Z",
+    "finished_at": "2026-09-03T11:44:13.408Z",
+    "committed_at": null,
+    "duration": 2699,
+    "queued_duration": 1,
+    "coverage": null,
+    "detailed_status": {
+      "icon": "status_warning",
+      "text": "Warning",
+      "label": "passed with warnings",
+      "group": "success-with-warnings",
+      "tooltip": "passed with warnings",
+      "has_details": true,
+      "details_path": "/gitlab-org/gitlab-vscode-extension/-/pipelines/2816421723",
+      "illustration": null,
+      "favicon": "/assets/ci_favicons/favicon_status_success-8451333011eee8ce9f2ab25dc487fe24a8758c694827a582f17f42b0a90446a2.png"
+    },
+    "archived": false
+  },
+  "diff_refs": {
+    "base_sha": "d1c440fab31d0b2f0fbb773447ebcccb0041159c",
+    "head_sha": "ee095772260696052b74058d58bb7adf2b1aead9",
+    "start_sha": "d1c440fab31d0b2f0fbb773447ebcccb0041159c"
+  },
+  "merge_error": null,
+  "first_contribution": false,
+  "user": {
+    "can_merge": false
+  }
+}

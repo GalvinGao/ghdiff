@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/diffHydration';
 import { authExpiredMessage, failureForStatus } from '@/lib/failure';
 import { isReadablePath } from '@/lib/filePath';
-import { repoRefFromTarget } from '@/lib/forges';
+import { gitLabHostOf, repoRefFromTarget } from '@/lib/forges';
 import { toLoggable } from '@/lib/logger';
 import {
   hostedTargetSearch,
@@ -101,11 +101,13 @@ export const Route = createFileRoute('/api/file')({
           path: search.path,
         });
         const ref = repoRefFromTarget(search);
+        const host = gitLabHostOf(ref);
 
         const { cred, refreshDue } = await resolveForgeCredential(
           config,
           session,
-          request
+          request,
+          search
         );
         // A cookie whose token has died is answered before the forge is asked:
         // the 401 is what sends the browser to refresh it, and the same
@@ -113,9 +115,9 @@ export const Route = createFileRoute('/api/file')({
         // rides the header for the answer the refresh could not mend.
         if (refreshDue) {
           log.set({ outcome: 'refresh-due' });
-          return textResponse(authExpiredMessage(ref.forge), {
+          return textResponse(authExpiredMessage(ref.forge, host), {
             status: 401,
-            failure: { reason: 'auth-expired', forge: ref.forge },
+            failure: { reason: 'auth-expired', forge: ref.forge, host },
           });
         }
         log.set({ authenticated: cred.token != null });
@@ -150,6 +152,7 @@ export const Route = createFileRoute('/api/file')({
                 error.failure ??
                 failureForStatus(error.status, {
                   forge: ref.forge,
+                  host,
                   credentialed: cred.token != null,
                 }),
             });

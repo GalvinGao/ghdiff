@@ -66,7 +66,10 @@ describe('the JWE seal', () => {
     const seal = new SessionSeal([KEY]);
     const line = await seal.writeSession(PAYLOAD, NOW);
     const request = requestWith(SESSION_COOKIE, cookieValue(line));
-    assert.deepEqual(await seal.readSession(request), PAYLOAD);
+    assert.deepEqual(await seal.readSession(request), {
+      ...PAYLOAD,
+      gitlab: undefined,
+    });
   });
 
   it('writes a different value every time', async () => {
@@ -108,10 +111,10 @@ describe('the JWE seal', () => {
     // keeps the rotation invisible.
     const line = await new SessionSeal([OTHER]).writeSession(PAYLOAD, NOW);
     const request = requestWith(SESSION_COOKIE, cookieValue(line));
-    assert.deepEqual(
-      await new SessionSeal([KEY, OTHER]).readSession(request),
-      PAYLOAD
-    );
+    assert.deepEqual(await new SessionSeal([KEY, OTHER]).readSession(request), {
+      ...PAYLOAD,
+      gitlab: undefined,
+    });
   });
 
   it('refuses a session whose ceiling has passed', async () => {
@@ -127,9 +130,45 @@ describe('the JWE seal', () => {
 
   it('refuses a session with no credential in it at all', async () => {
     const seal = new SessionSeal([KEY]);
-    const line = await seal.writeSession({ issuedAt: NOW }, NOW);
+    const line = await seal.writeSession({ issuedAt: NOW, gitlab: {} }, NOW);
     const request = requestWith(SESSION_COOKIE, cookieValue(line));
     assert.equal(await seal.readSession(request), undefined);
+  });
+
+  it('keeps GitLab grants through the seal and the open', async () => {
+    const withGrants = {
+      ...PAYLOAD,
+      gitlab: {
+        'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+        'gitlab.com': {
+          type: 'oauth',
+          accessToken: 'tok',
+          accessExpiresAt: NOW + 60_000,
+          refreshToken: 'ref',
+          // An unstated life reads back as no moment, never as now.
+          refreshExpiresAt: undefined,
+        },
+      },
+    } satisfies SessionPayload;
+    const seal = new SessionSeal([KEY]);
+    const line = await seal.writeSession(withGrants, NOW);
+    const request = requestWith(SESSION_COOKIE, cookieValue(line));
+    assert.deepEqual(await seal.readSession(request), withGrants);
+  });
+
+  it('round-trips a GitLab-only session, which has no GitHub token', async () => {
+    const gitlabOnly = {
+      issuedAt: NOW,
+      gitlab: {
+        'gitlab.corp.com': { type: 'pat' as const, token: 'glpat-abc' },
+      },
+    } satisfies SessionPayload;
+    const seal = new SessionSeal([KEY]);
+    const line = await seal.writeSession(gitlabOnly, NOW);
+    const request = requestWith(SESSION_COOKIE, cookieValue(line));
+    const session = await seal.readSession(request);
+    assert.equal(session?.github, undefined);
+    assert.deepEqual(session, { ...gitlabOnly, github: undefined });
   });
 });
 
@@ -139,6 +178,22 @@ describe('the JWE handoff', () => {
     const line = await seal.writeHandoff(HANDOFF);
     assert.ok(line.includes('Max-Age=600'), line);
     const request = requestWith(OAUTH_COOKIE, cookieValue(line));
-    assert.deepEqual(await seal.readHandoff(request), HANDOFF);
+    assert.deepEqual(await seal.readHandoff(request), {
+      ...HANDOFF,
+      forge: undefined,
+      host: undefined,
+    });
+  });
+
+  it('keeps a GitLab forge and host', async () => {
+    const gitlab = {
+      ...HANDOFF,
+      forge: 'gitlab' as const,
+      host: 'gitlab.corp.com',
+    };
+    const seal = new SessionSeal([KEY]);
+    const line = await seal.writeHandoff(gitlab);
+    const request = requestWith(OAUTH_COOKIE, cookieValue(line));
+    assert.deepEqual(await seal.readHandoff(request), gitlab);
   });
 });

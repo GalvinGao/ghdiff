@@ -2,8 +2,8 @@
 //
 // The client used to ask for it over RPC after mount, which put a fact about
 // the deployment behind the session's own pipeline: a grant past its hours
-// answered every procedure 401, this one included, and the screen read the
-// failure as a deployment that serves nothing. The answer needs no credential,
+// answered every procedure 401, this one included, and a connect dialog read
+// the failure as "no GitLab hosts configured". The answer needs no credential,
 // so it no longer travels where one is checked. The root loader calls this
 // server function for the first paint — in the same process on the server,
 // which is the thing a loader on workerd cannot do over HTTP — and every

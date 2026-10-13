@@ -15,7 +15,7 @@ import type { StagedReviewComment } from './comments';
 export function reviewToJsonl(input: {
   /** `github.com:owner/repo#123`. */
   target: string;
-  /** The pull request's page on its forge. */
+  /** The pull request or merge request's page on its forge. */
   url: string;
   title?: string;
   /** The review body; omitted from the line when absent or blank. */

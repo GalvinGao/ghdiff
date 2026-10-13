@@ -42,13 +42,16 @@ const reviewMarkup = {
 // Three buttons and no radio group: each one says what it does and does it, so
 // a verdict is one press rather than a choice and then a confirmation. A line
 // comment is posted where it is written, or staged as the forge's own draft —
-// a pending-review thread on GitHub — and the verdict publishes the drafts. The drafts are listed above the note, so what the
+// a pending-review thread on GitHub, a draft note on GitLab — and the verdict
+// publishes the drafts. The drafts are listed above the note, so what the
 // verdict is about to carry is stated before it is sent.
 //
 // Approve is the one filled control, because it is the answer a reviewer gives
 // most and the app's accent is ink rather than a colour. Request changes is the
-// only red thing on screen, which is the weight it has on GitHub. Which set is
-// on offer is the target's forge's (`verdictsForForge`).
+// only red thing on screen, which is the weight it has on GitHub — and the
+// reason it is GitHub-only, since GitLab keeps approvals and comments and no
+// request-changes state. Which set is on offer is the target's forge, not the
+// deployment's: one deployment serves both.
 
 /**
  * U+200E, LEFT-TO-RIGHT MARK. It goes in front of a path rendered right to
@@ -69,7 +72,9 @@ const VARIANT: Record<ReviewEvent, 'danger' | 'outline' | 'solid'> = {
  * A missing note reads the same on either button that needs one. Ownership does
  * not: "GitHub refuses an approval" and "GitHub refuses requested changes" are
  * different sentences about different verdicts, and a reviewer reading one
- * should not have to work out which of the two they pressed.
+ * should not have to work out which of the two they pressed. GitLab has no
+ * second arm: author approval is a per-project setting there, so nothing is
+ * grey for ownership and the instance answers for itself.
  */
 function blockTip(
   event: ReviewEvent,
@@ -258,12 +263,14 @@ export function ReviewSubmitDialog({
       draftCount: staged.length,
       event,
       ownPullRequest,
+      forge,
     });
 
   // Whichever fact explains the grey buttons, and only one shows. Ownership
   // wins: on your own pull request it is the reason two of the three are gone,
   // and it is not a thing a reviewer can do anything about — where the note is.
-  // A comment
+  // GitLab greys nothing for ownership (author approval is the project's call
+  // there), so the note is the only line a GitLab target can earn. A comment
   // write still on the wire is transient, and says what it waits for.
   const needsNote = events.some((spec) => blockOf(spec.event) === 'needs-note');
   const ownBlocked = events.some(
@@ -272,7 +279,9 @@ export function ReviewSubmitDialog({
   const standingLine = ownBlocked
     ? m.review_submit_dialog_you_can_comment_on_your_own_pull_request()
     : needsNote
-      ? m.review_submit_dialog_add_a_note_github_needs_one_to_request()
+      ? forge === 'gitlab'
+        ? m.review_submit_dialog_add_a_note_gitlab_needs_one_to_comment()
+        : m.review_submit_dialog_add_a_note_github_needs_one_to_request()
       : writesPending
         ? m.review_submit_dialog_a_comment_is_still_reaching_the_forge()
         : undefined;
@@ -338,7 +347,7 @@ export function ReviewSubmitDialog({
       {team.length > 0 && <TeamReviews now={openedAt} reviews={team} />}
       <div className="p-3">
         <p className="text-ink-muted text-xs">
-          {staged.length === 0 ? (
+          {forge === 'github' && staged.length === 0 ? (
             <ParaglideMessage
               message={m.review_submit_scope}
               inputs={{ target: targetLabel }}
@@ -347,11 +356,17 @@ export function ReviewSubmitDialog({
           ) : (
             <>
               <ParaglideMessage
-                message={m.review_submit_scope_pull_request}
+                message={
+                  forge === 'gitlab'
+                    ? m.review_submit_scope_merge_request
+                    : m.review_submit_scope_pull_request
+                }
                 inputs={{ target: targetLabel }}
                 markup={reviewMarkup}
               />{' '}
-              {m.review_submit_drafts_go_up({ count: staged.length })}
+              {staged.length === 0
+                ? m.review_submit_posted_where_written()
+                : m.review_submit_drafts_go_up({ count: staged.length })}
             </>
           )}
         </p>

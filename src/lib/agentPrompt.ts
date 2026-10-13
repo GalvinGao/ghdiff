@@ -89,6 +89,8 @@ function formatThread(
  */
 function lineLabel(thread: CommentListEntry): string {
   const span = quotedSpan(thread);
+  // A thread on the merge request itself sits on no line.
+  if (span == null) return 'the merge request';
   return span.from === span.to
     ? `line ${span.from}`
     : `lines ${span.from}-${span.to}`;
@@ -102,11 +104,14 @@ function lineLabel(thread: CommentListEntry): string {
  * anchored to. That is the line GitHub would file the comment against, and it
  * is the honest answer where a range across two files-in-one has none.
  */
-function quotedSpan(thread: CommentListEntry): { from: number; to: number } {
-  const { range } = thread;
+function quotedSpan(
+  thread: CommentListEntry
+): { from: number; to: number } | undefined {
+  const { range, lineNumber } = thread;
+  if (range == null || lineNumber == null) return undefined;
   const crossesSides =
     range.side != null && range.endSide != null && range.side !== range.endSide;
-  if (crossesSides) return { from: thread.lineNumber, to: thread.lineNumber };
+  if (crossesSides) return { from: lineNumber, to: lineNumber };
   return {
     from: Math.min(range.start, range.end),
     to: Math.max(range.start, range.end),
@@ -118,15 +123,18 @@ function quoteLines(
   thread: CommentListEntry,
   fileDiff: FileDiffMetadata | undefined
 ): string | undefined {
-  if (fileDiff == null) return undefined;
   const span = quotedSpan(thread);
+  if (fileDiff == null || span == null || thread.side == null) {
+    return undefined;
+  }
+  const side = thread.side;
   const taken: string[] = [];
   for (
     let line = span.from;
     line <= span.to && taken.length < MAX_QUOTED_LINES;
     line += 1
   ) {
-    const text = commentLineText(fileDiff, thread.side, line);
+    const text = commentLineText(fileDiff, side, line);
     if (text == null) break;
     taken.push(text);
   }

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { authExpiredMessage, failureForStatus } from '@/lib/failure';
-import { repoRefFromTarget } from '@/lib/forges';
+import { gitLabHostOf, repoRefFromTarget } from '@/lib/forges';
 import { toLoggable } from '@/lib/logger';
 import {
   hostedTargetSearch,
@@ -20,7 +20,7 @@ import { m } from '@/paraglide/messages.js';
 // Returns the unified diff for one review target as text/plain.
 //
 // The target names its forge, and the forge answers — GitHub through its
-// three-source cascade. This route is deliberately
+// three-source cascade, GitLab through its own. This route is deliberately
 // not an RPC procedure: a patch runs to tens of megabytes, and the forge's
 // stream goes straight to the browser without a JSON envelope in between.
 //
@@ -51,6 +51,7 @@ export const Route = createFileRoute('/api/diff')({
         }
         log.set({ target: reviewTargetKey(target), targetKind: target.kind });
         const ref = repoRefFromTarget(target);
+        const host = gitLabHostOf(ref);
 
         // A cookie whose token has died is answered before the forge is asked:
         // the 401 is what sends the browser to refresh it, and the same
@@ -60,13 +61,14 @@ export const Route = createFileRoute('/api/diff')({
         const { cred, refreshDue } = await resolveForgeCredential(
           config,
           session,
-          request
+          request,
+          target
         );
         if (refreshDue) {
           log.set({ outcome: 'refresh-due' });
-          return textResponse(authExpiredMessage(ref.forge), {
+          return textResponse(authExpiredMessage(ref.forge, host), {
             status: 401,
-            failure: { reason: 'auth-expired', forge: ref.forge },
+            failure: { reason: 'auth-expired', forge: ref.forge, host },
           });
         }
 
@@ -92,6 +94,7 @@ export const Route = createFileRoute('/api/diff')({
                 error.failure ??
                 failureForStatus(error.status, {
                   forge: ref.forge,
+                  host,
                   credentialed: cred.token != null,
                 }),
             });

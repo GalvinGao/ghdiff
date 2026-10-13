@@ -21,6 +21,8 @@ const protectedText = new Set([
   'ghdiff.com',
   'github',
   'GitHub',
+  'GitLab',
+  'glpat-…',
   'CodeView',
   'FileTree',
   'Tampermonkey',
@@ -125,7 +127,7 @@ export function inspectCatalogs(catalogs, baseLocale) {
               errors.push(`${locale}.${key}: repeated or extra token ${token}`);
           }
         }
-        for (const brand of ['GitHub', 'ghdiff']) {
+        for (const brand of ['GitHub', 'GitLab', 'ghdiff']) {
           if (
             messageTexts(source).every((text) => text.includes(brand)) &&
             messageTexts(value).some((text) => !text.includes(brand))

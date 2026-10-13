@@ -29,7 +29,8 @@ export interface ComposerActions {
 }
 
 /**
- * The composer's action matrix. A pull request posts to its forge: the solid action is **Comment**, or **Add review suggestion** once a
+ * The composer's action matrix. A pull request or merge request posts to its
+ * forge: the solid action is **Comment**, or **Add review suggestion** once a
  * draft review exists to join — the way github.com's own composer works once a
  * review is pending — with the outline suggestion beside it before one does. A
  * commit or a compare range has no review thread on the forge: the comment is
@@ -40,19 +41,22 @@ export function composerActions(input: {
   store: CommentStore;
   canStage: boolean;
   draftsExist: boolean;
+  stageBlocked: boolean;
   stageNeedsSignIn: boolean;
 }): ComposerActions {
   const local = input.store === 'local';
   // A draft review already on this target takes every new comment into it,
-  // so the one solid action is the suggestion.
-  const joinsDraft = input.canStage && input.draftsExist;
+  // so the one solid action is the suggestion. A blocked line keeps the
+  // comment and loses the suggestion.
+  const joinsDraft = input.canStage && input.draftsExist && !input.stageBlocked;
   if (local) {
     return {
       primaryLabel: m.comment_composer_save_comment(),
       joinsDraft: false,
       stageOffered: false,
-      stageDisabledReason: m.comment_composer_suggestions_need_a_pull_request(),
-      localHint: m.comment_composer_saved_in_this_browser_open_a_pull_request(),
+      stageDisabledReason:
+        m.comment_composer_suggestions_need_a_pull_or_merge_request(),
+      localHint: m.comment_composer_saved_in_this_browser_open_a_pull_or(),
     };
   }
   return {
@@ -60,10 +64,12 @@ export function composerActions(input: {
       ? m.comment_composer_add_review_suggestion()
       : m.review_decision_comment(),
     joinsDraft,
-    stageOffered: !joinsDraft && input.canStage,
+    stageOffered: !joinsDraft && input.canStage && !input.stageBlocked,
     stageDisabledReason:
-      !joinsDraft && input.stageNeedsSignIn
-        ? m.comment_composer_sign_in_to_stage_a_comment()
+      !joinsDraft && (input.stageNeedsSignIn || input.stageBlocked)
+        ? input.stageBlocked
+          ? m.comment_composer_a_suggestion_sits_on_a_changed_line()
+          : m.comment_composer_sign_in_to_stage_a_comment()
         : undefined,
   };
 }
@@ -77,6 +83,14 @@ interface CommentComposerProps {
   draftsExist: boolean;
   /** True on a pull target with no credential: staging wants a sign-in first. */
   stageNeedsSignIn: boolean;
+  /**
+   * True when a merge request's selection touches a line the diff does not
+   * change. GitLab takes a draft note at any position and fails the whole
+   * publish for one off a changed line, so the stage action is disabled rather
+   * than left to fail at the verdict. GitHub answers a bad position when the
+   * comment is staged, so a pull request is never blocked here.
+   */
+  stageBlocked: boolean;
   /** Where a comment written here goes, which decides the actions offered. */
   store: CommentStore;
   itemId: string;
@@ -91,6 +105,7 @@ export function CommentComposer({
   canStage,
   draftsExist,
   stageNeedsSignIn,
+  stageBlocked,
   store,
   itemId,
   metadata,
@@ -114,6 +129,7 @@ export function CommentComposer({
     store,
     canStage,
     draftsExist,
+    stageBlocked,
     stageNeedsSignIn,
   });
   // The solid button, and what Cmd or Ctrl with Enter does. A note filed as

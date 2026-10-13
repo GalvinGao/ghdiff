@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
 import { failureFromHeaders, type FailureMeta } from '@/lib/failure';
+import { isGitLabTarget } from '@/lib/forges';
 import { sharedCacheOf, type TextAnswer } from '@/lib/queryCache/sharedCache';
 import {
   buildReviewData,
@@ -28,6 +29,13 @@ export type PatchLoadState = 'fetching' | 'parsing' | 'ready' | 'error';
 
 export interface ReviewPatchState {
   data: ReviewData;
+  /**
+   * The raw unified diff `data` was parsed from, for the one reader that
+   * needs the patch itself: a GitLab comment states its diff position as raw
+   * cursors, and only the patch text can say what they are. Empty on every
+   * other target, which never reads it back.
+   */
+  text: string;
   state: PatchLoadState;
   error?: string;
   /**
@@ -266,6 +274,9 @@ export function useReviewPatch(options: {
   const { error } = patch;
   return {
     data: ready ? parsed.data : EMPTY_REVIEW_DATA,
+    // The query holds the text either way; this only hands it out where a
+    // reader exists for it.
+    text: ready && isGitLabTarget(target) ? response.body : '',
     state,
     error:
       error == null

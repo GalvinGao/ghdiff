@@ -20,9 +20,9 @@ import type { GitHubViewer } from '@/lib/viewer';
 /**
  * What a forge can do for ghdiff, sized by what the RPC router and the three
  * plain routes actually call. The GitHub implementation speaks REST and
- * GraphQL through octokit. The two plain-text hot paths — a streamed diff and
- * a streamed whole file — are hand-rolled `fetch`, because no SDK covers a
- * 43 MB patch.
+ * GraphQL through octokit; the GitLab one speaks REST through gitbeaker. The
+ * two plain-text hot paths — a streamed diff and a streamed whole file — are
+ * hand-rolled `fetch` in both, because no SDK covers a 43 MB patch.
  */
 export interface Forge {
   readonly capabilities: ForgeCapabilities;
@@ -64,16 +64,23 @@ export interface Forge {
     cred: ForgeCredential
   ): Promise<Response>;
 
-  /** Who the credential belongs to. Undefined when it belongs to nobody. */
-  viewer(cred: ForgeCredential): Promise<GitHubViewer | undefined>;
+  /**
+   * Who the credential belongs to. Undefined when it belongs to nobody. The
+   * host names the instance for a forge that has more than one — GitLab —
+   * and is unused on GitHub.
+   */
+  viewer(
+    cred: ForgeCredential,
+    host?: string
+  ): Promise<GitHubViewer | undefined>;
 
-  /** The open pull requests of the given repositories. */
+  /** The open merge requests or pull requests of the given repositories. */
   listOpenPulls(
     repos: RepoRef[],
     cred: ForgeCredential
   ): Promise<OpenPullsData>;
 
-  /** One pull request's own details. */
+  /** One pull request or merge request's own details. */
   pullDetails(ref: PullRef, cred: ForgeCredential): Promise<PullDetails>;
 
   comments: {
@@ -156,9 +163,10 @@ export interface Forge {
   ): Promise<DeploymentsData & { outcome: string }>;
 
   /**
-   * The forge's own draft comments — GitHub's pending-review threads — which
-   * the verdict publishes. Absent on a forge that keeps no such thing; the
-   * router answers the absence, the way it does for `viewedFiles`.
+   * The forge's own draft comments — GitHub's pending-review threads, GitLab's
+   * draft notes — which the verdict publishes. Absent on a forge that keeps no
+   * such thing; the router answers the absence, the way it does for
+   * `viewedFiles`.
    */
   drafts?: {
     list(ref: PullRef, cred: ForgeCredential): Promise<CommentPayload[]>;
@@ -207,6 +215,11 @@ export interface ForgeCredential {
   token?: string;
   /** True when the token came out of the sealed session cookie. */
   fromSession?: boolean;
+  /**
+   * How the token travels. GitHub only ever sends a bearer; GitLab sends a
+   * bearer for OAuth and `PRIVATE-TOKEN` for a personal access token.
+   */
+  scheme?: 'bearer' | 'private-token';
 }
 
 export interface CreateCommentInput {
@@ -217,4 +230,36 @@ export interface CreateCommentInput {
   side?: 'additions' | 'deletions';
   startLine?: number;
   startSide?: 'additions' | 'deletions';
+  /**
+   * A GitLab diff position stated as raw cursors on both sides of the diff,
+   * for a caller that holds the parsed diff. The scalar `path`/`line`/`side`
+   * fields travel as they always did; this is what lets the GitLab forge
+   * place a comment on a renamed file or a context line, and build the
+   * `line_code` a multiline range's ends require. Mirrored as zod in
+   * `src/lib/rpc/contract.ts`; the GitHub forge never reads it.
+   */
+  gitlabPosition?: GitLabPositionInput;
+}
+
+/**
+ * One end of a GitLab diff position. Both cursors are raw diff row numbers —
+ * the one a single-coordinate note hides included — and `kind` says whether
+ * the row is an addition, a deletion, or a context line.
+ */
+export interface GitLabPositionCursor {
+  oldPos: number;
+  newPos: number;
+  kind: 'addition' | 'deletion' | 'context';
+}
+
+/**
+ * A GitLab diff position as the client that holds the parsed diff states it:
+ * the real `oldPath`/`newPath` of a renamed file included, the `end` cursor
+ * required, the `start` cursor present only for a multiline comment.
+ */
+export interface GitLabPositionInput {
+  oldPath: string;
+  newPath: string;
+  end: GitLabPositionCursor;
+  start?: GitLabPositionCursor;
 }

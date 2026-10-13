@@ -1,9 +1,9 @@
-// The half of an OAuth token endpoint every forge shares: the form POST, the
+// The half of an OAuth token endpoint both forges share: the form POST, the
 // access-token presence check, and the seconds-to-moments conversion. What is
-// not shared is how a refusal reads — GitHub answers 200 with an `error` field
-// — so each forge hands in the reader that turns its own answer into the
-// grant's fields or throws its own `OAuthError`, and the per-forge error-code
-// constants stay with it.
+// not shared is how a refusal reads — GitHub answers 200 with an `error`
+// field, GitLab a 4xx with the RFC 6749 error body — so each forge hands in
+// the reader that turns its own answer into the grant's fields or throws its
+// own `OAuthError`, and the per-forge error-code constants stay with it.
 
 import { USER_AGENT } from './github/client';
 import { m } from '@/paraglide/messages.js';

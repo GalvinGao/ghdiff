@@ -1,10 +1,12 @@
 import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import { IconArrowUpRight, IconBrandGithub, IconRefresh } from '@pierre/icons';
-import { Link } from '@tanstack/react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
+import { GitLabMark } from '@/components/GitLabMark';
+import { GitLabPatForm } from '@/components/GitLabPatForm';
 import {
   InstallationRow,
   InstallationRowSkeleton,
@@ -22,14 +24,17 @@ import {
   type StepStatus,
 } from '@/components/ui/StepRail';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
+import { gitLabConnectionFor } from '@/hooks/useGitHubSession';
+import { useGitLabOAuth } from '@/hooks/useGitLabOAuth';
 import { useInstallations } from '@/hooks/useInstallations';
+import { type InstanceInfo, isGitLabTarget } from '@/lib/forges';
 import { personalAccessTokensUrl } from '@/lib/github/urls';
 import {
   installationForAccount,
   reachesAnyRepository,
 } from '@/lib/installations';
 import { reviewTargetFromSegments, segmentsFromPath } from '@/lib/reviewTarget';
-import { safeReturnTo } from '@/lib/session';
+import { gitLabAuthStartUrl, safeReturnTo } from '@/lib/session';
 import type { GitHubViewer } from '@/lib/viewer';
 import { m } from '@/paraglide/messages.js';
 
@@ -52,6 +57,12 @@ const setupMarkup = {
 // Each step reports its own state from what the forge actually answered, never
 // from what the reviewer was told to do. So a step is done because it is done,
 // and the rail cannot claim progress the forge does not have.
+//
+// The page is one page on every deployment: the three GitHub steps, then a
+// GitLab section per configured host — connect, then open the diff. A
+// connection needs no installation step, because it reads whatever the account
+// behind it can see. Which section leads is the `from` path's: a reviewer sent
+// here from a GitLab diff finds that host's connect waiting filled.
 
 /** The card every step's own content sits on. Matches the home page's. */
 const CARD = 'border-line bg-raised rounded-xl border px-4 py-3 shadow-sm';
@@ -61,14 +72,26 @@ const CARD = 'border-line bg-raised rounded-xl border px-4 py-3 shadow-sm';
  * parse is `reviewTargetFromSegments`, the same one the review route itself
  * uses, so a path this page reads an owner out of is a path that route would
  * have rendered — there is no second idea here of what a review URL looks
- * like. The answer is the owner, which is what the steps below name an
- * installation for.
+ * like. The answer is the forge's own notion of an account: the owner on
+ * GitHub, where the steps below name an installation; the project's full path
+ * on GitLab, where they name what the connection must reach.
  */
 function accountFromPath(path: string | undefined): string | undefined {
   if (path == null) return undefined;
   const target = reviewTargetFromSegments(segmentsFromPath(path));
   if (target == null) return undefined;
-  return target.owner;
+  return isGitLabTarget(target) ? target.project : target.owner;
+}
+
+/**
+ * The host a GitLab `from` path belongs to, when it is a GitLab one: the
+ * section below fills that host's connect, and its open step waits on that
+ * host's connection.
+ */
+function gitLabHostFromPath(path: string | undefined): string | undefined {
+  if (path == null) return undefined;
+  const target = reviewTargetFromSegments(segmentsFromPath(path));
+  return target != null && isGitLabTarget(target) ? target.host : undefined;
 }
 
 /**
@@ -109,33 +132,58 @@ export function SetupScreen(props: {
 }) {
   const { instance } = useAppData();
   const returnTo = props.from == null ? undefined : safeReturnTo(props.from);
-  // The steps render only when the deployment has a sign-in to offer: the
-  // instance answer arrives with the page, so this is certain from the first
-  // paint.
+  // The forge the reviewer came from decides which section leads the page:
+  // from a GitLab diff, that host's connect is the filled control and the
+  // GitHub rail quiets to outline.
+  const fromHost = gitLabHostFromPath(returnTo);
+  const gitlabHosts = instance.gitlab.hosts;
+  // A section renders only when the deployment has something to offer there:
+  // the instance answer arrives with the page, so these are certain from the
+  // first paint, and a forge this ghdiff is not set up for is simply absent.
   const showGitHub = instance.github.oauth;
+  const showGitLab = gitlabHosts.length > 0;
 
   return (
     <SetupChrome>
       <SetupHeading
         brand={instance.brand}
-        intro={m.setup_screen_github_only_lets_ghdiff_read_repositories_you_grant()}
+        intro={m.setup_screen_github_and_gitlab_intro()}
         notice={props.migrated === true ? <MigrationNotice /> : undefined}
         title={m.setup_screen_set_up_private_repository_access()}
       />
 
-      {showGitHub ? (
-        <GitHubSection account={props.account} returnTo={returnTo} />
-      ) : (
+      {!showGitHub && !showGitLab ? (
         <p className="text-ink-muted mt-8 text-sm">
           {m.setup_screen_nothing_to_set_up()}
         </p>
+      ) : (
+        <>
+          {showGitHub && (
+            <GitHubSection
+              account={props.account}
+              last={!showGitLab}
+              primary={fromHost == null}
+              returnTo={returnTo}
+            />
+          )}
+
+          {showGitLab && (
+            <GitLabSection
+              account={props.account}
+              fromHost={fromHost}
+              hosts={gitlabHosts}
+              primary={fromHost != null || !showGitHub}
+              returnTo={returnTo}
+            />
+          )}
+        </>
       )}
     </SetupChrome>
   );
 }
 
 /**
- * The page's chrome: the scroll region, the colour toggle, and
+ * The chrome both sections share: the scroll region, the colour toggle, and
  * the way home. This page is reachable with the left bar hidden, and no screen
  * in this app is a dead end.
  */
@@ -185,12 +233,21 @@ function SetupHeading({
  * first two are the two things GitHub needs, in a fixed order, and each step
  * reports its own state from what GitHub answered — a step is done because it
  * is done, and the rail cannot claim progress the App does not have.
+ *
+ * `primary` is false when the reviewer came from a GitLab diff: this section
+ * is then the other forge's homework, and its controls stay outline so the
+ * page keeps one filled control.
  */
 function GitHubSection({
   account: named,
+  last,
+  primary,
   returnTo,
 }: {
   account?: string;
+  /** True when nothing follows the rail, so its last step draws no connector. */
+  last: boolean;
+  primary: boolean;
   returnTo?: string;
 }) {
   const { session } = useAppData();
@@ -257,7 +314,7 @@ function GitHubSection({
                     <Button
                       className="mt-2 self-start"
                       onClick={() => session.signIn()}
-                      variant="solid"
+                      variant={primary ? 'solid' : 'outline'}
                     >
                       <IconBrandGithub aria-hidden="true" size={14} />
                       {m.setup_screen_sign_in_with_github()}
@@ -318,11 +375,15 @@ function GitHubSection({
                       still be here to come back to — it is the page that says
                       whether it worked. */}
                     <a
-                      // Filled only on the step that is actually next. Two filled
-                      // controls on one screen is the one thing this app's
-                      // accent rule forbids.
+                      // Filled only on the step that is actually next, and only on
+                      // the section the reviewer came for. Two filled controls on
+                      // one screen is the one thing this app's accent rule
+                      // forbids.
                       className={buttonClass({
-                        variant: install === 'current' ? 'solid' : 'outline',
+                        variant:
+                          install === 'current' && primary
+                            ? 'solid'
+                            : 'outline',
                       })}
                       href={apps.installUrl}
                       rel="noreferrer"
@@ -378,7 +439,13 @@ function GitHubSection({
             </AnimatedHeight>
           </Step>
 
-          <OpenDiffStep number={3} returnTo={returnTo} status={open} />
+          <OpenDiffStep
+            last={last}
+            number={3}
+            primary={primary}
+            returnTo={returnTo}
+            status={open}
+          />
         </StepRail>
       </div>
 
@@ -391,7 +458,157 @@ function GitHubSection({
   );
 }
 
-/** The done state of the first step: who GitHub sees. */
+/**
+ * The GitLab section: one step per configured host, then open the diff. Which
+ * way a connect goes is the deployment's answer, not the reviewer's choice:
+ * OAuth leads when the host has an application registered here — one press on
+ * its own consent screen — and a personal access token is the universal path
+ * every instance has.
+ *
+ * `primary` is true when the reviewer came from a GitLab diff: that host's
+ * step is the current one and its connect is the page's filled control.
+ */
+function GitLabSection({
+  account: named,
+  fromHost,
+  hosts,
+  primary,
+  returnTo,
+}: {
+  account?: string;
+  /** The host the `from` path's diff lives on, when it is a GitLab one. */
+  fromHost?: string;
+  hosts: InstanceInfo['gitlab']['hosts'];
+  primary: boolean;
+  returnTo?: string;
+}) {
+  const { session } = useAppData();
+  const account = named ?? accountFromPath(returnTo);
+
+  const statuses: StepStatus[] = hosts.map(({ host }) => {
+    if (gitLabConnectionFor(session.gitlab, host) != null) return 'done';
+    if (fromHost != null) return host === fromHost ? 'current' : 'upcoming';
+    return 'upcoming';
+  });
+  // No `from` to point at one host: the first unconnected one is next.
+  if (fromHost == null) {
+    const first = statuses.findIndex((status) => status !== 'done');
+    if (first >= 0) statuses[first] = 'current';
+  }
+  const openReady =
+    fromHost != null
+      ? gitLabConnectionFor(session.gitlab, fromHost) != null
+      : session.gitlab.length > 0;
+
+  return (
+    <section className="mt-8">
+      <SectionLabel>GitLab</SectionLabel>
+      <p className="text-ink-muted mt-2 text-sm">
+        {m.setup_screen_gitlab_connection_reads_whatever()}
+      </p>
+      <div className="mt-3">
+        <StepRail>
+          {hosts.map(({ host }, index) => (
+            <GitLabHostStep
+              key={host}
+              account={host === fromHost ? account : undefined}
+              host={host}
+              number={index + 1}
+              primary={primary && host === fromHost}
+              status={statuses[index]}
+            />
+          ))}
+          <OpenDiffStep
+            last
+            number={hosts.length + 1}
+            primary={primary}
+            returnTo={returnTo}
+            status={openReady ? 'current' : 'upcoming'}
+          />
+        </StepRail>
+      </div>
+    </section>
+  );
+}
+
+/** One host's connect step: the way in, or who the host already sees. */
+function GitLabHostStep({
+  account,
+  host,
+  number,
+  primary,
+  status,
+}: {
+  /** The project the reviewer came from, when this host is the one. */
+  account?: string;
+  host: string;
+  number: number;
+  /** True when this step's connect is the page's one filled control. */
+  primary: boolean;
+  status: StepStatus;
+}) {
+  const { session } = useAppData();
+  const connection = gitLabConnectionFor(session.gitlab, host);
+  const oauth = useGitLabOAuth(host);
+  // Back to this page, so the step after the consent screen is still here.
+  const here = useLocation({
+    select: (location) => `${location.pathname}${location.searchStr}`,
+  });
+
+  return (
+    <Step
+      label={m.setup_screen_connect_to_host({ host })}
+      number={number}
+      status={status}
+    >
+      {connection != null ? (
+        <IdentityCard viewer={connection.viewer} />
+      ) : (
+        <>
+          <p className="text-ink-muted text-sm">
+            {m.setup_screen_this_identifies_your_account_to_gitlab_on({ host })}
+          </p>
+          {oauth === true && (
+            <>
+              <a
+                className={buttonClass({
+                  className: 'mt-2 self-start',
+                  variant: primary ? 'solid' : 'outline',
+                })}
+                href={gitLabAuthStartUrl(host, here)}
+              >
+                <GitLabMark aria-hidden="true" size={14} />
+                {m.setup_screen_sign_in_with_gitlab()}
+              </a>
+              <p className="text-ink-faint mt-2 text-xs">
+                {m.setup_screen_one_press_on_the_instances_own_consent()}
+              </p>
+            </>
+          )}
+          <div className="mt-3">
+            <GitLabPatForm
+              connectVariant={
+                oauth === true ? 'outline' : primary ? 'solid' : 'outline'
+              }
+              host={host}
+            />
+          </div>
+          {account != null && (
+            <StepNote>
+              <ParaglideMessage
+                message={m.setup_came_from_a_diff_in}
+                inputs={{ account }}
+                markup={setupMarkup}
+              />
+            </StepNote>
+          )}
+        </>
+      )}
+    </Step>
+  );
+}
+
+/** The done state of either section's first step: who the forge sees. */
 function IdentityCard({ viewer }: { viewer: GitHubViewer }) {
   return (
     <div className={`${CARD} flex items-center gap-2.5`}>
@@ -404,7 +621,7 @@ function IdentityCard({ viewer }: { viewer: GitHubViewer }) {
 }
 
 /**
- * The last step: the way back to the diff the reviewer came
+ * The last step of a section: the way back to the diff the reviewer came
  * from, or to the home page when there was none. A plain anchor and a whole
  * page load, not a client navigation — the point of coming back is a fresh
  * request to the forge under the grant that did not exist a minute ago. It is
@@ -412,11 +629,16 @@ function IdentityCard({ viewer }: { viewer: GitHubViewer }) {
  * no way to learn whether it worked.
  */
 function OpenDiffStep({
+  last = false,
   number,
+  primary,
   returnTo,
   status,
 }: {
+  last?: boolean;
   number: number;
+  /** False quiets the link to outline: the filled control is the other section's. */
+  primary: boolean;
   returnTo?: string;
   status: StepStatus;
 }) {
@@ -424,19 +646,19 @@ function OpenDiffStep({
   return (
     <Step
       label={m.setup_screen_open_the_diff()}
-      last
+      last={last}
       number={number}
       status={status}
     >
       <p className="text-ink-muted text-sm">
         {home
-          ? m.setup_screen_go_to_the_home_page_to_paste_a()
+          ? m.setup_screen_go_to_the_home_page_to_paste_any()
           : m.setup_screen_return_to_your_diff_ghdiff_will_fetch_it()}
       </p>
       <a
         className={buttonClass({
           className: 'mt-2 self-start',
-          variant: status === 'current' ? 'solid' : 'outline',
+          variant: status === 'current' && primary ? 'solid' : 'outline',
         })}
         href={home ? '/' : returnTo}
       >

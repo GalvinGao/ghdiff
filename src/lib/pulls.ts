@@ -5,19 +5,23 @@
 // wrote them, then which stack they belong to. Within one stack the order is the
 // stack's own; anywhere else the newest pull request number comes first.
 
-import { forgeGroupKey } from './forges';
+import { findGitLabHost, forgeGroupKey, forgeOfHost } from './forges';
 import {
   buildPullStacks,
   countStackNodes,
   type PullStackNode,
 } from './pullStacks';
 import type { PullReviewStatus } from './pullStatus';
-import type { GitHubPullTarget } from './reviewTarget';
+import { type ForgeTarget, splitColonHost } from './reviewTarget';
 
-export interface WatchedRepo {
-  owner: string;
-  repo: string;
-}
+/**
+ * A repository worth watching, on either forge. GitHub rows carry no `forge`:
+ * they predate the union, and keeping them bare is what lets an older build
+ * read a newer browser's list with only the GitLab rows dropped.
+ */
+export type WatchedRepo =
+  | { forge?: 'github'; owner: string; repo: string }
+  | { forge: 'gitlab'; host: string; project: string };
 
 /**
  * The states GitHub itself distinguishes in its own pull request lists, each
@@ -29,6 +33,11 @@ export type PullState = 'open' | 'draft' | 'merged' | 'closed';
 export interface PullSummary {
   owner: string;
   repo: string;
+  /** Which forge this row is on. Absent on the GitHub rows already deployed. */
+  forge?: 'github' | 'gitlab';
+  /** GitLab only: the instance and the project's full path. */
+  host?: string;
+  project?: string;
   number: number;
   title: string;
   author: string;
@@ -55,14 +64,28 @@ export interface PullSummary {
   reviewRequested?: boolean;
 }
 
-/** The review target a row links to. */
-export function reviewTargetFromPull(pull: PullSummary): GitHubPullTarget {
-  return {
-    kind: 'github-pull',
-    owner: pull.owner,
-    repo: pull.repo,
-    number: pull.number,
-  };
+/**
+ * The review target a row links to, on the row's own forge, so a GitLab merge
+ * request's splat carries its `/-/` separator. A GitHub row stored before the
+ * union keeps no `forge`, and only such a row has no host or project — hence
+ * the fallbacks.
+ */
+export function reviewTargetFromPull(
+  pull: PullSummary
+): Extract<ForgeTarget, { kind: 'github-pull' | 'gitlab-mr' }> {
+  return pull.forge === 'gitlab'
+    ? {
+        kind: 'gitlab-mr',
+        host: pull.host ?? '',
+        project: pull.project ?? '',
+        number: pull.number,
+      }
+    : {
+        kind: 'github-pull',
+        owner: pull.owner,
+        repo: pull.repo,
+        number: pull.number,
+      };
 }
 
 /** Derives the state from the fields GitHub returns for a pull request. */
@@ -88,7 +111,8 @@ export interface OpenPullsData {
 /**
  * The `pulls.list` answer: the groups' pulls and failures, and the viewer of
  * each group that named one, keyed by `forgeGroupKey`. Each group's viewer
- * stays with its own rows.
+ * stays with its own rows — a GitLab author and a GitHub viewer are not the
+ * same person for sharing a login.
  */
 export interface OpenPullsAnswer {
   viewers: Record<string, string>;
@@ -104,36 +128,133 @@ export function anyViewer(viewers: Record<string, string>): boolean {
 
 /**
  * The account the setup offer names, out of the rows that would not list.
- * Every failing row sharing one owner names the account; two owners failing
- * is a general question, and `undefined` asks it. `null` is no offer at all:
- * nothing failed, or nobody is signed in.
+ * Only the GitHub rows count: the offer is an installation, and a GitLab
+ * failure names `host:project` — a project the page has no installation step
+ * for. Every failing GitHub row sharing one owner names the account; two
+ * owners failing is a general question, and `undefined` asks it. `null` is
+ * no offer at all: nothing failed, nobody is signed in, or no GitHub row
+ * failed.
  */
 export function failedSetupAccount(
   failures: readonly { repo: string }[],
   signedIn: boolean
 ): string | null | undefined {
   if (failures.length === 0 || !signedIn) return null;
-  const owners = new Set(failures.map((failure) => failure.repo.split('/')[0]));
+  const owners = new Set(
+    failures
+      .map((failure) => failure.repo)
+      .filter((repo) => !repo.includes(':'))
+      .map((repo) => repo.split('/')[0])
+  );
+  if (owners.size === 0) return null;
   return owners.size === 1 ? [...owners][0] : undefined;
 }
 
-/** The label of anything that names a repository: `owner/repo`. */
-export function repoLabel(repo: { owner: string; repo: string }): string {
-  return `${repo.owner}/${repo.repo}`;
+/**
+ * The label of anything that names a repository: a watched repo or a pull
+ * summary, on either forge. `owner/repo` on GitHub, `host/project` on GitLab.
+ */
+export function repoLabel(repo: {
+  forge?: 'github' | 'gitlab';
+  owner?: string;
+  repo?: string;
+  host?: string;
+  project?: string;
+}): string {
+  return repo.forge === 'gitlab'
+    ? `${repo.host}/${repo.project}`
+    : `${repo.owner}/${repo.repo}`;
 }
 
 export function formatWatchedRepo(repo: WatchedRepo): string {
   return repoLabel(repo);
 }
 
-/** What the repository picker accepts: `owner/repo`, or a github.com URL. */
-export function parseWatchedRepo(input: string): WatchedRepo | undefined {
-  const trimmed = input.trim().replace(/^https?:\/\/github\.com\//, '');
-  const match = /^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+?)(?:\.git)?\/?$/.exec(
-    trimmed
-  );
-  if (match == null) return undefined;
-  return { owner: match[1], repo: match[2] };
+/**
+ * The same row in the colon glue: `host:project` on GitLab, `owner/repo` on
+ * GitHub. The key `useOpenPulls` joins the watch list with, because unlike
+ * the display label, `parseWatchedRepo` reads this back for every host shape
+ * — a single-label host (`localhost`) glued with a colon cannot be misread
+ * as a namespace the way its `host/project` label can.
+ */
+export function gluedWatchedRepo(repo: WatchedRepo): string {
+  return repo.forge === 'gitlab'
+    ? `${repo.host}:${repo.project}`
+    : `${repo.owner}/${repo.repo}`;
+}
+
+/** The row's own name: the repo name on GitHub, the project path on GitLab. */
+export function watchedRepoName(repo: WatchedRepo): string {
+  return repo.forge === 'gitlab' ? repo.project : repo.repo;
+}
+
+/**
+ * What the repository picker accepts: `owner/repo`, a github.com URL, or a
+ * GitLab project — named with the canonical colon (`gitlab.com:group/repo`),
+ * as a URL on a configured host, or bare. A bare two-segment path is
+ * GitHub's own `owner/repo`; a bare longer one is a project on the first
+ * configured GitLab host, namespaces included, and names nothing when no
+ * host is configured. A named host is checked against the configured list
+ * without case, and the configured spelling is the one the answer keeps.
+ */
+export function parseWatchedRepo(
+  input: string,
+  gitlabHosts: readonly string[]
+): WatchedRepo | undefined {
+  const trimmed = input
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/\.git\/?$/, '');
+  const segments = trimmed.split('/').filter((part) => part.length > 0);
+  const marker = segments.indexOf('-');
+  const usable = marker >= 0 ? segments.slice(0, marker) : segments;
+
+  const [first, ...rest] = usable;
+  if (first == null) return undefined;
+
+  // A colon in the first segment is the canonical glue (`host:group`,
+  // `host:port:group`) or a URL's `host:port`; a `.` with no colon is a URL's
+  // hostname. Either way the segment names a host. (`headNamesHost` is not
+  // the read here: a watch row holds no `-` marker, so its dotted head can
+  // only be a host.) Which forge the host speaks is `forgeOfHost`'s answer.
+  const glued = splitColonHost(first);
+  if (glued != null || first.includes('.') || first.includes(':')) {
+    const host = glued?.host ?? first.toLowerCase();
+    const path = glued != null ? [glued.first, ...rest] : rest;
+    if (forgeOfHost(host) === 'github') {
+      return gitHubWatchedRepo(path);
+    }
+    const served = findGitLabHost(gitlabHosts, host);
+    if (served == null) return undefined;
+    if (path.length === 0 || !path.every(isNamePart)) return undefined;
+    return { forge: 'gitlab', host: served, project: path.join('/') };
+  }
+
+  // Bare: two segments are GitHub's `owner/repo`; more are a GitLab project
+  // on the first configured host.
+  if (rest.length === 1) {
+    return gitHubWatchedRepo(usable);
+  }
+  const host = gitlabHosts[0];
+  if (host == null || rest.length < 2) return undefined;
+  if (![first, ...rest].every(isNamePart)) return undefined;
+  return { forge: 'gitlab', host, project: [first, ...rest].join('/') };
+}
+
+const NAME_PART = /^[A-Za-z0-9._-]+$/;
+
+function isNamePart(part: string): boolean {
+  return NAME_PART.test(part);
+}
+
+/** A GitHub row out of `owner/repo` segments, or nothing when they are not. */
+function gitHubWatchedRepo(
+  segments: readonly string[]
+): WatchedRepo | undefined {
+  const [owner, repo, extra] = segments;
+  if (owner == null || repo == null || extra != null) return undefined;
+  if (!isNamePart(owner) || !isNamePart(repo)) return undefined;
+  return { owner, repo };
 }
 
 /**
@@ -179,13 +300,19 @@ export interface RepoOwnerGroup {
 export function groupReposByOwner(
   repos: readonly WatchedRepo[]
 ): RepoOwnerGroup[] {
-  const byOwner = Map.groupBy(repos, (repo) => repo.owner.toLowerCase());
+  // A GitLab project groups under its host, the way a GitHub one groups
+  // under its owner.
+  const byOwner = Map.groupBy(repos, (repo) =>
+    (repo.forge === 'gitlab' ? repo.host : repo.owner).toLowerCase()
+  );
   const groups = [...byOwner.values()].map((group) => ({
-    owner: group[0].owner,
+    owner: group[0].forge === 'gitlab' ? group[0].host : group[0].owner,
     repos: group,
   }));
   for (const group of groups) {
-    group.repos.sort((a, b) => compareText(a.repo, b.repo));
+    group.repos.sort((a, b) =>
+      compareText(watchedRepoName(a), watchedRepoName(b))
+    );
   }
   groups.sort((a, b) => compareText(a.owner, b.owner));
   return groups;
@@ -206,7 +333,11 @@ export interface PullAuthorGroup {
 export interface PullRepoGroup {
   owner: string;
   repo: string;
-  /** `owner/repo`, which is both the React key and the repository filter. */
+  /** The first row's forge identity, for the heading's links. */
+  forge?: 'github' | 'gitlab';
+  host?: string;
+  project?: string;
+  /** The React key: the first row's label — `owner/repo`, `host/project`. */
   key: string;
   count: number;
   authors: PullAuthorGroup[];
@@ -223,7 +354,8 @@ export interface GroupPullsOptions {
  * alphabetically. The viewer's own pull requests lead the authors, what is
  * waiting on the reviewer leads its author group, and every remaining tie is
  * broken by the newest update. A row is the viewer's own only on its own forge
- * group's answer.
+ * group's answer: a GitHub viewer names nobody on GitLab, and one GitLab
+ * host's viewer names nobody on another.
  */
 export function groupPullsByRepo(
   pulls: readonly PullSummary[],
@@ -238,6 +370,9 @@ export function groupPullsByRepo(
     groups.push({
       owner: first.owner,
       repo: first.repo,
+      forge: first.forge,
+      host: first.host,
+      project: first.project,
       key: repoLabel(first),
       count: repoPulls.length,
       authors: groupByAuthor(

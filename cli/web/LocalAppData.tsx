@@ -27,18 +27,23 @@ import { useColorMode } from '@/hooks/useColorMode';
 const NO_SESSION: AppData['session'] = {
   signedIn: false,
   canSignOut: false,
+  canDisconnectGitHub: false,
   checking: false,
+  gitlab: [],
   signIn: () => {},
   signOut: () => {},
+  disconnectGitHub: () => {},
+  disconnectGitLab: () => {},
 };
 
-// A local run serves no forge: no sign-in to offer and no examples to open.
-// The screens read it the way they read a deployment configured for nothing,
-// which is what draws none of their forge controls.
+// A local run serves no forge: no sign-in to offer, no host to connect, and
+// no examples to open. The screens read it the way they read a deployment
+// configured for nothing, which is what draws none of their forge controls.
 const NO_INSTANCE: AppData['instance'] = {
   brand: 'ghdiff',
   host: 'localhost',
   github: { oauth: false, served: false },
+  gitlab: { hosts: [] },
   examples: [],
 };
 

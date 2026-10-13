@@ -28,12 +28,20 @@ import type { GitHubViewer } from '@/lib/viewer';
 
 const GITHUB_REPO = { forge: 'github', owner: 'octo', repo: 'hello' } as const;
 const GITHUB_PULL = { ...GITHUB_REPO, number: 7 } as const;
+const GITLAB_REPO = {
+  forge: 'gitlab',
+  host: 'gitlab.com',
+  project: 'group/proj',
+} as const;
+const GITLAB_PULL = { ...GITLAB_REPO, number: 3 } as const;
 
 const VIEWER: GitHubViewer = {
   login: 'octocat',
   avatarUrl: 'https://avatars.example/octocat',
   name: 'Octo',
 };
+
+const GITLAB_VIEWER: GitHubViewer = { login: 'gl' };
 
 const PULL: PullSummary = {
   owner: 'octo',
@@ -46,6 +54,12 @@ const PULL: PullSummary = {
   updatedAt: '2026-09-01T00:00:00Z',
   headRef: 'feature',
   baseRef: 'main',
+};
+
+const GITLAB_PULL_ROW: PullSummary = {
+  ...PULL,
+  number: 3,
+  htmlUrl: 'https://gitlab.com/group/proj/-/merge_requests/3',
 };
 
 const DETAILS: PullDetails = {
@@ -88,8 +102,12 @@ interface FakeForgeOptions {
   pulls?: PullSummary[];
   /** Who `viewer` answers with; defaults to VIEWER. */
   viewer?: GitHubViewer;
+  /** Hosts whose `viewer` read fails, the way an unreachable instance fails. */
+  viewerFailureHosts?: readonly string[];
+  /** Hosts whose `viewer` read answers a beat after the others. */
+  viewerSlowHosts?: readonly string[];
   capabilities?: ForgeCapabilities;
-  /** False leaves the `viewedFiles` methods off, for a forge without the seam. */
+  /** False leaves the `viewedFiles` methods off, the way the GitLab one is. */
   keepsViewedFiles?: boolean;
   /** False leaves the `drafts` methods off, for a forge without the seam. */
   keepsDrafts?: boolean;
@@ -117,8 +135,14 @@ function fakeForge(
     calls,
     diff: async () => new Response(''),
     file: async () => new Response(''),
-    async viewer(cred) {
-      record('viewer', cred);
+    async viewer(cred, host) {
+      record('viewer', cred, { input: host });
+      if (host != null && options.viewerSlowHosts?.includes(host)) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      if (host != null && options.viewerFailureHosts?.includes(host)) {
+        throw new GitHubError(404, 'Not Found');
+      }
       // Anonymous is a first-class answer, not an error.
       return cred.token == null ? undefined : (options.viewer ?? VIEWER);
     },
@@ -219,6 +243,17 @@ function fakeForge(
   return forge;
 }
 
+/** A forge with the GitLab shape: two verdicts, no viewed-file marks. */
+function fakeGitLabForge(options: FakeForgeOptions = {}) {
+  return fakeForge({
+    capabilities: {
+      verdicts: ['APPROVE', 'COMMENT'],
+    },
+    keepsViewedFiles: false,
+    ...options,
+  });
+}
+
 function callsOf(
   forge: Forge & { calls: RecordedCall[] },
   method: string
@@ -230,6 +265,12 @@ function callsOf(
 const GITHUB_APP = {
   GITHUB_APP_CLIENT_ID: 'Iv1.test',
   GITHUB_APP_CLIENT_SECRET: 'app-secret',
+} as const;
+
+/** The variables of a deployment that also serves gitlab.com — `GITLAB_REPO`'s. */
+const GITLAB_COM = {
+  ...GITHUB_APP,
+  GITLAB_HOSTS: '[{"host":"gitlab.com"}]',
 } as const;
 
 /** The router as a typed client, with the route's context fixed per test. */
@@ -358,10 +399,170 @@ describe('viewer.get', () => {
         byForge: { github: { token: 'ghu_x', fromSession: true } },
       }).viewer.get()
     );
-    assert.deepEqual(result, { fromSession: true, viewer: VIEWER });
+    assert.deepEqual(result, {
+      fromSession: true,
+      githubFromSession: true,
+      viewer: VIEWER,
+    });
     assert.deepEqual(callsOf(forge, 'viewer')[0].cred, {
       token: 'ghu_x',
       fromSession: true,
+    });
+  });
+
+  it('carries no gitlab field for a session with no grants', async () => {
+    registerForge('github', fakeForge());
+    const result = await callRpc(() => clientFor({}).viewer.get());
+    assert.equal(result.gitlab, undefined);
+  });
+
+  it('answers each configured host’s usable grant with its host viewer', async () => {
+    registerForge('github', fakeForge());
+    const gitlab = fakeGitLabForge({ viewer: GITLAB_VIEWER });
+    registerForge('gitlab', gitlab);
+    const result = await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig({
+          GITLAB_HOSTS: '[{"host":"gitlab.corp.com"}]',
+        }),
+        byForge: {
+          'gitlab:gitlab.corp.com': {
+            token: 'glpat-x',
+            scheme: 'private-token',
+          },
+          'gitlab:elsewhere.example.com': {
+            token: 'glpat-y',
+            scheme: 'private-token',
+          },
+        },
+      }).viewer.get()
+    );
+    assert.equal(result.viewer, undefined);
+    // A grant that did not come from the cookie offers no sign-out, and a
+    // grant for a host this deployment does not serve names no viewer.
+    assert.equal(result.fromSession, false);
+    assert.deepEqual(result.gitlab, [
+      { host: 'gitlab.corp.com', viewer: GITLAB_VIEWER },
+    ]);
+    const call = callsOf(gitlab, 'viewer')[0];
+    assert.deepEqual(call.cred, { token: 'glpat-x', scheme: 'private-token' });
+    assert.equal(call.input, 'gitlab.corp.com');
+  });
+
+  it('offers a sign-out when a GitLab grant came from the cookie', async () => {
+    registerForge('github', fakeForge());
+    registerForge('gitlab', fakeGitLabForge({ viewer: GITLAB_VIEWER }));
+    const result = await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig({
+          GITLAB_HOSTS: '[{"host":"gitlab.corp.com"}]',
+        }),
+        byForge: {
+          'gitlab:gitlab.corp.com': {
+            token: 'glpat-x',
+            scheme: 'private-token',
+            fromSession: true,
+          },
+        },
+      }).viewer.get()
+    );
+    // The GitHub token is absent, but the grant's own `fromSession` carries
+    // the cookie — and with it the sign-out.
+    assert.equal(result.fromSession, true);
+  });
+
+  it('offers no GitHub disconnect for GITHUB_TOKEN beside a GitLab connection', async () => {
+    registerForge('github', fakeForge());
+    registerForge('gitlab', fakeGitLabForge({ viewer: GITLAB_VIEWER }));
+    const result = await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig({
+          GITLAB_HOSTS: '[{"host":"gitlab.corp.com"}]',
+        }),
+        byForge: {
+          github: { token: 'ghu_env', fromSession: false },
+          'gitlab:gitlab.corp.com': {
+            token: 'glpat-x',
+            scheme: 'private-token',
+            fromSession: true,
+          },
+        },
+      }).viewer.get()
+    );
+    // A sign-out ends the GitLab connection; the GitHub viewer is the
+    // deployment's token, which no disconnect can end.
+    assert.equal(result.fromSession, true);
+    assert.equal(result.githubFromSession, false);
+    assert.equal(result.viewer, VIEWER);
+  });
+
+  it('answers the hosts in configured order, whichever answers first', async () => {
+    registerForge('github', fakeForge());
+    registerForge(
+      'gitlab',
+      fakeGitLabForge({
+        viewer: GITLAB_VIEWER,
+        viewerSlowHosts: ['slow.example.com'],
+      })
+    );
+    const result = await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig({
+          GITLAB_HOSTS:
+            '[{"host":"slow.example.com"},{"host":"gitlab.corp.com"}]',
+        }),
+        byForge: {
+          'gitlab:slow.example.com': {
+            token: 'glpat-a',
+            scheme: 'private-token',
+          },
+          'gitlab:gitlab.corp.com': {
+            token: 'glpat-b',
+            scheme: 'private-token',
+          },
+        },
+      }).viewer.get()
+    );
+    assert.deepEqual(
+      result.gitlab?.map((connection) => connection.host),
+      ['slow.example.com', 'gitlab.corp.com']
+    );
+  });
+
+  it('fails the answer when a connected host cannot say who it is', async () => {
+    registerForge('github', fakeForge());
+    registerForge(
+      'gitlab',
+      fakeGitLabForge({
+        viewer: GITLAB_VIEWER,
+        viewerFailureHosts: ['down.example.com'],
+      })
+    );
+    const promise = callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig({
+          GITLAB_HOSTS:
+            '[{"host":"down.example.com"},{"host":"gitlab.corp.com"}]',
+        }),
+        byForge: {
+          github: { token: 'ghu_x' },
+          'gitlab:down.example.com': {
+            token: 'glpat-a',
+            scheme: 'private-token',
+          },
+          'gitlab:gitlab.corp.com': {
+            token: 'glpat-b',
+            scheme: 'private-token',
+          },
+        },
+      }).viewer.get()
+    );
+    // Left off, the answer would name a session without that connection, and
+    // the shared cache would file this one's private answers under it.
+    await expectRpcError(promise, {
+      code: 'NOT_FOUND',
+      status: 404,
+      message: 'Not Found',
     });
   });
 });
@@ -402,6 +603,136 @@ describe('pulls.list', () => {
     assert.deepEqual(result.pulls, []);
     assert.deepEqual(result.failures, []);
     assert.equal(forge.calls.length, 0);
+  });
+
+  it('fails the rows of a host this deployment does not serve', async () => {
+    const github = fakeForge();
+    const gitlab = fakeGitLabForge({ pulls: [GITLAB_PULL_ROW] });
+    registerForge('github', github);
+    registerForge('gitlab', gitlab);
+    const result = await callRpc(() =>
+      clientFor({ byForge: { github: { token: 'ghu_x' } } }).pulls.list({
+        repos: [GITHUB_REPO, GITLAB_REPO],
+      })
+    );
+    // The GitHub row is answered and the GitLab one is turned away at the
+    // gate — the forge is never asked.
+    assert.deepEqual(
+      result.pulls.map((pull) => pull.htmlUrl),
+      [PULL.htmlUrl]
+    );
+    assert.equal(result.failures.length, 1);
+    assert.equal(result.failures[0].repo, 'gitlab.com:group/proj');
+    assert.ok(
+      result.failures[0].message.includes('serves GitHub on github.com')
+    );
+    assert.deepEqual(result.viewers, { github: VIEWER.login });
+    assert.deepEqual(callsOf(github, 'listOpenPulls')[0].cred, {
+      token: 'ghu_x',
+      fromSession: undefined,
+    });
+    assert.equal(callsOf(gitlab, 'listOpenPulls').length, 0);
+  });
+
+  it('asks a configured host with its credential and fails another host’s rows', async () => {
+    const gitlab = fakeGitLabForge();
+    registerForge('github', fakeForge());
+    registerForge('gitlab', gitlab);
+    const result = await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig(GITLAB_COM),
+        byForge: {
+          'gitlab:gitlab.com': { token: 'glpat-a', scheme: 'private-token' },
+          'gitlab:gitlab.corp.com': {
+            token: 'glpat-b',
+            scheme: 'private-token',
+          },
+        },
+      }).pulls.list({
+        repos: [
+          GITLAB_REPO,
+          { forge: 'gitlab', host: 'gitlab.corp.com', project: 'team/impl' },
+        ],
+      })
+    );
+    // One instance, one call with its own grant. The other host's row is
+    // turned away at the gate with what this deployment serves.
+    const calls = callsOf(gitlab, 'listOpenPulls');
+    assert.equal(calls.length, 1);
+    assert.deepEqual(calls[0].cred, {
+      token: 'glpat-a',
+      scheme: 'private-token',
+    });
+    assert.equal(result.failures.length, 1);
+    assert.equal(result.failures[0].repo, 'gitlab.corp.com:team/impl');
+    assert.ok(result.failures[0].message.includes('GitLab on gitlab.com'));
+  });
+
+  it('keeps each forge group’s viewer with its own rows', async () => {
+    registerForge('github', fakeForge());
+    registerForge(
+      'gitlab',
+      fakeGitLabForge({ pulls: [GITLAB_PULL_ROW], viewer: GITLAB_VIEWER })
+    );
+    const result = await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig(GITLAB_COM),
+        byForge: {
+          github: { token: 'ghu_x' },
+          'gitlab:gitlab.com': { token: 'glpat-a', scheme: 'private-token' },
+        },
+      }).pulls.list({
+        repos: [GITHUB_REPO, GITLAB_REPO],
+      })
+    );
+    // A login that matches across forges is not the same person: the GitHub
+    // viewer answers for the GitHub rows, and only the host's own viewer
+    // answers for theirs.
+    assert.deepEqual(result.viewers, {
+      github: VIEWER.login,
+      'gitlab:gitlab.com': GITLAB_VIEWER.login,
+    });
+  });
+
+  it('fails only the rows of the forge that failed', async () => {
+    registerForge('github', fakeForge());
+    registerForge(
+      'gitlab',
+      fakeGitLabForge({ error: new GitHubError(404, 'Not Found') })
+    );
+    const result = await callRpc(() =>
+      clientFor({ config: parseDeploymentConfig(GITLAB_COM) }).pulls.list({
+        repos: [GITHUB_REPO, GITLAB_REPO],
+      })
+    );
+    // One group answers and one fails at the forge, and the failure carries
+    // the forge's own sentence.
+    assert.deepEqual(
+      result.pulls.map((pull) => pull.htmlUrl),
+      [PULL.htmlUrl]
+    );
+    assert.deepEqual(result.failures, [
+      { repo: 'gitlab.com:group/proj', message: 'Not Found' },
+    ]);
+  });
+
+  it('gives a failure without a status the generic sentence', async () => {
+    registerForge('github', fakeForge());
+    registerForge(
+      'gitlab',
+      fakeGitLabForge({ error: new Error('socket hang up') })
+    );
+    const result = await callRpc(() =>
+      clientFor({ config: parseDeploymentConfig(GITLAB_COM) }).pulls.list({
+        repos: [GITLAB_REPO],
+      })
+    );
+    assert.deepEqual(result.pulls, []);
+    assert.equal(result.failures.length, 1);
+    assert.equal(result.failures[0].repo, 'gitlab.com:group/proj');
+    assert.ok(
+      result.failures[0].message.includes('Could not load this repository')
+    );
   });
 
   it('caps the watch list at 25 repositories', async () => {
@@ -616,6 +947,48 @@ describe('fail mapping', () => {
   });
 });
 
+describe('gitlab credentials', () => {
+  it('sends a header credential ahead of a session grant', async () => {
+    const gitlab = fakeGitLabForge();
+    registerForge('gitlab', gitlab);
+    await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig(GITLAB_COM),
+        headerToken: 'glpat-header',
+        byForge: {
+          'gitlab:gitlab.com': {
+            token: 'glpat-session',
+            scheme: 'private-token',
+          },
+        },
+      }).pulls.get(GITLAB_PULL)
+    );
+    // A caller that named a credential meant that one, the way the header wins
+    // for the plain routes.
+    assert.deepEqual(callsOf(gitlab, 'pullDetails')[0].cred, {
+      token: 'glpat-header',
+      scheme: 'bearer',
+    });
+  });
+
+  it("sends the session grant for the ref's host", async () => {
+    const gitlab = fakeGitLabForge();
+    registerForge('gitlab', gitlab);
+    await callRpc(() =>
+      clientFor({
+        config: parseDeploymentConfig(GITLAB_COM),
+        byForge: {
+          'gitlab:gitlab.com': { token: 'glpat-x', scheme: 'private-token' },
+        },
+      }).pulls.get(GITLAB_PULL)
+    );
+    assert.deepEqual(callsOf(gitlab, 'pullDetails')[0].cred, {
+      token: 'glpat-x',
+      scheme: 'private-token',
+    });
+  });
+});
+
 // The gate's 404 is a GitHubError raised before the forge runs, and it must
 // reach the browser as that 404 with its sentence — which is why the ref
 // middleware maps `forgeFor`'s failure through `fail()` the way a handler did.
@@ -623,19 +996,16 @@ describe('forge gate', () => {
   const gate = {
     code: 'NOT_FOUND',
     status: 404,
-    message: { fragment: 'no forges' },
-    failure: { reason: 'not-served', forge: 'github' },
+    message: { fragment: 'serves GitHub on github.com' },
+    failure: { reason: 'not-served', forge: 'gitlab', host: 'gitlab.com' },
   };
-  // A deployment with neither the App nor a token serves no GitHub at all.
-  const config = parseDeploymentConfig({});
-  const byForge = { github: { token: 'ghu_x' } };
 
-  it('answers an unserved ref 404 in reviews.submit', async () => {
+  it('answers a wrong-forge ref 404 in reviews.submit', async () => {
     registerForge('github', fakeForge());
     await expectRpcError(
       callRpc(() =>
-        clientFor({ config, byForge }).reviews.submit({
-          ...GITHUB_PULL,
+        clientFor({ byForge: { github: { token: 'ghu_x' } } }).reviews.submit({
+          ...GITLAB_PULL,
           event: 'APPROVE',
         })
       ),
@@ -643,12 +1013,12 @@ describe('forge gate', () => {
     );
   });
 
-  it('answers an unserved ref 404 in comments.create', async () => {
+  it('answers a wrong-forge ref 404 in comments.create', async () => {
     registerForge('github', fakeForge());
     await expectRpcError(
       callRpc(() =>
-        clientFor({ config, byForge }).comments.create({
-          ...GITHUB_PULL,
+        clientFor({ byForge: { github: { token: 'ghu_x' } } }).comments.create({
+          ...GITLAB_PULL,
           body: 'A note.',
           path: 'a.ts',
           line: 3,
@@ -658,12 +1028,12 @@ describe('forge gate', () => {
     );
   });
 
-  it('answers an unserved ref 404 in comments.remove', async () => {
+  it('answers a wrong-forge ref 404 in comments.remove', async () => {
     registerForge('github', fakeForge());
     await expectRpcError(
       callRpc(() =>
-        clientFor({ config, byForge }).comments.remove({
-          ...GITHUB_PULL,
+        clientFor({ byForge: { github: { token: 'ghu_x' } } }).comments.remove({
+          ...GITLAB_PULL,
           commentId: 10,
         })
       ),
@@ -671,17 +1041,45 @@ describe('forge gate', () => {
     );
   });
 
-  it('answers an unserved ref 404 in viewedFiles.set', async () => {
+  it('answers a wrong-forge ref 404 in viewedFiles.set', async () => {
     registerForge('github', fakeForge());
     await expectRpcError(
       callRpc(() =>
-        clientFor({ config, byForge }).viewedFiles.set({
-          ...GITHUB_PULL,
+        clientFor({ byForge: { github: { token: 'ghu_x' } } }).viewedFiles.set({
+          ...GITLAB_PULL,
           path: 'a.ts',
           viewed: true,
         })
       ),
       gate
+    );
+  });
+
+  it('names the configured hosts when the ref names another', async () => {
+    registerForge('gitlab', fakeGitLabForge());
+    await expectRpcError(
+      callRpc(() =>
+        clientFor({
+          config: parseDeploymentConfig({
+            GITLAB_HOSTS: '[{"host":"gitlab.com"},{"host":"gitlab.corp.com"}]',
+          }),
+        }).pulls.get({
+          forge: 'gitlab',
+          host: 'elsewhere.example.com',
+          project: 'group/proj',
+          number: 3,
+        })
+      ),
+      {
+        code: 'NOT_FOUND',
+        status: 404,
+        message: { fragment: 'gitlab.corp.com' },
+        failure: {
+          reason: 'not-served',
+          forge: 'gitlab',
+          host: 'elsewhere.example.com',
+        },
+      }
     );
   });
 });
@@ -705,7 +1103,59 @@ describe('reviews.mine', () => {
 });
 
 describe('reviews.submit', () => {
-  it('asks for a token before a verdict', async () => {
+  it('answers an anonymous unsupported verdict 401 before the forge’s 400', async () => {
+    registerForge('gitlab', fakeGitLabForge());
+    await expectRpcError(
+      callRpc(() =>
+        clientFor({
+          config: parseDeploymentConfig(GITLAB_COM),
+          byForge: { github: { token: 'ghu_x' } },
+        }).reviews.submit({
+          ...GITLAB_PULL,
+          event: 'REQUEST_CHANGES',
+          body: 'Please rework this.',
+        })
+      ),
+      {
+        code: 'UNAUTHORIZED',
+        status: 401,
+        message: { fragment: 'Connect GitLab' },
+        failure: {
+          reason: 'auth-required',
+          forge: 'gitlab',
+          host: 'gitlab.com',
+        },
+      }
+    );
+  });
+
+  it('refuses a verdict the forge does not take', async () => {
+    registerForge('gitlab', fakeGitLabForge());
+    await expectRpcError(
+      callRpc(() =>
+        clientFor({
+          config: parseDeploymentConfig(GITLAB_COM),
+          byForge: {
+            'gitlab:gitlab.com': {
+              token: 'glpat-x',
+              scheme: 'private-token',
+            },
+          },
+        }).reviews.submit({
+          ...GITLAB_PULL,
+          event: 'REQUEST_CHANGES',
+          body: 'Please rework this.',
+        })
+      ),
+      {
+        code: 'BAD_REQUEST',
+        status: 400,
+        message: { fragment: 'does not take that verdict' },
+      }
+    );
+  });
+
+  it('asks for a token before a verdict, per forge', async () => {
     registerForge('github', fakeForge());
     await expectRpcError(
       callRpc(() =>
@@ -716,6 +1166,29 @@ describe('reviews.submit', () => {
         status: 401,
         message: { fragment: 'before you submit a review' },
         failure: { reason: 'auth-required', forge: 'github' },
+      }
+    );
+
+    registerForge('gitlab', fakeGitLabForge());
+    await expectRpcError(
+      callRpc(() =>
+        clientFor({ config: parseDeploymentConfig(GITLAB_COM) }).reviews.submit(
+          {
+            ...GITLAB_PULL,
+            event: 'COMMENT',
+            body: 'A remark.',
+          }
+        )
+      ),
+      {
+        code: 'UNAUTHORIZED',
+        status: 401,
+        message: { fragment: 'Connect GitLab' },
+        failure: {
+          reason: 'auth-required',
+          forge: 'gitlab',
+          host: 'gitlab.com',
+        },
       }
     );
   });
@@ -780,9 +1253,13 @@ describe('viewedFiles.list', () => {
   });
 
   it('refuses a forge that keeps no marks', async () => {
-    registerForge('github', fakeForge({ keepsViewedFiles: false }));
+    registerForge('gitlab', fakeGitLabForge());
     await expectRpcError(
-      callRpc(() => clientFor({}).viewedFiles.list(GITHUB_PULL)),
+      callRpc(() =>
+        clientFor({
+          config: parseDeploymentConfig(GITLAB_COM),
+        }).viewedFiles.list(GITLAB_PULL)
+      ),
       {
         code: 'BAD_REQUEST',
         status: 400,
@@ -808,6 +1285,34 @@ describe('viewedFiles.set', () => {
         status: 401,
         message: { fragment: 'before you mark a file as viewed' },
         failure: { reason: 'auth-required', forge: 'github' },
+      }
+    );
+  });
+
+  it('asks for a GitLab grant before the capability is even read', async () => {
+    registerForge('gitlab', fakeGitLabForge());
+    // A GitLab ref resolves to an empty credential until GitLab grants land,
+    // so the auth middleware answers ahead of the viewed-files gate.
+    await expectRpcError(
+      callRpc(() =>
+        clientFor({
+          config: parseDeploymentConfig(GITLAB_COM),
+          byForge: { github: { token: 'ghu_x' } },
+        }).viewedFiles.set({
+          ...GITLAB_PULL,
+          path: 'a.ts',
+          viewed: true,
+        })
+      ),
+      {
+        code: 'UNAUTHORIZED',
+        status: 401,
+        message: { fragment: 'Connect GitLab' },
+        failure: {
+          reason: 'auth-required',
+          forge: 'gitlab',
+          host: 'gitlab.com',
+        },
       }
     );
   });
@@ -1030,6 +1535,26 @@ describe('comments.resolve', () => {
       }
     );
   });
+
+  it('answers a wrong-forge ref 404', async () => {
+    registerForge('github', fakeForge());
+    await expectRpcError(
+      callRpc(() =>
+        clientFor({ byForge: { github: { token: 'ghu_x' } } }).comments.resolve(
+          {
+            ...GITLAB_PULL,
+            threadId: '9c8b7a6f',
+            resolved: true,
+          }
+        )
+      ),
+      {
+        code: 'NOT_FOUND',
+        status: 404,
+        message: { fragment: 'serves GitHub on github.com' },
+      }
+    );
+  });
 });
 
 describe('drafts.list', () => {
@@ -1148,6 +1673,7 @@ describe('drafts.create', () => {
       side: 'additions',
       startLine: 2,
       startSide: 'additions',
+      gitlabPosition: undefined,
     });
     assert.deepEqual(call.cred, { token: 'ghu_x', fromSession: undefined });
   });

@@ -9,7 +9,7 @@ import type { ConversationEntry } from '@/lib/pullConversation';
 import type { PullDetails } from '@/lib/pullDetails';
 import type { OpenPullsAnswer } from '@/lib/pulls';
 import type { SubmittedReview, TeamReview } from '@/lib/reviewDecision';
-import { reviewTargetSearch } from '@/lib/reviewTarget';
+import { HOST_PATTERN, reviewTargetSearch } from '@/lib/reviewTarget';
 import type { ViewedFilesData } from '@/lib/viewedFiles';
 import type { GitHubViewer } from '@/lib/viewer';
 import { m } from '@/paraglide/messages.js';
@@ -31,7 +31,17 @@ const NAME = /^[A-Za-z0-9._-]+$/;
 // Every message is a function the schema calls when it fails, so the sentence
 // is the request's own locale and never the one the module loaded in.
 const name = z.string().regex(NAME, {
-  error: () => m.contract_enter_a_valid_github_username_or_repository_name(),
+  error: () => m.contract_enter_a_valid_owner_group_or_repository_name(),
+});
+
+/** A hostname, with an optional port: `gitlab.com`, `gitlab.corp.com:8443`. */
+const host = z.string().regex(HOST_PATTERN, {
+  error: () => m.contract_enter_a_valid_gitlab_hostname(),
+});
+
+/** A GitLab project's full path, namespaces included: `group/sub/repo`. */
+const project = z.string().regex(/^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*$/, {
+  error: () => m.contract_enter_a_valid_project_path(),
 });
 
 /** A comment's words, which a forge refuses to take empty. */
@@ -42,20 +52,52 @@ const commentBody = z
 
 /** The repository fields of each forge, shared by every ref shape below. */
 const githubRepo = { forge: z.literal('github'), owner: name, repo: name };
+const gitlabRepo = { forge: z.literal('gitlab'), host, project };
 
-/** A repository on a forge. The `forge` field is the discriminant. */
-const repoRef = z.discriminatedUnion('forge', [z.object(githubRepo)]);
+/** A repository on either forge. The `forge` field is the discriminant. */
+const repoRef = z.discriminatedUnion('forge', [
+  z.object(githubRepo),
+  z.object(gitlabRepo),
+]);
 
 /** A pullRef with extra fields, kept as a union so `forge` still discriminates. */
 const pullRefWith = <T extends Record<string, z.ZodType>>(extra: T) =>
   z.discriminatedUnion('forge', [
     z.object({ ...githubRepo, number: z.int().positive(), ...extra }),
+    z.object({ ...gitlabRepo, number: z.int().positive(), ...extra }),
   ]);
 
 const pullRef = pullRefWith({});
 
 /** `additions` is GitHub's RIGHT and `deletions` is its LEFT. */
 const side = z.enum(['additions', 'deletions']);
+
+/**
+ * One end of a GitLab diff position, as raw cursors on both sides of the
+ * diff: `oldPos` and `newPos` are the line numbers the row carries in each
+ * file — the one a single-coordinate note hides included — and `kind` says
+ * whether the row is an addition, a deletion, or a context line.
+ */
+const gitLabCursor = z.object({
+  oldPos: z.int().positive(),
+  newPos: z.int().positive(),
+  kind: z.enum(['addition', 'deletion', 'context']),
+});
+
+/**
+ * A GitLab diff position the client that holds the parsed diff can state
+ * exactly: the real `oldPath`/`newPath` of a renamed file included. GitLab
+ * derives a note's anchor from these, so a comment on a renamed file or a
+ * context line lands where it was written. Optional everywhere: a caller
+ * that cannot supply the cursors keeps the scalar `path`/`line`/`side`
+ * shape, and GitLab's answer to that is what it always was.
+ */
+const gitLabPosition = z.object({
+  oldPath: z.string().min(1),
+  newPath: z.string().min(1),
+  end: gitLabCursor,
+  start: gitLabCursor.optional(),
+});
 
 export const contract = {
   viewer: {
@@ -66,13 +108,18 @@ export const contract = {
      * `fromSession` is what separates a reviewer who signed in from a deployment
      * running on `GITHUB_TOKEN`. Both have a viewer and both post comments as
      * that account, and only the first has a sign-out to offer — so the menu
-     * reads this rather than guessing from the viewer alone. It is true when the
-     * credential resolved from the cookie.
+     * reads this rather than guessing from the viewer alone. It is true when any
+     * credential resolved from the cookie, a GitLab connection's included.
+     * `githubFromSession` is the GitHub grant's alone: what Disconnect GitHub
+     * would end.
      */
     get: oc.output(
       type<{
         viewer?: GitHubViewer;
         fromSession?: boolean;
+        githubFromSession?: boolean;
+        /** The GitLab connections this session holds, one viewer per host. */
+        gitlab?: { host: string; viewer: GitHubViewer }[];
       }>()
     ),
   },
@@ -240,6 +287,7 @@ export const contract = {
           side: side.optional(),
           startLine: z.int().positive().optional(),
           startSide: side.optional(),
+          gitlabPosition: gitLabPosition.optional(),
         })
       )
       .output(type<CommentPayload>()),
@@ -251,7 +299,7 @@ export const contract = {
     /**
      * Resolves a review thread on the forge, or takes the mark back. The
      * thread is named by the id its forge reported on the root payload —
-     * GitHub's review-thread node id.
+     * GitHub's review-thread node id, GitLab's discussion id.
      */
     resolve: oc
       .input(
@@ -261,7 +309,8 @@ export const contract = {
   },
 
   /**
-   * The forge's own draft comments — GitHub's pending-review threads. A draft is the token's own by definition, so every procedure
+   * The forge's own draft comments — GitHub's pending-review threads, GitLab's
+   * draft notes. A draft is the token's own by definition, so every procedure
    * here wants a credential the way `comments.create` does. The drafts a
    * verdict publishes are exactly these; there is no local staging beside them.
    */
@@ -281,15 +330,16 @@ export const contract = {
           side,
           startLine: z.int().positive().optional(),
           startSide: side.optional(),
+          gitlabPosition: gitLabPosition.optional(),
           body: commentBody,
         })
       )
       .output(type<CommentPayload>()),
 
     /**
-     * Takes one draft back, by whichever id the forge reported — one of the
-     * two, at least. GitHub's mutation addresses a review comment by its
-     * GraphQL node id.
+     * Takes one draft back. GitHub's mutation addresses a review comment by
+     * its GraphQL node id and GitLab's by its numeric one, so the caller
+     * sends whichever the forge reported — one of the two, at least.
      */
     remove: oc
       .input(

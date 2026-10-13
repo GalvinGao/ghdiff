@@ -11,7 +11,9 @@ import { type PullSummary, reviewTargetFromPull } from './pulls';
 import { currentStackPulls, type PullTarget } from './pullScope';
 
 /**
- * The address of a pull request the list holds, on its own forge.
+ * The address of a pull request or merge request the list holds, on its own
+ * forge: a GitLab stack goes on to the next merge request the way a GitHub one
+ * goes on to the next pull request.
  */
 export function stackPullTarget(pull: PullSummary): PullTarget {
   return reviewTargetFromPull(pull);

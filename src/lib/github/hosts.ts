@@ -2,10 +2,11 @@
 // github.com — and that singularity is load-bearing: a hostless GitHub path
 // (`/owner/repo/pull/123`) canonicalizes without probing, because it can
 // only mean one host. This module is the marked GHES seam: when GitHub
-// Enterprise Server support lands, the list becomes configured,
-// `GitHubRepoRef` gains a `host` field, and a hostless path needs a resolve
-// step to find its host. Until then every GitHub host answer lives here, so
-// the URL grammar and the server's serves-sentence cannot drift apart.
+// Enterprise Server support lands, the list becomes configured and probed
+// the way GitLab hosts are, `GitHubRepoRef` gains a `host` field, and the
+// hostless canonicalization goes through the same resolve step a bare
+// GitLab path does. Until then every GitHub host answer lives here, so the
+// URL grammar and the server's serves-sentence cannot drift apart.
 
 /** The GitHub hosts this deployment serves, in canonical order. */
 export const GITHUB_HOSTS = ['github.com'] as const;

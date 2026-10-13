@@ -2,8 +2,9 @@ import { m } from '@/paraglide/messages.js';
 
 // Diffs worth opening before there is one of your own to read.
 //
-// Every figure here was measured against the forge's own API, and the point of
-// the list is the range: a compare range of one release against a pull request that
+// Every figure here was measured against the forge's own API — the GitHub rows
+// against GitHub's, the gitlab.com rows against GitLab's — and the point of the
+// list is the range: a compare range of one release against a pull request that
 // rewrites a runtime. A reviewer who opens the small one first learns what the
 // surface does, and the large ones say what it survives.
 //
@@ -20,9 +21,9 @@ export interface ExampleEntry {
   /** What the diff is, in the words its own author used. */
   title: string;
   /**
-   * The forge's own path for the target: `owner/repo/pull/123` on GitHub.
-   * The row's display and its href are both the host glued to this with a
-   * colon.
+   * The forge's own path for the target: `owner/repo/pull/123` on GitHub,
+   * `group/repo/-/merge_requests/1` on GitLab. The row's display and its href
+   * are both the host glued to this with a colon.
    */
   path: string;
   /** How big it is. Short enough for the right edge of a row. */
@@ -102,6 +103,56 @@ export const DEFAULT_EXAMPLES: Record<string, readonly ExampleEntry[]> = {
       },
       get note() {
         return m.example_targets_a_compare_range_of_one_release_100_commits();
+      },
+    },
+  ],
+  'gitlab.com': [
+    {
+      get title() {
+        return m.example_targets_migrate_workflow_catalog_to_ai_catalog_curation();
+      },
+      path: 'gitlab-org/gitlab/-/merge_requests/250858',
+      get scale() {
+        return m.example_targets_269_files_669_lines();
+      },
+      get note() {
+        return m.example_targets_the_widest_of_them_a_mechanical_migration();
+      },
+    },
+    {
+      get title() {
+        return m.example_targets_add_userprompt_value_type_to_duo_chat();
+      },
+      path: 'gitlab-org/gitlab/-/commit/908cae1aed60fd4fb98b0e8d9c4702732969aaa0',
+      get scale() {
+        return m.example_targets_28_files_2_8k_lines();
+      },
+      get note() {
+        return m.example_targets_one_feature_as_one_commit();
+      },
+    },
+    {
+      get title() {
+        return m.example_targets_replace_removed_grape_router_methods();
+      },
+      path: 'gitlab-org/gitlab/-/merge_requests/253200',
+      get scale() {
+        return m.example_targets_27_files_230_lines();
+      },
+      get note() {
+        return m.example_targets_small_enough_to_open_first();
+      },
+    },
+    {
+      get title() {
+        return m.example_targets_gitlab_19_3_0_to_19_3_1();
+      },
+      path: 'gitlab-org/gitlab/-/compare/v19.3.0-ee...v19.3.1-ee',
+      get scale() {
+        return m.example_targets_74_files_2_2k_lines();
+      },
+      get note() {
+        return m.example_targets_a_compare_range_of_one_patch_release();
       },
     },
   ],

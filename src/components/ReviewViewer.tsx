@@ -52,6 +52,7 @@ import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
 import type { SearchMarks } from '@/lib/diffSearch';
 import type { ForgeName } from '@/lib/forges';
+import { rangeTouchesContextLines } from '@/lib/lineMarks';
 import type { ViewerControls } from '@/lib/viewerControls';
 import { m } from '@/paraglide/messages.js';
 
@@ -377,6 +378,13 @@ export const ReviewViewer = memo(function ReviewViewer({
               canCreateIssue={canCreateIssue}
               canStage={canStage}
               draftsExist={draftsExist}
+              stageBlocked={
+                forge === 'gitlab' &&
+                rangeTouchesContextLines(
+                  item.fileDiff,
+                  diffAnnotation.metadata.range
+                )
+              }
               stageNeedsSignIn={stageNeedsSignIn}
               store={commentStore}
               itemId={item.id}

@@ -351,9 +351,10 @@ export function CommentThreadCard({
 /**
  * The whole thread, as the expanded layer reads it: the count and the delete
  * question, every message, and the reply box. This is what the card's overlay
- * shows.
+ * shows, and what a merge-request thread shows straight from its sidebar row —
+ * it has no card in the diff to click through first.
  */
-function ExpandedThread({
+export function ExpandedThread({
   forge,
   itemId,
   metadata,

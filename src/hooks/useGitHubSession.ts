@@ -2,9 +2,10 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useSharedCache, useSharedQuery } from './useSharedQuery';
+import { findGitLabHost } from '@/lib/forges';
 import { AUTH_ERROR_PARAM, authFailureMessage } from '@/lib/github/app';
 import { heldLegacyToken } from '@/lib/legacyToken';
-import { viewerNamespace } from '@/lib/queryCache/records';
+import { sessionNamespace } from '@/lib/queryCache/records';
 import { SESSION_QUERY_KEY } from '@/lib/queryCache/sharedCache';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { LEGACY_GITHUB_TOKEN_STORAGE_KEY } from '@/lib/storageKeys';
@@ -12,6 +13,22 @@ import type { GitHubViewer } from '@/lib/viewer';
 import { m } from '@/paraglide/messages.js';
 
 export type { GitHubViewer };
+
+/** A GitLab connection this session holds: one viewer per instance host. */
+export interface GitLabConnection {
+  host: string;
+  viewer: GitHubViewer;
+}
+
+/** The connection to a host, matched without case. */
+export function gitLabConnectionFor(
+  gitlab: readonly GitLabConnection[],
+  host: string
+): GitLabConnection | undefined {
+  return findGitLabHost(gitlab, host);
+}
+
+const NO_CONNECTIONS: GitLabConnection[] = [];
 
 export interface GitHubSessionState {
   /** Whether this browser's requests reach GitHub as somebody. */
@@ -21,7 +38,14 @@ export interface GitHubSessionState {
    * `GITHUB_TOKEN` has a viewer and nothing to sign out of.
    */
   canSignOut: boolean;
+  /**
+   * Whether the GitHub viewer came out of the cookie, so Disconnect GitHub has
+   * a grant to end. `GITHUB_TOKEN` beside a GitLab connection has none.
+   */
+  canDisconnectGitHub: boolean;
   viewer?: GitHubViewer;
+  /** The GitLab connections, keyed by nothing but their hosts. */
+  gitlab: GitLabConnection[];
   /** What went wrong while asking GitHub who this is. */
   viewerError?: string;
   /** What went wrong during a sign-in that has just come back. */
@@ -29,6 +53,10 @@ export interface GitHubSessionState {
   checking: boolean;
   signIn(): void;
   signOut(): void;
+  /** End only the GitHub connection; the GitLab ones stay. */
+  disconnectGitHub(): void;
+  /** End one GitLab connection; everything else stays. */
+  disconnectGitLab(host: string): void;
 }
 
 /**
@@ -62,7 +90,9 @@ export function useGitHubSession(): GitHubSessionState {
   });
   const result = query.data;
   const viewer = result?.viewer;
+  const gitlab = result?.gitlab ?? NO_CONNECTIONS;
   const canSignOut = result?.fromSession === true;
+  const canDisconnectGitHub = result?.githubFromSession === true;
   const viewerError =
     query.error == null
       ? undefined
@@ -77,12 +107,14 @@ export function useGitHubSession(): GitHubSessionState {
 
   // The answer is what the shared cache files every other answer under. Until
   // it lands nothing is written to disk, and an answer naming another account
-  // than the one on screen resets every answer this tab holds.
-  const login = viewer?.login;
-  const answered = result != null;
+  // than the one on screen resets every answer this tab holds. Every account
+  // the session speaks with is part of the name: a GitLab connection added or
+  // dropped reads private answers no other session may borrow.
+  const namespace =
+    result == null ? undefined : sessionNamespace(viewer?.login, gitlab);
   useEffect(() => {
-    if (answered) shared?.confirm(viewerNamespace(login));
-  }, [answered, login, shared]);
+    if (namespace != null) shared?.confirm(namespace);
+  }, [namespace, shared]);
 
   // A failed sign-in has nowhere to draw a panel — the callback is a redirect —
   // so the reason arrives on the address instead. It is read once and taken back
@@ -160,33 +192,63 @@ export function useGitHubSession(): GitHubSessionState {
     );
   }, []);
 
-  const signOut = useCallback(() => {
-    const leave = async () => {
-      // Nothing more is written to disk from the moment of the press, and the
-      // disk is emptied once the Worker has ended the session — not before, or
-      // another tab could ask who it is in between, be told the old account by
-      // the cookie still standing, and write its answers straight back.
-      shared?.suspend();
-      try {
-        await fetch('/api/auth/signout', { method: 'POST' });
-      } catch {
-        // The cookie is gone or it is not, and either way the reviewer asked to
-        // leave. Landing them on the home page is the answer to both.
-      }
-      await shared?.endSession();
-      window.location.assign('/');
-    };
-    void leave();
-  }, [shared]);
+  // A whole sign-out, or one connection out and the rest kept. Either way the
+  // page is left: what is on screen was fetched under the credential that just
+  // went, and the home page is the honest place to land.
+  const leave = useCallback(
+    (body?: object) => {
+      const go = async () => {
+        // Nothing more is written to disk from the moment of the press, and
+        // the disk is emptied once the Worker has ended the session — not
+        // before, or another tab could ask who it is in between, be told the
+        // old account by the cookie still standing, and write its answers
+        // straight back.
+        shared?.suspend();
+        try {
+          await fetch(
+            '/api/auth/signout',
+            body == null
+              ? { method: 'POST' }
+              : {
+                  body: JSON.stringify(body),
+                  headers: { 'content-type': 'application/json' },
+                  method: 'POST',
+                }
+          );
+        } catch {
+          // The cookie is gone or it is not, and either way the reviewer asked
+          // to leave. Landing them on the home page is the answer to both.
+        }
+        await shared?.endSession();
+        window.location.assign('/');
+      };
+      void go();
+    },
+    [shared]
+  );
+
+  const signOut = useCallback(() => leave(), [leave]);
+  const disconnectGitHub = useCallback(
+    () => leave({ forge: 'github' }),
+    [leave]
+  );
+  const disconnectGitLab = useCallback(
+    (host: string) => leave({ forge: 'gitlab', host }),
+    [leave]
+  );
 
   return {
     signedIn: viewer != null,
     canSignOut,
+    canDisconnectGitHub,
     viewer,
+    gitlab,
     viewerError,
     authError,
     checking,
     signIn,
     signOut,
+    disconnectGitHub,
+    disconnectGitLab,
   };
 }

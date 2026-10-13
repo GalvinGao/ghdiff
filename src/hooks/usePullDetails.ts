@@ -27,7 +27,7 @@ export interface PullDetailsState {
 const RENEW_MARGIN_MS = 30_000;
 
 /**
- * The details of the pull request under review. It runs as
+ * The details of the pull request or merge request under review. It runs as
  * soon as the review opens, because the header shows the title: a header that
  * filled in only when a card was opened would leave the reviewer looking at a
  * bare number.

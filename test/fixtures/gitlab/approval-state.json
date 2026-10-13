@@ -1,0 +1,35 @@
+{
+  "approval_rules_overwritten": true,
+  "rules": [
+    {
+      "id": 374983151,
+      "name": "All Members",
+      "rule_type": "any_approver",
+      "eligible_approvers": [],
+      "approvals_required": 1,
+      "users": [],
+      "groups": [],
+      "contains_hidden_groups": false,
+      "report_type": null,
+      "section": null,
+      "source_rule": {
+        "approvals_required": 1
+      },
+      "overridden": false,
+      "code_owner": false,
+      "approved_by": [
+        {
+          "id": 4339707,
+          "username": "ohoral",
+          "public_email": "ohoralkoretska@gitlab.com",
+          "name": "Olena Horal-Koretska",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "https://secure.gravatar.com/avatar/2ea5c5ffcaa1cad491b149a16ca7e9e3be854584a9ae2d51446ae8b320cb50cb?s=80&d=identicon",
+          "web_url": "https://gitlab.com/ohoral"
+        }
+      ],
+      "approved": true
+    }
+  ]
+}

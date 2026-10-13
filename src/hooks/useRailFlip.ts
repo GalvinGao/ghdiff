@@ -7,6 +7,8 @@ import {
   useState,
 } from 'react';
 
+import { repoLabel } from '@/lib/pulls';
+
 // The collapse and the expand of the left bar, made continuous.
 //
 // The bar's width travels over 200 ms, but the two widths are two layouts, not
@@ -70,13 +72,20 @@ export const RAIL_TRANSITION_EASING = 'cubic-bezier(0.3, 1.15, 0.45, 1)';
 // and should fly between them. Its value is the identity that pairs the two
 // renderings up.
 
-/** The status square of one pull request, in either layout. */
+/**
+ * The status square of one pull request, in either layout. The identity is the
+ * repository's own label, so the same pull request keys alike whether the row
+ * or the review's target named it.
+ */
 export function railPullFlipKey(pull: {
-  owner: string;
-  repo: string;
+  forge?: 'github' | 'gitlab';
+  owner?: string;
+  repo?: string;
+  host?: string;
+  project?: string;
   number: number;
 }): string {
-  return `pull:${pull.owner}/${pull.repo}#${String(pull.number)}`;
+  return `pull:${repoLabel(pull)}#${String(pull.number)}`;
 }
 
 /** The layers badge of one stack, identified by the stack's root. */
