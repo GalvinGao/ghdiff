@@ -119,9 +119,16 @@ export function presetStats(
   return stats;
 }
 
+/**
+ * `kept` is files the filter shows whatever it says, by item id: the file a URL
+ * fragment names, when the filter this diff was left with would hide it. A link
+ * someone sent is a request to see that file, and a filter remembered from an
+ * earlier visit is not a reason to land somewhere else.
+ */
 export function applyReviewFilter(
   data: ReviewData,
-  state: ReviewFilterState
+  state: ReviewFilterState,
+  kept: ReadonlySet<string> = NO_KEPT_ITEMS
 ): FilteredReviewData {
   const query = state.query.trim().toLowerCase();
   const itemById = new Map(data.items.map((item) => [item.id, item]));
@@ -138,22 +145,9 @@ export function applyReviewFilter(
   };
 
   for (const entry of data.entries) {
-    const untracked = entry.status === 'untracked';
-    if (!matchesPresets(state.presetIds, entry.path)) continue;
-    if (untracked && state.hideUntracked) continue;
-    // Untracked is exempt from the status list, which is the one place these
-    // two controls could contradict each other. The status menu offers the four
-    // statuses a patch can describe and never this one, so picking Added would
-    // otherwise take the untracked files away with nothing left to bring them
-    // back. One switch owns them, and it is the only thing that hides them.
-    if (
-      !untracked &&
-      state.statuses.size > 0 &&
-      !state.statuses.has(entry.status)
-    ) {
+    if (!kept.has(entry.itemId) && !passesFilter(entry, state, query)) {
       continue;
     }
-    if (query.length > 0 && !entry.path.toLowerCase().includes(query)) continue;
 
     const item = itemById.get(entry.itemId);
     if (item == null) continue;
@@ -181,4 +175,31 @@ export function applyReviewFilter(
     stats,
     hiddenCount: data.entries.length - entries.length,
   };
+}
+
+const NO_KEPT_ITEMS: ReadonlySet<string> = new Set();
+
+function passesFilter(
+  entry: ReviewFileEntry,
+  state: ReviewFilterState,
+  query: string
+): boolean {
+  const untracked = entry.status === 'untracked';
+  if (!matchesPresets(state.presetIds, entry.path)) return false;
+  if (untracked && state.hideUntracked) return false;
+  // Untracked is exempt from the status list, which is the one place these
+  // two controls could contradict each other. The status menu offers the four
+  // statuses a patch can describe and never this one, so picking Added would
+  // otherwise take the untracked files away with nothing left to bring them
+  // back. One switch owns them, and it is the only thing that hides them.
+  if (
+    !untracked &&
+    state.statuses.size > 0 &&
+    !state.statuses.has(entry.status)
+  ) {
+    return false;
+  }
+  if (query.length > 0 && !entry.path.toLowerCase().includes(query))
+    return false;
+  return true;
 }

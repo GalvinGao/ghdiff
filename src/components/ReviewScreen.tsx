@@ -41,7 +41,10 @@ import { usePullConversation } from '@/hooks/usePullConversation';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useRepoLenses } from '@/hooks/useRepoLenses';
 import { useReviewComments } from '@/hooks/useReviewComments';
-import { useReviewFilter } from '@/hooks/useReviewFilter';
+import {
+  type ReviewFilterUpdate,
+  useReviewFilter,
+} from '@/hooks/useReviewFilter';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
 import {
   SIDEBAR_MAX_WIDTH,
@@ -386,10 +389,21 @@ export function ReviewScreen({
   );
   // The filter this diff was left with, read back so a pull request opens with
   // the same files on screen as last time.
-  const [filter, setFilter] = useReviewFilter(targetKey, statuses);
+  const [filter, setStoredFilter] = useReviewFilter(targetKey, statuses);
+  // Files a URL fragment named while the filter hid them. They stay on screen
+  // until the reviewer changes the filter, which is an answer about what they
+  // want to see now.
+  const [keptItemIds, setKeptItemIds] = useState<ReadonlySet<string>>(NO_ITEMS);
+  const setFilter = useCallback(
+    (update: ReviewFilterUpdate) => {
+      setKeptItemIds(NO_ITEMS);
+      setStoredFilter(update);
+    },
+    [setStoredFilter]
+  );
   const filtered = useMemo(
-    () => applyReviewFilter(patch.data, filter),
-    [filter, patch.data]
+    () => applyReviewFilter(patch.data, filter, keptItemIds),
+    [filter, keptItemIds, patch.data]
   );
 
   // The lenses read what the filter left, so a file the filter hid is neither
@@ -609,6 +623,25 @@ export function ReviewScreen({
    * the file has no rows until the next render and the jump must wait for the
    * frames after it.
    */
+  const filteredIdsRef = useRef<ReadonlySet<string>>(NO_ITEMS);
+  const filteredIds = useMemo(
+    () => new Set(filtered.items.map((item) => item.id)),
+    [filtered.items]
+  );
+  useEffect(() => {
+    filteredIdsRef.current = filteredIds;
+  }, [filteredIds]);
+  /**
+   * Puts a file the filter hides back on screen for this visit, and answers
+   * whether it had to. The stored filter is left alone: the link is about one
+   * file, not about how this reviewer reads the diff.
+   */
+  const revealFilteredFile = useCallback((itemId: string) => {
+    if (filteredIdsRef.current.has(itemId)) return false;
+    setKeptItemIds((kept) => new Set(kept).add(itemId));
+    return true;
+  }, []);
+
   const revealLensFile = useCallback((itemId: string) => {
     if (!lensHiddenRef.current.has(itemId)) return false;
     setLensFilesShown(true);
@@ -646,7 +679,10 @@ export function ReviewScreen({
       openFile(anchored.itemId);
       const { itemId, range } = anchored;
       selectActiveItem(itemId);
-      if (revealLensFile(itemId)) {
+      // Both run: a file can be hidden by the filter and claimed by a lens.
+      const hiddenByFilter = revealFilteredFile(itemId);
+      const claimedByLens = revealLensFile(itemId);
+      if (hiddenByFilter || claimedByLens) {
         runOnFrames(() => {
           if (range != null) viewer.setSelectedLines({ id: itemId, range });
           viewer.scrollTo({
@@ -706,7 +742,14 @@ export function ReviewScreen({
         });
       });
     },
-    [openFile, revealLensFile, runOnFrames, selectActiveItem, stopFrameLoop]
+    [
+      openFile,
+      revealFilteredFile,
+      revealLensFile,
+      runOnFrames,
+      selectActiveItem,
+      stopFrameLoop,
+    ]
   );
 
   // Puts a search match on screen. Centred, unlike an anchor: a match is a

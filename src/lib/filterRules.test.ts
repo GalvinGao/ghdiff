@@ -7,7 +7,7 @@ import {
   isConfigPath,
   isDocsPath,
   isFilterPresetId,
-  isOtherPath,
+  fileKind,
   matchesPresets,
   NO_PRESETS,
   togglePreset,
@@ -166,12 +166,35 @@ describe('FILTER_PRESETS', () => {
   });
 });
 
-describe('isOtherPath', () => {
-  it('claims what no other kind does', () => {
-    assert.equal(isOtherPath('assets/logo.png'), true);
-    assert.equal(isOtherPath('src/a.ts'), false);
-    assert.equal(isOtherPath('src/a.test.ts'), false);
-    assert.equal(isOtherPath('pnpm-lock.yaml'), false);
+describe('fileKind', () => {
+  it('claims what no other kind does as "other"', () => {
+    assert.equal(fileKind('assets/logo.png'), 'other');
+    assert.equal(fileKind('src/a.ts'), 'source');
+    assert.equal(fileKind('pnpm-lock.yaml'), 'generated');
+  });
+
+  it('puts a path two predicates claim in one kind', () => {
+    assert.equal(fileKind('src/__snapshots__/a.snap'), 'tests');
+    assert.equal(fileKind('tests/fixture.json'), 'tests');
+    assert.equal(fileKind('tests/README.md'), 'tests');
+    assert.equal(fileKind('dist/README.md'), 'generated');
+  });
+
+  it('is the one preset each path matches', () => {
+    for (const path of [
+      'src/__snapshots__/a.snap',
+      'tests/README.md',
+      'dist/README.md',
+      'package.json',
+      'LICENSE',
+    ]) {
+      const matched = FILTER_PRESETS.filter((preset) => preset.matches(path));
+      assert.deepEqual(
+        matched.map((preset) => preset.id),
+        [fileKind(path)],
+        path
+      );
+    }
   });
 });
 
@@ -196,6 +219,20 @@ describe('togglePreset', () => {
 describe('matchesPresets', () => {
   it('keeps everything with no preset picked', () => {
     assert.equal(matchesPresets(NO_PRESETS, 'anything.bin'), true);
+  });
+
+  it('hides every test when Tests is the one kind left unticked', () => {
+    const picked = new Set(
+      FILTER_PRESETS.map((preset) => preset.id).filter((id) => id !== 'tests')
+    );
+    for (const path of [
+      'src/__snapshots__/a.snap',
+      'tests/fixture.json',
+      'tests/README.md',
+    ]) {
+      assert.equal(matchesPresets(picked, path), false, path);
+    }
+    assert.equal(matchesPresets(picked, 'src/a.ts'), true);
   });
 
   it('keeps a path any picked kind matches', () => {

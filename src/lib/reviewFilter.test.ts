@@ -148,6 +148,18 @@ describe('applyReviewFilter', () => {
     );
   });
 
+  it('shows a kept file the filter would hide', () => {
+    const result = applyReviewFilter(
+      data,
+      { ...EMPTY_FILTER_STATE, presetIds: new Set(['tests']) },
+      new Set(['README.md'])
+    );
+    assert.deepEqual(
+      result.entries.map((item) => item.path),
+      ['src/index.test.ts', 'test/e2e/login.ts', 'README.md']
+    );
+  });
+
   it('reports how many files it removed', () => {
     const result = applyReviewFilter(data, {
       ...EMPTY_FILTER_STATE,

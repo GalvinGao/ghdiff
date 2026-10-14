@@ -2,6 +2,8 @@ import type { GitStatus } from '@pierre/trees';
 import { useCallback, useMemo, useState } from 'react';
 
 import { reviewFiltersPreference, usePreference } from '@/hooks/preferences';
+import { readStoredString } from '@/hooks/useLocalStorage';
+import { REVIEW_FILTERS_PREFERENCE } from '@/lib/preferences';
 import type { ReviewFilterState } from '@/lib/reviewFilter';
 import { writeReviewFilter } from '@/lib/reviewFilterStore';
 
@@ -56,8 +58,16 @@ export function useReviewFilter(
       ) {
         return;
       }
+      // The browser's own copy, read at the press, and not the one this render
+      // holds: another tab may have written a different diff's filter a
+      // moment ago, before its storage event reached this one, and writing
+      // the map this render saw would take that filter away again.
+      const raw = readStoredString(REVIEW_FILTERS_PREFERENCE.key);
+      const latest =
+        (raw == null ? undefined : REVIEW_FILTERS_PREFERENCE.decode(raw)) ??
+        store;
       setValue(
-        writeReviewFilter(store, targetKey, {
+        writeReviewFilter(latest, targetKey, {
           presets: [...next.presetIds],
           statuses: [...next.statuses],
           hideUntracked: next.hideUntracked,

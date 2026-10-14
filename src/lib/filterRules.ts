@@ -8,8 +8,8 @@ import { m } from '../paraglide/messages.js';
 //
 // The presets are kinds of file, and a reviewer either reads every file or
 // picks the kinds they want: Source and Tests together is both kinds. There is
-// no "hide" rule. "Other" holds every path no kind claims, so the kinds
-// together cover the whole diff, and leaving one unticked is how it is hidden.
+// no "hide" rule. `fileKind` puts every path in exactly one kind, "Other"
+// included, so leaving a kind unticked is how its files are hidden.
 
 export type FilterPresetId =
   | 'source'
@@ -219,27 +219,32 @@ export function isConfigPath(path: string): boolean {
   return CONFIG_EXTENSIONS.has(extension(path));
 }
 
-/**
- * A path that is none of the other kinds: an image, a font, a vendored binary.
- * It is a kind of its own so that the kinds together cover every path — which
- * is what lets "everything but the tests" be five boxes ticked rather than a
- * second sort of rule.
- */
-export function isOtherPath(path: string): boolean {
-  return !(
-    isSourcePath(path) ||
-    isTestPath(path) ||
-    isConfigPath(path) ||
-    isDocsPath(path) ||
-    isGeneratedPath(path)
-  );
-}
-
 export function isSourcePath(path: string): boolean {
   if (isTestPath(path) || isGeneratedPath(path)) {
     return false;
   }
   return CODE_EXTENSIONS.has(extension(path));
+}
+
+/**
+ * The one kind a path is. The predicates above overlap — a snapshot is a test
+ * and generated, `tests/README.md` is a test and a doc — and a picker of kinds
+ * that add up needs each path in exactly one, or unticking Tests would leave
+ * every test that another ticked kind also claims. So the first predicate in
+ * this order that answers yes decides, and "other" is the path none of them
+ * claims: an image, a font, a vendored binary.
+ *
+ * Tests come first because a test's fixtures and snapshots are read as part of
+ * the test. Generated comes next because built output and lock files are not
+ * read at all, whatever their extension says they are.
+ */
+export function fileKind(path: string): FilterPresetId {
+  if (isTestPath(path)) return 'tests';
+  if (isGeneratedPath(path)) return 'generated';
+  if (isDocsPath(path)) return 'docs';
+  if (isConfigPath(path)) return 'config';
+  if (isSourcePath(path)) return 'source';
+  return 'other';
 }
 
 export const FILTER_PRESETS: readonly FilterPreset[] = [
@@ -251,7 +256,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
     get description() {
       return m.filter_rules_source_description();
     },
-    matches: isSourcePath,
+    matches: (path) => fileKind(path) === 'source',
   },
   {
     id: 'tests',
@@ -261,7 +266,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
     get description() {
       return m.filter_rules_tests_description();
     },
-    matches: isTestPath,
+    matches: (path) => fileKind(path) === 'tests',
   },
   {
     id: 'config',
@@ -271,7 +276,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
     get description() {
       return m.filter_rules_config_description();
     },
-    matches: isConfigPath,
+    matches: (path) => fileKind(path) === 'config',
   },
   {
     id: 'docs',
@@ -281,7 +286,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
     get description() {
       return m.filter_rules_docs_description();
     },
-    matches: isDocsPath,
+    matches: (path) => fileKind(path) === 'docs',
   },
   {
     id: 'generated',
@@ -291,7 +296,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
     get description() {
       return m.filter_rules_generated_description();
     },
-    matches: isGeneratedPath,
+    matches: (path) => fileKind(path) === 'generated',
   },
   {
     id: 'other',
@@ -301,7 +306,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
     get description() {
       return m.filter_rules_other_description();
     },
-    matches: isOtherPath,
+    matches: (path) => fileKind(path) === 'other',
   },
 ];
 
@@ -329,11 +334,7 @@ export function matchesPresets(
   ids: ReadonlySet<FilterPresetId>,
   path: string
 ): boolean {
-  if (ids.size === 0) return true;
-  for (const id of ids) {
-    if (getFilterPreset(id).matches(path)) return true;
-  }
-  return false;
+  return ids.size === 0 || ids.has(fileKind(path));
 }
 
 /**
