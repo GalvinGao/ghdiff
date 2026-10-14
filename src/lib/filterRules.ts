@@ -72,6 +72,7 @@ const CODE_EXTENSIONS = new Set([
 ]);
 
 const DOC_EXTENSIONS = new Set(['adoc', 'markdown', 'md', 'mdx', 'rst', 'txt']);
+const DOC_DIRECTORIES = new Set(['doc', 'docs']);
 
 const CONFIG_EXTENSIONS = new Set([
   'cfg',
@@ -151,13 +152,15 @@ const TEST_FILENAME_PATTERNS = [
   /\.snap$/i,
 ];
 
-function segments(path: string): string[] {
-  return path.split('/').filter((segment) => segment.length > 0);
+function pathEnd(path: string): number {
+  let end = path.length;
+  while (end > 0 && path[end - 1] === '/') end--;
+  return end;
 }
 
 function basename(path: string): string {
-  const parts = segments(path);
-  return parts.length === 0 ? '' : parts[parts.length - 1];
+  const end = pathEnd(path);
+  return path.slice(path.lastIndexOf('/', end - 1) + 1, end);
 }
 
 function extension(path: string): string {
@@ -170,12 +173,14 @@ function extension(path: string): string {
 }
 
 function hasDirectory(path: string, directories: ReadonlySet<string>): boolean {
-  const parts = segments(path);
-  // Stop before the last segment: that one is the file name.
-  for (let index = 0; index < parts.length - 1; index++) {
-    if (directories.has(parts[index].toLowerCase())) {
-      return true;
-    }
+  const end = pathEnd(path);
+  // Stop before the last nonempty segment: that one is the file name.
+  // Scan offsets instead of allocating split/filter arrays for every preset.
+  for (let start = 0; start < end;) {
+    const slash = path.indexOf('/', start);
+    if (slash === -1 || slash >= end) break;
+    if (directories.has(path.slice(start, slash).toLowerCase())) return true;
+    start = slash + 1;
   }
   return false;
 }
@@ -202,7 +207,7 @@ export function isDocsPath(path: string): boolean {
   if (DOC_EXTENSIONS.has(extension(path))) {
     return true;
   }
-  return hasDirectory(path, new Set(['doc', 'docs']));
+  return hasDirectory(path, DOC_DIRECTORIES);
 }
 
 export function isConfigPath(path: string): boolean {
