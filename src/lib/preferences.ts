@@ -12,6 +12,11 @@ import {
 import { dedupeWatchedRepos, type WatchedRepo } from './pulls.ts';
 import { isPullScope, type PullScope } from './pullScope.ts';
 import {
+  acceptReviewFilterStore,
+  EMPTY_REVIEW_FILTER_STORE,
+  type ReviewFilterStore,
+} from './reviewFilterStore.ts';
+import {
   CODE_FONT_STORAGE_KEY,
   COLOR_MODE_STORAGE_KEY,
   COMMENT_AUTHOR_FILTER_STORAGE_KEY,
@@ -19,6 +24,7 @@ import {
   RAIL_COLLAPSED_STORAGE_KEY,
   RAIL_WIDTH_STORAGE_KEY,
   REPO_LENSES_STORAGE_KEY,
+  REVIEW_FILTERS_STORAGE_KEY,
   SIDEBAR_WIDTH_STORAGE_KEY,
   VIEWER_CONTROLS_STORAGE_KEY,
   WATCH_OFFER_STORAGE_KEY,
@@ -242,4 +248,15 @@ export const REPO_LENSES_PREFERENCE = jsonPreference<RepoLensStore>(
   REPO_LENSES_STORAGE_KEY,
   EMPTY_REPO_LENS_STORE,
   acceptRepoLensStore
+);
+
+/**
+ * The file filter each diff was left with, by `reviewTargetKey`. One value for
+ * every diff, the way the lenses are one value for every repository, so a diff
+ * nobody filtered costs nothing.
+ */
+export const REVIEW_FILTERS_PREFERENCE = jsonPreference<ReviewFilterStore>(
+  REVIEW_FILTERS_STORAGE_KEY,
+  EMPTY_REVIEW_FILTER_STORE,
+  acceptReviewFilterStore
 );

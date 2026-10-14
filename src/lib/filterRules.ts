@@ -1,25 +1,28 @@
 import { m } from '../paraglide/messages.js';
 // Preset path filters for the review surface.
 //
-// The file tree and the diff list are both driven by one selected preset, so
-// "hide the tests" removes those files from the tree AND from the scroll
+// The file tree and the diff list are both driven by the selected presets, so
+// unticking the tests removes those files from the tree AND from the scroll
 // region. Each preset is a pure predicate over a repository-relative path,
 // which keeps the rules testable and keeps the UI free of path parsing.
+//
+// The presets are kinds of file, and a reviewer either reads every file or
+// picks the kinds they want: Source and Tests together is both kinds. There is
+// no "hide" rule. `fileKind` puts every path in exactly one kind, "Other"
+// included, so leaving a kind unticked is how its files are hidden.
 
 export type FilterPresetId =
-  | 'all'
-  | 'tests'
-  | 'without-tests'
   | 'source'
-  | 'docs'
+  | 'tests'
   | 'config'
+  | 'docs'
   | 'generated'
-  | 'without-generated';
+  | 'other';
 
 export interface FilterPreset {
   id: FilterPresetId;
   label: string;
-  /** One sentence for the menu, in the imperative. */
+  /** One noun phrase for the menu: what files of this kind are. */
   description: string;
   matches(path: string): boolean;
 }
@@ -223,94 +226,93 @@ export function isSourcePath(path: string): boolean {
   return CODE_EXTENSIONS.has(extension(path));
 }
 
+/**
+ * The one kind a path is. The predicates above overlap — a snapshot is a test
+ * and generated, `tests/README.md` is a test and a doc — and a picker of kinds
+ * that add up needs each path in exactly one, or unticking Tests would leave
+ * every test that another ticked kind also claims. So the first predicate in
+ * this order that answers yes decides, and "other" is the path none of them
+ * claims: an image, a font, a vendored binary.
+ *
+ * Tests come first because a test's fixtures and snapshots are read as part of
+ * the test. Generated comes next because built output and lock files are not
+ * read at all, whatever their extension says they are.
+ */
+export function fileKind(path: string): FilterPresetId {
+  if (isTestPath(path)) return 'tests';
+  if (isGeneratedPath(path)) return 'generated';
+  if (isDocsPath(path)) return 'docs';
+  if (isConfigPath(path)) return 'config';
+  if (isSourcePath(path)) return 'source';
+  return 'other';
+}
+
 export const FILTER_PRESETS: readonly FilterPreset[] = [
   {
-    id: 'all',
+    id: 'source',
     get label() {
-      return m.filter_rules_all_files();
+      return m.filter_rules_source();
     },
     get description() {
-      return m.filter_rules_show_every_file_in_the_diff();
+      return m.filter_rules_source_description();
     },
-    matches: () => true,
-  },
-  {
-    id: 'without-tests',
-    get label() {
-      return m.filter_rules_hide_tests();
-    },
-    get description() {
-      return m.filter_rules_hide_test_files_fixtures_and_snapshots();
-    },
-    matches: (path) => !isTestPath(path),
+    matches: (path) => fileKind(path) === 'source',
   },
   {
     id: 'tests',
     get label() {
-      return m.filter_rules_tests_only();
+      return m.filter_rules_tests();
     },
     get description() {
-      return m.filter_rules_show_only_test_files_fixtures_and_snapshots();
+      return m.filter_rules_tests_description();
     },
-    matches: isTestPath,
-  },
-  {
-    id: 'source',
-    get label() {
-      return m.filter_rules_source_only();
-    },
-    get description() {
-      return m.filter_rules_show_only_code_files_that_are_not_tests();
-    },
-    matches: isSourcePath,
-  },
-  {
-    id: 'docs',
-    get label() {
-      return m.filter_rules_docs_only();
-    },
-    get description() {
-      return m.filter_rules_show_only_markdown_and_other_prose_files();
-    },
-    matches: isDocsPath,
+    matches: (path) => fileKind(path) === 'tests',
   },
   {
     id: 'config',
     get label() {
-      return m.filter_rules_config_only();
+      return m.filter_rules_config();
     },
     get description() {
-      return m.filter_rules_show_only_manifests_lint_configs_and_ci_files();
+      return m.filter_rules_config_description();
     },
-    matches: isConfigPath,
+    matches: (path) => fileKind(path) === 'config',
   },
   {
-    id: 'without-generated',
+    id: 'docs',
     get label() {
-      return m.filter_rules_hide_generated();
+      return m.filter_rules_docs();
     },
     get description() {
-      return m.filter_rules_hide_lock_files_snapshots_and_build_output();
+      return m.filter_rules_docs_description();
     },
-    matches: (path) => !isGeneratedPath(path),
+    matches: (path) => fileKind(path) === 'docs',
   },
   {
     id: 'generated',
     get label() {
-      return m.filter_rules_generated_only();
+      return m.filter_rules_generated();
     },
     get description() {
-      return m.filter_rules_show_only_lock_files_snapshots_and_build_output();
+      return m.filter_rules_generated_description();
     },
-    matches: isGeneratedPath,
+    matches: (path) => fileKind(path) === 'generated',
+  },
+  {
+    id: 'other',
+    get label() {
+      return m.filter_rules_other();
+    },
+    get description() {
+      return m.filter_rules_other_description();
+    },
+    matches: (path) => fileKind(path) === 'other',
   },
 ];
 
 const PRESET_BY_ID = new Map<FilterPresetId, FilterPreset>(
   FILTER_PRESETS.map((preset) => [preset.id, preset])
 );
-
-export const DEFAULT_FILTER_PRESET_ID: FilterPresetId = 'all';
 
 export function getFilterPreset(id: FilterPresetId): FilterPreset {
   const preset = PRESET_BY_ID.get(id);
@@ -323,3 +325,35 @@ export function getFilterPreset(id: FilterPresetId): FilterPreset {
 export function isFilterPresetId(value: string): value is FilterPresetId {
   return PRESET_BY_ID.has(value as FilterPresetId);
 }
+
+/**
+ * Whether a path is one of the kinds picked. No kind picked is "All files",
+ * which keeps every path.
+ */
+export function matchesPresets(
+  ids: ReadonlySet<FilterPresetId>,
+  path: string
+): boolean {
+  return ids.size === 0 || ids.has(fileKind(path));
+}
+
+/**
+ * The selection after one press on a kind. Every kind picked is every file, so
+ * that selection is answered as "All files" rather than drawn as six ticks
+ * that mean the same thing.
+ */
+export function togglePreset(
+  ids: ReadonlySet<FilterPresetId>,
+  id: FilterPresetId
+): ReadonlySet<FilterPresetId> {
+  const next = new Set(ids);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  return next.size === FILTER_PRESETS.length ? NO_PRESETS : next;
+}
+
+/** No kind picked, which is every file. */
+export const NO_PRESETS: ReadonlySet<FilterPresetId> = new Set();

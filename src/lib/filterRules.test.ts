@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  DEFAULT_FILTER_PRESET_ID,
   FILTER_PRESETS,
   getFilterPreset,
   isConfigPath,
   isDocsPath,
   isFilterPresetId,
+  fileKind,
+  matchesPresets,
+  NO_PRESETS,
+  togglePreset,
   isGeneratedPath,
   isSourcePath,
   isTestPath,
@@ -144,16 +147,98 @@ describe('FILTER_PRESETS', () => {
     assert.throws(() => getFilterPreset('nope' as never));
   });
 
-  it('defaults to showing everything', () => {
-    const preset = getFilterPreset(DEFAULT_FILTER_PRESET_ID);
-    assert.equal(preset.matches('anything/at/all.ts'), true);
+  it('puts every path in at least one kind', () => {
+    for (const path of [
+      'src/a.ts',
+      'src/a.test.ts',
+      'README.md',
+      'package.json',
+      'pnpm-lock.yaml',
+      'assets/logo.png',
+      'LICENSE',
+    ]) {
+      assert.equal(
+        FILTER_PRESETS.some((preset) => preset.matches(path)),
+        true,
+        path
+      );
+    }
+  });
+});
+
+describe('fileKind', () => {
+  it('claims what no other kind does as "other"', () => {
+    assert.equal(fileKind('assets/logo.png'), 'other');
+    assert.equal(fileKind('src/a.ts'), 'source');
+    assert.equal(fileKind('pnpm-lock.yaml'), 'generated');
   });
 
-  it('keeps "tests" and "without-tests" complementary', () => {
-    const tests = getFilterPreset('tests');
-    const withoutTests = getFilterPreset('without-tests');
-    for (const path of ['a/b.test.ts', 'a/b.ts', 'test/c.ts', 'README.md']) {
-      assert.notEqual(tests.matches(path), withoutTests.matches(path));
+  it('puts a path two predicates claim in one kind', () => {
+    assert.equal(fileKind('src/__snapshots__/a.snap'), 'tests');
+    assert.equal(fileKind('tests/fixture.json'), 'tests');
+    assert.equal(fileKind('tests/README.md'), 'tests');
+    assert.equal(fileKind('dist/README.md'), 'generated');
+  });
+
+  it('is the one preset each path matches', () => {
+    for (const path of [
+      'src/__snapshots__/a.snap',
+      'tests/README.md',
+      'dist/README.md',
+      'package.json',
+      'LICENSE',
+    ]) {
+      const matched = FILTER_PRESETS.filter((preset) => preset.matches(path));
+      assert.deepEqual(
+        matched.map((preset) => preset.id),
+        [fileKind(path)],
+        path
+      );
     }
+  });
+});
+
+describe('togglePreset', () => {
+  it('adds a preset and takes it away again', () => {
+    const once = togglePreset(NO_PRESETS, 'source');
+    assert.deepEqual([...once], ['source']);
+    const twice = togglePreset(once, 'tests');
+    assert.deepEqual([...twice].sort(), ['source', 'tests']);
+    assert.deepEqual([...togglePreset(twice, 'source')], ['tests']);
+  });
+
+  it('answers every kind ticked as no kind at all', () => {
+    let picked = NO_PRESETS;
+    for (const preset of FILTER_PRESETS) {
+      picked = togglePreset(picked, preset.id);
+    }
+    assert.equal(picked.size, 0);
+  });
+});
+
+describe('matchesPresets', () => {
+  it('keeps everything with no preset picked', () => {
+    assert.equal(matchesPresets(NO_PRESETS, 'anything.bin'), true);
+  });
+
+  it('hides every test when Tests is the one kind left unticked', () => {
+    const picked = new Set(
+      FILTER_PRESETS.map((preset) => preset.id).filter((id) => id !== 'tests')
+    );
+    for (const path of [
+      'src/__snapshots__/a.snap',
+      'tests/fixture.json',
+      'tests/README.md',
+    ]) {
+      assert.equal(matchesPresets(picked, path), false, path);
+    }
+    assert.equal(matchesPresets(picked, 'src/a.ts'), true);
+  });
+
+  it('keeps a path any picked kind matches', () => {
+    const picked = new Set(['source', 'tests'] as const);
+    assert.equal(matchesPresets(picked, 'src/a.ts'), true);
+    assert.equal(matchesPresets(picked, 'src/a.test.ts'), true);
+    assert.equal(matchesPresets(picked, 'README.md'), false);
   });
 });

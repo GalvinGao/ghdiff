@@ -22,6 +22,8 @@ export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
  * them then reads as `others` now rather than as a choice it never made.
  */
 export const PULL_SCOPE_STORAGE_KEY = 'ghdiff-show-own-pulls';
+/** The filter each diff was left with, in one value keyed by review target. */
+export const REVIEW_FILTERS_STORAGE_KEY = 'ghdiff-review-filters';
 /** Every repository's lens settings, in one value keyed by repository. */
 export const REPO_LENSES_STORAGE_KEY = 'ghdiff-repo-lenses';
 /**

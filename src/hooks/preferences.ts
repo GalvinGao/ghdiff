@@ -16,6 +16,7 @@ import {
   RAIL_COLLAPSED_PREFERENCE,
   RAIL_WIDTH_PREFERENCE,
   REPO_LENSES_PREFERENCE,
+  REVIEW_FILTERS_PREFERENCE,
   SIDEBAR_WIDTH_PREFERENCE,
   VIEWER_CONTROLS_PREFERENCE,
   WATCH_OFFER_PREFERENCE,
@@ -162,3 +163,4 @@ export const sidebarWidthPreference = preference(SIDEBAR_WIDTH_PREFERENCE);
 export const railWidthPreference = preference(RAIL_WIDTH_PREFERENCE);
 export const pullScopePreference = preference(PULL_SCOPE_PREFERENCE);
 export const repoLensesPreference = preference(REPO_LENSES_PREFERENCE);
+export const reviewFiltersPreference = preference(REVIEW_FILTERS_PREFERENCE);

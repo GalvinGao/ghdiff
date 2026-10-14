@@ -69,9 +69,12 @@ describe('applyReviewFilter', () => {
     assert.equal(result.hiddenCount, 0);
   });
 
-  it('hides tests', () => {
+  it('hides tests by ticking every other kind', () => {
     assert.deepEqual(
-      paths({ ...EMPTY_FILTER_STATE, presetId: 'without-tests' }),
+      paths({
+        ...EMPTY_FILTER_STATE,
+        presetIds: new Set(['source', 'config', 'docs', 'generated', 'other']),
+      }),
       [
         'src/index.ts',
         'src/util/parse.ts',
@@ -84,24 +87,83 @@ describe('applyReviewFilter', () => {
   });
 
   it('shows tests only', () => {
-    assert.deepEqual(paths({ ...EMPTY_FILTER_STATE, presetId: 'tests' }), [
-      'src/index.test.ts',
-      'test/e2e/login.ts',
-    ]);
+    assert.deepEqual(
+      paths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['tests']) }),
+      ['src/index.test.ts', 'test/e2e/login.ts']
+    );
   });
 
   it('shows source only', () => {
-    assert.deepEqual(paths({ ...EMPTY_FILTER_STATE, presetId: 'source' }), [
-      'src/index.ts',
-      'src/util/parse.ts',
-      'old/legacy.ts',
-    ]);
+    assert.deepEqual(
+      paths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['source']) }),
+      ['src/index.ts', 'src/util/parse.ts', 'old/legacy.ts']
+    );
+  });
+
+  it('adds one "only" preset to another', () => {
+    assert.deepEqual(
+      paths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['source', 'tests']) }),
+      [
+        'src/index.ts',
+        'src/index.test.ts',
+        'src/util/parse.ts',
+        'test/e2e/login.ts',
+        'old/legacy.ts',
+      ]
+    );
+    assert.deepEqual(
+      paths({
+        ...EMPTY_FILTER_STATE,
+        presetIds: new Set(['source', 'generated']),
+      }),
+      ['src/index.ts', 'src/util/parse.ts', 'pnpm-lock.yaml', 'old/legacy.ts']
+    );
+  });
+
+  it('keeps a file no kind claims under "other"', () => {
+    const withImage: ReviewData = {
+      ...data,
+      entries: [...data.entries, entry('assets/logo.png', 'added', 99)],
+      items: [
+        ...data.items,
+        {
+          id: 'assets/logo.png',
+          type: 'diff' as const,
+          fileDiff: { name: 'assets/logo.png', unifiedLineCount: 1 } as never,
+          version: 0,
+        },
+      ],
+    };
+    const kept = (ids: ReviewFilterState['presetIds']) =>
+      applyReviewFilter(withImage, {
+        ...EMPTY_FILTER_STATE,
+        presetIds: ids,
+      }).entries.map((item) => item.path);
+    assert.deepEqual(kept(new Set(['other'])), ['assets/logo.png']);
+    assert.equal(
+      kept(
+        new Set(['source', 'config', 'docs', 'generated', 'other'])
+      ).includes('assets/logo.png'),
+      true
+    );
+  });
+
+  it('shows a kept file the filter would hide', () => {
+    const result = applyReviewFilter(
+      data,
+      { ...EMPTY_FILTER_STATE, presetIds: new Set(['tests']) },
+      new Set(['README.md'])
+    );
+    assert.deepEqual(
+      result.entries.map((item) => item.path),
+      ['src/index.test.ts', 'test/e2e/login.ts', 'README.md']
+    );
   });
 
   it('reports how many files it removed', () => {
     const result = applyReviewFilter(data, {
       ...EMPTY_FILTER_STATE,
-      presetId: 'tests',
+      presetIds: new Set(['tests']),
     });
     assert.equal(result.hiddenCount, PATHS.length - 2);
   });
@@ -110,7 +172,7 @@ describe('applyReviewFilter', () => {
     assert.deepEqual(
       paths({
         ...EMPTY_FILTER_STATE,
-        presetId: 'without-tests',
+        presetIds: new Set(['source']),
         statuses: new Set(['deleted']),
       }),
       ['old/legacy.ts']
@@ -119,7 +181,11 @@ describe('applyReviewFilter', () => {
 
   it('combines a preset with a path query', () => {
     assert.deepEqual(
-      paths({ ...EMPTY_FILTER_STATE, presetId: 'source', query: 'util' }),
+      paths({
+        ...EMPTY_FILTER_STATE,
+        presetIds: new Set(['source']),
+        query: 'util',
+      }),
       ['src/util/parse.ts']
     );
   });
@@ -136,7 +202,7 @@ describe('applyReviewFilter', () => {
   it('keeps the diff order of the patch', () => {
     const result = paths({
       ...EMPTY_FILTER_STATE,
-      presetId: 'without-generated',
+      presetIds: new Set(['source', 'tests', 'config', 'docs', 'other']),
     });
     assert.deepEqual(
       result,
@@ -147,7 +213,7 @@ describe('applyReviewFilter', () => {
   it('projects a tree source that matches the kept items', () => {
     const result = applyReviewFilter(data, {
       ...EMPTY_FILTER_STATE,
-      presetId: 'tests',
+      presetIds: new Set(['tests']),
     });
     assert.deepEqual(result.treeSource.paths, [
       'src/index.test.ts',
@@ -206,7 +272,7 @@ describe('isFilterActive', () => {
 
   it('is true once any axis narrows the list', () => {
     assert.equal(
-      isFilterActive({ ...EMPTY_FILTER_STATE, presetId: 'tests' }),
+      isFilterActive({ ...EMPTY_FILTER_STATE, presetIds: new Set(['tests']) }),
       true
     );
     assert.equal(
@@ -315,25 +381,26 @@ describe('applyReviewFilter and untracked files', () => {
     assert.deepEqual(localPaths({ ...EMPTY_FILTER_STATE, query: 'scratch' }), [
       'src/scratch.ts',
     ]);
-    assert.deepEqual(localPaths({ ...EMPTY_FILTER_STATE, presetId: 'docs' }), [
-      'notes.md',
-    ]);
+    assert.deepEqual(
+      localPaths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['docs']) }),
+      ['notes.md']
+    );
   });
 });
 
 describe('presetStats', () => {
   it('counts the files each preset would keep', () => {
-    const stats = presetStats(data.entries, ['all', 'tests', 'without-tests']);
-    assert.equal(stats.get('all')?.files, PATHS.length);
+    const stats = presetStats(data.entries, ['source', 'tests', 'other']);
+    assert.equal(stats.get('source')?.files, 3);
     assert.equal(stats.get('tests')?.files, 2);
-    assert.equal(stats.get('without-tests')?.files, PATHS.length - 2);
+    assert.equal(stats.get('other')?.files, 0);
   });
 
   it('sums the added and deleted lines of the files it keeps', () => {
-    const stats = presetStats(data.entries, ['all', 'tests']);
+    const stats = presetStats(data.entries, ['source', 'tests']);
     // Every stub entry carries one added line and no deleted lines.
-    assert.equal(stats.get('all')?.addedLines, PATHS.length);
-    assert.equal(stats.get('all')?.deletedLines, 0);
+    assert.equal(stats.get('source')?.addedLines, 3);
+    assert.equal(stats.get('source')?.deletedLines, 0);
     assert.equal(stats.get('tests')?.addedLines, 2);
   });
 
@@ -347,7 +414,7 @@ describe('presetStats', () => {
   });
 
   it('reports zeroes when there are no files at all', () => {
-    assert.deepEqual(presetStats([], ['all', 'tests']).get('tests'), {
+    assert.deepEqual(presetStats([], ['source', 'tests']).get('tests'), {
       files: 0,
       addedLines: 0,
       deletedLines: 0,

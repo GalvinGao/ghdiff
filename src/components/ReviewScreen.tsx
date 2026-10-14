@@ -41,6 +41,10 @@ import { usePullConversation } from '@/hooks/usePullConversation';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useRepoLenses } from '@/hooks/useRepoLenses';
 import { useReviewComments } from '@/hooks/useReviewComments';
+import {
+  type ReviewFilterUpdate,
+  useReviewFilter,
+} from '@/hooks/useReviewFilter';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
 import {
   SIDEBAR_MAX_WIDTH,
@@ -68,12 +72,7 @@ import {
   filterConversation,
 } from '@/lib/pullConversation';
 import type { ReviewEvent } from '@/lib/reviewDecision';
-import {
-  applyReviewFilter,
-  availableStatuses,
-  EMPTY_FILTER_STATE,
-  type ReviewFilterState,
-} from '@/lib/reviewFilter';
+import { applyReviewFilter, availableStatuses } from '@/lib/reviewFilter';
 import {
   describeReviewTarget,
   isGitHubTarget,
@@ -172,7 +171,6 @@ export function ReviewScreen({
   // read, and a file folded from the header's own chevron was never marked.
   const [collapsedItemIds, setCollapsedItemIds] =
     useState<ReadonlySet<string>>(NO_ITEMS);
-  const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   // True while the files a lens claimed are drawn in the diff as files. Not a
   // filter: the files stay in the tree either way, and only the form they are
   // read in changes.
@@ -385,9 +383,27 @@ export function ReviewScreen({
     [setCollapsed, setViewedFile]
   );
 
+  const statuses = useMemo(
+    () => availableStatuses(patch.data.entries),
+    [patch.data.entries]
+  );
+  // The filter this diff was left with, read back so a pull request opens with
+  // the same files on screen as last time.
+  const [filter, setStoredFilter] = useReviewFilter(targetKey, statuses);
+  // Files a URL fragment named while the filter hid them. They stay on screen
+  // until the reviewer changes the filter, which is an answer about what they
+  // want to see now.
+  const [keptItemIds, setKeptItemIds] = useState<ReadonlySet<string>>(NO_ITEMS);
+  const setFilter = useCallback(
+    (update: ReviewFilterUpdate) => {
+      setKeptItemIds(NO_ITEMS);
+      setStoredFilter(update);
+    },
+    [setStoredFilter]
+  );
   const filtered = useMemo(
-    () => applyReviewFilter(patch.data, filter),
-    [filter, patch.data]
+    () => applyReviewFilter(patch.data, filter, keptItemIds),
+    [filter, keptItemIds, patch.data]
   );
 
   // The lenses read what the filter left, so a file the filter hid is neither
@@ -492,11 +508,6 @@ export function ReviewScreen({
   const treeStats = useMemo(
     () => buildTreeStatIndex(filtered.entries),
     [filtered.entries]
-  );
-
-  const statuses = useMemo(
-    () => availableStatuses(patch.data.entries),
-    [patch.data.entries]
   );
 
   /**
@@ -612,6 +623,25 @@ export function ReviewScreen({
    * the file has no rows until the next render and the jump must wait for the
    * frames after it.
    */
+  const filteredIdsRef = useRef<ReadonlySet<string>>(NO_ITEMS);
+  const filteredIds = useMemo(
+    () => new Set(filtered.items.map((item) => item.id)),
+    [filtered.items]
+  );
+  useEffect(() => {
+    filteredIdsRef.current = filteredIds;
+  }, [filteredIds]);
+  /**
+   * Puts a file the filter hides back on screen for this visit, and answers
+   * whether it had to. The stored filter is left alone: the link is about one
+   * file, not about how this reviewer reads the diff.
+   */
+  const revealFilteredFile = useCallback((itemId: string) => {
+    if (filteredIdsRef.current.has(itemId)) return false;
+    setKeptItemIds((kept) => new Set(kept).add(itemId));
+    return true;
+  }, []);
+
   const revealLensFile = useCallback((itemId: string) => {
     if (!lensHiddenRef.current.has(itemId)) return false;
     setLensFilesShown(true);
@@ -649,7 +679,10 @@ export function ReviewScreen({
       openFile(anchored.itemId);
       const { itemId, range } = anchored;
       selectActiveItem(itemId);
-      if (revealLensFile(itemId)) {
+      // Both run: a file can be hidden by the filter and claimed by a lens.
+      const hiddenByFilter = revealFilteredFile(itemId);
+      const claimedByLens = revealLensFile(itemId);
+      if (hiddenByFilter || claimedByLens) {
         runOnFrames(() => {
           if (range != null) viewer.setSelectedLines({ id: itemId, range });
           viewer.scrollTo({
@@ -709,7 +742,14 @@ export function ReviewScreen({
         });
       });
     },
-    [openFile, revealLensFile, runOnFrames, selectActiveItem, stopFrameLoop]
+    [
+      openFile,
+      revealFilteredFile,
+      revealLensFile,
+      runOnFrames,
+      selectActiveItem,
+      stopFrameLoop,
+    ]
   );
 
   // Puts a search match on screen. Centred, unlike an anchor: a match is a
