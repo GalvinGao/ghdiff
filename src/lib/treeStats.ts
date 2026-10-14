@@ -80,17 +80,22 @@ export function buildTreeStatIndex(
   let deletedMax = 0;
 
   for (const entry of entries) {
-    const segments = entry.treePath.split('/');
-    // Every directory above the file, then the file. `slice` per segment is
-    // fine: a tree path is a handful of segments, and this runs once per diff.
-    // A directory takes the trailing slash the tree gives its own rows.
-    for (let depth = 1; depth <= segments.length; depth++) {
-      const joined = segments.slice(0, depth).join('/');
-      const key = depth === segments.length ? joined : `${joined}/`;
-      const stat = add(byPath, key, entry);
+    const path = entry.treePath;
+    // Every slash closes one directory prefix. Slicing the original path
+    // avoids splitting it and joining a growing array once per ancestor.
+    // Keep even empty segments: the tree's keys preserve them too.
+    for (
+      let end = path.indexOf('/');
+      end !== -1;
+      end = path.indexOf('/', end + 1)
+    ) {
+      const stat = add(byPath, path.slice(0, end + 1), entry);
       addedMax = Math.max(addedMax, stat.addedLines);
       deletedMax = Math.max(deletedMax, stat.deletedLines);
     }
+    const stat = add(byPath, path, entry);
+    addedMax = Math.max(addedMax, stat.addedLines);
+    deletedMax = Math.max(deletedMax, stat.deletedLines);
   }
 
   return {
