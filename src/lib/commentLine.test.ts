@@ -1,4 +1,5 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
+import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -64,6 +65,38 @@ const DIFF = {
     },
   ],
 } as unknown as FileDiffMetadata;
+
+it('locates separated hunks and skips zero-length sides at insertion/deletion boundaries', () => {
+  const patch = [
+    'diff --git a/f.ts b/f.ts',
+    '--- a/f.ts',
+    '+++ b/f.ts',
+    '@@ -2,1 +2,1 @@',
+    '-old',
+    '+new',
+    '@@ -10,0 +11,1 @@',
+    '+inserted',
+    '@@ -20,1 +20,0 @@',
+    '-removed',
+    '@@ -30,2 +30,2 @@',
+    ' context',
+    '-before',
+    '+after',
+    '',
+  ].join('\n');
+  const file = parsePatchFiles(patch, 'lookup')[0].files[0];
+  assert.equal(commentLineText(file, 'additions', 2), 'new');
+  assert.equal(commentLineText(file, 'deletions', 2), 'old');
+  assert.equal(commentLineText(file, 'additions', 11), 'inserted');
+  assert.equal(commentLineText(file, 'deletions', 10), undefined);
+  assert.equal(commentLineText(file, 'deletions', 20), 'removed');
+  assert.equal(commentLineText(file, 'additions', 20), undefined);
+  assert.equal(commentLineText(file, 'additions', 29), undefined);
+  assert.equal(commentLineText(file, 'additions', 30), 'context');
+  assert.equal(classifyCommentLineType(file, 'additions', 30), 'context');
+  assert.equal(commentLineText(file, 'additions', 31), 'after');
+  assert.equal(commentLineText(file, 'additions', 32), undefined);
+});
 
 describe('commentLineText', () => {
   it('reads a context line on either side', () => {
