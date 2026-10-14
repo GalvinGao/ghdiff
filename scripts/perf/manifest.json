@@ -1,0 +1,62 @@
+[
+  {
+    "id": "typical",
+    "files": 50,
+    "linesPerSide": 24,
+    "width": 72,
+    "bytes": 186830,
+    "sha256": "08e14ead0e5af12697f1b0a50f19ab88b1f093ead00134d7fd22e0ba5f6c9e68",
+    "addedLines": 1200,
+    "deletedLines": 1200,
+    "totalLines": 2400,
+    "tailMatches": 1
+  },
+  {
+    "id": "many-files",
+    "files": 3000,
+    "linesPerSide": 5,
+    "width": 72,
+    "bytes": 2790488,
+    "sha256": "9006b695966c2a67851b2ec6734d93b62152852444c6d7cbb26f9a54c3bc10bf",
+    "addedLines": 15000,
+    "deletedLines": 15000,
+    "totalLines": 30000,
+    "tailMatches": 1
+  },
+  {
+    "id": "large-patch",
+    "files": 100,
+    "linesPerSide": 2000,
+    "width": 108,
+    "bytes": 44018920,
+    "sha256": "a229af4216a2a71ba653f1dff2272e55643aa63dee2cb79197091d35a9f8e9eb",
+    "addedLines": 200000,
+    "deletedLines": 200000,
+    "totalLines": 400000,
+    "tailMatches": 1
+  },
+  {
+    "id": "million-lines",
+    "files": 100,
+    "linesPerSide": 5000,
+    "width": 42,
+    "bytes": 44018920,
+    "sha256": "65f4f71709398cccfd4cb79bc9db34ca542acbc95054cbb2f3ca396ad775a915",
+    "addedLines": 500000,
+    "deletedLines": 500000,
+    "totalLines": 1000000,
+    "tailMatches": 1
+  },
+  {
+    "id": "huge-file",
+    "files": 1,
+    "linesPerSide": 400000,
+    "width": 54,
+    "bytes": 44800179,
+    "sha256": "785954001e8f8dab565f152814c4a8e809203ef1f95d47acfc8e560aceadd767",
+    "addedLines": 400000,
+    "deletedLines": 400000,
+    "totalLines": 800000,
+    "tailMatches": 1
+  }
+]
