@@ -1,10 +1,16 @@
 import { m } from '../paraglide/messages.js';
 // Preset path filters for the review surface.
 //
-// The file tree and the diff list are both driven by one selected preset, so
+// The file tree and the diff list are both driven by the selected presets, so
 // "hide the tests" removes those files from the tree AND from the scroll
 // region. Each preset is a pure predicate over a repository-relative path,
 // which keeps the rules testable and keeps the UI free of path parsing.
+//
+// A reviewer may pick several, and the two kinds combine the way their names
+// read. "Source only" and "Tests only" together are both kinds of file, so an
+// `only` preset adds what it matches to the others'. "Hide tests" and "Hide
+// generated" together are two things taken away, so a `hide` preset removes
+// what it hides from whatever the `only` presets left.
 
 export type FilterPresetId =
   | 'all'
@@ -16,8 +22,21 @@ export type FilterPresetId =
   | 'generated'
   | 'without-generated';
 
+/**
+ * How a preset combines with the others picked beside it. `all` is the empty
+ * selection given a row of its own, `only` presets are a union, and `hide`
+ * presets each take their files away from it.
+ */
+export type FilterPresetMode = 'all' | 'only' | 'hide';
+
 export interface FilterPreset {
   id: FilterPresetId;
+  mode: FilterPresetMode;
+  /**
+   * The preset that matches exactly the files this one does not. Picking one
+   * drops the other, because the two together would empty the list.
+   */
+  opposite?: FilterPresetId;
   label: string;
   /** One sentence for the menu, in the imperative. */
   description: string;
@@ -226,6 +245,7 @@ export function isSourcePath(path: string): boolean {
 export const FILTER_PRESETS: readonly FilterPreset[] = [
   {
     id: 'all',
+    mode: 'all',
     get label() {
       return m.filter_rules_all_files();
     },
@@ -236,6 +256,8 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
   },
   {
     id: 'without-tests',
+    mode: 'hide',
+    opposite: 'tests',
     get label() {
       return m.filter_rules_hide_tests();
     },
@@ -246,6 +268,8 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
   },
   {
     id: 'tests',
+    mode: 'only',
+    opposite: 'without-tests',
     get label() {
       return m.filter_rules_tests_only();
     },
@@ -256,6 +280,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
   },
   {
     id: 'source',
+    mode: 'only',
     get label() {
       return m.filter_rules_source_only();
     },
@@ -266,6 +291,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
   },
   {
     id: 'docs',
+    mode: 'only',
     get label() {
       return m.filter_rules_docs_only();
     },
@@ -276,6 +302,7 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
   },
   {
     id: 'config',
+    mode: 'only',
     get label() {
       return m.filter_rules_config_only();
     },
@@ -286,6 +313,8 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
   },
   {
     id: 'without-generated',
+    mode: 'hide',
+    opposite: 'generated',
     get label() {
       return m.filter_rules_hide_generated();
     },
@@ -296,6 +325,8 @@ export const FILTER_PRESETS: readonly FilterPreset[] = [
   },
   {
     id: 'generated',
+    mode: 'only',
+    opposite: 'without-generated',
     get label() {
       return m.filter_rules_generated_only();
     },
@@ -323,3 +354,48 @@ export function getFilterPreset(id: FilterPresetId): FilterPreset {
 export function isFilterPresetId(value: string): value is FilterPresetId {
   return PRESET_BY_ID.has(value as FilterPresetId);
 }
+
+/**
+ * Whether a path survives every preset in a selection. An empty selection is
+ * the default and keeps everything; `all` in a selection is the same thing.
+ */
+export function matchesPresets(
+  ids: ReadonlySet<FilterPresetId>,
+  path: string
+): boolean {
+  let sawOnly = false;
+  let matchedOnly = false;
+  for (const id of ids) {
+    const preset = getFilterPreset(id);
+    if (preset.mode === 'hide') {
+      if (!preset.matches(path)) return false;
+    } else if (preset.mode === 'only') {
+      sawOnly = true;
+      if (!matchedOnly && preset.matches(path)) matchedOnly = true;
+    }
+  }
+  return !sawOnly || matchedOnly;
+}
+
+/**
+ * The selection after one press on a preset's row. `all` empties it, a picked
+ * preset is dropped, and a preset newly picked drops its opposite.
+ */
+export function togglePreset(
+  ids: ReadonlySet<FilterPresetId>,
+  id: FilterPresetId
+): ReadonlySet<FilterPresetId> {
+  const preset = getFilterPreset(id);
+  if (preset.mode === 'all') return NO_PRESETS;
+  const next = new Set(ids);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+    if (preset.opposite != null) next.delete(preset.opposite);
+  }
+  return next;
+}
+
+/** No preset picked, which is every file. */
+export const NO_PRESETS: ReadonlySet<FilterPresetId> = new Set();

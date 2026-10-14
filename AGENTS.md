@@ -1836,6 +1836,21 @@ no hidden control can hide files.
 `src/lib/filterRules.ts` and add its cases to `src/lib/filterRules.test.ts`. Do
 not put path parsing in a component.
 
+**Presets combine, and each diff keeps its own.** A reviewer may pick several:
+the `only` presets add up — **Source only** and **Tests only** are both kinds of
+file — and each `hide` preset takes its files away from that union. A preset
+picked drops its `opposite`, because the pair would empty the list, and **All
+files** is the empty selection. `matchesPresets` and `togglePreset` hold the
+whole rule.
+
+The presets, the statuses and the untracked switch are kept per
+`reviewTargetKey` in `ghdiff-review-filters`, so a pull request opens with the
+filter it was left with. The path query is not kept: its field opens empty, and
+a query nobody can see must not hide files. A stored status the diff no longer
+contains is dropped on read, for the same reason — the branch moves between
+visits, and the menu offers a status only when the diff has two. A filter that
+hides nothing removes its row, and the store keeps the 500 newest writes.
+
 **The credential never reaches the server's disk, and no script can read it.** A
 reviewer signs in through the ghdiff GitHub App. What comes back is a
 user-to-server access token, good for eight hours, and a refresh token good for

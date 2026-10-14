@@ -41,6 +41,7 @@ import { usePullConversation } from '@/hooks/usePullConversation';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useRepoLenses } from '@/hooks/useRepoLenses';
 import { useReviewComments } from '@/hooks/useReviewComments';
+import { useReviewFilter } from '@/hooks/useReviewFilter';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
 import {
   SIDEBAR_MAX_WIDTH,
@@ -68,12 +69,7 @@ import {
   filterConversation,
 } from '@/lib/pullConversation';
 import type { ReviewEvent } from '@/lib/reviewDecision';
-import {
-  applyReviewFilter,
-  availableStatuses,
-  EMPTY_FILTER_STATE,
-  type ReviewFilterState,
-} from '@/lib/reviewFilter';
+import { applyReviewFilter, availableStatuses } from '@/lib/reviewFilter';
 import {
   describeReviewTarget,
   isGitHubTarget,
@@ -172,7 +168,6 @@ export function ReviewScreen({
   // read, and a file folded from the header's own chevron was never marked.
   const [collapsedItemIds, setCollapsedItemIds] =
     useState<ReadonlySet<string>>(NO_ITEMS);
-  const [filter, setFilter] = useState<ReviewFilterState>(EMPTY_FILTER_STATE);
   // True while the files a lens claimed are drawn in the diff as files. Not a
   // filter: the files stay in the tree either way, and only the form they are
   // read in changes.
@@ -385,6 +380,13 @@ export function ReviewScreen({
     [setCollapsed, setViewedFile]
   );
 
+  const statuses = useMemo(
+    () => availableStatuses(patch.data.entries),
+    [patch.data.entries]
+  );
+  // The filter this diff was left with, read back so a pull request opens with
+  // the same files on screen as last time.
+  const [filter, setFilter] = useReviewFilter(targetKey, statuses);
   const filtered = useMemo(
     () => applyReviewFilter(patch.data, filter),
     [filter, patch.data]
@@ -492,11 +494,6 @@ export function ReviewScreen({
   const treeStats = useMemo(
     () => buildTreeStatIndex(filtered.entries),
     [filtered.entries]
-  );
-
-  const statuses = useMemo(
-    () => availableStatuses(patch.data.entries),
-    [patch.data.entries]
   );
 
   /**

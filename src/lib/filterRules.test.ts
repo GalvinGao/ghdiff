@@ -8,6 +8,9 @@ import {
   isConfigPath,
   isDocsPath,
   isFilterPresetId,
+  matchesPresets,
+  NO_PRESETS,
+  togglePreset,
   isGeneratedPath,
   isSourcePath,
   isTestPath,
@@ -155,5 +158,50 @@ describe('FILTER_PRESETS', () => {
     for (const path of ['a/b.test.ts', 'a/b.ts', 'test/c.ts', 'README.md']) {
       assert.notEqual(tests.matches(path), withoutTests.matches(path));
     }
+  });
+});
+
+describe('togglePreset', () => {
+  it('adds a preset and takes it away again', () => {
+    const once = togglePreset(NO_PRESETS, 'source');
+    assert.deepEqual([...once], ['source']);
+    const twice = togglePreset(once, 'tests');
+    assert.deepEqual([...twice].sort(), ['source', 'tests']);
+    assert.deepEqual([...togglePreset(twice, 'source')], ['tests']);
+  });
+
+  it('drops the opposite of a preset it adds', () => {
+    const hidden = togglePreset(NO_PRESETS, 'without-tests');
+    assert.deepEqual([...togglePreset(hidden, 'tests')], ['tests']);
+    const only = togglePreset(NO_PRESETS, 'generated');
+    assert.deepEqual(
+      [...togglePreset(only, 'without-generated')],
+      ['without-generated']
+    );
+  });
+
+  it('empties the selection on "all"', () => {
+    const picked = new Set(['source', 'tests'] as const);
+    assert.equal(togglePreset(picked, DEFAULT_FILTER_PRESET_ID).size, 0);
+  });
+});
+
+describe('matchesPresets', () => {
+  it('keeps everything with no preset picked', () => {
+    assert.equal(matchesPresets(NO_PRESETS, 'anything.bin'), true);
+  });
+
+  it('keeps a path any "only" preset matches', () => {
+    const picked = new Set(['source', 'tests'] as const);
+    assert.equal(matchesPresets(picked, 'src/a.ts'), true);
+    assert.equal(matchesPresets(picked, 'src/a.test.ts'), true);
+    assert.equal(matchesPresets(picked, 'README.md'), false);
+  });
+
+  it('drops a path any "hide" preset hides', () => {
+    const picked = new Set(['without-tests', 'without-generated'] as const);
+    assert.equal(matchesPresets(picked, 'src/a.ts'), true);
+    assert.equal(matchesPresets(picked, 'src/a.test.ts'), false);
+    assert.equal(matchesPresets(picked, 'pnpm-lock.yaml'), false);
   });
 });

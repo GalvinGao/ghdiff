@@ -10,17 +10,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import { cn } from '@/lib/cn';
-import {
-  DEFAULT_FILTER_PRESET_ID,
-  FILTER_PRESETS,
-  type FilterPresetId,
-} from '@/lib/filterRules';
+import { FILTER_PRESETS, togglePreset } from '@/lib/filterRules';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import {
   EMPTY_FILTER_STATE,
@@ -142,42 +136,50 @@ export function FilterMenu({
         className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-64"
       >
         <DropdownMenuLabel>{m.filter_menu_file_rules()}</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={state.presetId}
-          onValueChange={(value) =>
-            onChange({ ...state, presetId: value as FilterPresetId })
-          }
-        >
-          {FILTER_PRESETS.map((preset) => {
-            const stat = stats.get(preset.id) ?? EMPTY_PRESET_STAT;
-            return (
-              <DropdownMenuRadioItem
-                key={preset.id}
-                value={preset.id}
-                // A preset that would empty the list is offered but marked, so
-                // the reviewer does not pick it and see a blank pane.
-                disabled={
-                  stat.files === 0 && preset.id !== DEFAULT_FILTER_PRESET_ID
-                }
-              >
-                <span className="min-w-0 flex-1">
-                  {/* Wraps rather than widens: at a narrow width the counts
+        {/* Each row is a checkbox and the menu stays open on a press, so two
+            presets are two presses: "Source only" and "Tests only" add up,
+            and a "Hide" row takes its files away from the rest. "All files"
+            is the empty selection, and pressing it clears the others. */}
+        {FILTER_PRESETS.map((preset) => {
+          const stat = stats.get(preset.id) ?? EMPTY_PRESET_STAT;
+          const checked =
+            preset.mode === 'all'
+              ? state.presetIds.size === 0
+              : state.presetIds.has(preset.id);
+          return (
+            <DropdownMenuCheckboxItem
+              key={preset.id}
+              className="items-start"
+              checked={checked}
+              onSelect={(event) => event.preventDefault()}
+              onCheckedChange={() =>
+                onChange({
+                  ...state,
+                  presetIds: togglePreset(state.presetIds, preset.id),
+                })
+              }
+              // A preset that would empty the list is offered but marked, so
+              // the reviewer does not pick it and see a blank pane. One already
+              // picked stays pressable, or it could never be taken off again.
+              disabled={stat.files === 0 && preset.mode !== 'all' && !checked}
+            >
+              <span className="min-w-0 flex-1">
+                {/* Wraps rather than widens: at a narrow width the counts
                       drop to their own line instead of pushing the menu out
                       over the diff. */}
-                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                    <span className="text-ink font-medium whitespace-nowrap">
-                      {preset.label}
-                    </span>
-                    <PresetStatLine className="ml-auto" stat={stat} />
+                <span className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <span className="text-ink font-medium whitespace-nowrap">
+                    {preset.label}
                   </span>
-                  <span className="text-ink-faint mt-0.5 block text-xs">
-                    {preset.description}
-                  </span>
+                  <PresetStatLine className="ml-auto" stat={stat} />
                 </span>
-              </DropdownMenuRadioItem>
-            );
-          })}
-        </DropdownMenuRadioGroup>
+                <span className="text-ink-faint mt-0.5 block text-xs">
+                  {preset.description}
+                </span>
+              </span>
+            </DropdownMenuCheckboxItem>
+          );
+        })}
 
         {statusItems.length > 1 && (
           <>
@@ -254,8 +256,11 @@ function PresetStatLine({
 }
 
 function activeLabel(state: ReviewFilterState): string {
-  const preset = FILTER_PRESETS.find((item) => item.id === state.presetId);
-  const base = preset?.label ?? m.filter_menu_all_files();
+  const picked = FILTER_PRESETS.filter((item) =>
+    state.presetIds.has(item.id)
+  ).map((item) => item.label);
+  const base =
+    picked.length === 0 ? m.filter_menu_all_files() : picked.join(' + ');
   if (state.statuses.size > 0) {
     return m.filter_status_summary({ base, count: state.statuses.size });
   }

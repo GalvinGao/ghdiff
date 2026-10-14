@@ -71,7 +71,7 @@ describe('applyReviewFilter', () => {
 
   it('hides tests', () => {
     assert.deepEqual(
-      paths({ ...EMPTY_FILTER_STATE, presetId: 'without-tests' }),
+      paths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['without-tests']) }),
       [
         'src/index.ts',
         'src/util/parse.ts',
@@ -84,24 +84,66 @@ describe('applyReviewFilter', () => {
   });
 
   it('shows tests only', () => {
-    assert.deepEqual(paths({ ...EMPTY_FILTER_STATE, presetId: 'tests' }), [
-      'src/index.test.ts',
-      'test/e2e/login.ts',
-    ]);
+    assert.deepEqual(
+      paths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['tests']) }),
+      ['src/index.test.ts', 'test/e2e/login.ts']
+    );
   });
 
   it('shows source only', () => {
-    assert.deepEqual(paths({ ...EMPTY_FILTER_STATE, presetId: 'source' }), [
-      'src/index.ts',
-      'src/util/parse.ts',
-      'old/legacy.ts',
-    ]);
+    assert.deepEqual(
+      paths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['source']) }),
+      ['src/index.ts', 'src/util/parse.ts', 'old/legacy.ts']
+    );
+  });
+
+  it('adds one "only" preset to another', () => {
+    assert.deepEqual(
+      paths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['source', 'tests']) }),
+      [
+        'src/index.ts',
+        'src/index.test.ts',
+        'src/util/parse.ts',
+        'test/e2e/login.ts',
+        'old/legacy.ts',
+      ]
+    );
+    assert.deepEqual(
+      paths({
+        ...EMPTY_FILTER_STATE,
+        presetIds: new Set(['source', 'generated']),
+      }),
+      ['src/index.ts', 'src/util/parse.ts', 'pnpm-lock.yaml', 'old/legacy.ts']
+    );
+  });
+
+  it('takes a "hide" preset away from what the others left', () => {
+    assert.deepEqual(
+      paths({
+        ...EMPTY_FILTER_STATE,
+        presetIds: new Set(['without-tests', 'without-generated']),
+      }),
+      [
+        'src/index.ts',
+        'src/util/parse.ts',
+        'README.md',
+        'package.json',
+        'old/legacy.ts',
+      ]
+    );
+    assert.deepEqual(
+      paths({
+        ...EMPTY_FILTER_STATE,
+        presetIds: new Set(['config', 'generated', 'without-generated']),
+      }),
+      ['package.json']
+    );
   });
 
   it('reports how many files it removed', () => {
     const result = applyReviewFilter(data, {
       ...EMPTY_FILTER_STATE,
-      presetId: 'tests',
+      presetIds: new Set(['tests']),
     });
     assert.equal(result.hiddenCount, PATHS.length - 2);
   });
@@ -110,7 +152,7 @@ describe('applyReviewFilter', () => {
     assert.deepEqual(
       paths({
         ...EMPTY_FILTER_STATE,
-        presetId: 'without-tests',
+        presetIds: new Set(['without-tests']),
         statuses: new Set(['deleted']),
       }),
       ['old/legacy.ts']
@@ -119,7 +161,11 @@ describe('applyReviewFilter', () => {
 
   it('combines a preset with a path query', () => {
     assert.deepEqual(
-      paths({ ...EMPTY_FILTER_STATE, presetId: 'source', query: 'util' }),
+      paths({
+        ...EMPTY_FILTER_STATE,
+        presetIds: new Set(['source']),
+        query: 'util',
+      }),
       ['src/util/parse.ts']
     );
   });
@@ -136,7 +182,7 @@ describe('applyReviewFilter', () => {
   it('keeps the diff order of the patch', () => {
     const result = paths({
       ...EMPTY_FILTER_STATE,
-      presetId: 'without-generated',
+      presetIds: new Set(['without-generated']),
     });
     assert.deepEqual(
       result,
@@ -147,7 +193,7 @@ describe('applyReviewFilter', () => {
   it('projects a tree source that matches the kept items', () => {
     const result = applyReviewFilter(data, {
       ...EMPTY_FILTER_STATE,
-      presetId: 'tests',
+      presetIds: new Set(['tests']),
     });
     assert.deepEqual(result.treeSource.paths, [
       'src/index.test.ts',
@@ -206,7 +252,7 @@ describe('isFilterActive', () => {
 
   it('is true once any axis narrows the list', () => {
     assert.equal(
-      isFilterActive({ ...EMPTY_FILTER_STATE, presetId: 'tests' }),
+      isFilterActive({ ...EMPTY_FILTER_STATE, presetIds: new Set(['tests']) }),
       true
     );
     assert.equal(
@@ -315,9 +361,10 @@ describe('applyReviewFilter and untracked files', () => {
     assert.deepEqual(localPaths({ ...EMPTY_FILTER_STATE, query: 'scratch' }), [
       'src/scratch.ts',
     ]);
-    assert.deepEqual(localPaths({ ...EMPTY_FILTER_STATE, presetId: 'docs' }), [
-      'notes.md',
-    ]);
+    assert.deepEqual(
+      localPaths({ ...EMPTY_FILTER_STATE, presetIds: new Set(['docs']) }),
+      ['notes.md']
+    );
   });
 });
 
