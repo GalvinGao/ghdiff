@@ -53,7 +53,7 @@ function acceptEntry(value: unknown): StoredReviewFilter | undefined {
   const presets = Array.isArray(raw.presets)
     ? (raw.presets as unknown[]).filter(
         (id): id is FilterPresetId =>
-          typeof id === 'string' && isFilterPresetId(id) && id !== 'all'
+          typeof id === 'string' && isFilterPresetId(id)
       )
     : [];
   const statuses = Array.isArray(raw.statuses)

@@ -20,7 +20,7 @@ describe('acceptReviewFilterStore', () => {
     assert.deepEqual(
       acceptReviewFilterStore({
         'pull:a/b#1': {
-          presets: ['source', 'nope', 'all', 'source', 7],
+          presets: ['source', 'nope', 'without-tests', 'source', 7],
           statuses: ['added', 'untracked', 'gone'],
           hideUntracked: 'yes',
         },

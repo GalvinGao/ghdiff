@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  DEFAULT_FILTER_PRESET_ID,
   FILTER_PRESETS,
   getFilterPreset,
   isConfigPath,
   isDocsPath,
   isFilterPresetId,
+  isOtherPath,
   matchesPresets,
   NO_PRESETS,
   togglePreset,
@@ -147,17 +147,31 @@ describe('FILTER_PRESETS', () => {
     assert.throws(() => getFilterPreset('nope' as never));
   });
 
-  it('defaults to showing everything', () => {
-    const preset = getFilterPreset(DEFAULT_FILTER_PRESET_ID);
-    assert.equal(preset.matches('anything/at/all.ts'), true);
-  });
-
-  it('keeps "tests" and "without-tests" complementary', () => {
-    const tests = getFilterPreset('tests');
-    const withoutTests = getFilterPreset('without-tests');
-    for (const path of ['a/b.test.ts', 'a/b.ts', 'test/c.ts', 'README.md']) {
-      assert.notEqual(tests.matches(path), withoutTests.matches(path));
+  it('puts every path in at least one kind', () => {
+    for (const path of [
+      'src/a.ts',
+      'src/a.test.ts',
+      'README.md',
+      'package.json',
+      'pnpm-lock.yaml',
+      'assets/logo.png',
+      'LICENSE',
+    ]) {
+      assert.equal(
+        FILTER_PRESETS.some((preset) => preset.matches(path)),
+        true,
+        path
+      );
     }
+  });
+});
+
+describe('isOtherPath', () => {
+  it('claims what no other kind does', () => {
+    assert.equal(isOtherPath('assets/logo.png'), true);
+    assert.equal(isOtherPath('src/a.ts'), false);
+    assert.equal(isOtherPath('src/a.test.ts'), false);
+    assert.equal(isOtherPath('pnpm-lock.yaml'), false);
   });
 });
 
@@ -170,19 +184,12 @@ describe('togglePreset', () => {
     assert.deepEqual([...togglePreset(twice, 'source')], ['tests']);
   });
 
-  it('drops the opposite of a preset it adds', () => {
-    const hidden = togglePreset(NO_PRESETS, 'without-tests');
-    assert.deepEqual([...togglePreset(hidden, 'tests')], ['tests']);
-    const only = togglePreset(NO_PRESETS, 'generated');
-    assert.deepEqual(
-      [...togglePreset(only, 'without-generated')],
-      ['without-generated']
-    );
-  });
-
-  it('empties the selection on "all"', () => {
-    const picked = new Set(['source', 'tests'] as const);
-    assert.equal(togglePreset(picked, DEFAULT_FILTER_PRESET_ID).size, 0);
+  it('answers every kind ticked as no kind at all', () => {
+    let picked = NO_PRESETS;
+    for (const preset of FILTER_PRESETS) {
+      picked = togglePreset(picked, preset.id);
+    }
+    assert.equal(picked.size, 0);
   });
 });
 
@@ -191,17 +198,10 @@ describe('matchesPresets', () => {
     assert.equal(matchesPresets(NO_PRESETS, 'anything.bin'), true);
   });
 
-  it('keeps a path any "only" preset matches', () => {
+  it('keeps a path any picked kind matches', () => {
     const picked = new Set(['source', 'tests'] as const);
     assert.equal(matchesPresets(picked, 'src/a.ts'), true);
     assert.equal(matchesPresets(picked, 'src/a.test.ts'), true);
     assert.equal(matchesPresets(picked, 'README.md'), false);
-  });
-
-  it('drops a path any "hide" preset hides', () => {
-    const picked = new Set(['without-tests', 'without-generated'] as const);
-    assert.equal(matchesPresets(picked, 'src/a.ts'), true);
-    assert.equal(matchesPresets(picked, 'src/a.test.ts'), false);
-    assert.equal(matchesPresets(picked, 'pnpm-lock.yaml'), false);
   });
 });

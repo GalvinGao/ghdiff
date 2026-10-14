@@ -165,6 +165,27 @@ function ItemCheck() {
   );
 }
 
+/**
+ * A square in the lane `ItemCheck` uses, so a list of boxes and a row with a
+ * tick line up. Filled with ink when on, the way a thrown switch is, and drawn
+ * rather than a native control, which would paint the platform's own blue.
+ */
+function ItemCheckbox({ checked }: { checked: boolean }) {
+  return (
+    <span className="flex h-5 w-3.5 shrink-0 items-center justify-center">
+      <span
+        aria-hidden="true"
+        className={cn(
+          'flex size-3.5 items-center justify-center rounded-[4px] border transition-colors',
+          checked ? 'border-ink bg-ink' : 'border-ink-faint bg-surface'
+        )}
+      >
+        {checked && <IconCheck className="text-raised block" size={11} />}
+      </span>
+    </span>
+  );
+}
+
 export function DropdownMenuCheckboxItem({
   children,
   className,
@@ -176,8 +197,11 @@ export function DropdownMenuCheckboxItem({
    * control on the trailing edge where a settings list expects it. It stays a
    * menu checkbox item underneath, so the arrow keys and Enter still work; a
    * real switch element nested in here would be a control inside a control.
+   *
+   * `checkbox` for one of several choices that add up, where a bare tick would
+   * read as one choice out of many. The square says "pick any of these".
    */
-  indicator?: 'box' | 'switch';
+  indicator?: 'box' | 'checkbox' | 'switch';
 }) {
   const checked = props.checked === true;
   return (
@@ -192,6 +216,11 @@ export function DropdownMenuCheckboxItem({
       {indicator === 'box' ? (
         <>
           <ItemCheck />
+          {children}
+        </>
+      ) : indicator === 'checkbox' ? (
+        <>
+          <ItemCheckbox checked={checked} />
           {children}
         </>
       ) : (

@@ -14,7 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import { cn } from '@/lib/cn';
-import { FILTER_PRESETS, togglePreset } from '@/lib/filterRules';
+import { FILTER_PRESETS, NO_PRESETS, togglePreset } from '@/lib/filterRules';
+import { formatList } from '@/lib/locale';
 import type { ReviewFileEntry } from '@/lib/reviewData';
 import {
   EMPTY_FILTER_STATE,
@@ -90,6 +91,14 @@ export function FilterMenu({
     () => presetStats(entries, presetIds),
     [entries, presetIds]
   );
+  const allStat = useMemo<PresetStat>(
+    () => ({
+      files: entries.length,
+      addedLines: entries.reduce((sum, entry) => sum + entry.addedLines, 0),
+      deletedLines: entries.reduce((sum, entry) => sum + entry.deletedLines, 0),
+    }),
+    [entries]
+  );
   const active = isFilterActive(state);
   const statusItems = STATUS_ITEMS.filter((item) =>
     availableStatuses.has(item.status)
@@ -136,20 +145,31 @@ export function FilterMenu({
         className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-64"
       >
         <DropdownMenuLabel>{m.filter_menu_file_rules()}</DropdownMenuLabel>
-        {/* Each row is a checkbox and the menu stays open on a press, so two
-            presets are two presses: "Source only" and "Tests only" add up,
-            and a "Hide" row takes its files away from the rest. "All files"
-            is the empty selection, and pressing it clears the others. */}
+        {/* Two answers to one question: every file, or the kinds picked
+            below. "All files" is a tick because it is one choice; the kinds
+            are boxes because they add up. Picking a kind leaves "All files",
+            and pressing it again clears every box. */}
+        <DropdownMenuCheckboxItem
+          className="items-start"
+          checked={state.presetIds.size === 0}
+          onSelect={(event) => event.preventDefault()}
+          onCheckedChange={() => onChange({ ...state, presetIds: NO_PRESETS })}
+        >
+          <PresetRow
+            label={m.filter_rules_all_files()}
+            description={m.filter_rules_show_every_file_in_the_diff()}
+            stat={allStat}
+          />
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuSeparator />
         {FILTER_PRESETS.map((preset) => {
           const stat = stats.get(preset.id) ?? EMPTY_PRESET_STAT;
-          const checked =
-            preset.mode === 'all'
-              ? state.presetIds.size === 0
-              : state.presetIds.has(preset.id);
+          const checked = state.presetIds.has(preset.id);
           return (
             <DropdownMenuCheckboxItem
               key={preset.id}
               className="items-start"
+              indicator="checkbox"
               checked={checked}
               onSelect={(event) => event.preventDefault()}
               onCheckedChange={() =>
@@ -158,25 +178,16 @@ export function FilterMenu({
                   presetIds: togglePreset(state.presetIds, preset.id),
                 })
               }
-              // A preset that would empty the list is offered but marked, so
-              // the reviewer does not pick it and see a blank pane. One already
-              // picked stays pressable, or it could never be taken off again.
-              disabled={stat.files === 0 && preset.mode !== 'all' && !checked}
+              // A kind this diff has none of is offered but marked, so the
+              // reviewer does not tick it and wonder why nothing arrived. One
+              // already ticked stays pressable, or it could not be taken off.
+              disabled={stat.files === 0 && !checked}
             >
-              <span className="min-w-0 flex-1">
-                {/* Wraps rather than widens: at a narrow width the counts
-                      drop to their own line instead of pushing the menu out
-                      over the diff. */}
-                <span className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                  <span className="text-ink font-medium whitespace-nowrap">
-                    {preset.label}
-                  </span>
-                  <PresetStatLine className="ml-auto" stat={stat} />
-                </span>
-                <span className="text-ink-faint mt-0.5 block text-xs">
-                  {preset.description}
-                </span>
-              </span>
+              <PresetRow
+                label={preset.label}
+                description={preset.description}
+                stat={stat}
+              />
             </DropdownMenuCheckboxItem>
           );
         })}
@@ -228,6 +239,29 @@ export function FilterMenu({
   );
 }
 
+/** A kind's name and its size on one line, and what it is under them. */
+function PresetRow({
+  description,
+  label,
+  stat,
+}: {
+  description: string;
+  label: string;
+  stat: PresetStat;
+}) {
+  return (
+    <span className="min-w-0 flex-1">
+      {/* Wraps rather than widens: at a narrow width the counts drop to their
+          own line instead of pushing the menu out over the diff. */}
+      <span className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <span className="text-ink font-medium whitespace-nowrap">{label}</span>
+        <PresetStatLine className="ml-auto" stat={stat} />
+      </span>
+      <span className="text-ink-faint mt-0.5 block text-xs">{description}</span>
+    </span>
+  );
+}
+
 /**
  * Files, then lines added and deleted. It sits on one line and never wraps, so
  * the rows stay scannable as a column of numbers.
@@ -260,7 +294,7 @@ function activeLabel(state: ReviewFilterState): string {
     state.presetIds.has(item.id)
   ).map((item) => item.label);
   const base =
-    picked.length === 0 ? m.filter_menu_all_files() : picked.join(' + ');
+    picked.length === 0 ? m.filter_menu_all_files() : formatList(picked);
   if (state.statuses.size > 0) {
     return m.filter_status_summary({ base, count: state.statuses.size });
   }

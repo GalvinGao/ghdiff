@@ -1836,12 +1836,14 @@ no hidden control can hide files.
 `src/lib/filterRules.ts` and add its cases to `src/lib/filterRules.test.ts`. Do
 not put path parsing in a component.
 
-**Presets combine, and each diff keeps its own.** A reviewer may pick several:
-the `only` presets add up — **Source only** and **Tests only** are both kinds of
-file — and each `hide` preset takes its files away from that union. A preset
-picked drops its `opposite`, because the pair would empty the list, and **All
-files** is the empty selection. `matchesPresets` and `togglePreset` hold the
-whole rule.
+**The presets are kinds, and a reviewer reads all of them or picks some.** **All
+files** is one answer; the six kinds — Source, Tests, Config, Docs, Generated
+and Other — are the other, and the kinds picked add up. There is no "hide" rule.
+"Hide tests" was one in the first version and it read wrongly beside the others,
+because a picker that both adds and takes away has two grammars. `isOtherPath`
+is what makes the kinds cover every path, so "all but the tests" is five boxes
+ticked. Every kind ticked is the same as all of them, and `togglePreset` answers
+it as **All files**. `matchesPresets` and `togglePreset` hold the whole rule.
 
 The presets, the statuses and the untracked switch are kept per
 `reviewTargetKey` in `ghdiff-review-filters`, so a pull request opens with the

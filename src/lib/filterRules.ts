@@ -2,43 +2,27 @@ import { m } from '../paraglide/messages.js';
 // Preset path filters for the review surface.
 //
 // The file tree and the diff list are both driven by the selected presets, so
-// "hide the tests" removes those files from the tree AND from the scroll
+// unticking the tests removes those files from the tree AND from the scroll
 // region. Each preset is a pure predicate over a repository-relative path,
 // which keeps the rules testable and keeps the UI free of path parsing.
 //
-// A reviewer may pick several, and the two kinds combine the way their names
-// read. "Source only" and "Tests only" together are both kinds of file, so an
-// `only` preset adds what it matches to the others'. "Hide tests" and "Hide
-// generated" together are two things taken away, so a `hide` preset removes
-// what it hides from whatever the `only` presets left.
+// The presets are kinds of file, and a reviewer either reads every file or
+// picks the kinds they want: Source and Tests together is both kinds. There is
+// no "hide" rule. "Other" holds every path no kind claims, so the kinds
+// together cover the whole diff, and leaving one unticked is how it is hidden.
 
 export type FilterPresetId =
-  | 'all'
-  | 'tests'
-  | 'without-tests'
   | 'source'
-  | 'docs'
+  | 'tests'
   | 'config'
+  | 'docs'
   | 'generated'
-  | 'without-generated';
-
-/**
- * How a preset combines with the others picked beside it. `all` is the empty
- * selection given a row of its own, `only` presets are a union, and `hide`
- * presets each take their files away from it.
- */
-export type FilterPresetMode = 'all' | 'only' | 'hide';
+  | 'other';
 
 export interface FilterPreset {
   id: FilterPresetId;
-  mode: FilterPresetMode;
-  /**
-   * The preset that matches exactly the files this one does not. Picking one
-   * drops the other, because the two together would empty the list.
-   */
-  opposite?: FilterPresetId;
   label: string;
-  /** One sentence for the menu, in the imperative. */
+  /** One noun phrase for the menu: what files of this kind are. */
   description: string;
   matches(path: string): boolean;
 }
@@ -235,6 +219,22 @@ export function isConfigPath(path: string): boolean {
   return CONFIG_EXTENSIONS.has(extension(path));
 }
 
+/**
+ * A path that is none of the other kinds: an image, a font, a vendored binary.
+ * It is a kind of its own so that the kinds together cover every path — which
+ * is what lets "everything but the tests" be five boxes ticked rather than a
+ * second sort of rule.
+ */
+export function isOtherPath(path: string): boolean {
+  return !(
+    isSourcePath(path) ||
+    isTestPath(path) ||
+    isConfigPath(path) ||
+    isDocsPath(path) ||
+    isGeneratedPath(path)
+  );
+}
+
 export function isSourcePath(path: string): boolean {
   if (isTestPath(path) || isGeneratedPath(path)) {
     return false;
@@ -244,104 +244,70 @@ export function isSourcePath(path: string): boolean {
 
 export const FILTER_PRESETS: readonly FilterPreset[] = [
   {
-    id: 'all',
-    mode: 'all',
-    get label() {
-      return m.filter_rules_all_files();
-    },
-    get description() {
-      return m.filter_rules_show_every_file_in_the_diff();
-    },
-    matches: () => true,
-  },
-  {
-    id: 'without-tests',
-    mode: 'hide',
-    opposite: 'tests',
-    get label() {
-      return m.filter_rules_hide_tests();
-    },
-    get description() {
-      return m.filter_rules_hide_test_files_fixtures_and_snapshots();
-    },
-    matches: (path) => !isTestPath(path),
-  },
-  {
-    id: 'tests',
-    mode: 'only',
-    opposite: 'without-tests',
-    get label() {
-      return m.filter_rules_tests_only();
-    },
-    get description() {
-      return m.filter_rules_show_only_test_files_fixtures_and_snapshots();
-    },
-    matches: isTestPath,
-  },
-  {
     id: 'source',
-    mode: 'only',
     get label() {
-      return m.filter_rules_source_only();
+      return m.filter_rules_source();
     },
     get description() {
-      return m.filter_rules_show_only_code_files_that_are_not_tests();
+      return m.filter_rules_source_description();
     },
     matches: isSourcePath,
   },
   {
-    id: 'docs',
-    mode: 'only',
+    id: 'tests',
     get label() {
-      return m.filter_rules_docs_only();
+      return m.filter_rules_tests();
     },
     get description() {
-      return m.filter_rules_show_only_markdown_and_other_prose_files();
+      return m.filter_rules_tests_description();
     },
-    matches: isDocsPath,
+    matches: isTestPath,
   },
   {
     id: 'config',
-    mode: 'only',
     get label() {
-      return m.filter_rules_config_only();
+      return m.filter_rules_config();
     },
     get description() {
-      return m.filter_rules_show_only_manifests_lint_configs_and_ci_files();
+      return m.filter_rules_config_description();
     },
     matches: isConfigPath,
   },
   {
-    id: 'without-generated',
-    mode: 'hide',
-    opposite: 'generated',
+    id: 'docs',
     get label() {
-      return m.filter_rules_hide_generated();
+      return m.filter_rules_docs();
     },
     get description() {
-      return m.filter_rules_hide_lock_files_snapshots_and_build_output();
+      return m.filter_rules_docs_description();
     },
-    matches: (path) => !isGeneratedPath(path),
+    matches: isDocsPath,
   },
   {
     id: 'generated',
-    mode: 'only',
-    opposite: 'without-generated',
     get label() {
-      return m.filter_rules_generated_only();
+      return m.filter_rules_generated();
     },
     get description() {
-      return m.filter_rules_show_only_lock_files_snapshots_and_build_output();
+      return m.filter_rules_generated_description();
     },
     matches: isGeneratedPath,
+  },
+  {
+    id: 'other',
+    get label() {
+      return m.filter_rules_other();
+    },
+    get description() {
+      return m.filter_rules_other_description();
+    },
+    matches: isOtherPath,
   },
 ];
 
 const PRESET_BY_ID = new Map<FilterPresetId, FilterPreset>(
   FILTER_PRESETS.map((preset) => [preset.id, preset])
 );
-
-export const DEFAULT_FILTER_PRESET_ID: FilterPresetId = 'all';
 
 export function getFilterPreset(id: FilterPresetId): FilterPreset {
   const preset = PRESET_BY_ID.get(id);
@@ -356,46 +322,37 @@ export function isFilterPresetId(value: string): value is FilterPresetId {
 }
 
 /**
- * Whether a path survives every preset in a selection. An empty selection is
- * the default and keeps everything; `all` in a selection is the same thing.
+ * Whether a path is one of the kinds picked. No kind picked is "All files",
+ * which keeps every path.
  */
 export function matchesPresets(
   ids: ReadonlySet<FilterPresetId>,
   path: string
 ): boolean {
-  let sawOnly = false;
-  let matchedOnly = false;
+  if (ids.size === 0) return true;
   for (const id of ids) {
-    const preset = getFilterPreset(id);
-    if (preset.mode === 'hide') {
-      if (!preset.matches(path)) return false;
-    } else if (preset.mode === 'only') {
-      sawOnly = true;
-      if (!matchedOnly && preset.matches(path)) matchedOnly = true;
-    }
+    if (getFilterPreset(id).matches(path)) return true;
   }
-  return !sawOnly || matchedOnly;
+  return false;
 }
 
 /**
- * The selection after one press on a preset's row. `all` empties it, a picked
- * preset is dropped, and a preset newly picked drops its opposite.
+ * The selection after one press on a kind. Every kind picked is every file, so
+ * that selection is answered as "All files" rather than drawn as six ticks
+ * that mean the same thing.
  */
 export function togglePreset(
   ids: ReadonlySet<FilterPresetId>,
   id: FilterPresetId
 ): ReadonlySet<FilterPresetId> {
-  const preset = getFilterPreset(id);
-  if (preset.mode === 'all') return NO_PRESETS;
   const next = new Set(ids);
   if (next.has(id)) {
     next.delete(id);
   } else {
     next.add(id);
-    if (preset.opposite != null) next.delete(preset.opposite);
   }
-  return next;
+  return next.size === FILTER_PRESETS.length ? NO_PRESETS : next;
 }
 
-/** No preset picked, which is every file. */
+/** No kind picked, which is every file. */
 export const NO_PRESETS: ReadonlySet<FilterPresetId> = new Set();
