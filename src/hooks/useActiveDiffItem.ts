@@ -7,6 +7,8 @@ import {
   useState,
 } from 'react';
 
+import { activeDiffItemAt, type ItemTopReader } from '@/lib/activeDiffItem';
+
 /**
  * Which file the diff is scrolled to.
  *
@@ -64,11 +66,6 @@ const TAKEOVER_OPTIONS: AddEventListenerOptions = {
   capture: true,
   passive: true,
 };
-
-/** The one method this hook needs from the viewer. */
-interface ItemTopReader {
-  getTopForItem(id: string): number | undefined;
-}
 
 export interface ActiveDiffItemState {
   activeItemId: string | undefined;
@@ -162,15 +159,10 @@ export function useActiveDiffItem(
       frameRef.current = requestAnimationFrame(() => {
         frameRef.current = null;
         const anchor = scrollTop + ANCHOR_OFFSET;
-        let found: string | undefined = undefined;
         // Items are laid out in patch order, so the tops only grow: the last
-        // one at or above the anchor is the file on screen.
-        for (const id of itemIds) {
-          const top = viewer.getTopForItem(id);
-          if (top == null) continue;
-          if (top > anchor) break;
-          found = id;
-        }
+        // one at or above the anchor is the file on screen. The tail of a
+        // many-file review needs logarithmic lookups, not a scan from file 0.
+        const found = activeDiffItemAt(itemIds, anchor, viewer);
         if (found == null) return;
         const jumpTarget = jumpTargetRef.current;
         if (jumpTarget != null) {
