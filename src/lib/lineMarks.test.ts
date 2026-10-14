@@ -90,3 +90,29 @@ test('whitespace inside a string is quiet by design', () => {
   assert.ok(marks != null);
   assert.deepEqual(sorted(marks.quietAdditions), [1]);
 });
+
+test('Unicode whitespace keeps the same meaning as the whitespace regexp', () => {
+  for (const whitespace of [
+    '\u00a0',
+    '\u1680',
+    '\u2000',
+    '\u200a',
+    '\u2028',
+    '\u2029',
+    '\u202f',
+    '\u205f',
+    '\u3000',
+    '\ufeff',
+    '\v',
+    '\f',
+  ]) {
+    const marks = marksFrom(['@@ -1 +1 @@', `-a${whitespace}b`, '+ab']);
+    assert.deepEqual(sorted(marks?.quietAdditions), [1]);
+  }
+  for (const nonWhitespace of ['\u180e', '\u200b', '\u0000']) {
+    assert.equal(
+      marksFrom(['@@ -1 +1 @@', `-a${nonWhitespace}b`, '+ab']),
+      undefined
+    );
+  }
+});
