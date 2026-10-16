@@ -4,17 +4,17 @@ import {
   acceptEffectSettings,
   DEFAULT_EFFECT_SETTINGS,
   type EffectSettings,
-} from '@/lib/lenses/effect/config';
+} from './effect/config';
 import {
   acceptLocalizationSettings,
   DEFAULT_LOCALIZATION_SETTINGS,
   type LocalizationSettings,
   resolveLocaleSources,
-} from '@/lib/lenses/localization/config';
+} from './localization/config';
 import {
   buildLocalizationModel,
   type LocalizationModel,
-} from '@/lib/lenses/localization/model';
+} from './localization/model';
 import type { ReviewTarget } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 

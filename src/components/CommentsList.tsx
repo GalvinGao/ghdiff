@@ -5,10 +5,12 @@ import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { CommentBody } from '@/components/CommentBody';
 import { GitHubTextLink } from '@/components/GitHubLink';
 import { VERDICT_COLOR, VERDICT_ICON } from '@/components/reviewVerdictStyle';
+import type { CommentStore } from '@/hooks/useReviewComments';
 import type { SignedAttachment } from '@/lib/attachments';
 import { cn } from '@/lib/cn';
 import { commentPreviewText } from '@/lib/commentHeight';
-import type { CommentListEntry, CommentListSection } from '@/lib/comments';
+import { type CommentListEntry, type CommentListSection } from '@/lib/comments';
+import { forgeLabel, type ForgeName } from '@/lib/forges';
 import type { ConversationEntry } from '@/lib/pullConversation';
 import { reviewVerdict } from '@/lib/reviewDecision';
 import { m } from '@/paraglide/messages.js';
@@ -23,11 +25,14 @@ interface CommentsListProps {
   conversation: readonly ConversationEntry[];
   conversationAttachments: Record<string, SignedAttachment>;
   onConversationAttachmentError(): void;
+  /** The target's own forge: the empty state says where comments go. */
+  forge: ForgeName;
   /** The heading of a group is the file's name, so it opens that file. */
   onSelectFile(itemId: string): void;
+  /** The anchor is the row itself, for a thread the diff cannot show. */
   onSelectThread(thread: CommentListEntry): void;
   sections: readonly CommentListSection[];
-  store: 'github' | 'local';
+  store: CommentStore;
 }
 
 // One fixed-height row per thread.
@@ -72,6 +77,7 @@ export function CommentsList({
   conversation,
   conversationAttachments,
   onConversationAttachmentError,
+  forge,
   onSelectFile,
   onSelectThread,
   sections,
@@ -89,13 +95,16 @@ export function CommentsList({
     return `${String(digits + 1)}ch`;
   }, [sections]);
 
+  const forgeName = forgeLabel(forge);
   if (sections.length === 0 && conversation.length === 0) {
     return (
       <div className="text-ink-muted px-3 py-4 text-sm">
         <p>{m.comments_list_no_comments_here()}</p>
         <p className="text-ink-faint mt-1 text-xs">
-          {store === 'github'
-            ? m.comments_list_comments_you_leave_here_are_posted_to_github()
+          {store === 'forge'
+            ? m.comments_list_comments_you_leave_here_are_posted_to_forge({
+                forge: forgeName,
+              })
             : m.comments_list_comments_stay_in_this_browser_copy_them_as_a()}
         </p>
       </div>
@@ -110,6 +119,7 @@ export function CommentsList({
         <ConversationSection
           attachments={conversationAttachments}
           entries={conversation}
+          forgeName={forgeName}
           onAttachmentError={onConversationAttachmentError}
         />
       )}
@@ -148,9 +158,19 @@ export function CommentsList({
                       <span className="text-ink truncate text-xs font-medium">
                         {thread.author}
                       </span>
+                      {thread.resolved === true && (
+                        <span className="text-ink-faint shrink-0 text-[10px]">
+                          {m.comments_list_resolved()}
+                        </span>
+                      )}
                       {thread.pending === true && (
                         <span className="text-ink-faint shrink-0 text-[10px]">
                           {m.comments_list_posting()}
+                        </span>
+                      )}
+                      {thread.staged === true && (
+                        <span className="bg-surface text-ink-muted shrink-0 rounded-full px-1.5 py-px text-[10px]">
+                          {m.comment_thread_card_draft()}
                         </span>
                       )}
                       {thread.error != null && (
@@ -203,10 +223,12 @@ export function CommentsList({
 function ConversationSection({
   attachments,
   entries,
+  forgeName,
   onAttachmentError,
 }: {
   attachments: Record<string, SignedAttachment>;
   entries: readonly ConversationEntry[];
+  forgeName: string;
   onAttachmentError(): void;
 }) {
   const [openKeys, setOpenKeys] = useState<ReadonlySet<string>>(
@@ -283,9 +305,11 @@ function ConversationSection({
                     <GitHubTextLink
                       className="text-ink-faint mt-1.5 inline-block text-[11px]"
                       href={entry.htmlUrl}
-                      title={m.comments_list_open_this_on_github()}
+                      title={m.comments_list_open_this_on_forge({
+                        forge: forgeName,
+                      })}
                     >
-                      {m.comments_list_open_on_github()}
+                      {m.comments_list_open_on_forge({ forge: forgeName })}
                     </GitHubTextLink>
                   )}
                 </div>

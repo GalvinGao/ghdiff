@@ -13,18 +13,32 @@
 // cookie unmended, and for one deploy that is what every read did — the
 // reviewer was signed out from the ninth hour of a session good for 180 days.
 //
-// One refresh at a time in this tab, however many requests hit 401 at once. Two
-// concurrent refreshes would spend the same single-use refresh token twice and
-// the second would get nothing — the same race two tabs have, which the refresh
-// route answers on its own. This is the cheaper half of that: inside one tab a
-// promise is all it takes.
+// One refresh at a time, however many requests hit 401 at once and in however
+// many tabs. Two concurrent refreshes would spend the same single-use refresh
+// token twice and the second would get nothing. Inside one tab a promise joins
+// every caller to the first; across tabs a Web Lock serializes the spending,
+// and a tab that waited on the lock finds the winner's cookie already in the
+// jar, so the route answers its send with the no-op "already fresh". A browser
+// without Web Locks keeps the promise alone, and the refresh route's own
+// answers for the lost race stay as the backstop.
 
 /** The refresh in flight, so a second caller joins it rather than racing it. */
 let refreshing: Promise<boolean> | null = null;
 
+/** The name the browser-wide refresh lock is held under. */
+const REFRESH_LOCK = 'ghdiff-auth-refresh';
+
+/** The one refresh-token spend, inside the browser-wide lock where one exists. */
+async function spendRefreshToken(): Promise<boolean> {
+  const send = () => fetch('/api/auth/refresh', { method: 'POST' });
+  const locks = typeof navigator === 'undefined' ? null : navigator.locks;
+  const response =
+    locks == null ? await send() : await locks.request(REFRESH_LOCK, send);
+  return response.status === 204;
+}
+
 function refreshOnce(): Promise<boolean> {
-  refreshing ??= fetch('/api/auth/refresh', { method: 'POST' })
-    .then((response) => response.status === 204)
+  refreshing ??= spendRefreshToken()
     .catch(() => false)
     .finally(() => {
       refreshing = null;

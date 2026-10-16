@@ -2,19 +2,23 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
 import type { CommentPayload } from './comments';
-import { groupCommentThreads, threadComments } from './commentThreads';
+import {
+  groupCommentThreads,
+  threadComment,
+  threadComments,
+} from './commentThreads';
 
 function comment(
-  githubId: number,
+  remoteId: number,
   author: string,
   createdAt: string,
   replyToId?: number
 ): CommentPayload {
   return {
-    githubId,
+    remoteId,
     path: 'src/index.ts',
     author,
-    body: `body ${githubId}`,
+    body: `body ${remoteId}`,
     line: 10,
     side: 'additions',
     createdAt,
@@ -36,7 +40,7 @@ describe('groupCommentThreads', () => {
     ]);
     assert.equal(threads.length, 1);
     assert.deepEqual(
-      threads[0].comments.map((c) => c.githubId),
+      threads[0].comments.map((c) => c.remoteId),
       [1, 2]
     );
   });
@@ -71,7 +75,7 @@ describe('groupCommentThreads', () => {
       comment(1, 'a', '2026-01-09'),
     ]);
     assert.deepEqual(
-      threads[0].comments.map((c) => c.githubId),
+      threads[0].comments.map((c) => c.remoteId),
       [1, 2]
     );
   });
@@ -83,7 +87,7 @@ describe('groupCommentThreads', () => {
       comment(2, 'b', '2026-01-02', 1),
     ]);
     assert.deepEqual(
-      threads[0].comments.map((c) => c.githubId),
+      threads[0].comments.map((c) => c.remoteId),
       [1, 2, 3]
     );
   });
@@ -91,7 +95,7 @@ describe('groupCommentThreads', () => {
   it('keeps a reply whose parent is absent, rather than dropping it', () => {
     const threads = groupCommentThreads([comment(9, 'a', '2026-01-01', 404)]);
     assert.equal(threads.length, 1);
-    assert.equal(threads[0].comments[0].githubId, 9);
+    assert.equal(threads[0].comments[0].remoteId, 9);
   });
 
   it('survives a reply that points at itself', () => {
@@ -171,6 +175,29 @@ describe('groupCommentThreads', () => {
   });
 });
 
+describe('threadComment', () => {
+  it('keys a forge answer by its remote id', () => {
+    const message = threadComment(
+      { ...comment(7, 'ada', '2026-01-01'), remoteNodeId: 'node-7' },
+      'draft-1'
+    );
+    assert.equal(message.key, 'gh-7');
+    assert.equal(message.remoteId, 7);
+    assert.equal(message.remoteNodeId, 'node-7');
+  });
+
+  it('falls back to the given key when the forge reported no id', () => {
+    const payload: CommentPayload = {
+      path: 'a.ts',
+      author: 'you',
+      body: 'note',
+      line: 3,
+      side: 'additions',
+    };
+    assert.equal(threadComment(payload, 'draft-2').key, 'draft-2');
+  });
+});
+
 describe('threadComments', () => {
   it('carries author, body, and links across', () => {
     const threads = groupCommentThreads([
@@ -183,7 +210,7 @@ describe('threadComments', () => {
       ['ada', 'grace']
     );
     assert.equal(messages[0].htmlUrl, 'https://x/1');
-    assert.equal(messages[0].githubId, 1);
+    assert.equal(messages[0].remoteId, 1);
     // Keys must be unique so React can identify each message.
     assert.equal(new Set(messages.map((m) => m.key)).size, 2);
   });

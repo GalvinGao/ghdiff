@@ -26,6 +26,20 @@ describe('gitHubErrorMessage', () => {
     );
   });
 
+  it('takes the sentence from an errors array of strings', () => {
+    // The reviews endpoint answers with the reasons in the array itself:
+    // {"message":"Unprocessable Entity","errors":["Review Can not approve
+    // your own pull request"]} — seen live against GitHub.
+    const body = JSON.stringify({
+      message: 'Unprocessable Entity',
+      errors: ['Review Can not approve your own pull request'],
+    });
+    assert.equal(
+      gitHubErrorMessage(body, 'x'),
+      'Review Can not approve your own pull request'
+    );
+  });
+
   it('keeps the top-level message when there is no errors array', () => {
     // Every other failure GitHub sends, and the behaviour that must not change.
     for (const message of [

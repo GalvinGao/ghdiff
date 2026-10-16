@@ -1,29 +1,30 @@
 import { initLogger, type RequestLogger } from 'evlog';
 import { defineFrameworkIntegration } from 'evlog/toolkit';
-import { AsyncLocalStorage } from 'node:async_hooks';
 
 export { createEvlogError, log } from 'evlog';
 
 /** The fields ghdiff attaches to a request event. */
 export interface RequestFields extends Record<string, unknown> {}
 
+/** The request-scoped logger, typed for ghdiff's field set. */
+export type RequestLog = RequestLogger<RequestFields>;
+
 // evlog ships integrations for Next, Nitro, Hono, and others, but not for a
 // TanStack Start server route. `defineFrameworkIntegration` is the seam evlog
 // exposes for exactly this: ghdiff declares what to read off the handler
 // context and evlog owns the request logger, the sampling, and the emit.
-const storage = new AsyncLocalStorage<RequestLogger>();
 
 // Who reads the line decides its shape. On workerd the reader is the Workers
 // dashboard, which queries an event's fields, so the event always goes out as
 // the object itself — stringify would collapse those fields into one string.
 // A Node deployment's lines are read by a person on a terminal or by a log
-// collector at the end of a pipe: pretty-printed for the one, one JSON object
-// per line for the other, and a TTY is what tells the two apart — `NODE_ENV`
-// cannot, because the build folds it to "production" before the server ever
-// runs. `import.meta.env` exists only in the Vite build; `node --test`
-// imports this module too, and there the target is absent — which reads as
-// Cloudflare, the convention everywhere in this app, so tests log the object
-// form.
+// collector (Loki) at the end of a pipe: pretty-printed for the one, one JSON
+// object per line for the other, and a TTY is what tells the two apart —
+// `NODE_ENV` cannot, because the build folds it to "production" before the
+// server ever runs. `import.meta.env` exists only through the Vite pipeline;
+// the tests import this module too, and there the target is absent —
+// which reads as Cloudflare, the convention everywhere in this app, so tests
+// log the object form.
 initLogger({
   env: {
     service: 'ghdiff',
@@ -34,7 +35,7 @@ initLogger({
     : { pretty: false, stringify: false }),
 });
 
-/** The shape every TanStack Start server handler receives. */
+/** The shape a request middleware's options carry. */
 interface ServerHandlerContext {
   request: Request;
 }
@@ -47,48 +48,24 @@ const integration = defineFrameworkIntegration<ServerHandlerContext>({
     headers: request.headers,
     requestId: request.headers.get('x-request-id') ?? undefined,
   }),
-  // The logger reaches the handler through `requestLog()`, not through a field
-  // on the context, so there is nothing to attach.
+  // The logger reaches the handler as `context.log`, injected by the request
+  // middleware in `src/lib/server/middleware.ts`, so there is nothing to
+  // attach here.
   attachLogger: () => {},
-  storage,
 });
 
 /**
- * Wraps one server route handler so the request emits exactly one wide event.
- * Call `requestLog().set({...})` inside the handler to attach the fields that
- * describe what the request actually did.
+ * Starts the one wide event a request emits. `logMiddleware` calls it for
+ * every logged route and hands the logger down as `context.log`; the tests
+ * call it for a logger to put in the RPC context. When the request is
+ * filtered out of logging the handle's `skipped` is true and its logger is a
+ * noop, so a caller may hand it down either way.
  */
-export function withEvlog<TContext extends ServerHandlerContext>(
-  handler: (context: TContext) => Promise<Response>
-): (context: TContext) => Promise<Response> {
-  return async (context) => {
-    const { finish, finishResponse, runWith, skipped } =
-      integration.start(context);
-    if (skipped) {
-      return await handler(context);
-    }
-    try {
-      const response = await runWith(() => handler(context));
-      // The diff route streams its body. `finishResponse` holds the emit until
-      // the stream ends, so the event carries the whole request.
-      return await finishResponse(response, { status: response.status });
-    } catch (cause) {
-      const error = cause instanceof Error ? cause : new Error(String(cause));
-      await finish({ error });
-      throw error;
-    }
-  };
-}
-
-/** The request-scoped logger, typed for ghdiff's field set. */
-export function requestLog(): RequestLogger<RequestFields> {
-  const logger = storage.getStore();
-  if (logger == null) {
-    throw new Error(
-      '[ghdiff] requestLog() ran outside withEvlog(). Wrap the handler.'
-    );
-  }
-  return logger as RequestLogger<RequestFields>;
+export function startRequestLog(request: Request) {
+  const { logger, finish, finishResponse, skipped } = integration.start({
+    request,
+  });
+  return { logger: logger as RequestLog, finish, finishResponse, skipped };
 }
 
 /** evlog.error accepts a string or an Error, so unknown causes are coerced. */

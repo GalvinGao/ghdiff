@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
+import { useAppData } from '@/components/AppDataProvider';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { GitHubIconLink, GitHubTextLink } from '@/components/GitHubLink';
 import { PullRow } from '@/components/PullRow';
@@ -10,21 +11,25 @@ import type { OpenPullsState } from '@/hooks/useOpenPulls';
 import { usePullScope } from '@/hooks/usePullScope';
 import { railStackFlipKey } from '@/hooks/useRailFlip';
 import { cn } from '@/lib/cn';
+import { forgeLabel } from '@/lib/forges';
 import { accountAvatarUrl, repoPullsUrl, repoUrl } from '@/lib/github/urls';
 import { formatList, formatNumber } from '@/lib/locale';
 import {
   formatWatchedRepo,
+  anyViewer,
+  failedSetupAccount,
   groupPullsByRepo,
   type PullStackNode,
   type WatchedRepo,
 } from '@/lib/pulls';
+import type { PullTarget } from '@/lib/pullScope';
 import { countStackNodes, stackCompareRange } from '@/lib/pullStacks';
-import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
+import { reviewTargetSplat } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 
 interface PullRequestListProps {
   /** The pull request under review, which the list marks. */
-  current?: GitHubPullTarget;
+  current?: PullTarget;
   /** Whether `repos` is the stored watch list yet, or still the empty default. */
   hydrated: boolean;
   onNavigate?(): void;
@@ -48,13 +53,14 @@ export function PullRequestList({
   state,
 }: PullRequestListProps) {
   const { data, error, loading } = state;
+  const { instance } = useAppData();
 
   // The switch that sets this is drawn by whoever holds the list — the bar's
   // header, or the toolbar of the phone's sheet — and both read the same atom.
   const { pulls, scope, setScope } = usePullScope(state, current);
   const groups = useMemo(() => {
     if (data == null) return [];
-    return groupPullsByRepo(pulls, data.viewer, { order: repos });
+    return groupPullsByRepo(pulls, data.viewers, { order: repos });
   }, [data, pulls, repos]);
   // A scope can leave nothing to draw while the repositories have rows: a
   // reviewer who chose their own, and has none open today. The tab for an empty
@@ -71,17 +77,15 @@ export function PullRequestList({
   );
 
   const failures = data?.failures ?? [];
-  // The account to name on the setup page, when every failure shares one. Two
-  // accounts failing is a general question, and `undefined` is what asks it.
-  // `null` is the third answer: nothing failed, or nobody is signed in, and there
-  // is nothing to offer at all.
+  // The account to name on the setup page, when every failing GitHub row
+  // shares one. Two accounts failing is a general question, and `undefined`
+  // is what asks it. `null` is the third answer: nothing failed, or nobody is
+  // signed in, and there is nothing to offer at all.
   // On `data` and not on `failures`: the latter is `data?.failures ?? []`, so it
   // is a fresh array on every render where nothing has arrived yet.
   const failedAccount = useMemo(() => {
-    const rows = data?.failures ?? [];
-    if (rows.length === 0 || data?.viewer == null) return null;
-    const owners = new Set(rows.map((failure) => failure.repo.split('/')[0]));
-    return owners.size === 1 ? [...owners][0] : undefined;
+    if (data == null) return null;
+    return failedSetupAccount(data.failures, anyViewer(data.viewers));
   }, [data]);
 
   return (
@@ -173,7 +177,8 @@ export function PullRequestList({
               <GitHubTextLink
                 className="min-w-0 truncate text-[13px] [direction:ltr]"
                 href={repoUrl(group)}
-                title={m.pull_request_list_open_on_github({
+                title={m.pull_request_list_open_on_forge({
+                  forge: forgeLabel(),
                   owner: group.owner,
                   repo: group.repo,
                 })}
@@ -271,18 +276,25 @@ export function PullRequestList({
         </div>
       )}
 
-      {/* `data.viewer`, not whether this browser signed in: a single-user
-          deployment can put a token in `GITHUB_TOKEN`, and the server resolves
-          a viewer from it that the browser knows nothing about.
+      {/* Any forge group's viewer, not whether this browser signed in: a
+          single-user deployment can put a token in `GITHUB_TOKEN`, and the
+          server resolves a viewer from it that the browser knows nothing
+          about.
 
           Only under rows. The note names what a row would gain — the status
-          square, and the mark on the reviewer's own pull requests — so under an
-          empty list it asks for a sign-in and promises nothing. */}
-      {groups.length > 0 && data != null && data.viewer == null && (
-        <p className="text-ink-faint border-line mt-1 border-t px-2 py-1.5 text-xs">
-          {m.pull_request_list_signed_out_no_row_shows_a_status_square()}
-        </p>
-      )}
+          square, the mark on the reviewer's own pull requests, and the chip on
+          the ones asking for their review — so under an empty list it asks for
+          a sign-in and promises nothing. And only when this deployment offers
+          one: with no App there is no account to add, and the gain is
+          promised nowhere. */}
+      {groups.length > 0 &&
+        data != null &&
+        !anyViewer(data.viewers) &&
+        instance.github.oauth && (
+          <p className="text-ink-faint border-line mt-1 border-t px-2 py-1.5 text-xs">
+            {m.pull_request_list_signed_out_no_row_shows_a_status_square()}
+          </p>
+        )}
     </>
   );
 }
@@ -303,7 +315,7 @@ function PullStack({
   onNavigate,
   statusLane,
 }: {
-  current?: GitHubPullTarget;
+  current?: PullTarget;
   nodes: readonly PullStackNode[];
   onNavigate?(): void;
   statusLane: boolean;
@@ -414,7 +426,7 @@ function PullChain({
   onNavigate,
   statusLane,
 }: {
-  current?: GitHubPullTarget;
+  current?: PullTarget;
   nodes: readonly PullStackNode[];
   onNavigate?(): void;
   statusLane: boolean;

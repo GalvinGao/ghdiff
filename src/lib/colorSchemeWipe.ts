@@ -70,7 +70,8 @@ let latestWipe = 0;
  * `startViewTransition`, bound, or `null` where there is none.
  *
  * `lib.dom.d.ts` declares the method as always present and it is not: Firefox
- * ships no same-document view transitions, and no engine did before 2023.
+ * gained same-document view transitions only in 144, and no engine had them
+ * before 2023.
  * Widening the read to include `undefined` puts the absent case in front of
  * the compiler, rather than leaving a check a later reader could mistake for
  * dead code.

@@ -7,18 +7,14 @@
 // reviewer who looks up from the dialog sees the next row directly under the
 // one they are on.
 
-import type { PullSummary } from './pulls';
-import { currentStackPulls } from './pullScope';
-import type { GitHubPullTarget } from './reviewTarget';
+import { type PullSummary, reviewTargetFromPull } from './pulls';
+import { currentStackPulls, type PullTarget } from './pullScope';
 
-/** The address of a pull request the list holds. */
-export function stackPullTarget(pull: PullSummary): GitHubPullTarget {
-  return {
-    kind: 'github-pull',
-    owner: pull.owner,
-    repo: pull.repo,
-    number: pull.number,
-  };
+/**
+ * The address of a pull request the list holds, on its own forge.
+ */
+export function stackPullTarget(pull: PullSummary): PullTarget {
+  return reviewTargetFromPull(pull);
 }
 
 export interface StackPosition {
@@ -37,7 +33,7 @@ export interface StackPosition {
  */
 export function stackPosition(
   pulls: readonly PullSummary[],
-  current: GitHubPullTarget | undefined
+  current: PullTarget | undefined
 ): StackPosition | undefined {
   const chain = currentStackPulls(pulls, current);
   if (chain == null || current == null) return undefined;

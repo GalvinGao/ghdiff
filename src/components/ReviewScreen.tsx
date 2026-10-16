@@ -35,16 +35,24 @@ import { useActiveDiffItem } from '@/hooks/useActiveDiffItem';
 import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
 import { useDiffSearch } from '@/hooks/useDiffSearch';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { usePullConversation } from '@/hooks/usePullConversation';
 import { usePullDetails } from '@/hooks/usePullDetails';
 import { useRepoLenses } from '@/hooks/useRepoLenses';
 import { useReviewComments } from '@/hooks/useReviewComments';
+import { useReviewFavicon } from '@/hooks/useReviewFavicon';
 import {
   type ReviewFilterUpdate,
   useReviewFilter,
 } from '@/hooks/useReviewFilter';
 import { useReviewPatch } from '@/hooks/useReviewPatch';
+import {
+  SIDEBAR_HEIGHT_PROPERTY,
+  SIDEBAR_MAX_HEIGHT,
+  SIDEBAR_MIN_HEIGHT,
+  useSidebarHeight,
+} from '@/hooks/useSidebarHeight';
 import {
   SIDEBAR_MAX_WIDTH,
   SIDEBAR_MIN_WIDTH,
@@ -61,21 +69,30 @@ import {
   countCommentAuthors,
   filterCommentSections,
 } from '@/lib/commentAuthors';
-import type { CommentListEntry, CommentMetadata } from '@/lib/comments';
+import { type CommentListEntry, type CommentMetadata } from '@/lib/comments';
 import { buildCommentSections } from '@/lib/commentSections';
 import type { SearchMatch } from '@/lib/diffSearch';
+import {
+  forgeOfTarget,
+  pullRefFromTarget,
+  reviewCapabilities,
+} from '@/lib/forges';
+import { GITHUB_HOSTS } from '@/lib/github/hosts';
 import { applyLenses, LENSES, type LensFile } from '@/lib/lenses/lenses';
 import type { LocalizationSettings } from '@/lib/lenses/localization/config';
 import {
   addConversationAuthors,
   filterConversation,
 } from '@/lib/pullConversation';
+import type { WatchedRepo } from '@/lib/pulls';
 import type { ReviewEvent } from '@/lib/reviewDecision';
 import { applyReviewFilter, availableStatuses } from '@/lib/reviewFilter';
 import {
   describeReviewTarget,
-  isGitHubTarget,
+  isForgeTarget,
   repoNameFromRoot,
+  reviewTabTitle,
+  reviewTabType,
   type ReviewTarget,
   reviewTargetKey,
   reviewTargetSplat,
@@ -196,54 +213,75 @@ export function ReviewScreen({
   // Destructured, so nothing reads a property of the state object while this
   // component renders.
   const {
-    attach: attachLayout,
+    attach: attachSidebarWidth,
     onHandleKeyDown: onSidebarHandleKeyDown,
     onHandlePointerDown: onSidebarHandlePointerDown,
     reset: resetSidebarWidth,
-    style: sidebarStyle,
+    style: sidebarWidthStyle,
     width: sidebarWidth,
   } = useSidebarWidth();
+  // The same sidebar, as a band above the diff on a portrait screen. Both
+  // hooks stay mounted and both properties stay painted; the stylesheet's
+  // track template is what decides which one the layout reads.
+  const {
+    attach: attachSidebarHeight,
+    onHandleKeyDown: onBandHandleKeyDown,
+    onHandlePointerDown: onBandHandlePointerDown,
+    reset: resetSidebarHeight,
+    style: sidebarHeightStyle,
+    width: sidebarHeight,
+  } = useSidebarHeight();
+  const attachLayout = useCallback(
+    (node: HTMLElement | null) => {
+      attachSidebarWidth(node);
+      attachSidebarHeight(node);
+    },
+    [attachSidebarHeight, attachSidebarWidth]
+  );
   const { value: authorMode, setValue: setAuthorMode } = usePreference(
     commentAuthorFilterPreference
   );
 
   const patch = useReviewPatch({ target, untracked: untrackedPaths });
-  // The watch-list offer names a repository on github.com, and a local diff has
+  // The watch-list offer names a repository on a forge, and a local diff has
   // none. The header and the status panel ask the target this themselves rather
   // than be told, so the three cannot come to disagree.
-  const gitHubTarget = isGitHubTarget(target) ? target : undefined;
-  // Depends on the three parts, not on the target: a server component hands the
-  // target down, so its identity changes on every read of the RSC payload.
+  const forgeTarget = isForgeTarget(target) ? target : undefined;
+  const targetKey = reviewTargetKey(target);
+  // Depends on the ref, not on the target: a server component hands the target
+  // down, so its identity changes on every read of the RSC payload.
+  const pullRef = useMemo(
+    () => pullRefFromTarget(target),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [targetKey]
+  );
   const pullTarget = target.kind === 'github-pull' ? target : undefined;
-  const pull = usePullDetails({
-    number: pullTarget?.number,
-    owner: pullTarget?.owner,
-    repo: pullTarget?.repo,
+  // What this target can do with comments, drafts, and verdicts. A commit and
+  // a compare range have no review thread on their forge: their comments stay
+  // in this browser, and no draft or verdict control is offered.
+  const capabilities = useMemo(
+    () => reviewCapabilities(target),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [targetKey]
+  );
+  const forge = forgeTarget == null ? 'github' : forgeOfTarget(forgeTarget);
+  const pull = usePullDetails({ ref: pullRef });
+  // The tab belongs to the review on screen: its title names the change — the
+  // pull request's own title once it is read, a local diff by its repository
+  // and range — and its favicon is badged with the kind of diff and, once the
+  // details answer, the head commit's checks. Both go back to the app's own
+  // when it leaves. The route keys this screen by its target, so these details
+  // are never the previous pull request's.
+  useDocumentTitle(
+    reviewTabTitle(target, pullRef == null ? undefined : pull.data?.title)
+  );
+  useReviewFavicon({
+    type: reviewTabType(target),
+    draft: pull.data?.state === 'draft',
+    check: pull.data?.check,
   });
-  // The route keys this screen by its target, so these details are never the
-  // previous pull request's.
-  const pullTitle = pullTarget == null ? undefined : pull.data?.title;
-  // A local diff has no title to fetch, and its repository and range are what
-  // tell two runs' tabs apart.
-  const tabTitle =
-    pullTitle ??
-    (target.kind === 'local-diff' ? describeReviewTarget(target) : undefined);
-  useEffect(() => {
-    document.title = tabTitle ? `${tabTitle} · ghdiff` : 'ghdiff';
-    return () => {
-      document.title = 'ghdiff';
-    };
-  }, [tabTitle]);
-  const review = useSubmitReview({
-    number: pullTarget?.number,
-    owner: pullTarget?.owner,
-    repo: pullTarget?.repo,
-  });
-  const conversation = usePullConversation({
-    number: pullTarget?.number,
-    owner: pullTarget?.owner,
-    repo: pullTarget?.repo,
-  });
+  const review = useSubmitReview({ ref: pullRef });
+  const conversation = usePullConversation({ ref: pullRef });
   const navigate = useNavigate();
   // Where this pull request sits in its stack. Read off the same list the left
   // bar draws, so the layer Approve goes on to is the row under this one there.
@@ -255,7 +293,6 @@ export function ReviewScreen({
   // the screen before when it opened this one as the next layer of a stack, or
   // set here when Approve stayed put.
   const [handoff, setHandoff] = useStackHandoff();
-  const targetKey = reviewTargetKey(target);
   const [approvalToast, setApprovalToast] = useState<ApprovalToast | null>(
     () =>
       handoff?.on === targetKey
@@ -276,10 +313,9 @@ export function ReviewScreen({
     setHandoff(null);
   }, [setHandoff]);
   const onReviewSubmitted = (event: ReviewEvent, linkCopied?: boolean) => {
-    // A verdict changes the review half of the square the left bar draws on
-    // every row, so the list it came from is asked again — and it is a new
-    // entry in the conversation, so that is asked again too.
-    openPulls.reload();
+    // A verdict is a new entry in the conversation, so that is asked again.
+    // The rail and the comments are `onReviewSettled`'s, which runs on every
+    // attempt, the failures included.
     conversation.reload();
     if (event !== 'APPROVE' || pullTarget == null) return;
     // An approval copies its link, and a copy looks exactly like nothing
@@ -310,12 +346,19 @@ export function ReviewScreen({
   // Only reached when a reviewer expands a hunk's unmodified lines, so it costs
   // nothing on a review nobody expands.
   const files = useDiffFileLoader({ target });
+  // Whose name and picture a comment written here carries before the forge
+  // answers.
+  const commentViewer = session.viewer;
   const comments = useReviewComments({
     target,
     entries: patch.data.entries,
-    viewerLogin: session.viewer?.login,
-    viewerAvatarUrl: session.viewer?.avatarUrl,
+    viewerLogin: commentViewer?.login,
+    viewerAvatarUrl: commentViewer?.avatarUrl,
     ready: patch.state === 'ready',
+    // While a verdict is in flight every comment write is blocked: the
+    // verdict publishes what the forge holds, and a write that lands
+    // mid-submit is one its answer cannot account for.
+    verdictPending: review.pending != null,
   });
   // The whole patch, not the filtered list: a mark belongs to the file and not
   // to whichever files the filter is showing right now.
@@ -431,9 +474,12 @@ export function ReviewScreen({
     [filtered.items, lensHiddenItemIds]
   );
   // The repository the lens settings belong to, as the settings name it.
-  const repoLabel = isGitHubTarget(target)
-    ? `${target.owner}/${target.repo}`
-    : repoNameFromRoot(target.root);
+  const repoLabel =
+    forgeTarget == null
+      ? target.kind === 'local-diff'
+        ? repoNameFromRoot(target.root)
+        : ''
+      : `${forgeTarget.owner}/${forgeTarget.repo}`;
   const patchPaths = useMemo(
     () => patch.data.entries.map((entry) => entry.path),
     [patch.data.entries]
@@ -527,7 +573,7 @@ export function ReviewScreen({
       sections: commentSections,
       fileDiffById,
       targetLabel: describeReviewTarget(target),
-      named: comments.store === 'github',
+      named: comments.store === 'forge',
     });
     if (prompt == null) return false;
     try {
@@ -853,15 +899,16 @@ export function ReviewScreen({
     (comment: CommentListEntry) => {
       const viewer = viewerRef.current;
       if (viewer == null) return;
+      const range = comment.range;
       landOn(comment.itemId);
       const revealed = revealLensFile(comment.itemId);
       const land = () => {
-        viewer.setSelectedLines({ id: comment.itemId, range: comment.range });
+        viewer.setSelectedLines({ id: comment.itemId, range });
         viewer.scrollTo({
           type: 'line',
           id: comment.itemId,
-          lineNumber: comment.range.end,
-          side: comment.range.endSide ?? comment.range.side ?? comment.side,
+          lineNumber: range.end,
+          side: range.endSide ?? range.side ?? comment.side,
           align: 'center',
           behavior: revealed ? 'instant' : 'smooth-auto',
         });
@@ -993,6 +1040,34 @@ export function ReviewScreen({
     [anchor]
   );
 
+  // The target as the JSONL export names it — `github.com:owner/repo#123` —
+  // which only a pull target has.
+  const stagedTarget = useMemo(
+    () =>
+      target.kind === 'github-pull'
+        ? `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}#${target.number}`
+        : undefined,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [targetKey]
+  );
+
+  // The repository the watch-list offer names, as one object per target: the
+  // dialog's effect holds it in its dependencies, and an inline literal would
+  // re-run that effect on every render of this screen. A local diff has none.
+  const watchOfferSubject = useMemo<WatchedRepo | undefined>(
+    () =>
+      forgeTarget == null
+        ? undefined
+        : { owner: forgeTarget.owner, repo: forgeTarget.repo },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [targetKey]
+  );
+
+  // A failed comment-store read, for the strip along the foot of the screen.
+  // The submit dialog gates on the same failure.
+  const readError =
+    comments.readiness.kind === 'failed' ? comments.readiness.error : undefined;
+
   return (
     <>
       <ReviewHeader
@@ -1008,15 +1083,51 @@ export function ReviewScreen({
         }
         onControlsChange={setControls}
         lenses={headerLenses}
-        pull={pullTarget == null ? undefined : pull}
+        pull={pullRef == null ? undefined : pull}
         // PullRail renders nothing while the watch list is empty, and the bar's
         // own name is the way home. The header takes that job over when the bar
         // is away, so a review always has a route out of itself.
         showBrand={watched.hydrated && watched.repos.length === 0}
-        review={pullTarget == null ? undefined : review}
+        review={capabilities.commentStore === 'forge' ? review : undefined}
         stack={stack}
+        staged={
+          capabilities.commentStore === 'forge'
+            ? comments.stagedThreads
+            : undefined
+        }
+        stagedCount={comments.stagedThreads.length}
+        stagedTarget={stagedTarget}
         target={target}
+        commentsError={readError}
+        commentsReady={comments.readiness.kind === 'ready'}
+        onRetryComments={comments.reload}
+        writesPending={comments.writesPending}
         onReviewSubmitted={onReviewSubmitted}
+        // A verdict changes the review half of the square the left bar draws on
+        // every row, so the list it came from is asked again. The drafts are
+        // published by then, so the forge's own lists are asked again too —
+        // the comments to show them as posted, the drafts to come back empty.
+        // Every attempt reconciles, the failures included: a submit can fail
+        // after the forge recorded it.
+        onReviewSettled={() => {
+          comments.reload();
+          openPulls.reload();
+        }}
+        // One press takes a new snapshot of both halves of the header: the
+        // patch, and the pull request's title and state beside it. A local
+        // diff is the command's to serve, and has no forge to ask again.
+        onRefreshDiff={
+          forgeTarget == null
+            ? undefined
+            : () => {
+                patch.retry();
+                pull.reload();
+              }
+        }
+        refreshDisabled={
+          patch.state === 'fetching' || patch.state === 'parsing'
+        }
+        reviewViewerLogin={commentViewer?.login}
         session={session}
         untracked={
           untrackedCount === 0
@@ -1031,20 +1142,25 @@ export function ReviewScreen({
       />
 
       {diffReady ? (
-        // The first column is a custom property rather than a fixed width,
-        // because the drag writes that property straight onto this element and
-        // never re-renders the diff beside it. See hooks/useSidebarWidth.ts.
+        // The tracks are classes, not a style, so the stylesheet's media
+        // queries pick the template: one column on a phone (the file list is
+        // an overlay there), a sidebar column on a landscape screen, a sidebar
+        // band on a portrait one. The widths and the height themselves stay
+        // custom properties on this element, because a drag writes them
+        // straight here and never re-renders the diff. See
+        // hooks/useSidebarWidth.ts and hooks/useSidebarHeight.ts.
         <div
           ref={attachLayout}
-          className="bg-canvas relative grid min-h-0 flex-1 overflow-hidden"
+          className={cn(
+            'bg-canvas relative grid min-h-0 flex-1 overflow-hidden',
+            'grid-cols-[minmax(0,1fr)]',
+            'phone:landscape:grid-cols-[var(--ghdiff-sidebar-width)_minmax(0,1fr)]',
+            'phone:portrait:grid-cols-none phone:portrait:grid-rows-[var(--ghdiff-sidebar-height)_minmax(0,1fr)]'
+          )}
           style={{
-            ...sidebarStyle,
+            ...sidebarWidthStyle,
+            ...sidebarHeightStyle,
             direction: 'ltr',
-            // One column on a phone. The file list is not beside the diff
-            // there, it is over it, so it takes no track of its own.
-            gridTemplateColumns: isPhone
-              ? 'minmax(0,1fr)'
-              : `var(${SIDEBAR_WIDTH_PROPERTY}) minmax(0,1fr)`,
             // The whole effect of the dim switch. The marks are stamped on
             // rows inside the viewer's shadow roots and styled by
             // LINE_MARKS_CSS, whose default is the on state; this property
@@ -1079,6 +1195,7 @@ export function ReviewScreen({
             onConversationAttachmentError={conversation.renewAttachments}
             entries={patch.data.entries}
             filter={filter}
+            forge={forge}
             hiddenCount={filtered.hiddenCount}
             onAuthorFilterChange={setAuthorMode}
             onCopyPrompt={commentSections.length === 0 ? undefined : copyPrompt}
@@ -1090,20 +1207,34 @@ export function ReviewScreen({
             treeSource={filtered.treeSource}
             treeStats={treeStats}
           />
-          {/* No seam on a phone: the two panes are not side by side there,
-              and there is no width to drag. */}
-          {!isPhone && (
-            <PaneResizeHandle
-              label={m.review_screen_sidebar_width()}
-              max={SIDEBAR_MAX_WIDTH}
-              min={SIDEBAR_MIN_WIDTH}
-              onKeyDown={onSidebarHandleKeyDown}
-              onPointerDown={onSidebarHandlePointerDown}
-              onReset={resetSidebarWidth}
-              style={{ left: `calc(var(${SIDEBAR_WIDTH_PROPERTY}) - 4px)` }}
-              width={sidebarWidth}
-            />
-          )}
+          {/* Both seams stay mounted, and the stylesheet decides which one the
+              current layout shows: the width seam on a landscape screen, the
+              height seam on a portrait one, neither on a phone — the two panes
+              are not side by side there and there is nothing to drag. Hidden,
+              not unmounted, the same rule the panes themselves follow. */}
+          <PaneResizeHandle
+            className="max-phone:hidden portrait:hidden"
+            label={m.review_screen_sidebar_width()}
+            max={SIDEBAR_MAX_WIDTH}
+            min={SIDEBAR_MIN_WIDTH}
+            onKeyDown={onSidebarHandleKeyDown}
+            onPointerDown={onSidebarHandlePointerDown}
+            onReset={resetSidebarWidth}
+            style={{ left: `calc(var(${SIDEBAR_WIDTH_PROPERTY}) - 4px)` }}
+            width={sidebarWidth}
+          />
+          <PaneResizeHandle
+            className="max-phone:hidden landscape:hidden"
+            label={m.review_screen_sidebar_height()}
+            max={SIDEBAR_MAX_HEIGHT}
+            min={SIDEBAR_MIN_HEIGHT}
+            onKeyDown={onBandHandleKeyDown}
+            onPointerDown={onBandHandlePointerDown}
+            onReset={resetSidebarHeight}
+            orientation="horizontal"
+            style={{ top: `calc(var(${SIDEBAR_HEIGHT_PROPERTY}) - 4px)` }}
+            width={sidebarHeight}
+          />
           {/* The diff's column: the search bar, when it is open, and the diff
               under it. The bar takes its row from the diff rather than float
               over it, so nothing in the sticky header is covered while a
@@ -1118,9 +1249,14 @@ export function ReviewScreen({
             >
               <ReviewViewer
                 canCreateIssue={comments.canCreateIssue}
+                canStage={
+                  capabilities.commentStore === 'forge' && commentViewer != null
+                }
                 commentStore={comments.store}
                 controls={controls}
+                draftsExist={comments.stagedThreads.length > 0}
                 effectLens={effectLens}
+                forge={forge}
                 items={items}
                 loadDiffFiles={files.loadDiffFiles}
                 loadingFiles={files.loadingFiles}
@@ -1128,7 +1264,9 @@ export function ReviewScreen({
                 onCreateDraft={handleCreateDraft}
                 onDeleteComment={comments.removeComment}
                 onReplyToThread={comments.replyToThread}
+                onResolveThread={comments.resolveThread}
                 onSaveDraft={comments.saveDraft}
+                onStageDraft={comments.stageDraft}
                 onScroll={onDiffScroll}
                 onSelectedLinesChange={handleSelectedLinesChange}
                 onToggleCollapsed={setCollapsed}
@@ -1137,6 +1275,9 @@ export function ReviewScreen({
                 scrollRef={scrollRef}
                 searchMarks={search.marks}
                 selectedLines={selectedLines}
+                stageNeedsSignIn={
+                  capabilities.commentStore === 'forge' && commentViewer == null
+                }
                 collapsedItemIds={collapsedItemIds}
                 themeType={colorMode.hydrated ? colorMode.mode : 'system'}
                 viewedItemIds={viewedFiles.viewed}
@@ -1152,6 +1293,7 @@ export function ReviewScreen({
           // screen through them would read as a download that had stalled.
           bytes={patch.state === 'fetching' ? patch.bytes : undefined}
           error={patch.error}
+          failure={patch.failure}
           onRetry={patch.retry}
           state={patch.state === 'ready' ? 'starting' : patch.state}
           status={patch.status}
@@ -1175,14 +1317,23 @@ export function ReviewScreen({
           {session.authError}
         </ReviewNotice>
       )}
-      {comments.error != null && comments.error !== dismissedError && (
+      {readError != null && readError !== dismissedError && (
         <ReviewNotice
-          onDismiss={() => setDismissedError(comments.error)}
+          onDismiss={() => setDismissedError(readError)}
           tone="error"
         >
-          {comments.error}
+          {readError}
         </ReviewNotice>
       )}
+      {comments.writeError != null &&
+        comments.writeError !== dismissedError && (
+          <ReviewNotice
+            onDismiss={() => setDismissedError(comments.writeError)}
+            tone="error"
+          >
+            {comments.writeError}
+          </ReviewNotice>
+        )}
       {files.error != null && (
         <ReviewNotice onDismiss={files.dismissError} tone="error">
           {files.error}
@@ -1223,11 +1374,10 @@ export function ReviewScreen({
       {/* The offer of a watch list, for a reviewer who has none. It asks
           nothing until the diff is up: a modal over `ReviewStatusPanel` would
           be a question stacked on a failure. See WatchOfferDialog. */}
-      {gitHubTarget != null && (
+      {watchOfferSubject != null && (
         <WatchOfferDialog
-          owner={gitHubTarget.owner}
           ready={patch.state === 'ready'}
-          repo={gitHubTarget.repo}
+          subject={watchOfferSubject}
         />
       )}
     </>

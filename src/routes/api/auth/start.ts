@@ -1,14 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { authorizeUrl, callbackUrl } from '@/lib/github/app';
-import { requestLog, withEvlog } from '@/lib/logger';
-import {
-  notConfigured,
-  readAuthSetup,
-  redirectTo,
-} from '@/lib/server/authRoute';
+import { notConfigured, redirectTo } from '@/lib/server/authRoute';
+import { sessionMiddleware } from '@/lib/server/middleware';
 import { externalRequestUrl } from '@/lib/server/origin';
-import { codeChallenge, randomToken, SessionSeal } from '@/lib/server/session';
+import { codeChallenge, randomToken } from '@/lib/server/session';
 import { safeReturnTo } from '@/lib/session';
 
 // Where a sign-in begins. It puts three things aside and sends the reviewer to
@@ -25,38 +21,40 @@ import { safeReturnTo } from '@/lib/session';
 // safe: the value is written into a `Location` later, and everything that is not
 // a path on this site resolves to the home page.
 
-const start = withEvlog(async ({ request }: { request: Request }) => {
-  const log = requestLog();
-  const setup = readAuthSetup();
-  if (setup == null) {
-    log.set({ outcome: 'not-configured' });
-    return notConfigured();
-  }
-
-  const returnTo = safeReturnTo(
-    new URL(request.url).searchParams.get('returnTo')
-  );
-  const state = randomToken();
-  const verifier = randomToken();
-
-  log.set({ outcome: 'redirect', returnTo });
-  return redirectTo(
-    authorizeUrl({
-      challenge: await codeChallenge(verifier),
-      clientId: setup.config.clientId,
-      redirectUri: callbackUrl(externalRequestUrl(request)),
-      state,
-    }),
-    [
-      await new SessionSeal(setup.keyring).writeHandoff({
-        state,
-        verifier,
-        returnTo,
-      }),
-    ]
-  );
-});
-
 export const Route = createFileRoute('/api/auth/start')({
-  server: { handlers: { GET: start } },
+  server: {
+    middleware: [sessionMiddleware],
+    handlers: {
+      GET: async ({ request, context: { log, config, keyring, seal } }) => {
+        const params = new URL(request.url).searchParams;
+        const returnTo = safeReturnTo(params.get('returnTo'));
+
+        const app = config.github.app;
+        if (app == null || keyring == null) {
+          log.set({ outcome: 'not-configured' });
+          return notConfigured();
+        }
+
+        const state = randomToken();
+        const verifier = randomToken();
+
+        log.set({ outcome: 'redirect', returnTo });
+        return redirectTo(
+          authorizeUrl({
+            challenge: await codeChallenge(verifier),
+            clientId: app.clientId,
+            redirectUri: callbackUrl(externalRequestUrl(request)),
+            state,
+          }),
+          [
+            await seal.writeHandoff({
+              state,
+              verifier,
+              returnTo,
+            }),
+          ]
+        );
+      },
+    },
+  },
 });

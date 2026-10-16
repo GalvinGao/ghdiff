@@ -11,9 +11,10 @@ import {
   expectedPullScopes,
   type PullScope,
   type PullScopeCounts,
+  type PullTarget,
+  type PullViewers,
   scopePulls,
 } from '@/lib/pullScope';
-import type { GitHubPullTarget } from '@/lib/reviewTarget';
 
 export interface PullScopeState {
   counts: PullScopeCounts;
@@ -24,7 +25,8 @@ export interface PullScopeState {
   setScope(next: PullScope): void;
   /** The tabs there are to choose from; one alone is no choice at all. */
   tabs: readonly PullScope[];
-  viewer?: string;
+  /** Each forge group's viewer, by `forgeGroupKey`. */
+  viewers?: PullViewers;
   /**
    * Present while the first answer is on its way: the tabs and the chosen one
    * the answer is expected to bring, for the skeleton and the title to draw in
@@ -41,25 +43,25 @@ export interface PullScopeState {
  */
 export function usePullScope(
   state: OpenPullsState,
-  current: GitHubPullTarget | undefined
+  current: PullTarget | undefined
 ): PullScopeState {
   const { value: stored, setValue: setScope } =
     usePreference(pullScopePreference);
   const { session } = useAppData();
   const { data, error } = state;
   const counts = useMemo(
-    () => countPullScopes(data?.pulls ?? [], data?.viewer, current),
+    () => countPullScopes(data?.pulls ?? [], data?.viewers, current),
     [current, data]
   );
-  const scope = effectivePullScope(stored, data?.viewer, counts);
+  const scope = effectivePullScope(stored, data?.viewers, counts);
   const pulls = useMemo(
     () =>
-      data == null ? [] : scopePulls(data.pulls, data.viewer, scope, counts),
+      data == null ? [] : scopePulls(data.pulls, data.viewers, scope, counts),
     [counts, data, scope]
   );
   const tabs = useMemo(
-    () => availablePullScopes(data?.viewer, counts),
-    [counts, data?.viewer]
+    () => availablePullScopes(data?.viewers, counts),
+    [counts, data?.viewers]
   );
   // A session still being checked is guessed signed in: the reviewer who has
   // one is the reviewer who comes back, and a wrong guess is one skeleton that
@@ -78,7 +80,7 @@ export function usePullScope(
     scope,
     setScope,
     tabs,
-    viewer: data?.viewer,
+    viewers: data?.viewers,
     waiting,
   };
 }

@@ -11,7 +11,7 @@ import { usePullScope } from '@/hooks/usePullScope';
 import { cn } from '@/lib/cn';
 import { formatNumber } from '@/lib/locale';
 import type { PullScope } from '@/lib/pullScope';
-import type { GitHubPullTarget } from '@/lib/reviewTarget';
+import type { PullTarget } from '@/lib/pullScope';
 import { m } from '@/paraglide/messages.js';
 
 // Which pull requests the list draws, as tabs with a count each.
@@ -48,7 +48,7 @@ type Size = 'default' | 'touch';
 
 interface PullScopeSwitchProps {
   className?: string;
-  current?: GitHubPullTarget;
+  current?: PullTarget;
   /** `touch` for the phone's sheet, where a press is a fingertip. */
   size?: Size;
   state: OpenPullsState;

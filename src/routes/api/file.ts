@@ -1,22 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router';
+import * as z from 'zod';
 
 import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/diffHydration';
+import { authExpiredMessage, failureForStatus } from '@/lib/failure';
 import { isReadablePath } from '@/lib/filePath';
-import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
+import { repoRefFromTarget } from '@/lib/forges';
+import { toLoggable } from '@/lib/logger';
 import {
-  type GitHubReviewTarget,
+  hostedTargetSearch,
   LOCAL_TARGET_NOT_SERVED,
-  reviewTargetFromQuery,
   reviewTargetKey,
 } from '@/lib/reviewTarget';
-import {
-  encodeRefForPath,
-  GitHubError,
-  githubRaw,
-  githubWebRaw,
-  resolveGitHubToken,
-  SIGN_IN_EXPIRED,
-} from '@/lib/server/github/client';
+import { resolveForgeCredential } from '@/lib/server/credentials';
+import { forgeFor } from '@/lib/server/forges';
+import { GitHubError } from '@/lib/server/github/client';
+import { sessionMiddleware } from '@/lib/server/middleware';
+import { conditionalResponse, textResponse } from '@/lib/server/plainText';
+import { validate } from '@/lib/server/validate';
 import { m } from '@/paraglide/messages.js';
 
 // One file's contents, as text/plain, at the commit the target's diff ends on.
@@ -24,57 +24,34 @@ import { m } from '@/paraglide/messages.js';
 // This is what lets a reviewer expand the unmodified lines around a hunk: a
 // patch carries three lines of context and the viewer needs the whole file.
 // It is a route and not an RPC procedure for the same reason `/api/diff` is
-// one — the body is a file, the Worker hands GitHub's own stream straight to
-// the browser, and a JSON envelope would make it read all of it into memory
-// and escape it first.
+// one — the body is a file, the forge hands its own stream straight to the
+// browser, and a JSON envelope would make it read all of it into memory and
+// escape it first.
 //
 // Only the new side is fetched. `src/lib/diffHydration.ts` rebuilds the old
 // side from this file and the patch, which costs no request and cannot
 // disagree with the diff on screen.
 //
-// Where it is fetched from turns on the token, and only on the token. A
-// caller with none has sixty REST requests an hour and needs them for the
-// comments and the pull request list, so its file comes from the host behind
-// github.com's own **Raw** links, which costs none of them. A caller with a
-// token has five thousand and a private repository to reach, so its file comes
-// from the API, which is the only one of the two that can answer for one.
-//
-// Both answer `If-None-Match`, so a browser that kept the file from last time
-// sends its ETag back and gets a 304 with no body when the file has not moved.
-
-function textResponse(body: string, status: number): Response {
-  return new Response(body, {
-    status,
-    headers: { 'cache-control': 'no-store', 'content-type': 'text/plain' },
-  });
-}
+// Both of the forge's sources answer `If-None-Match`, so a browser that kept
+// the file from last time sends its ETag back and gets a 304 with no body when
+// the file has not moved.
 
 /**
- * The commit whose copy of a file the patch's new side describes.
- *
- * A pull request answers through `refs/pull/{n}/head`, which GitHub keeps in
- * the base repository and which needs no second request to resolve — and works
- * for a pull request from a fork, where the head commit lives nowhere else this
- * route can reach.
- *
- * A compare range answers with whatever it was addressed by. That is a branch
- * or a sha of this repository for every range ghdiff has a link to, and it is
- * `owner:branch` for a range typed across two forks — which neither source
- * below can read, so such a range gets no unmodified lines and says so.
+ * A path arrives from a browser and goes into the URL of whichever source
+ * answers. The forge escapes each segment but leaves a dot alone, so a `.` or
+ * `..` segment would climb out of the endpoint: the segments are checked here,
+ * by the rule the `ghdiff` command applies too, rather than trusted there.
  */
-function newSideRef(target: GitHubReviewTarget): string {
-  switch (target.kind) {
-    case 'github-pull':
-      return `refs/pull/${target.number}/head`;
-    case 'github-commit':
-      return target.sha;
-    case 'github-compare':
-      return target.head;
-  }
-}
+const filePath = z.string().refine(isReadablePath);
 
 /**
- * How many bytes GitHub says the file is, or nothing when it did not say
+ * The route's query: the target, and the path within it, as one flat object
+ * — the intersection's output is the target with a `path` beside it.
+ */
+const fileQuery = hostedTargetSearch.and(z.object({ path: filePath }));
+
+/**
+ * How many bytes the forge says the file is, or nothing when it did not say
  * anything this route can act on. `content-length` counts the bytes on the
  * wire, so a compressed answer states a figure far under the file's own size
  * and is no answer at all; a chunked one states nothing. Either way the
@@ -88,104 +65,101 @@ function statedSize(response: Response): number | undefined {
   return Number.isFinite(size) ? size : undefined;
 }
 
-function gitHubFile(
-  target: GitHubReviewTarget,
-  ref: string,
-  path: string,
-  token: string | undefined,
-  ifNoneMatch: string | undefined
-): Promise<Response> {
-  if (token == null) {
-    return githubWebRaw(target.owner, target.repo, ref, path, ifNoneMatch);
-  }
-  return githubRaw(
-    `/repos/${target.owner}/${target.repo}/contents/${encodeRefForPath(
-      path
-    )}?ref=${encodeURIComponent(ref)}`,
-    token,
-    ifNoneMatch
-  );
-}
-
-const getFile = withEvlog(
-  async ({ request }: { request: Request }): Promise<Response> => {
-    const log = requestLog();
-    const params = new URL(request.url).searchParams;
-    const target = reviewTargetFromQuery(params);
-    if (target == null) {
-      log.set({ outcome: 'invalid-target' });
-      return textResponse(m.file_that_review_target_is_not_valid(), 400);
-    }
-    // See the same guard in `/api/diff`: a local diff is the command's own to
-    // serve, and this host has no disk to read it from.
-    if (target.kind === 'local-diff') {
-      log.set({ outcome: 'local-target' });
-      return textResponse(LOCAL_TARGET_NOT_SERVED(), 400);
-    }
-    const path = params.get('path');
-    if (path == null || !isReadablePath(path)) {
-      log.set({ outcome: 'invalid-path' });
-      return textResponse(m.file_that_file_path_is_not_valid(), 400);
-    }
-    const ref = newSideRef(target);
-    log.set({
-      target: reviewTargetKey(target),
-      targetKind: target.kind,
-      path,
-      ref,
-    });
-
-    const { token, refreshDue } = await resolveGitHubToken(request);
-    // A cookie whose token has died is answered before either source is asked:
-    // the 401 is what sends the browser to refresh it, and the same request
-    // arrives again with a live one.
-    if (refreshDue) {
-      log.set({ outcome: 'refresh-due' });
-      return textResponse(SIGN_IN_EXPIRED(), 401);
-    }
-    log.set({
-      authenticated: token != null,
-      source: token == null ? 'web-raw' : 'api-contents',
-    });
-    try {
-      const response = await gitHubFile(
-        target,
-        ref,
-        path,
-        token,
-        request.headers.get('if-none-match') ?? undefined
-      );
-      const etag = response.headers.get('etag');
-      const headers: Record<string, string> = {
-        'cache-control': 'no-store',
-        'content-type': 'text/plain',
-        ...(etag == null ? {} : { etag }),
-      };
-      if (response.status === 304) {
-        log.set({ outcome: 'unchanged' });
-        return new Response(null, { status: 304, headers });
-      }
-      const size = statedSize(response);
-      if (size != null && size > MAX_FILE_BYTES) {
-        // Nothing here reads the body, so it is cancelled rather than left for
-        // the runtime to hold open behind a response nobody wanted.
-        void response.body?.cancel();
-        log.set({ outcome: 'too-large', size });
-        return textResponse(FILE_TOO_LARGE(), 413);
-      }
-      log.set({ outcome: 'ok', size });
-      return new Response(response.body, { status: 200, headers });
-    } catch (error) {
-      if (error instanceof GitHubError) {
-        log.set({ outcome: 'error', status: error.status });
-        return textResponse(error.message, error.status);
-      }
-      log.error(toLoggable(error), { step: 'load-file' });
-      return textResponse(m.file_could_not_load_that_file(), 500);
-    }
-  }
-);
-
 export const Route = createFileRoute('/api/file')({
-  server: { handlers: { GET: getFile } },
+  server: {
+    middleware: [
+      validate({ search: fileQuery }, (error) => {
+        // A failure on the path alone is the path's answer; anything else is
+        // the target's — the order the old two-step check answered in. The
+        // channel wraps the schema, so the field is the path's second leg.
+        const pathOnly =
+          error != null &&
+          error.issues.every((issue) => issue.path[1] === 'path');
+        return pathOnly
+          ? {
+              outcome: 'invalid-path',
+              message: m.file_that_file_path_is_not_valid(),
+            }
+          : {
+              outcome: 'invalid-target',
+              message: m.file_that_review_target_is_not_valid(),
+            };
+      }),
+      sessionMiddleware,
+    ],
+    handlers: {
+      GET: async ({ request, context: { log, config, session, search } }) => {
+        // See the same guard in `/api/diff`: a local diff is the command's own
+        // to serve, and this host has no disk to read it from.
+        if (search.kind === 'local-diff') {
+          log.set({ outcome: 'local-target' });
+          return textResponse(LOCAL_TARGET_NOT_SERVED(), { status: 400 });
+        }
+        log.set({
+          target: reviewTargetKey(search),
+          targetKind: search.kind,
+          path: search.path,
+        });
+        const ref = repoRefFromTarget(search);
+
+        const { cred, refreshDue } = await resolveForgeCredential(
+          config,
+          session,
+          request
+        );
+        // A cookie whose token has died is answered before the forge is asked:
+        // the 401 is what sends the browser to refresh it, and the same
+        // request arrives again with a live one. The typed `auth-expired`
+        // rides the header for the answer the refresh could not mend.
+        if (refreshDue) {
+          log.set({ outcome: 'refresh-due' });
+          return textResponse(authExpiredMessage(ref.forge), {
+            status: 401,
+            failure: { reason: 'auth-expired', forge: ref.forge },
+          });
+        }
+        log.set({ authenticated: cred.token != null });
+        try {
+          const forge = forgeFor(config, ref);
+          const response = await forge.file(
+            search,
+            search.path,
+            cred,
+            request.headers.get('if-none-match') ?? undefined
+          );
+          if (response.status === 304) {
+            log.set({ outcome: 'unchanged' });
+            return conditionalResponse(response);
+          }
+          const size = statedSize(response);
+          if (size != null && size > MAX_FILE_BYTES) {
+            // Nothing here reads the body, so it is cancelled rather than left
+            // for the runtime to hold open behind a response nobody wanted.
+            void response.body?.cancel();
+            log.set({ outcome: 'too-large', size });
+            return textResponse(FILE_TOO_LARGE(), { status: 413 });
+          }
+          log.set({ outcome: 'ok', size });
+          return conditionalResponse(response);
+        } catch (error) {
+          if (error instanceof GitHubError) {
+            log.set({ outcome: 'error', status: error.status });
+            return textResponse(error.message, {
+              status: error.status,
+              failure:
+                error.failure ??
+                failureForStatus(error.status, {
+                  forge: ref.forge,
+                  credentialed: cred.token != null,
+                }),
+            });
+          }
+          log.error(toLoggable(error), { step: 'load-file' });
+          return textResponse(m.file_could_not_load_that_file(), {
+            status: 500,
+          });
+        }
+      },
+    },
+  },
 });

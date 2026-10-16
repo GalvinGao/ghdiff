@@ -7,19 +7,19 @@ import type { CommentPayload, ThreadComment } from './comments';
 // walking that chain. On one busy pull request this turns 28 rows into 9
 // threads, which is 9 cards in the diff instead of 28.
 //
-// A comment kept in this browser has no GitHub id, so a reply to it has no id
+// A comment kept in this browser has no forge id, so a reply to it has no id
 // to point at. Those rows name their thread outright, in `threadKey`, and that
 // name wins over the chain walk.
 
 export interface RawThread {
-  /** Identifies the thread: the root's GitHub id, or its own key. */
+  /** Identifies the thread: the root's forge id, or its own key. */
   key: string;
   /** The root first, then replies oldest first. */
   comments: CommentPayload[];
 }
 
 function payloadKey(payload: CommentPayload, index: number): string {
-  return payload.githubId != null ? `gh-${payload.githubId}` : `local-${index}`;
+  return payload.remoteId != null ? `gh-${payload.remoteId}` : `local-${index}`;
 }
 
 /**
@@ -32,7 +32,7 @@ export function groupCommentThreads(
 ): RawThread[] {
   const byId = new Map<number, CommentPayload>();
   for (const payload of payloads) {
-    if (payload.githubId != null) byId.set(payload.githubId, payload);
+    if (payload.remoteId != null) byId.set(payload.remoteId, payload);
   }
 
   const rootOf = (payload: CommentPayload): CommentPayload => {
@@ -91,16 +91,33 @@ export function groupCommentThreads(
   });
 }
 
-/** Converts one grouped thread into the messages a card renders. */
-export function threadComments(thread: RawThread): ThreadComment[] {
-  return thread.comments.map((payload, index) => ({
-    key: payloadKey(payload, index),
-    githubId: payload.githubId,
+/**
+ * Converts one payload into the message a card renders. The key is the forge
+ * id where the payload carries one and `fallbackKey` where it does not — a
+ * write path passes the key of the optimistic message it is reconciling, so
+ * the card does not remount when the forge answers.
+ */
+export function threadComment(
+  payload: CommentPayload,
+  fallbackKey: string
+): ThreadComment {
+  return {
+    key: payload.remoteId != null ? `gh-${payload.remoteId}` : fallbackKey,
+    remoteId: payload.remoteId,
+    remoteNodeId: payload.remoteNodeId,
     author: payload.author,
     authorAvatarUrl: payload.authorAvatarUrl,
     authorIsBot: payload.authorIsBot,
     body: payload.body,
     createdAt: payload.createdAt,
     htmlUrl: payload.htmlUrl,
-  }));
+    ...(payload.staged === true ? { staged: true } : {}),
+  };
+}
+
+/** Converts one grouped thread into the messages a card renders. */
+export function threadComments(thread: RawThread): ThreadComment[] {
+  return thread.comments.map((payload, index) =>
+    threadComment(payload, payloadKey(payload, index))
+  );
 }

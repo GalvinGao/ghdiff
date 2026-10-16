@@ -1,11 +1,12 @@
+import { readSignedAttachments, type SignedAttachments } from './attachments';
+import { type PullState, pullState } from './pulls';
 // One pull request's own facts, for the card behind its title in the header.
 //
 // The switcher's `PullSummary` is what a list row needs. This is what the card
 // needs: the description, the counts, and the two dates. It is a separate shape
 // because it costs a separate request, and only the pull request on screen pays
 // for it.
-import { readSignedAttachments, type SignedAttachments } from './attachments';
-import { type PullState, pullState } from './pulls';
+import type { CheckState } from './pullStatus';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 
@@ -22,6 +23,7 @@ export interface PullDetails {
   baseRef: string;
   createdAt: string;
   updatedAt: string;
+  check?: CheckState;
   /** The description, as GitHub markdown. Absent when the author left it empty. */
   body?: string;
   /**

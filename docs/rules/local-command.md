@@ -2,16 +2,19 @@
 
 `ghdiff` is the second host for this frontend. It runs on a developer's own
 machine, reads the git repository it was invoked in, and opens the review
-surface against a diff GitHub has never been told about — the working tree, the
-index, or a branch against its base. It ships from this repository, as `cli/`,
-and `pnpm build:cli` is what produces it.
+surface against a diff no forge has ever been told about — the working tree, the
+index, a branch against its base, or one commit. It ships from this repository,
+as `cli/`, and `pnpm build:cli` is what produces it. `cli/README.md` is its own
+user-facing documentation.
 
 **The Worker cannot do this, and that is deliberate.** workerd spawns no
 process, so `git` can never be executed there, and `node:fs` under
 `nodejs_compat` resolves against a virtual filesystem holding bundled modules
 rather than the host's disk. Both hold in `pnpm dev` as well, since the plugin
-runs the server on workerd there too. So local support is a second host and
-never a feature added to the first one.
+runs the server on workerd there too. The self-hosted Node build could spawn
+`git`, but it serves a team, and a team's server has no business reading one
+developer's working tree. So local support is a second host and never a feature
+added to the first one.
 
 **The contract between ghdiff and a diff source is one patch and one whole
 file.** That is the whole of why this costs so little: `git diff` emits the
@@ -19,17 +22,16 @@ first and `git show` emits the second, so the viewer, hunk expansion, the
 whitespace marks, the cron hints, the path filter, the tree's stat lanes, the
 fragment grammar and the browser-stored comments all arrive working and
 unmodified. `hydratePartialDiff` becomes **more** valuable here than it is
-against GitHub, not less: the working tree genuinely does move under the reader,
-so `patchFitsNewFile` refusing a mismatched rebuild is everyday work rather than
-an edge case.
+against a forge, not less: the working tree genuinely does move under the
+reader, so `patchFitsNewFile` refusing a mismatched rebuild is everyday work
+rather than an edge case.
 
 **Both hosts are a `fetch` handler, and that is Hono's whole job here.** The
-Worker answers web `Request`s with web `Response`s, and `cli/src/server.ts` now
-does the same over `@hono/node-server`: the guards are middleware, the two
-routes return a `Response`, and a patch is a `ReadableStream` on either side. So
-the resemblance the contract above describes is a resemblance in the code and
-not only in what comes down the wire — and `git.ts` knows nothing about HTTP at
-all, where it used to be handed a `ServerResponse` to write into.
+server answers web `Request`s with web `Response`s, and `cli/src/server.ts` does
+the same over `@hono/node-server`: the guards are middleware, the two routes
+return a `Response`, and a patch is a `ReadableStream` on either side. So the
+resemblance the contract above describes is a resemblance in the code and not
+only in what comes down the wire — and `git.ts` knows nothing about HTTP at all.
 
 What the library is **not** asked to do is decide anything. `serveStatic` is
 given a `path` rather than a `root`, because the containment test is this
@@ -57,23 +59,25 @@ works, and `ghdiff main --version` still answers with a version. Adapting argv
 to suit `runMain` would have been a hand-rolled tokenizer by another name, which
 is the thing citty is here to remove.
 
-**A local diff is a fourth arm of `ReviewTarget`, and the two hosted routes turn
-it away.** `LocalDiffTarget` carries the absolute repository root and one of
-four ranges. `supportsGitHubComments` already answered false for everything but
-a pull request, so comments fall to browser storage with no change to it at all.
-`reviewTargetKey` keys off the **absolute path and the range** and off nothing
-the run decided — the port is free every time and the token is minted every
-time, so a key carrying either would lose a reviewer their comments the moment
-they pressed Ctrl-C. `/api/diff` and `/api/file` on the Worker answer
+**A local diff is the one `ReviewTarget` that is not a `ForgeTarget`, and the
+two hosted routes turn it away.** `LocalDiffTarget` carries the absolute
+repository root and one of its ranges. `reviewCapabilities` answers a local
+target the way it answers a commit — comments in browser storage, no draft and
+no verdict — so the comment surface needed no change for it. `reviewTargetKey`
+keys off the **absolute path and the range** and off nothing the run decided —
+the token is minted every time, so a key carrying it would lose a reviewer their
+comments the moment they pressed Ctrl-C. `/api/diff` and `/api/file` on the
+hosted server accept the local kind in their search schema only to answer
 `LOCAL_TARGET_NOT_SERVED` with a 400: that target reaches them only from a link
 pasted out of somebody's local run, and 400 with a sentence beats a 500 from a
 `switch` that fell through.
 
-`GitHubReviewTarget` is the union of the other three, and it is what every
-function about an address on github.com now takes — `reviewTargetSplat`,
-`reviewTargetDisplayPath`, `reviewTargetUrl`, `gitHubTargetFromSegments`. A
-local target cannot be passed to one, and that is checked by the compiler rather
-than by a guard at each call site.
+`ForgeTarget` is the union of the six forge kinds, and it is what every function
+about an address on a forge takes — `reviewTargetSplat`,
+`reviewTargetFromSegments`, `forgeOfTarget`, `repoRefFromTarget`. A local target
+cannot be passed to one, and that is checked by the compiler rather than by a
+guard at each call site; `isForgeTarget` is the one narrowing a caller holding a
+`ReviewTarget` uses.
 
 **There is no capabilities handshake, and there was nearly one.** The concept
 for this called for a `capabilities` procedure on the RPC contract, so that a
@@ -82,22 +86,20 @@ What it turned out to need is a host that does not draw what it cannot serve.
 `cli/web/main.tsx` mounts `ReviewScreen` under the worker pool, a jotai store
 and a query client, and mounts no `AppShell` and no `AppDataProvider` — so there
 is no left bar, no watch list, no account menu, no `/setup`, no served counter,
-and **not one request to GitHub or to the RPC handler**. `LocalAppData` supplies
-the three GitHub-shaped fields of `AppData` inert, and every one of those states
-is one the app already answers: an empty hydrated watch list is what `PullRail`
-and `PullListButton` already draw nothing for, and a session with no viewer is
-the signed-out case. Two fields are real, because they are settings rather than
-questions for GitHub — the colour mode and the code font are the same choice
-wherever the diff came from, under the same keys, shared with every other ghdiff
-tab.
+and **not one request to a forge or to the RPC handler**. `LocalAppData`
+supplies the forge-shaped fields of `AppData` inert — no session, an instance
+that serves nothing — and every one of those states is one the app already
+answers: an empty hydrated watch list is what `PullRail` and `PullListButton`
+already draw nothing for, and a session with no viewer is the signed-out case.
+Two fields are real, because they are settings rather than questions for a forge
+— the colour mode and the code font are the same choice wherever the diff came
+from, under the same keys, shared with every other ghdiff tab.
 
-`ReviewScreen` then makes four small allowances, each derived from
-`isGitHubTarget` and nothing else: the header takes `local`, which is what keeps
-`GitHubAccountControl` off a screen with no account; `targetUrl` is absent, so
-the label says its name and links nowhere; `targetPath` is absent, so
-`ReviewStatusPanel` offers the retry without the way to `/setup`; and
-`WatchOfferDialog` is not rendered, because there is no repository on GitHub to
-offer.
+`ReviewScreen` then makes a few small allowances, each derived from
+`isForgeTarget` and nothing else: the header draws no account control and no
+link out, because there is no page the diff was taken from; `ReviewStatusPanel`
+offers the retry without the way to `/setup`; and `WatchOfferDialog` is not
+rendered, because there is no repository on a forge to offer.
 
 **Security, and every line of it is required.** A loopback server that can read
 a repository is an attack surface, and loopback is not a boundary — any page in
@@ -107,12 +109,10 @@ any other tab can issue a request to `http://127.0.0.1:<port>`.
   offers one.
 - **A per-run token in a custom header.** 256 bits from `randomBytes`, minted at
   launch, carried once in the address the command opens and then put in
-  `sessionStorage` — which is scoped by origin **including the port**, where a
-  cookie is not, so two runs of this command cannot hand each other a
-  credential. `cli/web/localFetch.ts` wraps `window.fetch` once for same-origin
-  `/api` requests, which is why no hook and no component knows the token exists:
-  on the hosted side the credential is a cookie the browser attaches by itself,
-  and neither side carries one above the network layer.
+  `sessionStorage`. `cli/web/localFetch.ts` wraps `window.fetch` once for
+  same-origin `/api` requests, which is why no hook and no component knows the
+  token exists: on the hosted side the credential is a cookie the browser
+  attaches by itself, and neither side carries one above the network layer.
 - **No CORS header anywhere, and no preflight answered.** A custom header cannot
   be sent cross-origin without a preflight, so a hostile page is stopped before
   the token is even compared. `OPTIONS` answers 405.
@@ -122,10 +122,10 @@ any other tab can issue a request to `http://127.0.0.1:<port>`.
   argument vector, never from a request. The query is compared against them and
   then thrown away, which is what turns a tab left open from an earlier run into
   one sentence instead of a patch from the wrong repository.
-- **Paths resolved through git, not the filesystem.** Three of the four ranges
-  read an object — `git show <rev>:<path>` resolves against the object database
-  and can address nothing outside the tree. The working tree is the one that
-  touches a real path, and it gets `isReadablePath` plus a `realpath`
+- **Paths resolved through git, not the filesystem.** The ranges that read an
+  object go through `git show <rev>:<path>`, which resolves against the object
+  database and can address nothing outside the tree. The working tree is the one
+  that touches a real path, and it gets `isReadablePath` plus a `realpath`
   containment test, because a symlink inside the repository pointing outside it
   is a thing only `realpath` can see.
 
@@ -142,8 +142,7 @@ the kernel happened to offer got a storage area of its own — and every restart
 threw away the reviewer's comments, their viewed marks, their colour mode and
 their code font. `reviewTargetKey` was already careful to key off the absolute
 path and the range and off nothing the run decided; the area holding that key
-was not, and the README's promise that comments "survive Ctrl-C" was false for
-as long as the port was free.
+was not.
 
 So `DEFAULT_PORT` is 7171: clear of the servers a developer already runs — 3000,
 4000, 5000, 5173, 8000, 8080, 8888, 9000 — and below every ephemeral range
@@ -166,10 +165,8 @@ all, since silently opening an empty review is the failure this exists to
 prevent. The `Host` check follows either way: `handle` reads the port off
 `server.address()` and never off the option.
 
-One comment had to be rewritten rather than left. `cli/web/localFetch.ts` used
-to justify `sessionStorage` by saying an origin includes the port, so two runs
-could not hand each other a credential. Two runs now ordinarily share an origin,
-so that mechanism is gone — nothing gets through on a stale token, because
+Two runs now ordinarily share an origin, so `sessionStorage` no longer keeps
+their tokens apart — nothing gets through on a stale token, because
 `checkApiRequest` compares against the one this process minted, which is where
 the guarantee always actually lived. A security comment that has quietly become
 false is worse than no comment.
@@ -204,10 +201,9 @@ untouched, which was measured rather than assumed.
 
 `untrackedStageArgs` needs git 2.25 for `--pathspec-from-file`. Neither
 untracked step is `required`, so an older git costs that block and never the
-patch — the same promise the per-file form made for a file that vanished between
-the listing and the diff. `streamGitSteps` puts all of them into one body, and
-`GitStep` carries the `stdin` and `env` they need; the rule that the first byte
-decides the status is unchanged and simply reaches across the sequence.
+patch. `gitStream` takes all of them as its `steps` and puts them into one body,
+and `GitStep` carries the `stdin` and `env` they need; the rule that the first
+byte decides the status is unchanged and simply reaches across the sequence.
 
 Nothing caps the list, on purpose. A repository with no `.gitignore` answers
 with thousands, but a cap would be this command deciding which of a developer's
@@ -219,7 +215,7 @@ and does not notice, and the diff scroll keeps them together at the end.
 
 Only `worktree` has them. `rangeShowsUntracked` is the whole of that rule:
 `--staged` is what is about to land and a file git has never been told about is
-not, and the other two ranges are commits, where every file is tracked by
+not, and the other ranges are commits, where every file is tracked by
 definition.
 
 **Which files those are reaches the browser through the document, not through
@@ -244,7 +240,7 @@ statuses and the query, so `applyReviewFilter` drops those entries in the same
 pass and both panes and the footer count agree by construction — and **Clear
 filters** puts them back. `ReviewHeader` learns none of that: it takes
 `untracked` as a count, a boolean and a callback, and draws nothing at all when
-the count is zero, which is every diff GitHub serves.
+the count is zero, which is every diff a forge serves.
 
 Untracked is exempt from the git status list, which is the one place the two
 controls could contradict each other. `STATUS_ITEMS` in `FilterMenu` offers the
@@ -252,7 +248,7 @@ four statuses a patch can describe and never this one, so picking **Added**
 would otherwise take the untracked files away with nothing left to bring them
 back. One switch owns them.
 
-**A commit is the fifth range, and it is `git show` rather than `git diff`.** A
+**A commit is its own range, and it is `git show` rather than `git diff`.** A
 bare revision already means a branch on its base — `ghdiff main` is
 `main...HEAD` — so one commit's own changes are asked for with `--commit`, a
 boolean flag beside the optional revision rather than a value, so
@@ -261,29 +257,27 @@ swallows nothing. Bare, it is HEAD. `show --format= --first-parent -m` is what
 `diffArgs` hands git: a commit has no second endpoint to name, `rev~1` does not
 exist for a root commit and picks a merge's first parent silently, and `show` on
 a merge would otherwise print a combined `@@@` diff the parser cannot read.
-Measured against a real merge: nine files from `show`, nine from `diff m^1 m`.
 
 `pinCommit` in `cli/src/repo.ts` resolves the name to its full sha before the
 target is built. HEAD is a pointer the developer is about to move, and the key
 `reviewTargetKey` holds is what the browser files comments and viewed marks
 under — `commit HEAD` would hand this commit's notes to the next one. The header
-prints the short sha for the same reason the label of a GitHub commit does.
+prints the short sha for the same reason the label of a forge commit does.
 
 **Which file the new side is depends on the range, and `staged` is the one that
 catches people.** `git diff --cached` diffs the index against HEAD, so the new
 side is the **index** — `git show :0:<path>` — and reading `HEAD:<path>` there
 would show the side it diffed _from_. `worktree` is the only range whose new
-side is a path on disk. `newSideSource` is where those four answers live, and
+side is a path on disk. `newSideSource` is where those answers live, and
 `gitRange.test.ts` pins them.
 
 **The size of a file is asked for before it is sent.** `git cat-file -s` and
 `stat` both answer exactly, so a file over `MAX_FILE_BYTES` is turned away with
 a 413 rather than truncated into a body the browser would then reverse-apply the
-patch onto. This is the one host that can do that: GitHub states a compressed
-length or none at all. `src/lib/fileLimit.ts` is where that figure and its
-sentence moved to, because a third end holds them now and the third has no
-business importing `@pierre/diffs` — `diffHydration.ts` re-exports both, so
-every existing reader is unchanged.
+patch onto. This is the one host that can do that: a forge states a compressed
+length or none at all. `src/lib/fileLimit.ts` holds that figure and its
+sentence, because a third end reads them and the third has no business importing
+`@pierre/diffs`.
 
 **The status of a streamed answer is decided by the first chunk, and `gitStream`
 resolving is that rule said out loud.** git writes its failures to stderr and
@@ -324,24 +318,22 @@ nothing beside it. Both write under `dist/cli`, and the manifest plugin puts
 `cli/package.json` and `cli/README.md` beside them, so `dist/cli` is a directory
 `npm pack` and `npm install -g` both accept as it stands.
 
-The client build carries no sourcemap and the command's does. The client's entry
-map is 7.4 MB against 1.9 MB of code, and `npx` downloads it before the command
-can run at all; the command's is 80 KB, and a stack trace in a terminal is the
-one that gets read.
+The client build carries no sourcemap and the command's does: `npx` downloads
+the client's map before the command can run at all, and a stack trace in a
+terminal is the one that gets read.
 
-The command imports three things out of `src/` and they are all pure — the
-target model, the two pre-paint scripts, and the file-size cap. None of them
-reaches for a browser API or for `@pierre/diffs`, and the three packages it does
-carry are small and have no dependencies of their own, so the bundle is about
-164 KB — roughly 48 KB gzipped, which is one `npx` download and then nothing.
+The command imports a few things out of `src/` and they are all pure — the
+target model, the two pre-paint scripts, the file-size cap, and the compiled
+messages. None of them reaches for a browser API or for `@pierre/diffs`, and the
+three packages it does carry are small and have no dependencies of their own.
 Adding an import to `cli/src/` that pulls in the viewer would be the change to
 argue against.
 
 Those three are `hono`, `@hono/node-server` and `citty`, and they are the
-command's alone: nothing in `src/` imports one, so the Worker's graph and its
-~52 KiB of headroom are untouched. They sit in the root `dependencies` beside
-everything else this repository bundles; `cli/package.json`, which is the
-manifest that actually gets published, still declares none.
+command's alone: nothing in `src/` imports one, so the Worker's graph is
+untouched. They sit in the root `dependencies` beside everything else this
+repository bundles; `cli/package.json`, which is the manifest that actually gets
+published, still declares none.
 
 **The document is filled in when it is served, not when it is built.**
 `serveDocument` puts three scripts into the head. Two are the app's own
@@ -358,3 +350,19 @@ roots — left to itself the client build scans `cli/web` alone and every utilit
 in `src/` is missing from the stylesheet it serves, which is a page that renders
 and is not styled. `@source '../src'` and `@source '../cli'` are relative to
 that file, so both builds scan the same two directories.
+
+## Its tests
+
+`cli/src/` is the vitest project `cli`, run by `pnpm test:lib` beside `lib`, and
+it holds to the same import rule as everything else: `@/` for `src/`, no `.ts`
+suffix. Three of its modules are pure and tested — the argument parser, the git
+argument vectors, and the host and token guards; the path check they import is
+`src/lib/filePath.ts`, tested in the `lib` project. `git.ts`, `repo.ts`,
+`server.ts` and `main.ts` are not: they spawn processes and bind sockets, and
+they are checked by running the command.
+
+`args.test.ts` carries more than the decisions, because citty parses loosely: it
+asks `node:util.parseArgs` for `strict: false`, so an option this command does
+not have arrives as a key on the parsed object rather than as an error. The set
+`parseArgs` compares against is built from the declaration, and the test that
+pins the declaration's own keys is what keeps the two from drifting apart.

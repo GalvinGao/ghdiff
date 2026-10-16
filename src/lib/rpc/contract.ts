@@ -7,8 +7,9 @@ import type { DeploymentsData } from '@/lib/deployments';
 import type { AppInstallation } from '@/lib/installations';
 import type { ConversationEntry } from '@/lib/pullConversation';
 import type { PullDetails } from '@/lib/pullDetails';
-import type { OpenPullsData } from '@/lib/pulls';
+import type { OpenPullsAnswer } from '@/lib/pulls';
 import type { SubmittedReview, TeamReview } from '@/lib/reviewDecision';
+import { reviewTargetSearch } from '@/lib/reviewTarget';
 import type { ViewedFilesData } from '@/lib/viewedFiles';
 import type { GitHubViewer } from '@/lib/viewer';
 import { m } from '@/paraglide/messages.js';
@@ -27,37 +28,34 @@ import { m } from '@/paraglide/messages.js';
 /** GitHub's own rule for an owner or a repository name. */
 const NAME = /^[A-Za-z0-9._-]+$/;
 
+// Every message is a function the schema calls when it fails, so the sentence
+// is the request's own locale and never the one the module loaded in.
 const name = z.string().regex(NAME, {
   error: () => m.contract_enter_a_valid_github_username_or_repository_name(),
 });
 
-const repoRef = z.object({ owner: name, repo: name });
+/** A comment's words, which a forge refuses to take empty. */
+const commentBody = z
+  .string()
+  .trim()
+  .min(1, { error: () => m.contract_comment_cannot_be_empty() });
 
-const pullRef = repoRef.extend({
-  number: z.int().positive(),
-});
+/** The repository fields of each forge, shared by every ref shape below. */
+const githubRepo = { forge: z.literal('github'), owner: name, repo: name };
+
+/** A repository on a forge. The `forge` field is the discriminant. */
+const repoRef = z.discriminatedUnion('forge', [z.object(githubRepo)]);
+
+/** A pullRef with extra fields, kept as a union so `forge` still discriminates. */
+const pullRefWith = <T extends Record<string, z.ZodType>>(extra: T) =>
+  z.discriminatedUnion('forge', [
+    z.object({ ...githubRepo, number: z.int().positive(), ...extra }),
+  ]);
+
+const pullRef = pullRefWith({});
 
 /** `additions` is GitHub's RIGHT and `deletions` is its LEFT. */
 const side = z.enum(['additions', 'deletions']);
-
-/**
- * The diff under review, as the three GitHub targets name it. Each is the part
- * of `GitHubReviewTarget` that is not the repository.
- */
-const targetSource = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('github-pull'), number: z.int().positive() }),
-  z.object({
-    kind: z.literal('github-commit'),
-    sha: z.string().regex(/^[0-9a-f]{7,40}$/i, {
-      error: () => m.contract_enter_a_commit_sha(),
-    }),
-  }),
-  z.object({
-    kind: z.literal('github-compare'),
-    base: z.string().min(1),
-    head: z.string().min(1),
-  }),
-]);
 
 export const contract = {
   viewer: {
@@ -68,9 +66,15 @@ export const contract = {
      * `fromSession` is what separates a reviewer who signed in from a deployment
      * running on `GITHUB_TOKEN`. Both have a viewer and both post comments as
      * that account, and only the first has a sign-out to offer — so the menu
-     * reads this rather than guessing from the viewer alone.
+     * reads this rather than guessing from the viewer alone. It is true when the
+     * credential resolved from the cookie.
      */
-    get: oc.output(type<{ viewer?: GitHubViewer; fromSession?: boolean }>()),
+    get: oc.output(
+      type<{
+        viewer?: GitHubViewer;
+        fromSession?: boolean;
+      }>()
+    ),
   },
 
   installations: {
@@ -93,7 +97,7 @@ export const contract = {
     /** The open pull requests of the watched repositories, flat. */
     list: oc
       .input(z.object({ repos: z.array(repoRef) }))
-      .output(type<OpenPullsData>()),
+      .output(type<OpenPullsAnswer>()),
 
     /** One pull request's own details, for the card behind its title. */
     get: oc.input(pullRef).output(type<PullDetails>()),
@@ -112,8 +116,8 @@ export const contract = {
     /**
      * The newest verdicts other people left on this pull request, for the top
      * of the review dialog. The viewer's own is `mine`, and a caller with no
-     * token gets an empty list: GraphQL refuses an anonymous caller, and the
-     * list is a courtesy beside the diff rather than a part of it.
+     * credential gets an empty list: the list is a courtesy beside the diff
+     * rather than a part of it.
      */
     team: oc.input(pullRef).output(type<{ reviews: TeamReview[] }>()),
 
@@ -121,11 +125,13 @@ export const contract = {
      * A verdict on the pull request as a whole. The three events are GitHub's
      * own spelling, and the body is optional here rather than conditional:
      * `canSubmitReview` holds the button until a verdict that needs words has
-     * them, and GitHub is the authority on the rest.
+     * them, and GitHub is the authority on the rest. The staged comments are
+     * the forge's own drafts by the time a verdict is sent, so the call
+     * carries none — publishing them is the forge's half of the submit.
      */
     submit: oc
       .input(
-        pullRef.extend({
+        pullRefWith({
           event: z.enum(['APPROVE', 'COMMENT', 'REQUEST_CHANGES']),
           body: z.string().optional(),
         })
@@ -135,21 +141,46 @@ export const contract = {
 
   deployments: {
     /**
-     * The deployments GitHub has on record for the commits under review, and
-     * the head they are measured against. A pull request answers for its
-     * newest twenty commits, so a build of an older push is still a link the
-     * menu can offer; a commit and a compare range answer for their head.
+     * The deployments the forge has on record for the commits under review,
+     * and the head they are measured against. A pull request answers for its
+     * newest commits, so a build of an older push is still a link the menu can
+     * offer; a commit and a compare range answer for their head.
      *
-     * A caller with no token gets the head's deployments alone, and no check
-     * rollup: GraphQL refuses an anonymous caller, and REST costs a request
-     * per deployment against a quota of sixty an hour. A repository the App
-     * may not read deployments in answers with an empty list, not an error:
-     * the header then draws no menu, which is what a repository that deploys
-     * nothing draws too.
+     * A repository the credential may not read deployments in answers with an
+     * empty list, not an error: the header then draws no menu, which is what a
+     * repository that deploys nothing draws too.
      */
     list: oc
-      .input(repoRef.extend({ source: targetSource }))
+      .input(z.object({ target: reviewTargetSearch }))
       .output(type<DeploymentsData>()),
+  },
+
+  issues: {
+    /**
+     * An issue in the repository under review, made from a note on some of its
+     * lines. The Worker resolves the commit each side of the diff was read
+     * from, because a permalink needs a full sha and the browser holds a pull
+     * request number, a short sha or a branch name. `line`, `startLine` and
+     * `side` are one side's range, the way `commentPayloadRangeFields` reduces
+     * a selection for a review comment.
+     */
+    create: oc
+      .input(
+        z.object({
+          target: reviewTargetSearch,
+          text: z
+            .string()
+            .trim()
+            .min(1, {
+              error: () => m.contract_write_what_the_issue_is_about(),
+            }),
+          path: z.string().min(1),
+          line: z.int().positive(),
+          startLine: z.int().positive().optional(),
+          side,
+        })
+      )
+      .output(type<CreatedIssue>()),
   },
 
   stats: {
@@ -176,40 +207,12 @@ export const contract = {
      */
     set: oc
       .input(
-        pullRef.extend({
+        pullRefWith({
           path: z.string().min(1),
           viewed: z.boolean(),
         })
       )
       .output(type<{ ok: true }>()),
-  },
-
-  issues: {
-    /**
-     * An issue in the repository under review, made from a note on some of its
-     * lines. The Worker resolves the commit each side of the diff was read
-     * from, because a permalink needs a full sha and the browser holds a pull
-     * request number, a short sha or a branch name. `line`, `startLine` and
-     * `side` are one side's range, the way `commentPayloadRangeFields` reduces
-     * a selection for a review comment.
-     */
-    create: oc
-      .input(
-        repoRef.extend({
-          source: targetSource,
-          text: z
-            .string()
-            .trim()
-            .min(1, {
-              error: () => m.contract_write_what_the_issue_is_about(),
-            }),
-          path: z.string().min(1),
-          line: z.int().positive(),
-          startLine: z.int().positive().optional(),
-          side,
-        })
-      )
-      .output(type<CreatedIssue>()),
   },
 
   comments: {
@@ -229,11 +232,8 @@ export const contract = {
      */
     create: oc
       .input(
-        pullRef.extend({
-          body: z
-            .string()
-            .trim()
-            .min(1, { error: () => m.contract_comment_cannot_be_empty() }),
+        pullRefWith({
+          body: commentBody,
           replyToId: z.int().positive().optional(),
           path: z.string().min(1).optional(),
           line: z.int().positive().optional(),
@@ -245,7 +245,61 @@ export const contract = {
       .output(type<CommentPayload>()),
 
     remove: oc
-      .input(repoRef.extend({ commentId: z.int().positive() }))
+      .input(pullRefWith({ commentId: z.int().positive() }))
+      .output(type<{ ok: true }>()),
+
+    /**
+     * Resolves a review thread on the forge, or takes the mark back. The
+     * thread is named by the id its forge reported on the root payload —
+     * GitHub's review-thread node id.
+     */
+    resolve: oc
+      .input(
+        pullRefWith({ threadId: z.string().min(1), resolved: z.boolean() })
+      )
+      .output(type<{ resolved: boolean }>()),
+  },
+
+  /**
+   * The forge's own draft comments — GitHub's pending-review threads. A draft is the token's own by definition, so every procedure
+   * here wants a credential the way `comments.create` does. The drafts a
+   * verdict publishes are exactly these; there is no local staging beside them.
+   */
+  drafts: {
+    list: oc.input(pullRef).output(type<{ drafts: CommentPayload[] }>()),
+
+    /**
+     * A new draft on a diff line. Every range field is required where
+     * `comments.create` leaves it optional — a draft is always a new thread
+     * on a named line, so there is no `replyToId`.
+     */
+    create: oc
+      .input(
+        pullRefWith({
+          path: z.string().min(1),
+          line: z.int().positive(),
+          side,
+          startLine: z.int().positive().optional(),
+          startSide: side.optional(),
+          body: commentBody,
+        })
+      )
+      .output(type<CommentPayload>()),
+
+    /**
+     * Takes one draft back, by whichever id the forge reported — one of the
+     * two, at least. GitHub's mutation addresses a review comment by its
+     * GraphQL node id.
+     */
+    remove: oc
+      .input(
+        pullRefWith({
+          id: z.number().int().positive().optional(),
+          nodeId: z.string().optional(),
+        }).refine((input) => input.id != null || input.nodeId != null, {
+          error: () => m.contract_a_draft_to_delete_needs_an_id(),
+        })
+      )
       .output(type<{ ok: true }>()),
   },
 };

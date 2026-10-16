@@ -1,19 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
-import { empty, readAuthSetup } from '@/lib/server/authRoute';
-import {
-  GitHubAuthError,
-  REFRESH_ALREADY_SPENT,
-  refreshGrant,
-} from '@/lib/server/github/app';
-import { SessionSeal } from '@/lib/server/session';
-import {
-  accessTokenFresh,
-  originAllowed,
-  refreshable,
-  withinMaxAge,
-} from '@/lib/session';
+import { toLoggable } from '@/lib/logger';
+import { empty } from '@/lib/server/authRoute';
+import { REFRESH_ALREADY_SPENT, refreshGrant } from '@/lib/server/github/app';
+import { originMiddleware, sessionMiddleware } from '@/lib/server/middleware';
+import { OAuthError } from '@/lib/server/oauth';
+import { accessTokenFresh, refreshable, withinMaxAge } from '@/lib/session';
 
 // The one place in this app that spends a refresh token.
 //
@@ -36,7 +28,7 @@ import {
 // nothing and lets the caller retry, and the retry carries the newer cookie. In
 // the other case — a refresh token spent where this browser will never see the
 // result, revoked at github.com or taken — the retry carries the same dead
-// cookie and this Worker answers it 401 again, and `withRefresh` ends the
+// cookie and this server answers it 401 again, and `withRefresh` ends the
 // session on that second 401: it is the one place that sees both answers. The
 // wrong guess costs one request; the opposite wrong guess would sign a reviewer
 // out for having two tabs open.
@@ -45,70 +37,61 @@ import {
 // no refresh token, and one GitHub will not answer for have nothing left to
 // refresh, and 401 is what tells the client to stop trying.
 
-const refresh = withEvlog(async ({ request }: { request: Request }) => {
-  const log = requestLog();
-
-  // `SameSite=Lax` keeps the session cookie off a cross-site POST in every
-  // browser that honours it. This is the half that does not depend on one.
-  if (!originAllowed(request.headers.get('origin'), request.url)) {
-    log.set({ outcome: 'cross-origin' });
-    return empty(403);
-  }
-
-  const setup = readAuthSetup();
-  if (setup == null) {
-    log.set({ outcome: 'not-configured' });
-    return empty(501);
-  }
-
-  const now = Date.now();
-  const seal = new SessionSeal(setup.keyring);
-  const session = await seal.readSession(request);
-  const github = session?.github;
-  if (session == null || github == null || !withinMaxAge(session, now)) {
-    log.set({ outcome: 'no-session' });
-    return empty(401, [seal.clearSession()]);
-  }
-
-  if (accessTokenFresh(github, now)) {
-    log.set({ outcome: 'already-fresh' });
-    return empty(204);
-  }
-
-  const refreshToken = github.refreshToken;
-  if (refreshToken == null || !refreshable(github, now)) {
-    log.set({ outcome: 'not-refreshable' });
-    return empty(401, [seal.clearSession()]);
-  }
-
-  try {
-    const grant = await refreshGrant({
-      config: setup.config,
-      now,
-      refreshToken,
-    });
-    log.set({ outcome: 'refreshed' });
-    return empty(204, [
-      // `issuedAt` carried forward, so a refresh does not extend the ceiling.
-      await seal.writeSession(
-        { github: grant, issuedAt: session.issuedAt },
-        now
-      ),
-    ]);
-  } catch (error) {
-    if (
-      error instanceof GitHubAuthError &&
-      error.code === REFRESH_ALREADY_SPENT
-    ) {
-      log.set({ outcome: 'lost-race' });
-      return empty(204);
-    }
-    log.error(toLoggable(error), { step: 'refresh-token' });
-    log.set({ outcome: 'refresh-failed' });
-    return empty(401, [seal.clearSession()]);
-  }
-});
-
 export const Route = createFileRoute('/api/auth/refresh')({
-  server: { handlers: { POST: refresh } },
+  server: {
+    middleware: [originMiddleware, sessionMiddleware],
+    handlers: {
+      POST: async ({ context: { log, config, keyring, seal, session } }) => {
+        if (keyring == null) {
+          log.set({ outcome: 'not-configured' });
+          return empty(501);
+        }
+
+        const now = Date.now();
+        if (session == null || !withinMaxAge(session, now)) {
+          log.set({ outcome: 'no-session' });
+          return empty(401, [seal.clearSession()]);
+        }
+
+        // `accessTokenFresh` asks with the skew; a grant five minutes from its
+        // expiry still counts as needing one.
+        const github = session.github;
+        if (github == null || accessTokenFresh(github, now)) {
+          log.set({ outcome: 'already-fresh' });
+          return empty(204);
+        }
+
+        const refreshToken = github.refreshToken;
+        const app = config.github.app;
+        if (app == null || refreshToken == null || !refreshable(github, now)) {
+          log.set({ outcome: 'not-refreshable' });
+          return empty(401, [seal.clearSession()]);
+        }
+
+        try {
+          const grant = await refreshGrant({ config: app, now, refreshToken });
+          log.set({ outcome: 'refreshed' });
+          return empty(204, [
+            // `issuedAt` carried forward, so a refresh does not extend the
+            // ceiling.
+            await seal.writeSession(
+              { github: grant, issuedAt: session.issuedAt },
+              now
+            ),
+          ]);
+        } catch (error) {
+          if (
+            error instanceof OAuthError &&
+            error.code === REFRESH_ALREADY_SPENT
+          ) {
+            log.set({ outcome: 'lost-race' });
+            return empty(204);
+          }
+          log.error(toLoggable(error), { step: 'refresh-token' });
+          log.set({ outcome: 'refresh-failed' });
+          return empty(401, [seal.clearSession()]);
+        }
+      },
+    },
+  },
 });

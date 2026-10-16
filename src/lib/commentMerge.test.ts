@@ -2,15 +2,15 @@ import type { DiffLineAnnotation } from '@pierre/diffs';
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
-import { isOnlyInThisTab, mergeGitHubThreads } from './commentMerge';
+import { isOnlyInThisTab, mergeForgeThreads } from './commentMerge';
 import type { CommentMetadata, ThreadComment } from './comments';
 
 type Annotation = DiffLineAnnotation<CommentMetadata>;
 
 const RANGE = { start: 3, end: 3, side: 'additions' as const };
 
-function message(githubId: number | undefined, key: string): ThreadComment {
-  return { key, githubId, author: 'ada', body: `message ${key}` };
+function message(remoteId: number | undefined, key: string): ThreadComment {
+  return { key, remoteId, author: 'ada', body: `message ${key}` };
 }
 
 function thread(
@@ -61,9 +61,9 @@ describe('isOnlyInThisTab', () => {
   });
 });
 
-describe('mergeGitHubThreads', () => {
+describe('mergeForgeThreads', () => {
   it('adds a thread another tab posted', () => {
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map([['f', [thread('github-2', [message(2, 'github-2')])]]]),
       new Map()
     );
@@ -71,7 +71,7 @@ describe('mergeGitHubThreads', () => {
   });
 
   it('drops a thread another tab deleted', () => {
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map(),
       new Map([['f', [thread('draft-1', [message(1, 'gh-1')])]]])
     );
@@ -79,7 +79,7 @@ describe('mergeGitHubThreads', () => {
   });
 
   it('keeps an open composer', () => {
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map([['f', [thread('github-2', [message(2, 'github-2')])]]]),
       new Map([['f', [draft('draft-9')]]])
     );
@@ -87,7 +87,7 @@ describe('mergeGitHubThreads', () => {
   });
 
   it('keeps the key this tab drew a thread under, and its messages keys', () => {
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map([
         [
           'f',
@@ -114,7 +114,7 @@ describe('mergeGitHubThreads', () => {
       number: 7,
       htmlUrl: 'https://github.com/acme/app/issues/7',
     };
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map([['f', [thread('github-1', [message(1, 'github-1')])]]]),
       new Map([['f', [thread('draft-1', [message(1, 'gh-1')], { issue })]]])
     );
@@ -127,7 +127,7 @@ describe('mergeGitHubThreads', () => {
       [message(1, 'gh-1'), message(undefined, 'reply-3')],
       { pending: true }
     );
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map([['f', [thread('github-1', [message(1, 'github-1')])]]]),
       new Map([['f', [local]]])
     );
@@ -141,7 +141,7 @@ describe('mergeGitHubThreads', () => {
       [message(1, 'gh-1'), message(undefined, 'reply-2'), message(9, 'gh-9')],
       { error: 'GitHub said no' }
     );
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map([
         [
           'f',
@@ -169,12 +169,12 @@ describe('mergeGitHubThreads', () => {
       [message(1, 'gh-1'), message(undefined, 'reply-2')],
       { error: 'GitHub said no' }
     );
-    const merged = mergeGitHubThreads(new Map(), new Map([['f', [local]]]));
+    const merged = mergeForgeThreads(new Map(), new Map([['f', [local]]]));
     assert.deepEqual(merged.get('f'), [local]);
   });
 
   it('still drops a deleted thread that holds nothing unsent', () => {
-    const merged = mergeGitHubThreads(
+    const merged = mergeForgeThreads(
       new Map(),
       new Map([['f', [thread('draft-1', [message(1, 'gh-1')])]]])
     );
@@ -192,7 +192,7 @@ describe('mergeGitHubThreads', () => {
     const failed = thread('draft-4', [message(undefined, 'pending-draft-4')], {
       error: 'GitHub said no',
     });
-    const merged = mergeGitHubThreads(new Map(), new Map([['g', [failed]]]));
+    const merged = mergeForgeThreads(new Map(), new Map([['g', [failed]]]));
     assert.deepEqual(merged.get('g'), [failed]);
   });
 });

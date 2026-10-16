@@ -345,8 +345,8 @@ test('new local deletion copy distinguishes exactly one from plural-category one
 });
 
 test('lens labels and Effect hints use the current request locale', async () => {
-  const { LENSES } = await import('@/lib/lenses/lenses');
-  const { scanEffectRun } = await import('@/lib/lenses/effect/effectHints');
+  const { LENSES } = await import('./lenses/lenses');
+  const { scanEffectRun } = await import('./lenses/effect/effectHints');
   for (const locale of ['en', 'fr', 'ja'] as const) {
     await paraglideMiddleware(
       new Request('https://example.test/', {

@@ -28,8 +28,9 @@ import {
   installationForAccount,
   reachesAnyRepository,
 } from '@/lib/installations';
-import { gitHubTargetFromSegments } from '@/lib/reviewTarget';
+import { reviewTargetFromSegments, segmentsFromPath } from '@/lib/reviewTarget';
 import { safeReturnTo } from '@/lib/session';
+import type { GitHubViewer } from '@/lib/viewer';
 import { m } from '@/paraglide/messages.js';
 
 const setupMarkup = {
@@ -38,7 +39,7 @@ const setupMarkup = {
   ),
 };
 
-// Why a private diff will not load, as three things to do in order.
+// Why a private diff will not load, as things to do in order.
 //
 // The panel that sends a reviewer here can say one sentence and offer one
 // button. What it cannot do is answer the question behind the sentence, which is
@@ -48,30 +49,54 @@ const setupMarkup = {
 // account reads exactly like no installation. A page that checks each in turn and
 // says which one is not done yet is the difference between a fix and a guess.
 //
-// Each step reports its own state from what GitHub actually answered, never from
-// what the reviewer was told to do. So a step is done because it is done, and the
-// rail cannot claim progress the App does not have.
+// Each step reports its own state from what the forge actually answered, never
+// from what the reviewer was told to do. So a step is done because it is done,
+// and the rail cannot claim progress the forge does not have.
 
 /** The card every step's own content sits on. Matches the home page's. */
 const CARD = 'border-line bg-raised rounded-xl border px-4 py-3 shadow-sm';
 
 /**
  * Which account a diff belongs to, out of the path the reviewer came from. The
- * parse is `gitHubTargetFromSegments`, the same one the review route itself uses,
- * so a path this page reads an owner out of is a path that route would have
- * rendered — there is no second idea here of what a review URL looks like.
+ * parse is `reviewTargetFromSegments`, the same one the review route itself
+ * uses, so a path this page reads an owner out of is a path that route would
+ * have rendered — there is no second idea here of what a review URL looks
+ * like. The answer is the owner, which is what the steps below name an
+ * installation for.
  */
 function accountFromPath(path: string | undefined): string | undefined {
   if (path == null) return undefined;
-  const target = gitHubTargetFromSegments(path.replace(/^\//, '').split('/'));
-  return target?.owner;
+  const target = reviewTargetFromSegments(segmentsFromPath(path));
+  if (target == null) return undefined;
+  return target.owner;
 }
 
-export function SetupScreen({
-  account: named,
-  from,
-  migrated,
-}: {
+/**
+ * The rail's reading of the steps. The first step not done is the current one,
+ * so an earlier gap is never skipped past — a sign-in without an installation
+ * still asks for the installation, not for the diff. And a step that waits on
+ * an unanswered question is `upcoming` with everything after it, so the rail
+ * never lights a step on a guess — a pulse on **Sign in** before the forge has
+ * said whether the reviewer already is one is that guess.
+ */
+function stepStatuses(
+  done: readonly boolean[],
+  known: readonly boolean[] = []
+): StepStatus[] {
+  const firstUnknown = known.indexOf(false);
+  const firstUndone = done.findIndex((value) => value !== true);
+  return done.map((isDone, index) =>
+    firstUnknown >= 0 && index >= firstUnknown
+      ? 'upcoming'
+      : isDone
+        ? 'done'
+        : index === firstUndone
+          ? 'current'
+          : 'upcoming'
+  );
+}
+
+export function SetupScreen(props: {
   /** The account the caller already knows about, when it knows one. */
   account?: string;
   from?: string;
@@ -82,13 +107,98 @@ export function SetupScreen({
    */
   migrated?: true;
 }) {
-  const { colorMode, session } = useAppData();
+  const { instance } = useAppData();
+  const returnTo = props.from == null ? undefined : safeReturnTo(props.from);
+  // The steps render only when the deployment has a sign-in to offer: the
+  // instance answer arrives with the page, so this is certain from the first
+  // paint.
+  const showGitHub = instance.github.oauth;
+
+  return (
+    <SetupChrome>
+      <SetupHeading
+        brand={instance.brand}
+        intro={m.setup_screen_github_only_lets_ghdiff_read_repositories_you_grant()}
+        notice={props.migrated === true ? <MigrationNotice /> : undefined}
+        title={m.setup_screen_set_up_private_repository_access()}
+      />
+
+      {showGitHub ? (
+        <GitHubSection account={props.account} returnTo={returnTo} />
+      ) : (
+        <p className="text-ink-muted mt-8 text-sm">
+          {m.setup_screen_nothing_to_set_up()}
+        </p>
+      )}
+    </SetupChrome>
+  );
+}
+
+/**
+ * The page's chrome: the scroll region, the colour toggle, and
+ * the way home. This page is reachable with the left bar hidden, and no screen
+ * in this app is a dead end.
+ */
+function SetupChrome({ children }: { children: ReactNode }) {
+  const { colorMode } = useAppData();
+  return (
+    <main className="bg-surface flex min-h-0 flex-1 overflow-y-auto overscroll-none">
+      <div className="fixed top-3 right-3 z-10 flex items-center gap-1">
+        <LanguageMenu />
+        <ColorModeToggle colorMode={colorMode} />
+      </div>
+      <div className="m-auto w-full max-w-2xl px-6 py-14">{children}</div>
+    </main>
+  );
+}
+
+/** The way home, then what this page sets up and how long it takes. */
+function SetupHeading({
+  brand,
+  intro,
+  notice,
+  title,
+}: {
+  /** What the deployment calls itself, which is what the way home names. */
+  brand: string;
+  intro: string;
+  /** A banner between the way home and the title. The migration notice only. */
+  notice?: ReactNode;
+  title: string;
+}) {
+  return (
+    <>
+      <Link className="text-ink-faint hover:text-ink text-xs" to="/">
+        {brand}
+      </Link>
+      {notice}
+      <h1 className="text-ink mt-3 text-2xl font-semibold tracking-tight">
+        {title}
+      </h1>
+      <p className="text-ink-muted mt-2 text-sm">{intro}</p>
+    </>
+  );
+}
+
+/**
+ * The GitHub section: sign in, grant the App its reach, open the diff. The
+ * first two are the two things GitHub needs, in a fixed order, and each step
+ * reports its own state from what GitHub answered — a step is done because it
+ * is done, and the rail cannot claim progress the App does not have.
+ */
+function GitHubSection({
+  account: named,
+  returnTo,
+}: {
+  account?: string;
+  returnTo?: string;
+}) {
+  const { session } = useAppData();
   // Only once GitHub has answered for the credential. Asking where the App is
   // installed before then would spend a request to be told "nobody", which is
   // the answer step one is about to change.
   const apps = useInstallations({ ready: !session.checking });
 
-  const returnTo = from == null ? undefined : safeReturnTo(from);
   // A caller that named the account wins, since it knew; otherwise read it out
   // of the path, which is the review panel's way of naming the same thing.
   const account = named ?? accountFromPath(returnTo);
@@ -113,239 +223,228 @@ export function SetupScreen({
   // installed by nobody, so for them step two is known the moment step one is;
   // a failed read is an answer too, and it is printed rather than waited on.
   const appsPending = !apps.answered && apps.error == null;
-  const known = [
-    !session.checking,
-    !session.checking && (!signedIn || !appsPending),
-  ];
-  // The first step not done is the current one, so an earlier gap is never
-  // skipped past. Step three is never `done`: opening the diff is the thing this
-  // page hands back, and it has no way to learn whether it worked. And a step
-  // that waits on an unanswered question is `upcoming` with everything after
-  // it, so the rail never lights a step on a guess — a pulse on **Sign in**
-  // before GitHub has said whether the reviewer already is one is that guess.
-  const done = [signedIn, signedIn && installed, false];
-  const firstUnknown = known.indexOf(false);
-  const firstUndone = done.findIndex((value) => value !== true);
-  const [signIn, install, open] = done.map<StepStatus>((isDone, index) =>
-    firstUnknown >= 0 && index >= firstUnknown
-      ? 'upcoming'
-      : isDone
-        ? 'done'
-        : index === firstUndone
-          ? 'current'
-          : 'upcoming'
+  // Step three is never `done`: opening the diff is the thing this page hands
+  // back, and it has no way to learn whether it worked.
+  const [signIn, install, open] = stepStatuses(
+    [signedIn, signedIn && installed, false],
+    [!session.checking, !session.checking && (!signedIn || !appsPending)]
   ) as [StepStatus, StepStatus, StepStatus];
 
   return (
-    <main className="bg-surface flex min-h-0 flex-1 overflow-y-auto overscroll-none">
-      <div className="fixed top-3 right-3 z-10 flex items-center gap-1">
-        <LanguageMenu />
-        <ColorModeToggle colorMode={colorMode} />
-      </div>
+    <section className="mt-8">
+      <SectionLabel>GitHub</SectionLabel>
+      <div className="mt-3">
+        <StepRail>
+          <Step
+            label={m.setup_screen_sign_in_to_github()}
+            number={1}
+            status={signIn}
+          >
+            {/* Both answers are a different height from the wait and from
+                each other, so the step travels to whichever arrives rather
+                than pushing the steps under it down in one frame. */}
+            <AnimatedHeight>
+              <div className="flex flex-col">
+                {session.checking ? (
+                  <SignInSkeleton />
+                ) : session.viewer != null ? (
+                  <IdentityCard viewer={session.viewer} />
+                ) : (
+                  <>
+                    <p className="text-ink-muted text-sm">
+                      {m.setup_screen_this_identifies_your_account_to_github_any_comments()}
+                    </p>
+                    <Button
+                      className="mt-2 self-start"
+                      onClick={() => session.signIn()}
+                      variant="solid"
+                    >
+                      <IconBrandGithub aria-hidden="true" size={14} />
+                      {m.setup_screen_sign_in_with_github()}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </AnimatedHeight>
+          </Step>
 
-      <div className="m-auto w-full max-w-2xl px-6 py-14">
-        {/* The way home. This page is reachable with the left bar hidden, and no
-            screen in this app is a dead end. */}
-        <Link className="text-ink-faint hover:text-ink text-xs" to="/">
-          ghdiff.com
-        </Link>
-        {migrated === true && <MigrationNotice />}
-        <h1 className="text-ink mt-3 text-2xl font-semibold tracking-tight">
-          {m.setup_screen_set_up_private_repository_access()}
-        </h1>
-        <p className="text-ink-muted mt-2 text-sm">
-          {m.setup_screen_github_only_lets_ghdiff_read_repositories_you_grant()}
-        </p>
-
-        <div className="mt-8">
-          <StepRail>
-            <Step
-              label={m.setup_screen_sign_in_to_github()}
-              number={1}
-              status={signIn}
-            >
-              {/* Both answers are a different height from the wait and from
-                  each other, so the step travels to whichever arrives rather
-                  than pushing the two steps under it down in one frame. */}
-              <AnimatedHeight>
-                <div className="flex flex-col">
-                  {session.checking ? (
-                    <SignInSkeleton />
-                  ) : session.viewer != null ? (
-                    <div className={`${CARD} flex items-center gap-2.5`}>
-                      <ViewerAvatar size={22} viewer={session.viewer} />
-                      <span className="text-ink min-w-0 truncate text-sm">
-                        {viewerDisplayName(session.viewer)}
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="text-ink-muted text-sm">
-                        {m.setup_screen_this_identifies_your_account_to_github_any_comments()}
-                      </p>
-                      <Button
-                        className="mt-2 self-start"
-                        onClick={() => session.signIn()}
-                        variant="solid"
-                      >
-                        <IconBrandGithub aria-hidden="true" size={14} />
-                        {m.setup_screen_sign_in_with_github()}
-                      </Button>
-                    </>
+          <Step
+            label={m.setup_screen_grant_repository_access()}
+            number={2}
+            status={install}
+          >
+            <p className="text-ink-muted text-sm">
+              {account == null
+                ? m.setup_screen_signing_in_only_identifies_you_choose_the_accounts()
+                : m.setup_screen_signing_in_only_identifies_you_install_ghdiff_on(
+                    { account }
                   )}
-                </div>
-              </AnimatedHeight>
-            </Step>
+            </p>
 
-            <Step
-              label={m.setup_screen_grant_repository_access()}
-              number={2}
-              status={install}
-            >
-              <p className="text-ink-muted text-sm">
-                {account == null
-                  ? m.setup_screen_signing_in_only_identifies_you_choose_the_accounts()
-                  : m.setup_screen_signing_in_only_identifies_you_install_ghdiff_on(
-                      { account: account }
-                    )}
-              </p>
+            <AnimatedHeight>
+              <div className="flex flex-col gap-1.5">
+                {apps.error != null && (
+                  <p className="text-removed mt-2 text-sm">{apps.error}</p>
+                )}
 
-              <AnimatedHeight>
-                <div className="flex flex-col gap-1.5">
-                  {apps.error != null && (
-                    <p className="text-removed mt-2 text-sm">{apps.error}</p>
-                  )}
+                {/* The rows are guessed only for a reviewer GitHub may answer with
+                some: a signed-out one is told about no account at all. The
+                two buttons are reserved either way, because the install
+                address arrives with the same answer. */}
+                {appsPending && (
+                  <InstallationsSkeleton rows={session.checking || signedIn} />
+                )}
 
-                  {/* The rows are guessed only for a reviewer GitHub may answer with
-                  some: a signed-out one is told about no account at all. The
-                  two buttons are reserved either way, because the install
-                  address arrives with the same answer. */}
-                  {appsPending && (
-                    <InstallationsSkeleton
-                      rows={session.checking || signedIn}
-                    />
-                  )}
+                {apps.installations.length > 0 && (
+                  <div className="mt-2 flex flex-col gap-1.5">
+                    <SectionLabel>
+                      {m.setup_screen_accounts_with_access()}
+                    </SectionLabel>
+                    {apps.installations.map((installation) => (
+                      <InstallationRow
+                        key={installation.id}
+                        className={CARD}
+                        installation={installation}
+                        wanted={account != null && installation === wanted}
+                      />
+                    ))}
+                  </div>
+                )}
 
-                  {apps.installations.length > 0 && (
-                    <div className="mt-2 flex flex-col gap-1.5">
-                      <SectionLabel>
-                        {m.setup_screen_accounts_with_access()}
-                      </SectionLabel>
-                      {apps.installations.map((installation) => (
-                        <InstallationRow
-                          key={installation.id}
-                          className={CARD}
-                          installation={installation}
-                          wanted={account != null && installation === wanted}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {apps.installUrl != null && (
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      {/* A new tab, and a plain anchor. Installing happens on
+                {apps.installUrl != null && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {/* A new tab, and a plain anchor. Installing happens on
                       github.com and takes a few presses, and this page has to
                       still be here to come back to — it is the page that says
                       whether it worked. */}
-                      <a
-                        // Filled only on the step that is actually next. Two
-                        // filled controls on one screen is the one thing this
-                        // app's accent rule forbids, and step one's sign-in is
-                        // the other.
-                        className={buttonClass({
-                          variant: install === 'current' ? 'solid' : 'outline',
-                        })}
-                        href={apps.installUrl}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        {apps.installations.length === 0
-                          ? m.setup_screen_install_ghdiff()
-                          : m.setup_screen_install_on_another_account()}
-                        <IconArrowUpRight aria-hidden="true" size={13} />
-                      </a>
-                      {/* Nothing polls for the answer. A reviewer comes back from the
+                    <a
+                      // Filled only on the step that is actually next. Two filled
+                      // controls on one screen is the one thing this app's
+                      // accent rule forbids.
+                      className={buttonClass({
+                        variant: install === 'current' ? 'solid' : 'outline',
+                      })}
+                      href={apps.installUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {apps.installations.length === 0
+                        ? m.setup_screen_install_ghdiff()
+                        : m.setup_screen_install_on_another_account()}
+                      <IconArrowUpRight aria-hidden="true" size={13} />
+                    </a>
+                    {/* Nothing polls for the answer. A reviewer comes back from the
                       other tab knowing they have finished, and this is how they
                       say so. */}
-                      <Button
-                        disabled={apps.loading}
-                        onClick={apps.reload}
-                        variant="outline"
-                      >
-                        <IconRefresh aria-hidden="true" size={13} />
-                        {apps.loading
-                          ? m.setup_screen_checking()
-                          : m.setup_screen_check_again()}
-                      </Button>
-                    </div>
-                  )}
+                    <Button
+                      disabled={apps.loading}
+                      onClick={apps.reload}
+                      variant="outline"
+                    >
+                      <IconRefresh aria-hidden="true" size={13} />
+                      {apps.loading
+                        ? m.setup_screen_checking()
+                        : m.setup_screen_check_again()}
+                    </Button>
+                  </div>
+                )}
 
-                  {/* Only GitHub's own answer about this reviewer can say the App is
-                  not on an account. Signed out, the list is empty because
-                  nobody was asked, and "not installed" would be a guess. */}
-                  {signedIn &&
-                    apps.answered &&
-                    account != null &&
-                    wanted == null &&
-                    !apps.loading && (
-                      <StepNote>
-                        <ParaglideMessage
-                          message={m.setup_not_installed}
-                          inputs={{ account }}
-                          markup={setupMarkup}
-                        />
-                      </StepNote>
-                    )}
-                  {wanted != null && !reachesAnyRepository(wanted) && (
+                {/* Only GitHub's own answer about this reviewer can say the App is
+                not on an account. Signed out, the list is empty because
+                nobody was asked, and "not installed" would be a guess. */}
+                {signedIn &&
+                  apps.answered &&
+                  account != null &&
+                  wanted == null &&
+                  !apps.loading && (
                     <StepNote>
                       <ParaglideMessage
-                        message={m.setup_no_repositories}
-                        inputs={{ account: account ?? '' }}
+                        message={m.setup_not_installed}
+                        inputs={{ account }}
                         markup={setupMarkup}
                       />
                     </StepNote>
                   )}
-                </div>
-              </AnimatedHeight>
-            </Step>
+                {wanted != null && !reachesAnyRepository(wanted) && (
+                  <StepNote>
+                    <ParaglideMessage
+                      message={m.setup_no_repositories}
+                      inputs={{ account: account ?? '' }}
+                      markup={setupMarkup}
+                    />
+                  </StepNote>
+                )}
+              </div>
+            </AnimatedHeight>
+          </Step>
 
-            <Step
-              label={m.setup_screen_open_the_diff()}
-              last
-              number={3}
-              status={open}
-            >
-              <p className="text-ink-muted text-sm">
-                {returnTo == null || returnTo === '/'
-                  ? m.setup_screen_go_to_the_home_page_to_paste_a()
-                  : m.setup_screen_return_to_your_diff_ghdiff_will_fetch_it()}
-              </p>
-              {/* A plain anchor and a whole page load, not a client navigation:
-                  the point of coming back is a fresh request to GitHub under the
-                  installation that did not exist a minute ago. */}
-              <a
-                className={buttonClass({
-                  className: 'mt-2 self-start',
-                  variant: open === 'current' ? 'solid' : 'outline',
-                })}
-                href={returnTo == null || returnTo === '/' ? '/' : returnTo}
-              >
-                {returnTo == null || returnTo === '/'
-                  ? m.setup_screen_go_to_ghdiff_home()
-                  : m.setup_screen_return_to_the_diff()}
-              </a>
-            </Step>
-          </StepRail>
-        </div>
-
-        {apps.answered && apps.installUrl == null && (
-          <p className="text-ink-faint mt-8 text-xs">
-            {m.setup_screen_this_ghdiff_deployment_has_no_github_app_set()}
-          </p>
-        )}
+          <OpenDiffStep number={3} returnTo={returnTo} status={open} />
+        </StepRail>
       </div>
-    </main>
+
+      {apps.installUrl == null && !session.checking && (
+        <p className="text-ink-faint mt-4 text-xs">
+          {m.setup_screen_this_ghdiff_deployment_has_no_github_app_set()}
+        </p>
+      )}
+    </section>
+  );
+}
+
+/** The done state of the first step: who GitHub sees. */
+function IdentityCard({ viewer }: { viewer: GitHubViewer }) {
+  return (
+    <div className={`${CARD} flex items-center gap-2.5`}>
+      <ViewerAvatar size={22} viewer={viewer} />
+      <span className="text-ink min-w-0 truncate text-sm">
+        {viewerDisplayName(viewer)}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * The last step: the way back to the diff the reviewer came
+ * from, or to the home page when there was none. A plain anchor and a whole
+ * page load, not a client navigation — the point of coming back is a fresh
+ * request to the forge under the grant that did not exist a minute ago. It is
+ * never `done`: opening the diff is the thing this page hands back, and it has
+ * no way to learn whether it worked.
+ */
+function OpenDiffStep({
+  number,
+  returnTo,
+  status,
+}: {
+  number: number;
+  returnTo?: string;
+  status: StepStatus;
+}) {
+  const home = returnTo == null || returnTo === '/';
+  return (
+    <Step
+      label={m.setup_screen_open_the_diff()}
+      last
+      number={number}
+      status={status}
+    >
+      <p className="text-ink-muted text-sm">
+        {home
+          ? m.setup_screen_go_to_the_home_page_to_paste_a()
+          : m.setup_screen_return_to_your_diff_ghdiff_will_fetch_it()}
+      </p>
+      <a
+        className={buttonClass({
+          className: 'mt-2 self-start',
+          variant: status === 'current' ? 'solid' : 'outline',
+        })}
+        href={home ? '/' : returnTo}
+      >
+        {home
+          ? m.setup_screen_go_to_ghdiff_home()
+          : m.setup_screen_return_to_the_diff()}
+      </a>
+    </Step>
   );
 }
 

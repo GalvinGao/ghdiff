@@ -1,19 +1,23 @@
 # ghdiff
 
 A code review surface built on [`@pierre/diffs`](https://diffs.com) and
-`@pierre/trees`, served at [ghdiff.com](https://ghdiff.com).
+`@pierre/trees`, served at [ghdiff.com](https://ghdiff.com) and self-hostable
+anywhere Node runs.
 
 ghdiff shows one diff at a time: a GitHub pull request, commit, or compare
-range. It filters the file list by preset path rules, and a line comment on a
-pull request goes back to GitHub.
+range. It filters the file list by preset path rules, and a line comment goes
+back to the forge as a real review comment.
 
-Every review URL mirrors github.com's own path, so swapping the host is the
-whole instruction:
+Every review URL names the forge's host in its first segment, glued on with a
+colon, so moving a review to ghdiff is one edit:
 
 ```diff
 - github.com/owner/repo/pull/123
-+ ghdiff.com/owner/repo/pull/123
++ ghdiff.com/github.com:owner/repo/pull/123
 ```
+
+A hostless paste — `ghdiff.com/owner/repo/pull/123` — is an entry point that
+redirects to the canonical form.
 
 ## A diff that is still on your machine
 
@@ -37,16 +41,18 @@ uploads nothing anywhere. `cli/README.md` is its own documentation, and
 ## What it adds over diffs-hub
 
 `diffs-hub` in the `pierrecomputer/pierre` monorepo is the reference
-implementation. ghdiff adds three things:
+implementation. ghdiff adds:
 
 - **Preset filter rules.** Hide tests, show tests alone, or narrow to source,
   docs, config, or generated files. One preset drives the file tree **and** the
   diff scroll region, so a hidden file leaves both.
-- **Comments that persist.** A comment on a GitHub pull request becomes a real
-  pull request review comment. ghdiff keeps no comment store of its own.
+- **Comments that persist.** A comment becomes a real pull request review
+  comment on GitHub, or a draft on your pending review until the verdict
+  publishes it. ghdiff keeps no comment store of its own.
 - **A pull request switcher.** Open pull requests for the repositories you
-  watch, split into the ones you opened, for self review after an agent pushes,
-  and everybody else.
+  watch.
+- **A self-hosted shape.** The same server builds for Node as for Cloudflare
+  Workers.
 
 ## Start
 
@@ -55,21 +61,47 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:3000, add a GitHub token, and paste a pull request URL.
-The token stays in your browser. The home page links straight to GitHub's
-fine-grained token page and names the four repository permissions to grant:
-Contents read, Pull requests read and write, Commit statuses read, and Checks
-read. A classic token with the `repo` scope works as well.
+Open http://localhost:3000 and paste a pull request URL. Public diffs work
+signed out, once the deployment serves GitHub (the App or `GITHUB_TOKEN` in
+`.dev.vars`). To read private code, sign in to GitHub through the ghdiff GitHub
+App — the credential lives in a sealed `httpOnly` cookie, never in browser
+storage.
 
-ghdiff is a [TanStack Start](https://tanstack.com/start) app on Vite, and it
-runs on Cloudflare Workers. `pnpm dev` and `pnpm preview` both serve the server
-on workerd through `@cloudflare/vite-plugin`, so the development runtime and the
-deployed runtime are the same one.
+ghdiff is a [TanStack Start](https://tanstack.com/start) app on Vite. `pnpm dev`
+and `pnpm preview` serve the server on workerd through
+`@cloudflare/vite-plugin`, so the development runtime and the deployed runtime
+are the same one.
 
-## Deploy
+## Self-host
 
-CI deploys every push to `main`, after the lint, type, test, and build jobs all
-pass. `.github/workflows/ci.yml` holds the job. It needs one repository secret:
+The Node build runs the same server anywhere Node does. Copy the example
+environment first — `--env-file` fails outright when the file is missing
+(`pnpm start` is the same launch with `--env-file-if-exists`, and goes without):
+
+```bash
+cp .dev.vars.example .dev.vars
+pnpm build:node
+node --env-file=.dev.vars .output/server/index.mjs
+```
+
+or with Docker:
+
+```bash
+cp .dev.vars.example .dev.vars
+docker build -t ghdiff .
+docker run -p 3000:3000 --env-file .dev.vars ghdiff
+```
+
+`.dev.vars.example` is the list of variables; `SESSION_SECRET` is the one
+sign-in needs. `docs/sops/` covers the
+[Node deployment](docs/sops/self-host-node.md),
+[secret rotation](docs/sops/secret-rotation.md), and
+[releasing](docs/sops/release-deploy.md).
+
+## Deploy to Cloudflare
+
+CI deploys every push to `main`, after the check and build jobs pass.
+`.github/workflows/ci.yml` holds the job. It needs one repository secret:
 
 | Secret                 | Where it comes from                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------------------ |
@@ -129,17 +161,30 @@ served.
 
 ## Environment
 
-| Variable        | Effect                                           |
-| --------------- | ------------------------------------------------ |
-| `GITHUB_TOKEN`  | Fallback token when the browser has none.        |
-| `PORT` / `HOST` | Node-only: where the self-hosted server listens. |
+| Variable                   | Effect                                                              |
+| -------------------------- | ------------------------------------------------------------------- |
+| `SESSION_SECRET`           | Seals the session cookie. A comma-separated keyring.                |
+| `GITHUB_APP_CLIENT_ID`     | The GitHub App's client id, for GitHub sign-in.                     |
+| `GITHUB_APP_CLIENT_SECRET` | Signs the code exchange, the refresh, and the revocation.           |
+| `GITHUB_APP_SLUG`          | The App's name in a URL, for the install link.                      |
+| `GITHUB_TOKEN`             | Fallback token when the request carries none.                       |
+| `GHDIFF_BRANDING`          | What the deployment calls itself on screen. Unset reads ghdiff.com. |
+| `GHDIFF_EXAMPLES`          | The home page's example diffs, as JSON. Unset offers the built-in.  |
+| `GHDIFF_TARGET`            | Build-time: `node` builds the self-hosted server.                   |
+| `PORT` / `HOST`            | Node-only: where the self-hosted server listens.                    |
+
+Every one is absent-tolerant except `SESSION_SECRET` set to something that is
+not a key, which throws; unset simply means no sign-in. The other exceptions are
+typos a loud failure reports the same way: half a GitHub App pair, a
+`GHDIFF_EXAMPLES` value that is not JSON or names what this deployment does not
+serve.
 
 ## Commands
 
 ```bash
-pnpm dev          pnpm build        pnpm preview      pnpm deploy
-pnpm test         pnpm typecheck    pnpm cf-typegen
-pnpm lint         pnpm fmt          pnpm fmt:check
+pnpm dev          pnpm build        pnpm build:node   pnpm preview
+pnpm start        pnpm deploy       pnpm test         pnpm typecheck
+pnpm lint         pnpm fmt          pnpm fmt:check    pnpm codegen
 pnpm build:cli    # the ghdiff command, into dist/cli
 ```
 

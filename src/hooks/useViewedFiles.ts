@@ -89,7 +89,12 @@ export function useViewedFiles(options: {
         throw new Error('No pull request to ask about.');
       }
       return rpc.viewedFiles.list(
-        { number: pullNumber, owner: pullOwner, repo: pullRepo },
+        {
+          forge: 'github',
+          number: pullNumber,
+          owner: pullOwner,
+          repo: pullRepo,
+        },
         { signal }
       );
     },
@@ -189,6 +194,7 @@ export function useViewedFiles(options: {
       void (async () => {
         try {
           await rpc.viewedFiles.set({
+            forge: 'github',
             number: pullNumber,
             owner: pullOwner,
             path,

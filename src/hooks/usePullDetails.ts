@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { useSharedQuery } from './useSharedQuery';
+import { type PullRef, refQueryKey } from '@/lib/forges';
 import type { PullDetails } from '@/lib/pullDetails';
 import { withoutAttachments } from '@/lib/queryCache/persist';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
@@ -10,6 +11,8 @@ export interface PullDetailsState {
   data?: PullDetails;
   error?: string;
   loading: boolean;
+  /** Asks again — the header's refresh control. */
+  reload(): void;
   /**
    * Asks GitHub to sign the description's attachments again, when a file failed
    * to load and its signature is old enough to be the reason. Safe to call on
@@ -24,32 +27,27 @@ export interface PullDetailsState {
 const RENEW_MARGIN_MS = 30_000;
 
 /**
- * The details of the pull request under review. It runs as soon as the review
- * opens, because the header shows the title: a header that filled in only when
- * a card was opened would leave the reviewer looking at a bare number.
+ * The details of the pull request under review. It runs as
+ * soon as the review opens, because the header shows the title: a header that
+ * filled in only when a card was opened would leave the reviewer looking at a
+ * bare number.
  *
- * The hook depends on the three parts of the pull request rather than on the
- * target object, whose identity changes with every read of the RSC payload.
+ * The hook keys on the ref's parts rather than on the target object, whose
+ * identity changes with every read of the RSC payload.
  *
  * The answer is shared between tabs and kept on disk without its signed
  * attachment addresses, so a reload draws the title at once and fetches the
  * whole answer behind it. See `@/lib/queryCache/persist`.
  */
-export function usePullDetails(options: {
-  number?: number;
-  owner?: string;
-  repo?: string;
-}): PullDetailsState {
-  const { number, owner, repo } = options;
+export function usePullDetails(options: { ref?: PullRef }): PullDetailsState {
+  const { ref } = options;
   const query = useSharedQuery<PullDetails>({
-    queryKey: ['pulls.get', owner, repo, number],
+    queryKey: ['pulls.get', ...(ref == null ? [] : refQueryKey(ref))],
     fetch: (signal) => {
-      if (owner == null || repo == null || number == null) {
-        throw new Error('No pull request to ask about.');
-      }
-      return rpc.pulls.get({ number, owner, repo }, { signal });
+      if (ref == null) throw new Error('No pull request to ask about.');
+      return rpc.pulls.get(ref, { signal });
     },
-    enabled: owner != null && repo != null && number != null,
+    enabled: ref != null,
     persist: withoutAttachments,
   });
 
@@ -69,6 +67,10 @@ export function usePullDetails(options: {
     void refetch();
   }, [dataUpdatedAt, isFetching, lifetimeMs, refetch]);
 
+  const reload = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
   return {
     data: query.data,
     error:
@@ -79,6 +81,7 @@ export function usePullDetails(options: {
             m.use_pull_details_could_not_load_this_pull_request()
           ),
     loading: query.isFetching,
+    reload,
     renewAttachments,
   };
 }

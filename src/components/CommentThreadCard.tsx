@@ -7,27 +7,67 @@ import { CommentExpansion } from '@/components/CommentExpansion';
 import { ConfirmInline } from '@/components/ConfirmInline';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
-import type { CommentStore } from '@/hooks/useReviewComments';
+import { Tooltip } from '@/components/ui/Tooltip';
+import {
+  type CommentStore,
+  threadWritePending,
+} from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { measureThread } from '@/lib/commentHeight';
 import {
   type CommentMetadata,
+  type CommentThread,
   isCommentThread,
   type ThreadComment,
   threadParticipants,
 } from '@/lib/comments';
-import { formatList } from '@/lib/locale';
-import { textDirection } from '@/lib/locale';
+import { forgeLabel, type ForgeName } from '@/lib/forges';
+import { formatList, textDirection } from '@/lib/locale';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 
 interface CommentThreadCardProps {
+  /** The target's own forge: the delete question and the link out name it. */
+  forge: ForgeName;
   itemId: string;
   metadata: CommentMetadata;
   onDelete(itemId: string, key: string): void;
   onReply(itemId: string, key: string, body: string): void;
+  /**
+   * Resolves the thread on its forge, or takes the mark back. Absent where
+   * no forge thread can be resolved; the card offers the press only for a
+   * thread that carries a `threadId` and is no draft.
+   */
+  onResolveThread?(
+    itemId: string,
+    key: string,
+    resolved: boolean
+  ): Promise<void>;
   /** Where a reply would go, which decides whether one can be written. */
   store: CommentStore;
+}
+
+/**
+ * Why Delete is grey while a write is on the wire. The card's own header
+ * already says `Posting…`; this is the answer to "and when can I delete it".
+ */
+const DELETE_BLOCKED_TIP =
+  m.comment_thread_card_delete_is_back_when_the_write_in_flight;
+
+/**
+ * Whether the card may offer the resolve press: a forge thread that carries
+ * the id its resolve call addresses, no draft and no browser-only comment,
+ * and a handler to call.
+ */
+function threadResolvable(
+  metadata: CommentThread,
+  onResolveThread: CommentThreadCardProps['onResolveThread']
+): boolean {
+  return (
+    metadata.threadId != null &&
+    metadata.staged !== true &&
+    onResolveThread != null
+  );
 }
 
 /**
@@ -52,16 +92,22 @@ interface CommentThreadCardProps {
  * small is not for reading, so clicking anywhere in it opens the thread.
  */
 export function CommentThreadCard({
+  forge,
   itemId,
   metadata,
   onDelete,
   onReply,
+  onResolveThread,
   store,
 }: CommentThreadCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   // The element the overlay grows from. Captured in the handler, because a ref
   // must not be read while rendering.
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  // A resolved thread starts collapsed to one row; a press brings the card.
+  const [opened, setOpened] = useState(false);
+  // True while the forge answers an Unresolve press on the collapsed row.
+  const [unresolving, setUnresolving] = useState(false);
 
   // Measured from metadata.comments, which state owns, so the memo is stable.
   const spec = useMemo(
@@ -87,10 +133,80 @@ export function CommentThreadCard({
   const comments: ThreadComment[] = metadata.comments;
   const root = comments[0];
   const replyCount = comments.length - 1;
+  // A draft reply under a posted thread goes up with the verdict too, so the
+  // card says Draft for it as well — without the dashed border, which is the
+  // whole-thread draft's alone.
+  const holdsDraft =
+    metadata.staged === true || comments.some((comment) => comment.staged);
   const participants = threadParticipants(metadata);
-  // GitHub files a reply under the thread of the comment it answers, so the
-  // root has to exist there first.
-  const canReply = store === 'local' || root.githubId != null;
+  const canResolve = threadResolvable(metadata, onResolveThread);
+
+  // A resolved thread is a line, not a wall: it reads as settled until the
+  // reviewer asks for it. The press brings the whole card back, which is the
+  // one relayout a deliberate act always costs.
+  if (metadata.resolved === true && !opened) {
+    return (
+      <div className="m-2">
+        {/*
+          Two sibling buttons rather than one role="button" row with the
+          Unresolve button nested inside it: ARIA strips a nested button's
+          role while it stays focusable.
+        */}
+        <div
+          className={cn(
+            'border-line bg-surface text-ink-muted flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5',
+            'text-left text-[11px]',
+            'hover:border-accent/50 hover:bg-raised'
+          )}
+        >
+          <button
+            type="button"
+            aria-label={m.comment_thread_card_open_resolved_thread_by({
+              author: root.author,
+            })}
+            onClick={() => setOpened(true)}
+            className="focus-visible:ring-accent flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-sm text-left focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <span className="bg-surface text-ink-faint border-line shrink-0 rounded-full border px-1.5 py-px">
+              {m.comment_thread_card_resolved()}
+            </span>
+            <span className="truncate font-medium">{root.author}</span>
+            <span className="shrink-0 tabular-nums">
+              {m.common_comment_count({ count: comments.length })}
+            </span>
+            {!canResolve && (
+              <span className="text-ink-faint ml-auto shrink-0">
+                {m.comment_thread_card_open()}
+              </span>
+            )}
+          </button>
+          {canResolve && (
+            <button
+              type="button"
+              disabled={unresolving}
+              onClick={() => {
+                if (onResolveThread == null) return;
+                setUnresolving(true);
+                void onResolveThread(itemId, metadata.key, false).finally(() =>
+                  setUnresolving(false)
+                );
+              }}
+              className="text-ink-faint hover:text-accent shrink-0 cursor-pointer underline disabled:no-underline disabled:opacity-60"
+            >
+              {unresolving
+                ? m.comment_thread_card_unresolving()
+                : m.comment_thread_card_unresolve()}
+            </button>
+          )}
+        </div>
+        {/* A failed Unresolve rolls the mark back and says why, here, because
+            the row itself is one line with no room for the sentence. */}
+        {metadata.error != null && (
+          <p className="text-removed mt-1 text-[11px]">{metadata.error}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -129,7 +245,9 @@ export function CommentThreadCard({
         'focus-visible:ring-accent focus-visible:ring-2 focus-visible:outline-none',
         // The diff sets a monospace family on its annotation slot. Prose is
         // read, not scanned column by column, so the card opts out.
-        'font-sans'
+        'font-sans',
+        // A draft can never read as posted: the border says it before any chip.
+        metadata.staged === true && 'border-dashed border-accent/60'
       )}
     >
       <div className="mb-1 flex items-center gap-2">
@@ -162,6 +280,11 @@ export function CommentThreadCard({
             {metadata.creatingIssue === true
               ? m.comment_thread_card_creating_issue()
               : m.comment_thread_card_posting()}
+          </span>
+        )}
+        {holdsDraft && (
+          <span className="bg-surface text-ink-muted shrink-0 rounded-full px-1.5 py-px text-[11px]">
+            {m.comment_thread_card_draft()}
           </span>
         )}
         {metadata.issue != null && (
@@ -209,115 +332,233 @@ export function CommentThreadCard({
           measureKey={comments.length}
           onClose={close}
         >
-          {/*
-            No picture on this row. It is the panel's own chrome, and every
-            message under it already carries the picture of whoever wrote it —
-            one beside "4 comments" would name only the first of the four.
-          */}
-          <div className="mb-2 flex items-center gap-2">
-            <span className="text-ink text-sm font-semibold">
-              {comments.length === 1
-                ? root.author
-                : m.common_comment_count({ count: comments.length })}
-            </span>
-            {metadata.issue != null && (
-              <a
-                href={metadata.issue.htmlUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={buttonClass({
-                  className: 'ml-auto',
-                  size: 'sm',
-                  variant: 'outline',
-                })}
-              >
-                {m.comment_open_issue({ number: metadata.issue.number })}
-                <IconArrowUpRight aria-hidden="true" size={12} />
-              </a>
-            )}
-            <ConfirmInline
-              className={metadata.issue == null ? 'ml-auto' : undefined}
-              label={m.comment_thread_card_delete()}
-              // Named only where the comment is actually there. A browser
-              // store holds this one, and asking a reviewer to confirm deleting
-              // something on GitHub that was never on GitHub is the wrong
-              // sentence in the one place it matters most.
-              question={
-                store === 'github'
-                  ? m.thread_delete_confirmation({ count: comments.length })
-                  : m.thread_delete_local_confirmation({
-                      count: comments.length,
-                    })
-              }
-              confirmLabel={m.comment_thread_card_delete()}
-              onConfirm={() => {
-                close();
-                onDelete(itemId, metadata.key);
-              }}
-            />
-            <Button variant="outline" size="sm" onClick={close}>
-              {m.comment_thread_card_close()}
-            </Button>
-          </div>
-
-          <ol className="font-sans">
-            {comments.map((comment, index) => (
-              <li
-                key={comment.key}
-                className={cn(
-                  index > 0 && 'border-line mt-2.5 border-t pt-2.5'
-                )}
-              >
-                {/*
-                  items-center, not items-baseline: a picture has no baseline
-                  of its own, and a row aligned on one would hang it below the
-                  login it belongs to.
-                */}
-                <div className="mb-1 flex items-center gap-2">
-                  <AuthorAvatar
-                    author={comment.author}
-                    avatarUrl={comment.authorAvatarUrl}
-                    isBot={comment.authorIsBot}
-                    size={20}
-                  />
-                  <span className="text-ink text-[13px] font-semibold">
-                    {comment.author}
-                  </span>
-                  {comment.createdAt != null && (
-                    <span className="text-ink-faint text-[11px]">
-                      {formatWhen(comment.createdAt)}
-                    </span>
-                  )}
-                  {comment.htmlUrl != null && (
-                    <a
-                      href={comment.htmlUrl}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="text-ink-faint hover:text-accent ml-auto text-[11px] underline"
-                    >
-                      {m.comment_thread_card_on_github()}
-                    </a>
-                  )}
-                </div>
-                <CommentBody body={comment.body} />
-              </li>
-            ))}
-          </ol>
-
-          {canReply ? (
-            <ReplyForm
-              onSubmit={(body) => onReply(itemId, metadata.key, body)}
-              pending={metadata.pending === true}
-              store={store}
-            />
-          ) : (
-            <p className="border-line text-ink-faint mt-3 border-t pt-3 text-[11px]">
-              {m.comment_thread_card_this_comment_has_not_reached_github_yet_so()}
-            </p>
-          )}
+          <ExpandedThread
+            forge={forge}
+            itemId={itemId}
+            metadata={metadata}
+            onClose={close}
+            onDelete={onDelete}
+            onReply={onReply}
+            onResolveThread={onResolveThread}
+            store={store}
+          />
         </CommentExpansion>
       )}
     </div>
+  );
+}
+
+/**
+ * The whole thread, as the expanded layer reads it: the count and the delete
+ * question, every message, and the reply box. This is what the card's overlay
+ * shows.
+ */
+function ExpandedThread({
+  forge,
+  itemId,
+  metadata,
+  onClose,
+  onDelete,
+  onReply,
+  onResolveThread,
+  store,
+}: CommentThreadCardProps & { onClose(): void }) {
+  // True while the forge answers a Resolve or Unresolve press.
+  const [resolving, setResolving] = useState(false);
+  if (!isCommentThread(metadata)) return null;
+  const comments: ThreadComment[] = metadata.comments;
+  const root = comments[0];
+  // The forge's own name, for the delete question and the link out.
+  const forgeName = forgeLabel(forge);
+  // GitHub files a reply under the thread of the comment it answers, so the
+  // root has to exist there first. A draft is the forge's own, but a reply
+  // written here posts at once — so a draft takes none.
+  const staged = metadata.staged === true;
+  const canReply = !staged && (store === 'local' || root.remoteId != null);
+  const canResolve = threadResolvable(metadata, onResolveThread);
+  const threadResolved = metadata.resolved === true;
+  // A write on the wire holds Delete back: the row it would remove has not
+  // reached its final state, and removing it is how a comment ends up on the
+  // forge with no card here. The press comes back when the write settles.
+  const deleteBlocked = threadWritePending(metadata);
+  // Named only where the comment is actually there. A browser store holds a
+  // local one, and asking a reviewer to confirm deleting something on the
+  // forge that was never there is the wrong sentence in the one place it
+  // matters most.
+  const deleteQuestion = staged
+    ? m.comment_thread_card_take_this_draft_comment_out_of_the_review()
+    : store === 'forge'
+      ? m.thread_delete_confirmation_forge({
+          forge: forgeName,
+          count: comments.length,
+        })
+      : m.thread_delete_local_confirmation({ count: comments.length });
+  const issue = metadata.issue;
+
+  return (
+    <>
+      {/*
+        No picture on this row. It is the panel's own chrome, and every
+        message under it already carries the picture of whoever wrote it —
+        one beside "4 comments" would name only the first of the four.
+      */}
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-ink text-sm font-semibold">
+          {comments.length === 1
+            ? root.author
+            : m.common_comment_count({ count: comments.length })}
+        </span>
+        {metadata.resolved === true && (
+          <span className="bg-surface text-ink-faint border-line shrink-0 rounded-full border px-1.5 py-px text-[10px]">
+            {m.comment_thread_card_resolved()}
+          </span>
+        )}
+        {issue != null && (
+          <a
+            href={issue.htmlUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={buttonClass({
+              className: 'ml-auto',
+              size: 'sm',
+              variant: 'outline',
+            })}
+          >
+            {m.comment_open_issue({ number: issue.number })}
+            <IconArrowUpRight aria-hidden="true" size={12} />
+          </a>
+        )}
+        {canResolve && (
+          <Button
+            variant="outline"
+            size="sm"
+            className={issue == null ? 'ml-auto' : undefined}
+            disabled={resolving}
+            onClick={() => {
+              if (onResolveThread == null) return;
+              setResolving(true);
+              void onResolveThread(
+                itemId,
+                metadata.key,
+                !threadResolved
+              ).finally(() => setResolving(false));
+            }}
+          >
+            {resolving
+              ? threadResolved
+                ? m.comment_thread_card_unresolving()
+                : m.comment_thread_card_resolving()
+              : threadResolved
+                ? m.comment_thread_card_unresolve()
+                : m.comment_thread_card_resolve_thread()}
+          </Button>
+        )}
+        {deleteBlocked ? (
+          <Tooltip label={DELETE_BLOCKED_TIP()} side="top-end" wide>
+            <Button
+              aria-label={m.review_submit_dialog_label({
+                label: m.comment_thread_card_delete(),
+                tip: DELETE_BLOCKED_TIP(),
+              })}
+              className={canResolve || issue != null ? undefined : 'ml-auto'}
+              disabled
+              size="sm"
+              variant="danger"
+            >
+              {m.comment_thread_card_delete()}
+            </Button>
+          </Tooltip>
+        ) : (
+          <ConfirmInline
+            className={canResolve || issue != null ? undefined : 'ml-auto'}
+            label={m.comment_thread_card_delete()}
+            question={deleteQuestion}
+            confirmLabel={m.comment_thread_card_delete()}
+            onConfirm={() => {
+              onClose();
+              onDelete(itemId, metadata.key);
+            }}
+          />
+        )}
+        <Button variant="outline" size="sm" onClick={onClose}>
+          {m.comment_thread_card_close()}
+        </Button>
+      </div>
+
+      <ol className="font-sans">
+        {comments.map((comment, index) => (
+          <li
+            key={comment.key}
+            className={cn(index > 0 && 'border-line mt-2.5 border-t pt-2.5')}
+          >
+            {/*
+              items-center, not items-baseline: a picture has no baseline
+              of its own, and a row aligned on one would hang it below the
+              login it belongs to.
+            */}
+            <div className="mb-1 flex items-center gap-2">
+              <AuthorAvatar
+                author={comment.author}
+                avatarUrl={comment.authorAvatarUrl}
+                isBot={comment.authorIsBot}
+                size={20}
+              />
+              <span className="text-ink text-[13px] font-semibold">
+                {comment.author}
+              </span>
+              {comment.createdAt != null && (
+                <span className="text-ink-faint text-[11px]">
+                  {formatWhen(comment.createdAt)}
+                </span>
+              )}
+              {comment.staged === true && (
+                <span className="bg-surface text-ink-muted shrink-0 rounded-full px-1.5 py-px text-[11px]">
+                  {m.comment_thread_card_draft()}
+                </span>
+              )}
+              {/* A draft reply comes out on its own, so the published
+                  messages around it are never deleted to drop it. */}
+              {comment.staged === true && !staged && !deleteBlocked && (
+                <ConfirmInline
+                  label={m.comment_thread_card_delete()}
+                  question={m.comment_thread_card_take_this_draft_comment_out_of_the_review()}
+                  confirmLabel={m.comment_thread_card_delete()}
+                  onConfirm={() => onDelete(itemId, comment.key)}
+                />
+              )}
+              {comment.htmlUrl != null && (
+                <a
+                  href={comment.htmlUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="text-ink-faint hover:text-accent ml-auto text-[11px] underline"
+                >
+                  {m.comment_thread_card_on_forge({ forge: forgeName })}
+                </a>
+              )}
+            </div>
+            <CommentBody body={comment.body} />
+          </li>
+        ))}
+      </ol>
+
+      {canReply ? (
+        <ReplyForm
+          forge={forge}
+          onSubmit={(body) => onReply(itemId, metadata.key, body)}
+          pending={metadata.pending === true}
+          store={store}
+        />
+      ) : (
+        <p className="border-line text-ink-faint mt-3 border-t pt-3 text-[11px]">
+          {staged
+            ? m.comment_thread_card_this_comment_is_a_draft_it_goes_up()
+            : m.comment_thread_card_this_comment_has_not_reached_forge_yet({
+                forge: forgeName,
+              })}
+        </p>
+      )}
+    </>
   );
 }
 
@@ -331,16 +572,19 @@ export function CommentThreadCard({
  * the list above it.
  */
 function ReplyForm({
+  forge,
   onSubmit,
   pending,
   store,
 }: {
+  forge: ForgeName;
   onSubmit(body: string): void;
   pending: boolean;
   store: CommentStore;
 }) {
   const [body, setBody] = useState('');
   const canSend = body.trim().length > 0 && !pending;
+  const forgeName = forgeLabel(forge);
 
   const send = () => {
     if (!canSend) return;
@@ -361,8 +605,8 @@ function ReplyForm({
         value={body}
         rows={2}
         placeholder={
-          store === 'github'
-            ? m.comment_thread_card_reply_on_github()
+          store === 'forge'
+            ? m.comment_thread_card_reply_on_forge({ forge: forgeName })
             : m.comment_thread_card_reply_in_this_browser()
         }
         className={cn(

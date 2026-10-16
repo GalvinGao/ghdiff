@@ -14,6 +14,7 @@ export const WATCHED_REPOS_STORAGE_KEY = 'ghdiff-watched-repos';
 export const VIEWER_CONTROLS_STORAGE_KEY = 'ghdiff-viewer-controls';
 export const RAIL_COLLAPSED_STORAGE_KEY = 'ghdiff-rail-collapsed';
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'ghdiff-sidebar-width';
+export const SIDEBAR_HEIGHT_STORAGE_KEY = 'ghdiff-sidebar-height';
 export const RAIL_WIDTH_STORAGE_KEY = 'ghdiff-rail-width';
 export const COMMENT_AUTHOR_FILTER_STORAGE_KEY = 'ghdiff-comment-authors';
 /**

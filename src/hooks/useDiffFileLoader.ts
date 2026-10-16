@@ -12,7 +12,7 @@ import {
 } from '@/lib/diffHydration';
 import type { SharedCache, TextAnswer } from '@/lib/queryCache/sharedCache';
 import {
-  isGitHubTarget,
+  isForgeTarget,
   type ReviewTarget,
   reviewTargetQuery,
 } from '@/lib/reviewTarget';
@@ -59,7 +59,7 @@ export function useDiffFileLoader(options: {
   // Kept between loads and tabs, and checked with GitHub by its ETag each
   // time: a file of a pull request's head moves with every push.
   const shared = useSharedCache();
-  const sharedFiles = isGitHubTarget(target) ? shared : null;
+  const sharedFiles = isForgeTarget(target) ? shared : null;
 
   const loadDiffFiles = useCallback<FileDiffContentsLoader>(
     async (fileDiff: FileDiffMetadata) => {

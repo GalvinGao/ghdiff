@@ -1,33 +1,23 @@
-import { USER_AGENT } from './client';
 // The three calls the App makes about its own credentials: spend a code, spend a
 // refresh token, and revoke an access token. Nothing else here talks to GitHub.
 //
 // The token endpoint is not on `api.github.com` and does not behave like it. It
 // answers 200 with an `error` field for a code that has been spent, a verifier
 // that does not match, and a refresh token somebody already used — so the status
-// alone says nothing, and `GitHubAuthError` carries GitHub's own error code up to
+// alone says nothing, and `OAuthError` carries GitHub's own error code up to
 // the route. `/api/auth/refresh` reads that code: one value of it means another
 // tab won a race, and every other value means the session is over.
+
+import { USER_AGENT } from './client';
 import { TOKEN_URL } from '@/lib/github/app';
-import type { DeploymentConfig } from '@/lib/server/config';
+import type { GitHubAppConfig } from '@/lib/server/config';
+import {
+  OAuthError,
+  type OAuthTokenGrant,
+  type OAuthTokenResponse,
+  spendOAuthGrant,
+} from '@/lib/server/oauth';
 import { m } from '@/paraglide/messages.js';
-
-/** What the App is, as a deployment configures it. */
-export interface AppConfig {
-  clientId: string;
-  clientSecret: string;
-  /** The App's name in a URL, for the install link. */
-  slug: string;
-}
-
-/** GitHub's answer when a code or a refresh token is spent successfully. */
-export interface TokenGrant {
-  accessToken: string;
-  /** Absent when the App has user-to-server token expiry turned off. */
-  accessExpiresAt?: number;
-  refreshToken?: string;
-  refreshExpiresAt?: number;
-}
 
 /**
  * GitHub's own name for what went wrong. The one worth naming is the answer to
@@ -37,45 +27,14 @@ export interface TokenGrant {
  */
 export const REFRESH_ALREADY_SPENT = 'bad_refresh_token';
 
-export class GitHubAuthError extends Error {
-  /** GitHub's `error` field, or `http_<status>` when it sent none. */
-  readonly code: string;
-
-  constructor(code: string, message: string) {
-    super(message);
-    this.name = 'GitHubAuthError';
-    this.code = code;
-  }
-}
-
-/**
- * What this deployment was given, or nothing at all. Nothing is a valid state
- * and not an error: a deployment with no App registered still serves every
- * public diff, and `GITHUB_TOKEN` still covers a single-user one. What it cannot
- * do is sign anybody in, and the sign-in button is what disappears.
- */
-export function readAppConfig(
-  deployment: DeploymentConfig
-): AppConfig | undefined {
-  const app = deployment.github.app;
-  if (app?.slug == null) {
-    return undefined;
-  }
-  return {
-    clientId: app.clientId,
-    clientSecret: app.clientSecret,
-    slug: app.slug,
-  };
-}
-
 /** A code from the callback, for a session. */
 export function exchangeCode(input: {
   code: string;
-  config: AppConfig;
+  config: GitHubAppConfig;
   now: number;
   redirectUri: string;
   verifier: string;
-}): Promise<TokenGrant> {
+}): Promise<OAuthTokenGrant> {
   return spendGrant(input.config, input.now, {
     grant_type: 'authorization_code',
     code: input.code,
@@ -90,10 +49,10 @@ export function exchangeCode(input: {
  * ever calls this.
  */
 export function refreshGrant(input: {
-  config: AppConfig;
+  config: GitHubAppConfig;
   now: number;
   refreshToken: string;
-}): Promise<TokenGrant> {
+}): Promise<OAuthTokenGrant> {
   return spendGrant(input.config, input.now, {
     grant_type: 'refresh_token',
     refresh_token: input.refreshToken,
@@ -111,7 +70,7 @@ export function refreshGrant(input: {
  */
 export async function revokeToken(input: {
   accessToken: string;
-  config: AppConfig;
+  config: GitHubAppConfig;
 }): Promise<void> {
   const { clientId, clientSecret } = input.config;
   const response = await fetch(
@@ -131,95 +90,45 @@ export async function revokeToken(input: {
   // 404 is what GitHub says about a token it has already forgotten, which is the
   // outcome this asked for. Nothing else here is worth failing a sign-out over.
   if (!response.ok && response.status !== 404) {
-    throw new GitHubAuthError(
+    throw new OAuthError(
       `http_${response.status}`,
       m.github_app_github_would_not_revoke_that_token()
     );
   }
 }
 
-/** What GitHub answers with, before it is turned into absolute moments. */
-interface TokenResponse {
-  access_token?: string;
-  expires_in?: number;
-  refresh_token?: string;
-  refresh_token_expires_in?: number;
-  error?: string;
-  error_description?: string;
-}
-
 async function spendGrant(
-  config: AppConfig,
+  config: GitHubAppConfig,
   now: number,
   fields: Record<string, string>
-): Promise<TokenGrant> {
-  const body = new URLSearchParams({
-    client_id: config.clientId,
-    client_secret: config.clientSecret,
-    ...fields,
-  });
-
-  const response = await fetch(TOKEN_URL, {
-    method: 'POST',
-    cache: 'no-store',
-    headers: {
-      // Without this GitHub answers form-encoded, which is its own default and
-      // nobody's preference.
-      accept: 'application/json',
-      'content-type': 'application/x-www-form-urlencoded',
-      // workerd sends no User-Agent of its own, and GitHub answers a request
-      // without one with 403 "Request forbidden by administrative rules".
-      'user-agent': USER_AGENT,
+): Promise<OAuthTokenGrant> {
+  return spendOAuthGrant({
+    url: TOKEN_URL,
+    clientId: config.clientId,
+    clientSecret: config.clientSecret,
+    fields,
+    now,
+    forge: 'GitHub',
+    readAnswer: async (response) => {
+      if (!response.ok) {
+        throw new OAuthError(
+          `http_${response.status}`,
+          m.github_app_github_answered_for_that_token_request({
+            status: response.status,
+          })
+        );
+      }
+      const answer = (await response.json()) as OAuthTokenResponse;
+      // GitHub's refusal is a 200 with an `error` field, so the status alone
+      // says nothing and the body decides.
+      if (answer.error != null) {
+        throw new OAuthError(
+          answer.error,
+          answer.error_description ??
+            m.github_app_github_refused_that({ error: answer.error })
+        );
+      }
+      return answer;
     },
-    body,
   });
-
-  if (!response.ok) {
-    throw new GitHubAuthError(
-      `http_${response.status}`,
-      m.github_app_github_answered_for_that_token_request({
-        status: response.status,
-      })
-    );
-  }
-
-  const answer = (await response.json()) as TokenResponse;
-  if (answer.error != null) {
-    throw new GitHubAuthError(
-      answer.error,
-      answer.error_description ??
-        m.github_app_github_refused_that({ error: answer.error })
-    );
-  }
-  if (answer.access_token == null || answer.access_token.length === 0) {
-    throw new GitHubAuthError(
-      'no_access_token',
-      m.github_app_github_answered_with_no_access_token()
-    );
-  }
-
-  return {
-    accessToken: answer.access_token,
-    accessExpiresAt: absolute(answer.expires_in, now),
-    refreshToken:
-      answer.refresh_token != null && answer.refresh_token.length > 0
-        ? answer.refresh_token
-        : undefined,
-    refreshExpiresAt: absolute(answer.refresh_token_expires_in, now),
-  };
-}
-
-/**
- * A life in seconds, as the moment it ends. GitHub states a duration and this
- * app stores an instant: a duration is only true at the moment it was read, and
- * the cookie outlives that moment by eight hours. An App with expiry turned off
- * states no duration at all, and the answer to that is nothing rather than now.
- */
-function absolute(
-  seconds: number | undefined,
-  now: number
-): number | undefined {
-  if (typeof seconds !== 'number' || !Number.isFinite(seconds))
-    return undefined;
-  return now + seconds * 1000;
 }

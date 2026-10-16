@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fetchWithRefresh } from '@/lib/authFetch';
 import { formatBytes } from '@/lib/byteSize';
+import { failureFromHeaders, type FailureMeta } from '@/lib/failure';
 import { sharedCacheOf, type TextAnswer } from '@/lib/queryCache/sharedCache';
 import {
   buildReviewData,
@@ -15,7 +16,7 @@ import {
   type ReviewData,
 } from '@/lib/reviewData';
 import {
-  isGitHubTarget,
+  isForgeTarget,
   type ReviewTarget,
   reviewTargetKey,
   reviewTargetQuery,
@@ -35,6 +36,13 @@ export interface ReviewPatchState {
    * when the request never came back at all.
    */
   status?: number;
+  /**
+   * The typed failure the answer carried on its `x-ghdiff-failure` headers,
+   * which is what lets the panel map by reason instead of status alone. Null
+   * when the answer named no reason — a network failure, or a 5xx — and the
+   * status reading is all there is.
+   */
+  failure: FailureMeta | null;
   /** What the diff source could not carry, when it said so. */
   notice?: string;
   /**
@@ -66,12 +74,14 @@ interface PatchResponse {
   notice?: string;
 }
 
-/** A failure the route answered, with the status the panel decides on. */
+/** A failure the route answered, with the status and reason the panel decides on. */
 class PatchRequestError extends Error {
   readonly status: number;
-  constructor(message: string, status: number) {
+  readonly failure: FailureMeta | null;
+  constructor(message: string, status: number, failure: FailureMeta | null) {
     super(message);
     this.status = status;
+    this.failure = failure;
   }
 }
 
@@ -136,7 +146,8 @@ export function patchQueryOptions(target: ReviewTarget) {
             body.trim().length > 0
               ? body.trim()
               : m.use_review_patch_request_failed({ status: response.status }),
-            response.status
+            response.status,
+            failureFromHeaders(response.headers)
           );
         }
         return {
@@ -148,9 +159,9 @@ export function patchQueryOptions(target: ReviewTarget) {
       };
 
       // A local diff moves under the reader and states no ETag, so only a
-      // patch from GitHub goes through the cache every tab shares — found by
+      // patch from a forge goes through the cache every tab shares — found by
       // the client this query runs in, which is how a prefetch reaches it too.
-      const shared = isGitHubTarget(target) ? sharedCacheOf(client) : undefined;
+      const shared = isForgeTarget(target) ? sharedCacheOf(client) : undefined;
       if (shared == null) {
         const answer = await download(undefined);
         if (answer.status !== 'fresh') throw new Error('Unexpected 304.');
@@ -263,6 +274,7 @@ export function useReviewPatch(options: {
           ? error.message
           : m.use_review_patch_could_not_load_that_diff(),
     status: error instanceof PatchRequestError ? error.status : undefined,
+    failure: error instanceof PatchRequestError ? error.failure : null,
     notice: response?.notice,
     bytes:
       state === 'fetching' && bytes != null && bytes > 0 ? bytes : undefined,

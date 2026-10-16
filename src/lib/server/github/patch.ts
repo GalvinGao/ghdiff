@@ -154,7 +154,7 @@ interface PagedFetch {
   select(page: unknown): GitHubPullFile[];
 }
 
-async function fetchPaged(
+export async function fetchPaged(
   fetchJson: <T>(path: string) => Promise<T>,
   spec: PagedFetch
 ): Promise<FetchedFiles> {
@@ -221,11 +221,4 @@ export function compareFilesFetch(
     maxPages: MAX_RANGE_PAGES,
     select: asFilesField,
   };
-}
-
-export function fetchFilePages(
-  fetchJson: <T>(path: string) => Promise<T>,
-  spec: PagedFetch
-): Promise<FetchedFiles> {
-  return fetchPaged(fetchJson, spec);
 }

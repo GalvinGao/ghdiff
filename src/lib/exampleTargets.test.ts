@@ -1,36 +1,46 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
-import { EXAMPLE_TARGETS } from './exampleTargets';
-import {
-  gitHubTargetFromSegments,
-  reviewTargetKey,
-  reviewTargetSplat,
-} from './reviewTarget';
+import { DEFAULT_EXAMPLES, exampleDisplayPath } from './exampleTargets';
+import { reviewInputFrom } from './resolveHost';
 
-describe('EXAMPLE_TARGETS', () => {
-  it('gives every row a splat the /gh route reads back', () => {
-    for (const example of EXAMPLE_TARGETS) {
-      const splat = reviewTargetSplat(example.target);
-      const parsed = gitHubTargetFromSegments(splat.split('/'));
-      assert.deepEqual(
-        parsed,
-        example.target,
-        `${example.title} did not survive its own splat`
-      );
+describe('exampleDisplayPath', () => {
+  it('cuts a commit SHA to seven characters and leaves the rest alone', () => {
+    assert.equal(
+      exampleDisplayPath({
+        title: 't',
+        path: 'gekichumai/dxrating/commit/637a9c80f69d3222d1c3aed3ae8f4aefdb613bc9',
+        scale: 's',
+        note: 'n',
+      }),
+      'gekichumai/dxrating/commit/637a9c8'
+    );
+    assert.equal(
+      exampleDisplayPath({
+        title: 't',
+        path: 'oven-sh/bun/pull/30412',
+        scale: 's',
+        note: 'n',
+      }),
+      'oven-sh/bun/pull/30412'
+    );
+  });
+});
+
+describe('DEFAULT_EXAMPLES', () => {
+  it('names each path once per host', () => {
+    for (const [host, rows] of Object.entries(DEFAULT_EXAMPLES)) {
+      const paths = rows.map((row) => row.path);
+      assert.equal(new Set(paths).size, paths.length, `duplicate on ${host}`);
     }
   });
 
-  it('names each target once', () => {
-    const keys = EXAMPLE_TARGETS.map((example) =>
-      reviewTargetKey(example.target)
-    );
-    assert.equal(new Set(keys).size, keys.length);
-  });
-
-  it('covers all three target kinds', () => {
+  it('covers all three GitHub target kinds', () => {
     const kinds = new Set(
-      EXAMPLE_TARGETS.map((example) => example.target.kind)
+      DEFAULT_EXAMPLES['github.com'].map((row) => {
+        const result = reviewInputFrom(`https://github.com/${row.path}`, {});
+        return result.kind === 'target' ? result.target.kind : '';
+      })
     );
     assert.deepEqual([...kinds].sort(), [
       'github-commit',

@@ -5,12 +5,14 @@
 // wrote them, then which stack they belong to. Within one stack the order is the
 // stack's own; anywhere else the newest pull request number comes first.
 
+import { forgeGroupKey } from './forges';
 import {
   buildPullStacks,
   countStackNodes,
   type PullStackNode,
 } from './pullStacks';
 import type { PullReviewStatus } from './pullStatus';
+import type { GitHubPullTarget } from './reviewTarget';
 
 export interface WatchedRepo {
   owner: string;
@@ -43,6 +45,24 @@ export interface PullSummary {
    * asked about.
    */
   status?: PullReviewStatus;
+  /**
+   * The forge group's own viewer is asked to review this one. Absent when the
+   * list was read without a token, for the same reason `status` is: there is
+   * no viewer to compare against, and a row must not claim "not requested"
+   * about a pull request it never asked about. Team requests on GitHub cannot
+   * be resolved to the viewer and never set it.
+   */
+  reviewRequested?: boolean;
+}
+
+/** The review target a row links to. */
+export function reviewTargetFromPull(pull: PullSummary): GitHubPullTarget {
+  return {
+    kind: 'github-pull',
+    owner: pull.owner,
+    repo: pull.repo,
+    number: pull.number,
+  };
 }
 
 /** Derives the state from the fields GitHub returns for a pull request. */
@@ -57,6 +77,7 @@ export function pullState(pull: {
   return 'open';
 }
 
+/** One forge group's answer to the open-pulls question. */
 export interface OpenPullsData {
   viewer?: string;
   pulls: PullSummary[];
@@ -64,10 +85,48 @@ export interface OpenPullsData {
   failures: { repo: string; message: string }[];
 }
 
-export function formatWatchedRepo(repo: WatchedRepo): string {
+/**
+ * The `pulls.list` answer: the groups' pulls and failures, and the viewer of
+ * each group that named one, keyed by `forgeGroupKey`. Each group's viewer
+ * stays with its own rows.
+ */
+export interface OpenPullsAnswer {
+  viewers: Record<string, string>;
+  pulls: PullSummary[];
+  /** Repositories that could not be read, with the reason. */
+  failures: OpenPullsData['failures'];
+}
+
+/** True when any forge group named the reviewer. */
+export function anyViewer(viewers: Record<string, string>): boolean {
+  return Object.keys(viewers).length > 0;
+}
+
+/**
+ * The account the setup offer names, out of the rows that would not list.
+ * Every failing row sharing one owner names the account; two owners failing
+ * is a general question, and `undefined` asks it. `null` is no offer at all:
+ * nothing failed, or nobody is signed in.
+ */
+export function failedSetupAccount(
+  failures: readonly { repo: string }[],
+  signedIn: boolean
+): string | null | undefined {
+  if (failures.length === 0 || !signedIn) return null;
+  const owners = new Set(failures.map((failure) => failure.repo.split('/')[0]));
+  return owners.size === 1 ? [...owners][0] : undefined;
+}
+
+/** The label of anything that names a repository: `owner/repo`. */
+export function repoLabel(repo: { owner: string; repo: string }): string {
   return `${repo.owner}/${repo.repo}`;
 }
 
+export function formatWatchedRepo(repo: WatchedRepo): string {
+  return repoLabel(repo);
+}
+
+/** What the repository picker accepts: `owner/repo`, or a github.com URL. */
 export function parseWatchedRepo(input: string): WatchedRepo | undefined {
   const trimmed = input.trim().replace(/^https?:\/\/github\.com\//, '');
   const match = /^([A-Za-z0-9._-]+)\/([A-Za-z0-9._-]+?)(?:\.git)?\/?$/.exec(
@@ -120,19 +179,11 @@ export interface RepoOwnerGroup {
 export function groupReposByOwner(
   repos: readonly WatchedRepo[]
 ): RepoOwnerGroup[] {
-  const byOwner = new Map<string, RepoOwnerGroup>();
-  for (const repo of repos) {
-    const existing = byOwner.get(repo.owner.toLowerCase());
-    if (existing == null) {
-      byOwner.set(repo.owner.toLowerCase(), {
-        owner: repo.owner,
-        repos: [repo],
-      });
-    } else {
-      existing.repos.push(repo);
-    }
-  }
-  const groups = [...byOwner.values()];
+  const byOwner = Map.groupBy(repos, (repo) => repo.owner.toLowerCase());
+  const groups = [...byOwner.values()].map((group) => ({
+    owner: group[0].owner,
+    repos: group,
+  }));
   for (const group of groups) {
     group.repos.sort((a, b) => compareText(a.repo, b.repo));
   }
@@ -169,22 +220,17 @@ export interface GroupPullsOptions {
 /**
  * Repository, then author, then stack. Repositories follow `order`, the watch
  * list the reviewer arranged by hand; one the list does not name goes after it,
- * alphabetically. The viewer's own pull requests lead the authors, and every
- * remaining tie is broken by the newest update.
+ * alphabetically. The viewer's own pull requests lead the authors, what is
+ * waiting on the reviewer leads its author group, and every remaining tie is
+ * broken by the newest update. A row is the viewer's own only on its own forge
+ * group's answer.
  */
 export function groupPullsByRepo(
   pulls: readonly PullSummary[],
-  viewer: string | undefined,
+  viewers: Record<string, string>,
   { order = [] }: GroupPullsOptions = {}
 ): PullRepoGroup[] {
-  const viewerLogin = viewer?.toLowerCase();
-  const byRepo = new Map<string, PullSummary[]>();
-  for (const pull of pulls) {
-    const key = formatWatchedRepo(pull).toLowerCase();
-    const existing = byRepo.get(key);
-    if (existing == null) byRepo.set(key, [pull]);
-    else existing.push(pull);
-  }
+  const byRepo = Map.groupBy(pulls, (pull) => repoLabel(pull).toLowerCase());
 
   const groups: PullRepoGroup[] = [];
   for (const repoPulls of byRepo.values()) {
@@ -192,9 +238,12 @@ export function groupPullsByRepo(
     groups.push({
       owner: first.owner,
       repo: first.repo,
-      key: formatWatchedRepo(first),
+      key: repoLabel(first),
       count: repoPulls.length,
-      authors: groupByAuthor(repoPulls, viewerLogin),
+      authors: groupByAuthor(
+        repoPulls,
+        viewers[forgeGroupKey(first)]?.toLowerCase()
+      ),
     });
   }
   const rank = new Map(
@@ -232,13 +281,22 @@ function groupByAuthor(
 
   const groups: PullAuthorGroup[] = [];
   for (const [author, authorPulls] of byAuthor) {
+    const stacks = buildPullStacks(authorPulls);
+    // Waiting on the reviewer leads its author group. A stable sort, so the
+    // newest-number-first order the stacks were built in holds inside both
+    // halves, and a chain bubbles as one block when any member is requested —
+    // it is read top to bottom and is never split for this.
+    stacks.sort(
+      (a, b) =>
+        Number(stackHasReviewRequest(b)) - Number(stackHasReviewRequest(a))
+    );
     groups.push({
       author,
       authorAvatarUrl: authorPulls.find((pull) => pull.authorAvatarUrl != null)
         ?.authorAvatarUrl,
       isViewer: viewerLogin != null && author.toLowerCase() === viewerLogin,
       count: authorPulls.length,
-      stacks: buildPullStacks(authorPulls),
+      stacks,
     });
   }
 
@@ -260,6 +318,14 @@ function latestUpdate(group: PullAuthorGroup): string {
     if (node.pull.updatedAt > latest) latest = node.pull.updatedAt;
   }
   return latest;
+}
+
+/** True when the reviewer is asked on any pull request of this chain. */
+function stackHasReviewRequest(node: PullStackNode): boolean {
+  return (
+    node.pull.reviewRequested === true ||
+    node.children.some(stackHasReviewRequest)
+  );
 }
 
 /** Every node of every stack, in the order the bar draws them. */

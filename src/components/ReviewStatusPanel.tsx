@@ -1,15 +1,17 @@
 import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
+import { useAppData } from '@/components/AppDataProvider';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { CenteredNotice } from '@/components/ui/CenteredNotice';
 import type { GitHubSessionState } from '@/hooks/useGitHubSession';
 import { formatBytes } from '@/lib/byteSize';
+import type { FailureMeta } from '@/lib/failure';
 import { describeReviewFailure } from '@/lib/reviewFailure';
 import {
   describeReviewTarget,
-  isGitHubTarget,
+  isForgeTarget,
   type ReviewTarget,
   reviewTargetSplat,
 } from '@/lib/reviewTarget';
@@ -53,14 +55,15 @@ const COPY: Record<
  * button rather than a line of underlined text when one of them breaks.
  *
  * Which button it leads with is `describeReviewFailure`'s answer, and there are
- * two. Anything a reviewer can fix by granting something leads to `/setup`, which
- * is the one screen that asks GitHub whether the missing piece is the sign-in or
- * the installation. Everything else keeps "Try again" as the only offer worth
- * making.
+ * two. Anything a reviewer can fix on GitHub by granting something leads to
+ * `/setup`, which is the one screen that asks GitHub whether the missing piece
+ * is the sign-in or the installation. Everything else keeps "Try again" as the
+ * only offer worth making.
  */
 export function ReviewStatusPanel({
   bytes,
   error,
+  failure,
   onRetry,
   session,
   state,
@@ -70,6 +73,12 @@ export function ReviewStatusPanel({
   /** Patch bytes read so far, while the patch is still arriving. */
   bytes?: number;
   error?: string;
+  /**
+   * The typed failure the diff's answer carried, read off its
+   * `x-ghdiff-failure` headers. When present it decides the panel; `status`
+   * is only the fallback for answers that carry no reason.
+   */
+  failure?: FailureMeta | null;
   onRetry(): void;
   session: GitHubSessionState;
   state: ReviewLoadState;
@@ -85,15 +94,20 @@ export function ReviewStatusPanel({
   const waiting: Exclude<ReviewLoadState, 'error'> =
     state === 'error' ? 'fetching' : state;
   // Where the reviewer is, so `/setup` can name the account, and nothing at all
-  // for a diff that is not on GitHub. Read off the target rather than passed
+  // for a diff that is on no forge. Read off the target rather than passed
   // beside it, so the two cannot disagree.
-  const targetPath = isGitHubTarget(target)
+  const targetPath = isForgeTarget(target)
     ? `/${reviewTargetSplat(target)}`
     : undefined;
-  const failure = describeReviewFailure({
+  const { instance } = useAppData();
+  const described = describeReviewFailure({
     signedIn: session.signedIn,
     message: error,
     status,
+    failure,
+    // A deployment with no GitHub App has no `/setup` to send a reviewer to:
+    // the failures that would offer it degrade to the retry alone.
+    githubOAuth: instance.github.oauth,
   });
 
   return (
@@ -116,10 +130,10 @@ export function ReviewStatusPanel({
         />
       )}
       <h2 className="text-ink text-sm font-medium">
-        {isError ? failure.title : COPY[waiting].title}
+        {isError ? described.title : COPY[waiting].title}
       </h2>
       <p className="text-ink-muted mt-1 text-sm text-pretty">
-        {isError ? failure.message : COPY[waiting].message}
+        {isError ? described.message : COPY[waiting].message}
       </p>
       {/* What has arrived, while it is still arriving. A count and not a
             percentage, because nothing on the wire states a total: the diff
@@ -142,7 +156,7 @@ export function ReviewStatusPanel({
                 GitHub which, rather than guessing from a status code. `from`
                 carries the path so that page can name the account, and step
                 three there leads straight back here. */}
-          {failure.action === 'setup' && targetPath != null && (
+          {described.action === 'setup' && targetPath != null && (
             <Link
               className={buttonClass({ variant: 'solid' })}
               search={{

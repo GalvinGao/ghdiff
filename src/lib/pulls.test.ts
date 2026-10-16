@@ -4,6 +4,7 @@ import { describe, it } from 'vitest';
 import {
   countRepoPulls,
   dedupeWatchedRepos,
+  failedSetupAccount,
   flattenStacks,
   formatWatchedRepo,
   groupPullsByRepo,
@@ -116,7 +117,7 @@ describe('groupPullsByRepo', () => {
   ];
 
   it('groups by repository, alphabetically by owner then repository', () => {
-    const groups = groupPullsByRepo(pulls, 'galvin');
+    const groups = groupPullsByRepo(pulls, { github: 'galvin' });
     assert.deepEqual(
       groups.map((group) => group.key),
       ['acme/app', 'zeta/tools']
@@ -130,12 +131,16 @@ describe('groupPullsByRepo', () => {
       ...pulls,
       pull('ada', 7, '2026-08-21T00:00:00Z', { owner: 'mid', repo: 'x' }),
     ];
-    const groups = groupPullsByRepo(more, 'galvin', {
-      order: [
-        { owner: 'Zeta', repo: 'Tools' },
-        { owner: 'acme', repo: 'app' },
-      ],
-    });
+    const groups = groupPullsByRepo(
+      more,
+      { github: 'galvin' },
+      {
+        order: [
+          { owner: 'Zeta', repo: 'Tools' },
+          { owner: 'acme', repo: 'app' },
+        ],
+      }
+    );
     assert.deepEqual(
       groups.map((group) => group.key),
       ['zeta/tools', 'acme/app', 'mid/x']
@@ -143,7 +148,7 @@ describe('groupPullsByRepo', () => {
   });
 
   it('puts the viewer first among the authors', () => {
-    const groups = groupPullsByRepo(pulls, 'galvin');
+    const groups = groupPullsByRepo(pulls, { github: 'galvin' });
     assert.deepEqual(
       groups[0].authors.map((author) => author.author),
       ['galvin', 'grace', 'ada']
@@ -153,13 +158,13 @@ describe('groupPullsByRepo', () => {
   });
 
   it('reads the viewer login without regard to case', () => {
-    const groups = groupPullsByRepo(pulls, 'GALVIN');
+    const groups = groupPullsByRepo(pulls, { github: 'GALVIN' });
     assert.equal(groups[0].authors[0].author, 'galvin');
     assert.equal(groups[0].authors[0].isViewer, true);
   });
 
   it('marks nobody as the viewer when there is no token', () => {
-    const groups = groupPullsByRepo(pulls, undefined);
+    const groups = groupPullsByRepo(pulls, {});
     assert.equal(
       groups[0].authors.every((author) => !author.isViewer),
       true
@@ -172,7 +177,7 @@ describe('groupPullsByRepo', () => {
   });
 
   it("orders an author's unstacked pull requests by number, newest first", () => {
-    const groups = groupPullsByRepo(pulls, 'galvin');
+    const groups = groupPullsByRepo(pulls, { github: 'galvin' });
     const ada = groups[0].authors[2];
     assert.deepEqual(
       flattenStacks(ada.stacks).map((node) => node.pull.number),
@@ -195,7 +200,7 @@ describe('groupPullsByRepo', () => {
         baseRef: 'part-2',
       }),
     ];
-    const authors = groupPullsByRepo(stacked, undefined)[0].authors;
+    const authors = groupPullsByRepo(stacked, {})[0].authors;
     assert.equal(authors[0].stacks.length, 1);
     assert.deepEqual(
       flattenStacks(authors[0].stacks).map((node) => node.pull.number),
@@ -214,15 +219,79 @@ describe('groupPullsByRepo', () => {
         baseRef: 'part-1',
       }),
     ];
-    const authors = groupPullsByRepo(crossAuthor, undefined)[0].authors;
+    const authors = groupPullsByRepo(crossAuthor, {})[0].authors;
     for (const author of authors) {
       assert.equal(author.stacks.length, 1);
       assert.equal(author.stacks[0].children.length, 0);
     }
   });
 
+  it('puts what is waiting on the reviewer first in its author group', () => {
+    const requested = [
+      pull('ada', 3, '2026-08-22T00:00:00Z', { reviewRequested: true }),
+      pull('ada', 5, '2026-08-23T00:00:00Z'),
+    ];
+    const authors = groupPullsByRepo(requested, {})[0].authors;
+    assert.deepEqual(
+      flattenStacks(authors[0].stacks).map((node) => node.pull.number),
+      [3, 5]
+    );
+  });
+
+  it('bubbles a stack as one block when any member requests the reviewer', () => {
+    const requested = [
+      pull('ada', 10, '2026-08-20T00:00:00Z', {
+        headRef: 'part-1',
+        baseRef: 'main',
+      }),
+      pull('ada', 11, '2026-08-21T00:00:00Z', {
+        headRef: 'part-2',
+        baseRef: 'part-1',
+        reviewRequested: true,
+      }),
+      pull('ada', 13, '2026-08-22T00:00:00Z'),
+    ];
+    const authors = groupPullsByRepo(requested, {})[0].authors;
+    // The chain leads although its root is not the requested one, and the
+    // chain's own order holds inside it.
+    assert.deepEqual(
+      flattenStacks(authors[0].stacks).map((node) => node.pull.number),
+      [10, 11, 13]
+    );
+  });
+
+  it('moves nothing when no row requests the reviewer', () => {
+    const groups = groupPullsByRepo(pulls, { github: 'galvin' });
+    const ada = groups[0].authors[2];
+    assert.deepEqual(
+      flattenStacks(ada.stacks).map((node) => node.pull.number),
+      [5, 3]
+    );
+  });
+
   it('returns no groups for no pull requests', () => {
-    assert.deepEqual(groupPullsByRepo([], 'galvin'), []);
+    assert.deepEqual(groupPullsByRepo([], { github: 'galvin' }), []);
+  });
+});
+
+describe('failedSetupAccount', () => {
+  it('names the one owner every failing GitHub row shares', () => {
+    assert.equal(
+      failedSetupAccount([{ repo: 'acme/app' }, { repo: 'acme/lib' }], true),
+      'acme'
+    );
+  });
+
+  it('asks the general question when two owners fail', () => {
+    assert.equal(
+      failedSetupAccount([{ repo: 'acme/app' }, { repo: 'zeta/tools' }], true),
+      undefined
+    );
+  });
+
+  it('offers nothing when nothing failed or nobody is signed in', () => {
+    assert.equal(failedSetupAccount([], true), null);
+    assert.equal(failedSetupAccount([{ repo: 'acme/app' }], false), null);
   });
 });
 

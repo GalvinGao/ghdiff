@@ -1,0 +1,41 @@
+{
+  "recordedAt": "2026-09-08T05:31:40.010Z",
+  "note": "Anonymous reads of public repositories; see record/github.mjs.",
+  "sources": [
+    {
+      "file": "pulls.json",
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls?state=open&sort=updated&direction=desc&per_page=5",
+      "status": 200
+    },
+    {
+      "file": "pull.json",
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052",
+      "status": 200
+    },
+    {
+      "file": "pull-comments.json",
+      "url": "https://api.github.com/repos/ghostty-org/ghostty/pulls/14052/comments?per_page=100",
+      "status": 200
+    },
+    {
+      "file": "pull-files.json",
+      "url": "https://api.github.com/repos/GalvinGao/ghdiff/pulls/6/files?per_page=5&page=1",
+      "status": 200
+    },
+    {
+      "file": "compare.json",
+      "url": "https://api.github.com/repos/GalvinGao/ghdiff/compare/3756360521e239afdc7145f36ef20d204f5204cf...9054b5d751e6ad9ae2b09e3ff759d51c8aad3b91",
+      "status": 200
+    },
+    {
+      "file": "pull.diff",
+      "url": "https://github.com/GalvinGao/ghdiff/pull/13.diff",
+      "status": 200
+    },
+    {
+      "file": "user-401.json",
+      "url": "https://api.github.com/user",
+      "status": 401
+    }
+  ]
+}

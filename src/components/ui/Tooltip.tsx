@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn';
 //
 // This is CSS and no JavaScript, the way `Dialog` is the platform's `<dialog>`:
 // hover and focus are states the browser already tracks, and a library for them
-// would be a dependency in the Worker's own graph, which has about 130 KiB of
+// would be a dependency in the Worker's own graph, which has about 34 KiB of
 // room left in it.
 //
 // The delay is on the shown state alone. `delay-500` under `group-hover` waits

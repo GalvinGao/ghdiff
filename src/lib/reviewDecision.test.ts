@@ -43,6 +43,12 @@ describe('canSubmitReview', () => {
   it('does not count whitespace as words', () => {
     assert.equal(canSubmitReview('REQUEST_CHANGES', ' \n\t '), false);
   });
+
+  it('asks for no note when the drafts are the words', () => {
+    // A review whose content is its line comments needs no summary.
+    assert.equal(canSubmitReview('COMMENT', '', false, 2), true);
+    assert.equal(canSubmitReview('REQUEST_CHANGES', ' \n ', false, 1), true);
+  });
 });
 
 describe('describeSubmittedReview', () => {
@@ -137,6 +143,31 @@ describe('reviewBlock', () => {
     );
   });
 
+  it('asks for no note when drafts wait on the forge', () => {
+    // The line comments are the review's content, and both forges take a
+    // verdict with an empty body then.
+    assert.equal(
+      reviewBlock({ ...other, event: 'COMMENT', body: '', draftCount: 2 }),
+      undefined
+    );
+    assert.equal(
+      reviewBlock({
+        ...other,
+        event: 'REQUEST_CHANGES',
+        body: '',
+        draftCount: 1,
+      }),
+      undefined
+    );
+  });
+
+  it('still asks for a note when the count is zero', () => {
+    assert.equal(
+      reviewBlock({ ...other, event: 'COMMENT', body: '', draftCount: 0 }),
+      'needs-note'
+    );
+  });
+
   it('refuses an approval and a change request on your own', () => {
     // GitHub will not take either from the person who opened it, and answers a
     // 422 if asked. This is what stops the button offering it.
@@ -159,6 +190,18 @@ describe('reviewBlock', () => {
     );
   });
 
+  it('reports the ownership before the drafts too', () => {
+    // Drafts change what a note is worth, not whose pull request this is.
+    assert.equal(
+      reviewBlock({ ...own, event: 'APPROVE', body: '', draftCount: 3 }),
+      'own-pull-request'
+    );
+    assert.equal(
+      reviewBlock({ ...own, event: 'COMMENT', body: '', draftCount: 3 }),
+      undefined
+    );
+  });
+
   it('still takes a comment on your own, once there is a note', () => {
     // The one verdict GitHub allows on your own pull request.
     assert.equal(
@@ -175,11 +218,13 @@ describe('reviewBlock', () => {
     for (const event of ['APPROVE', 'REQUEST_CHANGES', 'COMMENT'] as const) {
       for (const body of ['', 'a note']) {
         for (const ownPullRequest of [false, true]) {
-          assert.equal(
-            canSubmitReview(event, body, ownPullRequest),
-            reviewBlock({ body, event, ownPullRequest }) == null,
-            `${event} body=${JSON.stringify(body)} own=${ownPullRequest}`
-          );
+          for (const draftCount of [undefined, 0, 2]) {
+            assert.equal(
+              canSubmitReview(event, body, ownPullRequest, draftCount),
+              reviewBlock({ body, draftCount, event, ownPullRequest }) == null,
+              `${event} body=${JSON.stringify(body)} own=${ownPullRequest} drafts=${draftCount}`
+            );
+          }
         }
       }
     }

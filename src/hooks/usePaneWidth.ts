@@ -24,11 +24,18 @@ import { type PreferenceHandle, usePreference } from './preferences';
 // it again gives the chosen width back: a row that is briefly narrow, which
 // happens while a page loads, must not silently rewrite a setting.
 //
-// Two panes use this. The left bar is the element whose own width the drag
+// Three panes use this. The left bar is the element whose own width the drag
 // sets, so its room is its parent's; the review sidebar is laid out inside the
 // grid element that carries the property, so its room is that element's. That
 // is the whole of `room`, and it decides what the ResizeObserver watches as
 // well: a pane that watched the element it resizes would answer its own drag.
+//
+// `axis` is the drag's direction. Every pane here is horizontal — a width —
+// except the sidebar on a portrait screen, where it is a band above the diff
+// and the drag sets its height. The axis picks what is measured (clientWidth
+// or clientHeight), what the pointer is read on, the cursor, and the arrow
+// keys; the clamp and the paint are the same either way, because a height is
+// just the width of a pane that grew upward.
 //
 // The choice is a stored setting, so it also arrives from the reviewer's other
 // tabs. `chosenRef` is what tells the two apart: this pane records its own
@@ -52,6 +59,11 @@ export interface PaneWidthOptions {
    * its own width is what the drag sets, so measuring it would chase its tail.
    */
   room: 'parent' | 'self';
+  /**
+   * The direction of the drag. `'x'` is a pane's width beside its neighbour,
+   * `'y'` its height above it. Defaults to `'x'`.
+   */
+  axis?: 'x' | 'y';
   /** Where the chosen width is remembered. `null` is a pane nobody dragged. */
   preference: PreferenceHandle<number | null>;
 }
@@ -81,6 +93,7 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
     property,
     reserve,
     room,
+    axis = 'x',
   } = options;
   const { value: storedWidth, setValue: storeWidth } =
     usePreference(preference);
@@ -96,23 +109,30 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
     [maxWidth, minWidth, reserve]
   );
 
-  /** The element whose width says how much room there is to share. */
+  /** The element whose size says how much room there is to share. */
   const roomNode = useCallback((): HTMLElement | null => {
     const carrier = carrierRef.current;
     if (carrier == null) return null;
     return room === 'parent' ? carrier.parentElement : carrier;
   }, [room]);
 
+  /** The room node's extent along the drag's axis. */
+  const roomSize = useCallback(
+    (node: HTMLElement | null | undefined): number =>
+      (axis === 'y' ? node?.clientHeight : node?.clientWidth) ?? 0,
+    [axis]
+  );
+
   /**
-   * How much room the panes have between them. A width of zero says there is
-   * nothing laid out yet, which happens before the first paint and in a hidden
-   * browser tab, and that is not a layout to shrink into. Wide enough for the
-   * whole range is the answer then.
+   * How much room the panes have between them. A measurement of zero says there
+   * is nothing laid out yet, which happens before the first paint and in a
+   * hidden browser tab, and that is not a layout to shrink into. Wide enough
+   * for the whole range is the answer then.
    */
   const availableWidth = useCallback((): number => {
-    const width = roomNode()?.clientWidth ?? 0;
-    return width > 0 ? width : maxWidth + reserve;
-  }, [maxWidth, reserve, roomNode]);
+    const size = roomSize(roomNode());
+    return size > 0 ? size : maxWidth + reserve;
+  }, [maxWidth, reserve, roomNode, roomSize]);
 
   // What is on screen. React only learns of a new value at the end of a drag.
   const [width, setWidth] = useState(defaultWidth);
@@ -167,7 +187,7 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
       // the width it started from.
       if (event.button !== 0) return;
       const handle = event.currentTarget;
-      const startX = event.clientX;
+      const startPosition = axis === 'y' ? event.clientY : event.clientX;
       const startWidth = liveRef.current;
       // The property may still be coming from the inline style, so write it
       // here: from now until pointerup the DOM is the only place it lives.
@@ -182,11 +202,12 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
       const previousUserSelect = body.style.userSelect;
       const previousCursor = body.style.cursor;
       body.style.userSelect = 'none';
-      body.style.cursor = 'col-resize';
+      body.style.cursor = axis === 'y' ? 'row-resize' : 'col-resize';
 
       const onMove = (moveEvent: PointerEvent) => {
+        const position = axis === 'y' ? moveEvent.clientY : moveEvent.clientX;
         paint(
-          clampWidth(startWidth + moveEvent.clientX - startX, availableWidth())
+          clampWidth(startWidth + position - startPosition, availableWidth())
         );
       };
       const onEnd = () => {
@@ -203,17 +224,15 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
       handle.addEventListener('pointerup', onEnd);
       handle.addEventListener('pointercancel', onEnd);
     },
-    [availableWidth, choose, clampWidth, paint]
+    [availableWidth, axis, choose, clampWidth, paint]
   );
 
   const onHandleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLElement>) => {
+      const shrink = axis === 'y' ? 'ArrowUp' : 'ArrowLeft';
+      const grow = axis === 'y' ? 'ArrowDown' : 'ArrowRight';
       const step =
-        event.key === 'ArrowLeft'
-          ? -KEY_STEP
-          : event.key === 'ArrowRight'
-            ? KEY_STEP
-            : 0;
+        event.key === shrink ? -KEY_STEP : event.key === grow ? KEY_STEP : 0;
       if (step !== 0) {
         event.preventDefault();
         choose(clampWidth(liveRef.current + step, availableWidth()));
@@ -224,7 +243,7 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
         choose(clampWidth(defaultWidth, availableWidth()));
       }
     },
-    [availableWidth, choose, clampWidth, defaultWidth]
+    [availableWidth, axis, choose, clampWidth, defaultWidth]
   );
 
   const reset = useCallback(() => {
@@ -238,13 +257,13 @@ export function usePaneWidth(options: PaneWidthOptions): PaneWidthState {
    * compares, so a resize inside the allowed range re-renders nothing.
    */
   const fit = useCallback(() => {
-    const available = roomNode()?.clientWidth ?? 0;
+    const available = roomSize(roomNode());
     // Nothing is laid out yet, or the tab is hidden. The width stays put.
     if (available <= 0) return;
     const next = clampWidth(chosenRef.current, available);
     if (next === liveRef.current) return;
     apply(next);
-  }, [apply, clampWidth, roomNode]);
+  }, [apply, clampWidth, roomNode, roomSize]);
 
   /**
    * The carrier arrives through the `ref` of the element that owns the custom

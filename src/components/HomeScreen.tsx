@@ -20,8 +20,9 @@ import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
 import { useServedCount } from '@/hooks/useServedCount';
 import { cn } from '@/lib/cn';
-import { GHDIFF_REPO, repoUrl } from '@/lib/github/urls';
-import { parseGitHubInput, reviewTargetSplat } from '@/lib/reviewTarget';
+import { commitUrl, GHDIFF_REPO, repoUrl } from '@/lib/github/urls';
+import { reviewInputFrom } from '@/lib/resolveHost';
+import { reviewTargetSplat } from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 
 const creditsMarkup = {
@@ -57,7 +58,7 @@ const CARD =
 
 export function HomeScreen() {
   const navigate = useNavigate();
-  const { colorMode, session, watched } = useAppData();
+  const { colorMode, instance, session, watched } = useAppData();
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [editingAccount, setEditingAccount] = useState(false);
@@ -82,7 +83,18 @@ export function HomeScreen() {
     targetField.current?.focus();
   }
 
-  const viewer = session.viewer;
+  const identity = session.viewer;
+  const githubServed = instance.github.served;
+
+  // The whole instruction is the host moving inside the path — worth showing
+  // rather than describing, and shown on a forge this deployment serves.
+  const instruction = githubServed
+    ? {
+        from: 'github.com',
+        to: `${instance.host}/github.com:`,
+        path: 'owner/repo/pull/123',
+      }
+    : undefined;
 
   return (
     // `m-auto` on the column below, not `items-center`: auto margins take the
@@ -92,11 +104,13 @@ export function HomeScreen() {
     <main className="bg-surface flex min-h-0 flex-1 overflow-y-auto overscroll-none">
       {/* Neither of these is part of the page's own work, so both sit out of
           the column entirely, one in each top corner. The pull request button
-          is there only on a phone: every wider screen draws the bar itself
-          down the left of this page, and this would be a second way to the
-          same list. Without it a phone would have no way to the list at all
-          from here, which is the one screen a reviewer starts on. */}
-      <PullListButton className="phone:hidden fixed top-3 left-3 z-10" />
+          is there only where the bar is not drawn: on a phone, and on a
+          portrait screen. Every landscape screen wider than a phone draws the
+          bar itself down the left of this page, and this would be a second
+          way to the same list. Without it those screens would have no way to
+          the list at all from here, which is the one screen a reviewer
+          starts on. */}
+      <PullListButton className="phone:landscape:hidden fixed top-3 left-3 z-10" />
       <div className="fixed top-3 right-3 z-10 flex items-center gap-1">
         <LanguageMenu />
         <ColorModeToggle colorMode={colorMode} />
@@ -104,7 +118,7 @@ export function HomeScreen() {
 
       <div className="m-auto w-full max-w-2xl px-6 py-14">
         <h1 className="text-ink text-2xl font-semibold tracking-tight">
-          ghdiff.com
+          {instance.brand}
         </h1>
         {/* One line per thing the app does. Three clauses in one paragraph read
             as a sentence to get through; three lines read as a list. */}
@@ -116,28 +130,29 @@ export function HomeScreen() {
           <p>{m.home_screen_read_and_leave_comments()}</p>
         </div>
 
-        {/* The whole instruction is the host swap, which is worth showing
-            rather than describing. Square corners, because these two lines are
-            a diff and a diff has none. */}
-        <div
-          dir="ltr"
-          className="text-ink-muted mt-6 flex flex-col gap-px font-mono text-xs leading-6"
-        >
-          <code className="border-removed truncate border-l-2 pl-2">
-            <span className="text-removed">{'- '}</span>
-            <span className="bg-removed/15 text-removed rounded-xs px-0.5 font-semibold">
-              github
-            </span>
-            .com/owner/repo/pull/123
-          </code>
-          <code className="border-added truncate border-l-2 pl-2">
-            <span className="text-added">{'+ '}</span>
-            <span className="bg-added/15 text-added rounded-xs px-0.5 font-semibold">
-              ghdiff
-            </span>
-            .com/owner/repo/pull/123
-          </code>
-        </div>
+        {/* Square corners, because these two lines are a diff and a diff has
+            none. */}
+        {instruction != null && (
+          <div
+            dir="ltr"
+            className="text-ink-muted mt-6 flex flex-col gap-px font-mono text-xs leading-6"
+          >
+            <code className="border-removed truncate border-l-2 pl-2">
+              <span className="text-removed">{'- '}</span>
+              <span className="bg-removed/15 text-removed rounded-xs px-0.5 font-semibold">
+                {instruction.from}
+              </span>
+              /{instruction.path}
+            </code>
+            <code className="border-added truncate border-l-2 pl-2">
+              <span className="text-added">{'+ '}</span>
+              <span className="bg-added/15 text-added rounded-xs px-0.5 font-semibold">
+                {instruction.to}
+              </span>
+              {instruction.path}
+            </code>
+          </div>
+        )}
 
         <div className={`${CARD} mt-4`}>
           <form
@@ -145,27 +160,38 @@ export function HomeScreen() {
             onMouseDown={focusTargetField}
             onSubmit={(event) => {
               event.preventDefault();
-              const target = parseGitHubInput(input);
-              if (target == null) {
-                setError(
-                  m.home_screen_paste_a_github_pull_request_commit_or_compare()
-                );
+              const result = reviewInputFrom(input, {
+                ownHost: instance.host,
+              });
+              if (result.kind === 'target') {
+                const { target } = result;
+                // A target on a deployment that serves no GitHub is answered
+                // here, not by the forge gate's 404 after a navigation.
+                if (!githubServed) {
+                  setError(m.home_screen_serves_no_github());
+                  return;
+                }
+                setError(undefined);
+                void navigate({
+                  to: '/$',
+                  params: { _splat: reviewTargetSplat(target) },
+                });
                 return;
               }
-              setError(undefined);
-              void navigate({
-                to: '/$',
-                params: { _splat: reviewTargetSplat(target) },
-              });
+              setError(
+                githubServed
+                  ? m.home_screen_paste_a_github_pull_request_commit_or_compare()
+                  : m.home_screen_serves_nothing()
+              );
             }}
           >
-            <label className="sr-only" htmlFor="github-target">
+            <label className="sr-only" htmlFor="review-target">
               {m.home_screen_github_pull_request_commit_or_compare_url()}
             </label>
             <input
               dir="ltr"
               ref={targetField}
-              id="github-target"
+              id="review-target"
               value={input}
               placeholder="https://github.com/owner/repo/pull/123"
               enterKeyHint="go"
@@ -212,9 +238,9 @@ export function HomeScreen() {
               a middle-click, a right-click and the keyboard all behave the way
               the rest of the web does. */}
           <div className="border-line border-t">
-            {/* Before GitHub has said who this is, either control would be a
-                guess, and the wrong one is a link to sign in shown to somebody
-                who already has. The row keeps its 40px either way. */}
+            {/* Before GitHub has said who this is, either control would be
+                a guess, and the wrong one is a link to sign in shown to
+                somebody who already has. The row keeps its 40px either way. */}
             {session.checking ? (
               <div
                 className="flex h-10 animate-pulse items-center justify-center gap-1.5 motion-reduce:animate-none"
@@ -224,16 +250,16 @@ export function HomeScreen() {
                 <SkeletonBar className="size-[18px] shrink-0 rounded-full" />
                 <SkeletonBar className="h-[0.75em] w-28" />
               </div>
-            ) : viewer != null ? (
+            ) : identity != null ? (
               <Button
                 className="h-10 w-full justify-center rounded-none"
                 onClick={() => setEditingAccount(true)}
                 size="md"
                 variant="quiet"
               >
-                <ViewerAvatar size={18} viewer={viewer} />
+                <ViewerAvatar size={18} viewer={identity} />
                 <span className="min-w-0 truncate">
-                  {viewerDisplayName(viewer)}
+                  {viewerDisplayName(identity)}
                 </span>
               </Button>
             ) : (
@@ -267,24 +293,36 @@ export function HomeScreen() {
         )}
 
         {/* Pasting a URL is the page's own answer, and this is the answer for
-            the reviewer who never leaves github.com. It follows the form
-            because it is the same move, made by a button instead. */}
-        <div className="mt-10">
-          <SectionLabel>{m.home_screen_userscript()}</SectionLabel>
-        </div>
-        <div className={`${CARD} mt-2`}>
-          <UserscriptInstall />
-        </div>
+            the reviewer who never leaves the forge. It follows the form
+            because it is the same move, made by a button instead — and the
+            script is built for GitHub, so the offer stands whenever this
+            deployment serves it. */}
+        {githubServed && (
+          <>
+            <div className="mt-10">
+              <SectionLabel>{m.home_screen_userscript()}</SectionLabel>
+            </div>
+            <div className={`${CARD} mt-2`}>
+              <UserscriptInstall />
+            </div>
+          </>
+        )}
 
         {/* Nothing on this page moves until somebody pastes a URL, and a
             reviewer arriving with no pull request of their own to read has no
-            way to find out what the surface does. These are that way in. */}
-        <div className="mt-10">
-          <SectionLabel>{m.home_screen_examples()}</SectionLabel>
-        </div>
-        <div className={`${CARD} mt-2 p-1`}>
-          <ExampleTargets />
-        </div>
+            way to find out what the surface does. These are that way in, for
+            the hosts this deployment serves — so a deployment with nothing to
+            show shows nothing. */}
+        {instance.examples.length > 0 && (
+          <>
+            <div className="mt-10">
+              <SectionLabel>{m.home_screen_examples()}</SectionLabel>
+            </div>
+            <div className={`${CARD} mt-2 p-1`}>
+              <ExampleTargets />
+            </div>
+          </>
+        )}
 
         {/* The watch list itself, and not the pull requests it produces. The
             left bar lists those on every page, this one included, so a second
@@ -302,7 +340,7 @@ export function HomeScreen() {
         <Dialog
           className="p-4"
           open={editingAccount}
-          title={m.home_screen_github_account()}
+          title={m.home_screen_accounts()}
           onClose={() => setEditingAccount(false)}
         >
           <GitHubAccountPanel active={editingAccount} session={session} />
@@ -339,7 +377,7 @@ export function HomeScreen() {
             <IconBrandTwitterX aria-hidden="true" size={12} />
             <span className="underline">@imgggalvin</span>
           </a>
-          <BuildCommit />
+          <BuildCommit githubServed={githubServed} />
           <ServedCount />
         </p>
       </div>
@@ -360,18 +398,31 @@ export function HomeScreen() {
  * what a reviewer came here for and this commit is a diff like any other. It is
  * a `Link` and it stays in this tab, which is the one place in the app where
  * that is right: `GitHubTextLink` opens a new tab to keep a reviewer's scroll,
- * filter and fragment, and the home page has none of the three to lose.
+ * filter and fragment, and the home page has none of the three to lose. A
+ * deployment that serves no GitHub cannot open it here at all, so there it
+ * opens on github.com like every other forge link.
  */
-function BuildCommit() {
+function BuildCommit({ githubServed }: { githubServed: boolean }) {
   const sha = import.meta.env.VITE_COMMIT_SHA;
   if (sha.length === 0) return null;
+  if (!githubServed) {
+    // A deployment that serves no GitHub cannot open this commit in ghdiff,
+    // so it opens on github.com — in a new tab, the way every forge link does.
+    return (
+      <a
+        className={BUILD_LINK_CLASS}
+        href={commitUrl(GHDIFF_REPO, sha)}
+        rel="noreferrer"
+        target="_blank"
+        title={m.home_screen_the_commit_this_build_was_made_from({ sha })}
+      >
+        {sha.slice(0, 7)}
+      </a>
+    );
+  }
   return (
     <Link
-      className={cn(
-        'text-ink-faint font-mono text-xs',
-        'hover:text-ink hover:underline hover:decoration-dotted hover:underline-offset-2',
-        'focus-visible:ring-accent rounded-xs focus-visible:ring-1 focus-visible:outline-none'
-      )}
+      className={BUILD_LINK_CLASS}
       params={{
         _splat: reviewTargetSplat({
           kind: 'github-commit',
@@ -388,6 +439,12 @@ function BuildCommit() {
     </Link>
   );
 }
+
+const BUILD_LINK_CLASS = cn(
+  'text-ink-faint font-mono text-xs',
+  'hover:text-ink hover:underline hover:decoration-dotted hover:underline-offset-2',
+  'focus-visible:ring-accent rounded-xs focus-visible:ring-1 focus-visible:outline-none'
+);
 
 /**
  * How many diffs this deployment has served, beside the commit it was built

@@ -16,6 +16,7 @@ import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
 import { Route as ApiFileRouteImport } from './routes/api/file'
+import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as GhSplatRouteImport } from './routes/gh/$'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as ApiAuthRefreshRouteImport } from './routes/api/auth/refresh'
@@ -58,6 +59,11 @@ const ApiFileRoute = ApiFileRouteImport.update({
   path: '/api/file',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMediaRoute = ApiMediaRouteImport.update({
+  id: '/api/media',
+  path: '/api/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GhSplatRoute = GhSplatRouteImport.update({
   id: '/gh/$',
   path: '/gh/$',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
+  '/api/media': typeof ApiMediaRoute
   '/gh/$': typeof GhSplatRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/refresh': typeof ApiAuthRefreshRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
+  '/api/media': typeof ApiMediaRoute
   '/gh/$': typeof GhSplatRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/refresh': typeof ApiAuthRefreshRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
+  '/api/media': typeof ApiMediaRoute
   '/gh/$': typeof GhSplatRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/refresh': typeof ApiAuthRefreshRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/api/diff'
     | '/api/file'
+    | '/api/media'
     | '/gh/$'
     | '/api/auth/callback'
     | '/api/auth/refresh'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/api/diff'
     | '/api/file'
+    | '/api/media'
     | '/gh/$'
     | '/api/auth/callback'
     | '/api/auth/refresh'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/api/diff'
     | '/api/file'
+    | '/api/media'
     | '/gh/$'
     | '/api/auth/callback'
     | '/api/auth/refresh'
@@ -191,6 +203,7 @@ export interface RootRouteChildren {
   SetupRoute: typeof SetupRoute
   ApiDiffRoute: typeof ApiDiffRoute
   ApiFileRoute: typeof ApiFileRoute
+  ApiMediaRoute: typeof ApiMediaRoute
   GhSplatRoute: typeof GhSplatRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthRefreshRoute: typeof ApiAuthRefreshRoute
@@ -250,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/media': {
+      id: '/api/media'
+      path: '/api/media'
+      fullPath: '/api/media'
+      preLoaderRoute: typeof ApiMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gh/$': {
       id: '/gh/$'
       path: '/gh/$'
@@ -303,6 +323,7 @@ const rootRouteChildren: RootRouteChildren = {
   SetupRoute: SetupRoute,
   ApiDiffRoute: ApiDiffRoute,
   ApiFileRoute: ApiFileRoute,
+  ApiMediaRoute: ApiMediaRoute,
   GhSplatRoute: GhSplatRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthRefreshRoute: ApiAuthRefreshRoute,

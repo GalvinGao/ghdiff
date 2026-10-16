@@ -33,7 +33,12 @@
     "no-underscore-dangle": [
       "warn",
       {
-        "allow": ["_splat", "__GHDIFF_VERSION__", "__GHDIFF_LOCAL__"]
+        "allow": [
+          "_splat",
+          "__typename",
+          "__GHDIFF_VERSION__",
+          "__GHDIFF_LOCAL__"
+        ]
       }
     ]
   },
@@ -49,6 +54,7 @@
     "**/.tanstack/**",
     "**/.wrangler/**",
     "src/routeTree.gen.ts",
+    "src/lib/server/forges/gqlgen/",
     "worker-configuration.d.ts",
     "src/paraglide/**",
     "src/lib/server/ghdiff.user.js",

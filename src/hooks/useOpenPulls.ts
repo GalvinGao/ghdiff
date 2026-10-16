@@ -5,9 +5,10 @@ import {
   useSharedCache,
   useSharedQuery,
 } from './useSharedQuery';
+import type { RepoRef } from '@/lib/forges';
 import {
   formatWatchedRepo,
-  type OpenPullsData,
+  type OpenPullsAnswer,
   parseWatchedRepo,
   type WatchedRepo,
 } from '@/lib/pulls';
@@ -15,20 +16,25 @@ import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { m } from '@/paraglide/messages.js';
 
 export interface OpenPullsState {
-  data?: OpenPullsData;
+  data?: OpenPullsAnswer;
   loading: boolean;
   error?: string;
   reload(): void;
 }
 
-const EMPTY_DATA: OpenPullsData = { pulls: [], failures: [] };
+const EMPTY_DATA: OpenPullsAnswer = { viewers: {}, pulls: [], failures: [] };
 
 /** The watch list back out of the joined key the hook depends on. */
-function reposFromKey(key: string): WatchedRepo[] {
+function reposFromKey(key: string): RepoRef[] {
   return key
     .split(',')
     .map((entry) => parseWatchedRepo(entry))
-    .filter((entry): entry is WatchedRepo => entry != null);
+    .filter((entry): entry is WatchedRepo => entry != null)
+    .map((repo) => ({
+      forge: 'github' as const,
+      owner: repo.owner,
+      repo: repo.repo,
+    }));
 }
 
 /**
@@ -43,10 +49,10 @@ const PULLS_STALE_MS = 30_000;
  * The open pull requests of the watched repositories. The left bar is on every
  * page, so this runs for the whole session and one instance feeds every list.
  *
- * `ready` holds the first request back until the watch list has been read out of
- * storage. Without it the app asks GitHub about no repositories at all, and then
- * asks again a tick later. The credential needs no such wait: it is in a cookie
- * the browser attaches itself.
+ * `ready` holds the first request back until the watch list has been read out
+ * of storage. Without it the app asks the forge about no repositories at all,
+ * and then asks again a tick later. The credential needs no such wait: it is
+ * in a cookie the browser attaches itself.
  *
  * The answer is shared by every tab and kept on disk, so a new tab draws the
  * list the last one had before GitHub has answered it. A change of the watch
@@ -63,10 +69,12 @@ export function useOpenPulls(options: {
   // back out of it. The array's identity changes on every render of whatever
   // owns it, and a key built from the array would ask again each time. The
   // string compares by value. It is sorted, because the order is the list's to
-  // draw and not GitHub's to answer: a drag in the watch list reorders the rows
-  // on screen and asks GitHub nothing.
+  // draw and not the forge's to answer: a drag in the watch list reorders the
+  // rows on screen and asks nothing.
   const repoKey = repos.map(formatWatchedRepo).toSorted().join(',');
-  const queryKey = ['pulls.list', repoKey];
+  // The third part keeps a record from before the answer carried `viewers`
+  // — persisted or broadcast by an older tab — from ever matching this one.
+  const queryKey = ['pulls.list', repoKey, ''];
   const shared = useSharedCache();
   // The session the rows on screen were fetched under. A change of watch list
   // keeps them on screen until the new ones arrive, but only within that
@@ -74,7 +82,7 @@ export function useOpenPulls(options: {
   // carried across it would be the previous account's private ones.
   const rowsSession = useRef<number | undefined>(undefined);
 
-  const query = useSharedQuery<OpenPullsData>({
+  const query = useSharedQuery<OpenPullsAnswer>({
     queryKey,
     fetch: (signal) =>
       rpc.pulls.list({ repos: reposFromKey(repoKey) }, { signal }),

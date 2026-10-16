@@ -1,10 +1,10 @@
 import { useLocation } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
+import type { PullTarget } from '@/lib/pullScope';
 import {
-  type GitHubPullTarget,
-  type GitHubReviewTarget,
-  gitHubTargetFromSegments,
+  type ReviewTarget,
+  reviewTargetFromSegments,
 } from '@/lib/reviewTarget';
 
 /**
@@ -16,7 +16,7 @@ import {
  * review and a 404 alike. `useLocation` re-renders the caller on each
  * navigation.
  */
-function useCurrentTarget(): GitHubReviewTarget | undefined {
+export function useCurrentReviewTarget(): ReviewTarget | undefined {
   const pathname = useLocation({ select: (location) => location.pathname });
   return useMemo(() => {
     const segments = pathname.split('/').filter((part) => part.length > 0);
@@ -24,13 +24,13 @@ function useCurrentTarget(): GitHubReviewTarget | undefined {
     // navigation away, and reading through the prefix keeps the row highlighted
     // for that navigation instead of blinking off and on.
     const path = segments[0] === 'gh' ? segments.slice(1) : segments;
-    return gitHubTargetFromSegments(path);
+    return reviewTargetFromSegments(path);
   }, [pathname]);
 }
 
-/** The pull request the path names, if the path names one. */
-export function useCurrentPull(): GitHubPullTarget | undefined {
-  const target = useCurrentTarget();
+/** The pull request the path names, if it names one. */
+export function useCurrentPull(): PullTarget | undefined {
+  const target = useCurrentReviewTarget();
   return target?.kind === 'github-pull' ? target : undefined;
 }
 
@@ -41,8 +41,11 @@ export function useCurrentPull(): GitHubPullTarget | undefined {
  * alike — and the account menu marks that row in its list of installations,
  * because which of them the diff in front of the reviewer belongs to is the one
  * they are being asked about. So this asks for the owner rather than for a pull
- * request, which is what separates it from `useCurrentPull`.
+ * request.
  */
 export function useCurrentAccount(): string | undefined {
-  return useCurrentTarget()?.owner;
+  const target = useCurrentReviewTarget();
+  return target != null && target.kind !== 'local-diff'
+    ? target.owner
+    : undefined;
 }

@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { textResponse } from '@/lib/server/plainText';
+
 // The liveness answer, for the probe a platform fires every few seconds. It
 // depends on nothing but this server being up — no config, no credential, no
 // forge or store call — so a dependency's outage cannot read as this process
@@ -9,10 +11,7 @@ import { createFileRoute } from '@tanstack/react-router';
 // `/healthz` claims a dead address: one colon-less segment parses as no
 // target on either forge's grammar, the same reading `/setup` already holds.
 
-const getHealth = (): Response =>
-  new Response('ok', {
-    headers: { 'cache-control': 'no-store', 'content-type': 'text/plain' },
-  });
+const getHealth = (): Response => textResponse('ok');
 
 export const Route = createFileRoute('/healthz')({
   server: { handlers: { GET: getHealth } },

@@ -1,3 +1,4 @@
+import { getRouteApi } from '@tanstack/react-router';
 import {
   createContext,
   type ReactNode,
@@ -17,21 +18,27 @@ import {
   useWatchedRepos,
   type WatchedReposState,
 } from '@/hooks/useWatchedRepos';
+import type { InstanceLoaderData } from '@/lib/instance';
+
+const rootRoute = getRouteApi('__root__');
 
 // One owner for the state the whole app shares.
 //
-// Three of these five read a setting out of browser storage, and each of those
+// Three of these six read a setting out of browser storage, and each of those
 // three reads it through a jotai atom, so the store is the owner and two callers
 // cannot come to disagree — see `src/hooks/preferences.ts`.
 //
-// The other two are requests to GitHub, and they are here for the opposite
-// reason: mounting either twice would ask GitHub twice. `useOpenPulls` is the
-// watch list's own question. `useGitHubSession` reads nothing from storage at
-// all — the credential is in a cookie the browser attaches by itself — but one
-// answer to "who is this" serves the account menu, the review header, and every
-// screen that needs to know whose name a comment will carry.
+// Two more are requests, and they are here for the opposite reason: mounting
+// either of them twice would ask twice. `useOpenPulls` is the watch list's own
+// question. `useGitHubSession` reads nothing from storage at all — the
+// credential is in a cookie the browser attaches by itself — but one answer to
+// "who is this" serves the account menu, the review header, and every screen
+// that needs to know whose name a comment will carry. The last is no request
+// at all: what this deployment serves arrives with the page in the root
+// route's loader data, which is what the home page's box validates against
+// and the parse behind the watch list reads.
 //
-// So this provider stays, and the rule with it. It is the one place the five are
+// So this provider stays, and the rule with it. It is the one place the six are
 // mounted, it is where the request's inputs are wired to the settings it depends
 // on, and it is what carries the answer to a bar and a page that are never
 // unmounted between pull requests.
@@ -39,6 +46,7 @@ import {
 export interface AppData {
   codeFont: CodeFontState;
   colorMode: ColorModeState;
+  instance: InstanceLoaderData;
   pulls: OpenPullsState;
   session: GitHubSessionState;
   watched: WatchedReposState;
@@ -56,6 +64,7 @@ export const AppDataContext = createContext<AppData | null>(null);
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const codeFont = useCodeFont();
   const colorMode = useColorMode();
+  const instance = rootRoute.useLoaderData();
   const session = useGitHubSession();
   const watched = useWatchedRepos();
   const pulls = useOpenPulls({
@@ -77,8 +86,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [watching]);
 
   const value = useMemo<AppData>(
-    () => ({ codeFont, colorMode, pulls, session, watched }),
-    [codeFont, colorMode, pulls, session, watched]
+    () => ({ codeFont, colorMode, instance, pulls, session, watched }),
+    [codeFont, colorMode, instance, pulls, session, watched]
   );
 
   return (

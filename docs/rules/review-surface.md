@@ -5,15 +5,13 @@ line marks, the comments UI, the file tree, fragments and anchors, panes, and
 the phone layout.
 
 **The bar's two widths travel; a drag does not.** `PullRail` transitions `width`
-over 200 ms, so a collapse reads as the reviewer's own press rather than as the
-page breaking. A drag must not travel: `usePaneWidth` repaints the custom
-property on every pointermove, and a transition would leave the bar behind the
-pointer. `PaneResizeHandle` carries `data-resizing` for the length of a drag and
-is a child of the bar, so `has-[[data-resizing]]:transition-none` is the whole
-test. The toolbar row under the header clips for the same 200 ms: both buttons
-in it are `shrink-0`, and a row narrower than the two of them would put them
-over the diff. The list and the header need nothing — one scrolls and the other
-truncates.
+over 200 ms, so a collapse reads as the reviewer's own press. A drag must not
+travel: `usePaneWidth` repaints the custom property on every pointermove, and a
+transition would leave the bar behind the pointer. `PaneResizeHandle` carries
+`data-resizing` for the length of a drag and is a child of the bar, so
+`has-[[data-resizing]]:transition-none` is the whole test. The toolbar row under
+the header clips for the same 200 ms: both buttons in it are `shrink-0`, and a
+row narrower than the two of them would put them over the diff.
 
 **The watch list and the reload sit at the top of the bar, not at its foot.**
 They act on the list as a whole, and the top of the list is where a reviewer
@@ -44,11 +42,11 @@ out of the two arrays too. `patchFitsNewFile` is asked before every rebuild and
 foot of the screen says why. Never hydrate a side that has not been checked.
 
 **A file's commit is `refs/pull/{n}/head`, its own sha, or the range's head.**
-`newSideRef` in `src/routes/api/file.ts` answers for all three targets without a
-second request, and the pull ref resolves in the base repository even when the
-head belongs to a fork. A compare range typed across two forks addresses its
-head as `owner:branch`, which no source can read, so that one range gets no
-unmodified lines and says so.
+`newSideRef` in `src/lib/server/forges/github.ts` answers for all three targets
+without a second request, and the pull ref resolves in the base repository even
+when the head belongs to a fork. A compare range typed across two forks
+addresses its head as `owner:branch`, which no source can read, so that one
+range gets no unmodified lines and says so.
 
 **Which source answers turns on the credential, and only on that.** A caller
 with none has sixty REST requests an hour and needs them for the comments and
@@ -74,19 +72,15 @@ only where there is something to reveal, `change` and `rename-changed`: a new or
 deleted file arrives whole, and a pure rename has no lines at all. Above 100 000
 lines the library stops highlighting rather than tokenizing forever, and the
 virtualizer lays out what it needs. So the only limit worth stating is the byte
-one, and `MAX_FILE_BYTES` is 4 MiB. Verified with a 3 MB, 54 434-line file
-expanded end to end — split and unified — which laid out to a million pixels and
-scrolled.
+one, and `MAX_FILE_BYTES` is 4 MiB.
 
 **Both ends hold that limit, because neither one can hold it alone.**
 `content-length` counts the bytes on the wire, and GitHub compresses: 4.8 MB of
-word list arrives declaring 1.4 MB, and a chunked answer declares nothing. A
-route that trusted the header would wave both through, which is exactly what the
-deployed one did while the same check fired in development, where the runtime
-negotiated no compression. So `statedSize` answers with nothing unless the
-header is a figure about the file — no `content-encoding`, and a number — and
-the route turns away only what it can prove. `readCapped` in `useDiffFileLoader`
-counts the decoded bytes as they arrive and stops there, which is the guard that
+word list arrives declaring 1.4 MB, and a chunked answer declares nothing. So
+`statedSize` in `src/routes/api/file.ts` answers with nothing unless the header
+is a figure about the file — no `content-encoding`, and a number — and the route
+turns away only what it can prove. `useDiffFileLoader` counts the decoded bytes
+as they arrive — `readStreamedText` with `maxBytes` — which is the guard that
 always holds: the browser is where a file becomes a string, and the string is
 the cost the limit is about. Both ends read `MAX_FILE_BYTES` and
 `FILE_TOO_LARGE` from `src/lib/diffHydration.ts`, so they cannot come to differ
@@ -95,12 +89,12 @@ about the figure or the sentence.
 **A changed line that says less than its colour claims is dimmed, and never
 hidden.** `findLineMarks` in `src/lib/lineMarks.ts` reads each file's own change
 blocks and names the pairs whose two sides differ only in whitespace — the
-`git diff -w` rule — which are a formatting pass, so both sides go quiet. All of
-it is text arithmetic over the patch, ready at parse time, and honest about its
-limit: this is not SemanticDiff's syntax tree, and `0x80` against `128` still
-reads as a change. Dim and never hide, because a hidden line would break the
-promise this app is built on — a comment anchored to GitHub's own diff lines —
-where a dim one can still be read, selected and commented on.
+`git diff -w` rule — which are a formatting pass, so both sides go quiet. It is
+text arithmetic over the patch, ready at parse time, and honest about its limit:
+`0x80` against `128` still reads as a change. Dim and never hide, because a
+hidden line would break the promise this app is built on — a comment anchored to
+GitHub's own diff lines — where a dim one can still be read, selected and
+commented on.
 
 **The marks travel through the one per-line door the viewer has.**
 `@pierre/diffs` draws each file in a shadow root and has no line-decoration
@@ -120,9 +114,9 @@ mutates in place and a filter change reuses, so an entry cannot go stale.
 `ReviewViewer` passes `item.fileDiff` to every annotation pass through that
 public contract rather than reaching into the renderer's protected cache.
 
-One thing GitHub decides rather than this app: a line comment written on an
+One thing the forge decides rather than this app: a line comment written on an
 expanded line of a **pull request** is a line outside the diff, and the review
-comment API refuses one. The failure arrives as GitHub's own sentence in the
+comment API refuses one. The failure arrives as the forge's own sentence in the
 strip along the foot of the screen, which is where every other comment failure
 already lands. A commit and a compare range keep their comments in the browser
 and take them anywhere.
@@ -365,50 +359,141 @@ ignores the Enter and Escape an IME sends to commit or drop a composition, or a
 Chinese query would step the old search instead of landing. And opening the bar
 takes a phone's file list away, which sits over the very column the bar is in.
 
-**The wait says how much has arrived, and never how much is left.** A patch of
-tens of megabytes is a long stare at one sentence — oven-sh/bun#30412 is 43.3 MB
-in 1,654 chunks over four seconds — so `useReviewPatch` reads the body through
-`readStreamedText` and `ReviewStatusPanel` prints the count. A count and not a
-percentage, because there is no total to divide by: github.com's `.diff` answers
-chunked and states no `content-length`, and where GitHub does state one it
-counts compressed bytes while the stream yields decoded ones. A bar filling
-against an invented denominator would be a lie that runs past 100.
+**A line comment is posted where it is written, or staged as the forge's own
+draft.** The composer on a pull request keys off whether the target holds a
+draft review yet: before one it carries two actions — **Comment**, solid, posts
+at once, and **Add review suggestion**, outline, starts the draft with this
+comment — and once one exists the single **Add review suggestion** joins it, the
+way github.com's own composer works once a review is pending. The draft lives on
+the forge, not in this browser — a thread on the viewer's pending review on
+GitHub — so it survives a reload and shows on the forge's own UI as pending, and
+a draft started there lists here. Staging is a forge write and asks for a
+credential, because the draft is the user's own: with none, **Add review
+suggestion** is disabled and a Tooltip says to sign in to stage a comment.
+Deleting a draft is the same kind of write, and Delete is withheld while any
+write is on the wire — the card offers it again once the write settles — so a
+create that has not landed cannot outlive its own card and wait for the verdict
+to publish it. A commit and a compare range have no verdict to publish a draft
+with, so their composer keeps the one action — **Save comment**, with the hint
+that the comment lives in this browser — and the thread stays in this browser
+under `ghdiff-comments:<targetKey>`. A draft thread can never be misread as
+posted: its card draws a dashed accent border (`border-dashed border-accent/60`)
+and a **Draft** chip where a pending one's **Posting…** sits, the sidebar's rows
+draw the same chip, and the thread draws no reply form — a draft takes no
+replies. A reply staged on github.com under a posted thread is a draft too, but
+it belongs to that thread: it joins the posted thread's card, carries the
+**Draft** chip on its own message and on the card, and keeps the posted thread's
+solid border, since the rest of the thread is published. It also has a Delete of
+its own, the draft's question and the drafts endpoint behind it, so dropping it
+never deletes the published messages around it. The header's **Review** button
+counts what is waiting — **Review (3)**, or the count beside the verdict already
+on record — and a staged reply stays in that count while its posted thread's own
+write is in flight or has failed, since a failed resolve leaves the reply on the
+forge for the verdict to publish. The submit dialog lists the draft threads
+above the note, `path:line` and the body's first line each. The note rule
+relaxes for them: `needs-note` fires only when the body is empty and nothing is
+drafted. On the submit the verdict publishes them all:
+`POST …/reviews/{id}/events` on GitHub.
 
-What reaches React is decided by the label, not the chunk: `formatBytes` is
-compared before the count is written, which turned those 1,654 reports into
-about 450 renders of a four-line panel. The figure is `tabular-nums`, or 9.9 MB
-becoming 10.0 MB shifts every digit beside it and the number reads as the page
-redrawing rather than as the download moving. It is shown only while `state` is
-`'fetching'`: the parse and the highlighters are not measured in bytes, and a
-figure left on screen through them would read as a download that had stalled.
+**A thread resolves on its forge, and the press is on the card.** A forge thread
+that carries a `threadId` — every resolvable thread, so never a draft and never
+a browser-only comment — offers **Resolve thread** in the open card's header
+row, beside Delete and Close, and a resolved thread's collapsed one-line card
+offers **Unresolve** in the same slot. The press flips the mark optimistically:
+the card collapses or reopens at once, the sidebar row re-sorts with it, and the
+button holds until the forge answers. A refusal rolls the flip back and puts the
+forge's own sentence on the thread — who may resolve is the forge's answer, not
+this app's (GitHub: write access). A resolved thread stays collapsed to one line
+in the diff until it is pressed, and sorts after the open threads in the
+comments list.
+
+**Copy JSONL hands the staged review to an agent.** A quiet button in the submit
+dialog's footer copies it as line-per-object JSON — `reviewToJsonl` in
+`src/lib/reviewExport.ts` — in the grammar of
+[hunk](https://github.com/modem-dev/hunk)'s `agent-context.json`: the review
+first, then one object per comment, a comment's side stated as the range it
+names — `newRange` on the additions side, `oldRange` on the deletions one — and
+the body the markdown as written. No patch is embedded; the agent opens the
+files itself. The button is disabled when there is nothing staged and no note,
+because there would be nothing to copy.
+
+```jsonl
+{"type":"review","target":"github.com:owner/repo#123","url":"https://github.com/owner/repo/pull/123","title":"…","summary":"the note, when there is one"}
+{"type":"comment","path":"src/lib/a.ts","newRange":[42,45],"author":"galvin","body":"…"}
+{"type":"comment","path":"src/lib/b.ts","oldRange":[10,10],"author":"galvin","body":"…"}
+```
+
+**The wait says how much has arrived, and never how much is left.**
+oven-sh/bun#30412 is 43.3 MB in 1,654 chunks over four seconds, so
+`useReviewPatch` reads the body through `readStreamedText` and
+`ReviewStatusPanel` prints the count. A count and not a percentage, because
+there is no total to divide by: github.com's `.diff` answers chunked and states
+no `content-length`, and where GitHub does state one it counts compressed bytes
+while the stream yields decoded ones. What reaches React is decided by the
+label, not the chunk: `formatBytes` is compared before the count is written,
+which turned those 1,654 reports into about 450 renders of a four-line panel.
+The figure is `tabular-nums`, and it is shown only while `state` is
+`'fetching'`: the parse and the highlighters are not measured in bytes.
 
 `readStreamedText` in `src/lib/streamText.ts` is the one decode loop, and both
-things this app fetches use it — the patch with no ceiling, because 43 MB is a
-real diff, and a whole file with `MAX_FILE_BYTES`. `TextDecoder` is fed
-`{ stream: true }`, or a character split across two chunks decodes as two
-replacement characters.
+things this app fetches use it — the patch with no ceiling, and a whole file
+with `MAX_FILE_BYTES`. `TextDecoder` is fed `{ stream: true }`, or a character
+split across two chunks decodes as two replacement characters. The parse is the
+other wait and it is not measured yet: `buildReviewData` runs `parsePatchFiles`
+over the whole patch in one synchronous call, so the tab is frozen for its
+duration and no message can update.
 
-The parse is the other wait and it is not measured yet. `buildReviewData` runs
-`parsePatchFiles` over the whole patch in one synchronous call, so the tab is
-frozen for its duration and no message can update. Splitting the patch on its
-own `diff --git` boundaries would give both a figure and a responsive tab; the
-count of files is already known from `changed_files`.
+**A review is a snapshot of the diff at load; the header's refresh takes a new
+one.** Nothing polls, and no HTTP layer caches the patch, so a branch that moved
+under an open review stays invisible until the reviewer asks. The press re-runs
+the whole no-store read and asks for the pull request's details with it, and the
+bar draws the button in every patch state, so an errored diff retries from there
+too. What comes back is keyed off the entries the new patch names: the comments
+and the read marks re-list on their own, and the fragment is applied again, so
+the scroll holds.
+
+**The tab belongs to the review on screen.** `useDocumentTitle` names it after
+the change — `Fix the bug · github.com/owner/repo #123 · ghdiff`, the host
+always in the path — which `reviewTabTitle` in `src/lib/reviewTarget.ts` builds,
+falling back to the bare place while the pull request's details are still
+arriving. `useReviewFavicon` clips the runner emoji and paints two octicon marks
+on the ground that frees, from `reviewFaviconDataUri` in
+`src/lib/reviewFavicon.ts`. The top mark is the kind of diff, always in the
+accent — with a fourth state, the draft-PR octicon, where the state is the
+glyph's shape and its colour never changes. The bottom mark is the head commit's
+checks in the watch list's colours: green check, red cross, and a solid amber
+dot while they run — github.com's own favicon vocabulary on a pull request, a
+bare check, a bare cross, and a solid yellow dot — and the mark keeps those
+colours on a draft too. The clip is only as wide as what sits on it: the whole
+right half while two marks stand there, just the top quarter when the type mark
+stands alone, so a commit and a compare keep three quarters of the runner. Each
+glyph carries a thin halo in the accent ink under its fill — a bare near-white
+mark vanishes on a light tab strip and a bare near-black one on a dark — and the
+dot is the one mark that goes without. That check axis rides `pulls.get` as
+`PullDetails.check` — GraphQL, because REST carries no rollup — and keeps the
+watch list's contract: no token, no mark, and a failed read costs the mark
+rather than the details. `'none'` paints no mark either: the branch has no
+checks, and the marks only speak when there is something to say. Both hooks
+write onto the document and restore what they found on unmount, so every other
+page keeps the app's own title and favicon; the favicon's hexes are read off the
+CSS tokens at paint time, and a watch on the scheme attribute repaints it
+however the flip arrives — the toggle, the platform, or another tab.
 
 **A phone gets one layout, and 480px is where it starts.** `--breakpoint-phone`
 in `src/globals.css` is 30rem, and `useIsPhone` states the same figure for the
 answers CSS cannot give. 480 sits above the widest phone held upright — an
-iPhone 17 Pro Max reports 440 — and well under the 640 Tailwind calls `sm`, so a
-tablet and a narrow desktop window keep the layout they had. Nothing below that
-line is a second design: each of the app's two columns becomes a button, and the
-diff takes the width they were using.
+iPhone 17 Pro Max reports 440 — and well under the 640 Tailwind calls `sm`.
+Nothing below that line is a second design: each of the app's two columns
+becomes a button, and the diff takes the width they were using.
 
 `PullRail`'s own element is `max-phone:hidden` and `PullListButton` stands in
 for it, from the leftmost control on the screen. Hidden and not unmounted, so
 the width, the collapse and the scroll the bar was left at survive the window
 widening again. The button asks `useAppData()` itself rather than being handed
-the list, the way the bar does, so the two cannot disagree about what is open.
-Both the review header and the home page draw it: the home page is where a
-reviewer starts, and it has no header of its own, so it sits in the top corner
+the list, so the two cannot disagree about what is open; it reads the current
+review off `useCurrentReviewTarget` and labels its glyph with the neutral
+`pullNoun()` from `src/lib/forges.ts`. Both the review header and the home page
+draw it: the home page has no header of its own, so it sits in the top corner
 opposite the colour toggle.
 
 The file list is over the diff on a phone rather than beside it —
@@ -422,10 +507,42 @@ every toggle.
 Two columns of code on a phone is about twenty characters each, so
 `defaultViewerControls` in `src/lib/viewerControls.ts` starts one unified. It is
 a default and nothing else: the control in the header writes the whole set to
-storage, and from that press the screen is not consulted again — this visit or
-the next. `null` is what says nobody has pressed anything, which is why
-`acceptViewerControls` refuses an object with none of the five fields in it
-rather than reading it as the default set: those two answers differ on a phone.
+storage, and from that press the screen is not consulted again. `null` is what
+says nobody has pressed anything, which is why `acceptViewerControls` refuses an
+object with none of the five fields in it rather than reading it as the default
+set: those two answers differ on a phone.
+
+**A portrait screen stacks the review: the file list is a band above the diff,
+and the bar is a button.** The trigger is `orientation: portrait` stacked on the
+`phone` variant — every rule is written `phone:portrait:` — so it is a media
+query and no figure is stated anywhere: a portrait monitor and an upright tablet
+match, a phone is already below the width the `phone` variant starts from, and a
+landscape screen is untouched. The left bar takes the phone's answer —
+`portrait:hidden`, with `PullListButton` standing in from the leftmost control,
+its `phone:hidden` become `phone:landscape:hidden` — because the stacked review
+takes the screen's whole width. The review grid's tracks are classes, not an
+inline style: one column as the base, then `phone:landscape:` names the
+sidebar's width property in a column and `phone:portrait:` the height property
+in a row. The two are mutually exclusive media queries, so which template
+applies never turns on the stylesheet's ordering. Classes rather than the
+JavaScript ternary they replaced, because a class is drawn at the first paint: a
+portrait monitor is the machine's own shape, and a template that arrived with
+hydration would rearrange the screen under the reviewer on every load.
+
+Both resize hooks stay mounted, and the stylesheet picks the seam.
+`useSidebarHeight` is `usePaneWidth` on its `axis: 'y'` — the drag reads
+`clientY`, the room reads `clientHeight`, the cursor is `row-resize` and the
+arrows are Up and Down — behind its own `--ghdiff-sidebar-height` property and
+its own stored choice (`ghdiff-sidebar-height`), so turning the monitor back
+gives the desktop sidebar its width untouched. Both handles are rendered and the
+visibility classes decide: `portrait:hidden` on the width seam,
+`landscape:hidden` on the height one, `max-phone:hidden` on both. The band is
+the sidebar's own `flex-col` in a shorter row, header and footer and all, with
+its border moved from the side to the bottom; its figures are 144 minimum, 288
+by default, 560 at most, and `VIEWER_MIN_HEIGHT` — 320 — is what the diff keeps.
+The file-list toggle stays phone-only, because the tree is always on screen in
+the band, and the viewer's default controls stay width-driven: two columns of
+code read fine at a portrait monitor's full width.
 
 **The pull request list on a phone is a sheet, not a card.** `Dialog` takes
 `presentation="sheet"`, and `PullListButton` is the one caller that asks for it:
@@ -486,9 +603,8 @@ viewer and the paths for the tree from one pass. Never filter one without the
 other.
 
 **The path search is the filter's query, not the tree's search.**
-`@pierre/trees` has a search box of its own, and it is off (`search: false`). It
-rendered inside the tree's scroll region, below the sidebar's own controls, and
-it narrowed the tree while the diff kept every file. `PathSearchField` in
+`@pierre/trees` has a search box of its own, and it is off (`search: false`): it
+narrowed the tree while the diff kept every file. `PathSearchField` in
 `ReviewSidebar` writes `filter.query` instead, which `applyReviewFilter` tests
 along with the preset and the statuses. Closing the field clears the query, so
 no hidden control can hide files.
@@ -541,15 +657,11 @@ around a 16px glyph and not the 28 around 13 every other icon button in this app
 takes, and `HEADER_PREFIX_PULL` gives back the 8px by which the header's 16px
 padding overshoots the separator's own inline inset. Both figures are the
 library's defaults, and neither is a custom property this app can read, so a
-change to either has to be answered in `ReviewViewer`. Untouched, the two
-chevrons sat six pixels and three pixels of glyph apart, which reads as one
-column that failed to line up rather than as two controls.
-
-`HEADER_METADATA_PULL` is the same idea at the other end of the row. A quiet
-button's horizontal padding is its hover box and not its text, so `Viewed`
-stopped short of the line the header's own padding draws, and its box sat
-further from `+N` than `+N` sits from `-N`. The button gives both back, and its
-hover box is then the only thing that reaches past either.
+change to either has to be answered in `ReviewViewer`. `HEADER_METADATA_PULL` is
+the same idea at the other end of the row: a quiet button's horizontal padding
+is its hover box and not its text, so `Viewed` stopped short of the line the
+header's own padding draws — the button gives both back, and its hover box is
+then the only thing that reaches past either.
 
 **A jump opens the file it lands on, and one file is spared the fold.** A scroll
 to a folded file lands on a header and shows nothing, so the tree, the comment
@@ -565,7 +677,7 @@ writes two things onto an item — its comments and its fold. So the version is
 low bit for the fold, and neither input can hide a change in the other. Only the
 items that carry something are rebuilt. The viewer relays out from the first
 item whose version moved, so rebuilding all of them would relay out the whole
-diff on every press.
+diff on every press. Bump the version whenever annotations change.
 
 **`CommentMetadata` is one interface, not a union.** `DiffLineAnnotation<T>`
 resolves its metadata through a conditional type, so a union `T` distributes
@@ -574,23 +686,19 @@ instead.
 
 **Client hooks depend on strings, not on the target object.** The target comes
 from the `/$` loader, so its identity changes on every re-run of that loader.
-`useReviewComments` derives `storageKey`, `pullQuery`, and `pullRepo` and
+`useReviewComments` derives its storage keys, `targetKey`, and `pullRef` and
 depends on those.
-
-**Bump the version when annotations change.** `CodeView` keys an item update off
-`id` and `version`. `ReviewScreen` uses the comment revision as the version.
 
 **Highlighting runs in workers.** `WorkerPoolProvider` wraps the whole app, and
 the viewer waits for `useWorkerPoolReady`. Shiki on the main thread was the
 whole cause of scroll stutter: on one large diff it gave a p99 frame of 135 ms
 with 9% of frames dropped, and the pool took that to a p99 of 17 ms with none
-dropped. Do not mount a `CodeView` outside the provider.
-
-Two settings keep that worker alive under Vite. The `Worker` constructor names
-`{ type: 'module' }`, because Vite otherwise builds a classic worker that
-rejects the entry's first `import`. And `vite.config.ts` sets
-`worker.format: 'es'`, because Vite's default `iife` flattens every grammar into
-the entry: 834 kB up front instead of 211 kB plus one chunk per language.
+dropped. Do not mount a `CodeView` outside the provider. Two settings keep that
+worker alive under Vite. The `Worker` constructor names `{ type: 'module' }`,
+because Vite otherwise builds a classic worker that rejects the entry's first
+`import`. And `vite.config.ts` sets `worker.format: 'es'`, because Vite's
+default `iife` flattens every grammar into the entry: 834 kB up front instead of
+211 kB plus one chunk per language.
 
 **A comment card never changes height.** `@pierre/diffs` watches each annotation
 with a `ResizeObserver` and relays out the virtualized list when one resizes, so
@@ -598,32 +706,26 @@ with a `ResizeObserver` and relays out the virtualized list when one resizes, so
 and the card keeps it. Reading a long comment happens in `CommentExpansion`, a
 portaled fixed-position layer that grows from the card's own rectangle, so the
 card in the diff is untouched. A clipped body is `overflow: hidden`, which also
-makes a late-loading image harmless. Never let a card grow in place.
-
-A reply is the one thing that re-measures a card, because it adds a message to
-the thread the height was taken from. That is one relayout for one deliberate
-act, and it is the same relayout posting the first comment on a line already
-costs. Everything else stays fixed.
+makes a late-loading image harmless. Never let a card grow in place. A reply is
+the one thing that re-measures a card, because it adds a message to the thread
+the height was taken from — one relayout for one deliberate act, the same
+relayout posting the first comment on a line already costs.
 
 **A comment says who wrote it with a picture, and the picture fits the row it
 lands in.** `src/components/AuthorAvatar.tsx` is that one square: round for a
 person, `rounded-sm` for an app, whose logo is drawn to fill a square and loses
 its corners to a circle. Its box is a `size` in pixels on the style attribute
 rather than a class, so a picture that arrives late or never arrives at all
-cannot resize what holds it. The three places it goes take three sizes for one
-reason each. The card in the diff takes **16px**, which fits inside the 20px
-line box the login already draws, so a card that has picked its height keeps it.
-The open thread takes 20px, and the sidebar's list takes 20px against a row
-already fixed at `ROW_HEIGHT`. The login sits beside every one of them, so the
-picture is `aria-hidden` and adds nothing to a reader who cannot see it.
-
-The panel's own heading carries none, and neither does the composer. That
-heading says `4 comments` above four different authors, so one picture there
-would name only the first of them.
-
-A comment the reviewer has just written is shown before GitHub answers, so
+cannot resize what holds it. The card in the diff takes **16px**, which fits
+inside the 20px line box the login already draws, so a card that has picked its
+height keeps it; the open thread takes 20px, and the sidebar's list takes 20px
+against a row already fixed at `ROW_HEIGHT`. The login sits beside every one of
+them, so the picture is `aria-hidden`. The panel's own heading carries none, and
+neither does the composer: that heading says `4 comments` above four different
+authors, so one picture there would name only the first of them. A comment the
+reviewer has just written is shown before the forge answers, so
 `useReviewComments` takes `viewerAvatarUrl` alongside `viewerLogin` and puts it
-on that optimistic message. Without it the message draws its initial and then
+on that optimistic message — without it the message draws its initial and then
 swaps to the picture a moment later, on the one comment the reviewer is watching
 most closely.
 
@@ -639,8 +741,7 @@ answer is the card's tall wrap. The height goes on with the width, or the scroll
 region carries a scrollbar it is about to lose and every paragraph wraps eight
 pixels early. And what is measured is the padded box inside the scroll region,
 never the region: the region is `h-full` of a panel still the height of the
-card, so its `scrollHeight` can never report less than the card, which is what
-used to leave a band of empty panel under the last line.
+card, so its `scrollHeight` can never report less than the card.
 
 **A comment body is untrusted, and the schema is what makes it safe.**
 `CommentBody` parses raw HTML with `rehype-raw` and then filters it with
@@ -653,8 +754,8 @@ descriptions full of holes. Widening that schema means deciding a tag is safe
 against a body any GitHub user can write, so do not widen it without saying here
 why the addition cannot carry script or a navigation.
 
-**A private attachment loads from the address GitHub signed, not the one the
-body wrote.** `github.com/user-attachments/assets/<uuid>` answers only
+**A private GitHub attachment loads from the address GitHub signed, not the one
+the body wrote.** `github.com/user-attachments/assets/<uuid>` answers only
 github.com's own cookie, which a cross-site `<img>` never carries, so a private
 description drew a broken picture. `pulls.get` asks for the `full` media type,
 and `readSignedAttachments` in `src/lib/attachments.ts` reads `body_html` for
@@ -667,7 +768,8 @@ body. A signature lasts five minutes and the card mounts only when opened, so a
 signed file that fails once its signature is old asks `usePullDetails` to fetch
 again; a young one never does, which is what keeps a real 404 from looping. The
 age is measured from the answer's arrival against the token's own `exp - nbf`,
-so no two clocks are compared.
+so no two clocks are compared. A body with no signed address falls back to the
+media proxy below.
 
 Review comments take the same path with one difference. `comments.list` asks for
 the same media type and each `CommentPayload` carries its own `attachments`, but
@@ -679,21 +781,36 @@ commented item's version, and the viewer would relayout the diff under a
 reviewer who only scrolled a picture into view. The map is never written to
 browser storage, because every address in it is dead within minutes.
 
+**An image the forge keeps behind its own sign-in goes through the media
+proxy.** GitHub's form of it is the `/owner/repo/assets/…` attachment and the
+raw host's file on a private repository, both of which demand github.com's own
+session — and the reviewer's grant is sealed on the server. So `BodyImage`
+passes every `src` it has no signed address for through `mediaSrc` in
+`src/lib/mediaUrl.ts`, which points an assets or raw address at `/api/media` and
+leaves everything else — a foreign host, a data URL, `user-images` and avatars,
+which are public already — alone. The target comes from
+`useCurrentReviewTarget()`, read off the path the way every other reader gets
+it, so the diff card, the expansion overlay, the sidebar list and the
+description all inherit the rewrite with no prop threading, and the hook living
+in the image component keeps the memoized body parse out of it. What the proxy
+does with the address — the host check, the redirect rule, the `image/*` gate —
+is written up with the route in `docs/rules/auth-and-forges.md`.
+
 **A task list's box is drawn, not a real checkbox.** A `- [x]` reaches
 `CommentBody` as `<input type="checkbox" checked disabled>`, and a native
 control is the wrong answer to it twice over: the browser paints one in the
 platform's own blue, which is the single colour this app never uses, and it
-offers a press that can change nothing — the body belongs to GitHub, and ghdiff
-posts no edit of it. `disabled` settles the press alone and leaves the paint, so
-`TaskMarker` draws the box instead, in the tones the rest of a body already
-uses. It hangs in the bullet's own lane: the box is 1em wide with 0.4em after it
-and -1.4em before it, so its advance is zero and the item's first line and every
-wrapped line start on the list's own content edge. That pull is stated on the
-`li` and not on the box, because a checkbox written as raw HTML outside a list
-has no bullet lane to hang in, and the `li` drops its marker in the same breath
-so an item carries one box and not a bullet as well. The box has no `<title>`:
-one tooltip per box would follow the pointer down a whole checklist, and
-`role="img"` with `aria-label` names the state and draws nothing.
+offers a press that can change nothing — the body belongs to the forge, and
+ghdiff posts no edit of it. `disabled` settles the press alone and leaves the
+paint, so `TaskMarker` draws the box instead, in the tones the rest of a body
+already uses. It hangs in the bullet's own lane: the box is 1em wide with 0.4em
+after it and -1.4em before it, so its advance is zero and the item's first line
+and every wrapped line start on the list's own content edge. That pull is stated
+on the `li` and not on the box, because a checkbox written as raw HTML outside a
+list has no bullet lane to hang in, and the `li` drops its marker in the same
+breath so an item carries one box and not a bullet as well. The box has no
+`<title>`: one tooltip per box would follow the pointer down a whole checklist,
+and `role="img"` with `aria-label` names the state and draws nothing.
 
 **The address names the file and the lines.** `src/lib/diffAnchor.ts` owns the
 fragment and `src/hooks/useDiffAnchor.ts` owns the two directions. The grammar
@@ -730,11 +847,9 @@ states a fragment, so the router empties the address the moment a reviewer
 leaves a review — and the viewer is taken down after that, reporting its
 selection away as it goes. `syncSelection` answers a selection of nothing with
 the last file's own fragment, so that write used to land on the page the
-reviewer had just arrived at: the home page wearing `#diff-src/lib/byteSize.ts`,
-or the next pull request wearing a file from the one before it. So
-`useDiffAnchor` drops the file it is holding the moment the fragment goes empty.
-An empty fragment names no file, and a file it does not hold is one it cannot
-write back.
+reviewer had just arrived at. So `useDiffAnchor` drops the file it is holding
+the moment the fragment goes empty: an empty fragment names no file, and a file
+it does not hold is one it cannot write back.
 
 **A range anchor takes more than one frame.** `CodeView.scrollTo` resolves a
 range through `getLinePosition`, which answers only for a file the viewer has
@@ -755,24 +870,19 @@ past.
 
 **And it keeps that name until the diff gets there.** A smooth jump does raise
 reports, one per frame, for every file it crosses. Each is a true answer to what
-is under the anchor and a wrong answer to what the reviewer is reading, and the
-file list ran the whole run of them as a highlight travelling down the tree —
-`src/terminal/PageList.zig` on ghostty-org/ghostty v1.3.0...v1.3.1 walked the
-mark through six rows before it settled. So `select` holds the mark on the file
-it named, and `useActiveDiffItem` throws away every measurement until one of
-three things ends the hold: the diff arrives, the reviewer takes the scroll back
-with a gesture of their own, or the reports stop for `JUMP_SETTLE_MS`.
-
-Those three cover the three ways a jump ends, and none of them is optional.
-Arrival is the ordinary one. The gesture is what a reviewer who overrules the
-jump mid-flight does, and the four events it watches are `CodeView`'s own list —
-a smooth scroll there is the viewer's spring, not the browser's, and `wheel`,
-`touchstart`, `pointerdown` and `keydown` are what it abandons the spring on.
-The two lists have to stay the same list, or the mark is left behind by a scroll
-that ended without the hold, or the crossed files come back on a hold that ended
-without the scroll. The settle is the backstop for the jump that never arrives:
-a scroll region that has bottomed out cannot bring the last file's top up to the
-anchor, and the file the reviewer asked for is still the right answer there.
+is under the anchor and a wrong answer to what the reviewer is reading. So
+`select` holds the mark on the file it named, and `useActiveDiffItem` throws
+away every measurement until one of three things ends the hold: the diff
+arrives, the reviewer takes the scroll back with a gesture of their own, or the
+reports stop for `JUMP_SETTLE_MS` — 200 ms. The four events the gesture watches
+are `CodeView`'s own list — a smooth scroll there is the viewer's spring, not
+the browser's, and `wheel`, `touchstart`, `pointerdown` and `keydown` are what
+it abandons the spring on. The two lists have to stay the same list, or the mark
+is left behind by a scroll that ended without the hold, or the crossed files
+come back on a hold that ended without the scroll. The settle is the backstop
+for the jump that never arrives: a scroll region that has bottomed out cannot
+bring the last file's top up to the anchor, and the file the reviewer asked for
+is still the right answer there.
 
 **One row in the tree, not a trail.** `FileTreeItemHandle.select()` **adds** to
 the selection, and the diff's scroll selects a row on every file it passes. So
@@ -797,7 +907,7 @@ as a C escape. `@pierre/diffs` strips the quotes and keeps the escapes, so
 `unquoteGitPath` in `src/lib/gitPath.ts`, once and only for a git patch: a path
 git left bare holds no backslash, so a backslash there is always an escape.
 `synthesizePatch` writes its headers through `quoteGitPath` for the same reason,
-since a GitHub `filename` with a backslash in it written bare would read back as
+since a forge's file name with a backslash in it written bare would read back as
 an escape.
 
 **A pane drag renders nothing.** `src/hooks/usePaneWidth.ts` writes every
@@ -812,17 +922,19 @@ panes squeezes. Widening the window gives the choice back, and a browser tab
 reporting a viewport of zero — which happens while a page loads and while a tab
 is hidden — is ignored rather than treated as a layout to shrink into.
 
-**Two panes drag, and `room` is the whole of what separates them.**
+**Three panes drag, and `room` is the whole of what separates them.**
 `useSidebarWidth` is `room: 'self'`: the review sidebar is a grid column inside
 the element that carries `--ghdiff-sidebar-width`, so that element is both what
-the drag writes to and what says how much room there is. `useRailWidth` is
-`room: 'parent'`: the left bar **is** the element the drag resizes, so its room
-is its parent's width — measuring itself would chase its own tail, and the
-ResizeObserver would answer its own drag. What each pane leaves behind is
-`reserve`: the diff's minimum for the sidebar, and the sidebar's minimum plus
-the diff's for the bar, so a bar dragged to its widest still leaves a review
-screen that fits. The collapsed bar has no handle: it is the width of one
-square, and a square is not a thing to resize.
+the drag writes to and what says how much room there is. `useSidebarHeight` is
+`room: 'self'` on the same element, reading its height for the band a portrait
+screen makes of the sidebar. `useRailWidth` is `room: 'parent'`: the left bar
+**is** the element the drag resizes, so its room is its parent's width —
+measuring itself would chase its own tail, and the ResizeObserver would answer
+its own drag. What each pane leaves behind is `reserve`: the diff's minimum for
+the sidebar, and the sidebar's minimum plus the diff's for the bar, so a bar
+dragged to its widest still leaves a review screen that fits. The collapsed bar
+has no handle: it is the width of one square, and a square is not a thing to
+resize.
 
 **A file's diff stats belong to the tree's decoration lane.** `@pierre/trees`
 draws `renderRowDecoration` after the name and before the git badge, so the
@@ -857,10 +969,10 @@ totals, which is the same error as the directory row, from the other side.
 **A thread's opening author decides whether the sidebar lists it.** A review bot
 writes most of the comments on a busy repository, so `src/lib/commentAuthors.ts`
 splits them into People and Bots and the strip at the foot of the panel holds
-one kind at a time. GitHub types an App's account as `Bot` and `/api/comments`
-forwards that; `isBotLogin` is the fallback for a comment kept in browser
-storage, which keeps the login and nothing else. A bot answering a person leaves
-the thread under People.
+one kind at a time. GitHub types an App's account as `Bot` and the comments
+payload forwards that; `isBotLogin` is the fallback for a comment kept in
+browser storage, which keeps the login and nothing else. A bot answering a
+person leaves the thread under People.
 
 **A path in the comment list is trimmed from its start.** The end of a path
 identifies the file, and a column of `src/components/CommentThre…` against
