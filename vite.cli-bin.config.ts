@@ -33,6 +33,11 @@ function packageManifest(): Plugin {
           new URL(`./dist/cli/${file}`, import.meta.url)
         );
       }
+      // One license for the repository, and npm ships it with the package.
+      await copyFile(
+        new URL('./LICENSE', import.meta.url),
+        new URL('./dist/cli/LICENSE', import.meta.url)
+      );
       // npm refuses to publish or pack a directory holding a lockfile it did
       // not write, and there is nothing here to lock.
       await writeFile(
