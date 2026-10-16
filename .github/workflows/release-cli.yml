@@ -1,6 +1,7 @@
 name: Release CLI
 
-# Publishes `dist/cli` to npm as `ghdiff`, the package `npx ghdiff` fetches.
+# Publishes `dist/cli` to npm as `@imggdev/ghdiff`, the package
+# `npx @imggdev/ghdiff` fetches. The command it installs is still `ghdiff`.
 #
 # A tag is the ask: bump `cli/package.json`, merge it, then push
 # `cli-v<version>`. The tag and the manifest have to name the same version, or

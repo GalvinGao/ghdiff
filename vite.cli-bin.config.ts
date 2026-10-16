@@ -4,8 +4,8 @@ import { defineConfig, type Plugin } from 'vite';
 // The `ghdiff` command itself: one file, no runtime dependencies.
 //
 // A bundle rather than a directory of compiled modules, for two reasons that
-// are both about the person installing it. `npx ghdiff` fetches and runs a
-// package with nothing to resolve, and an install cannot be broken by a
+// are both about the person installing it. `npx @imggdev/ghdiff` fetches and
+// runs a package with nothing to resolve, and an install cannot be broken by a
 // transitive dependency it never asked for — this command spawns `git` and
 // serves files, and it has no business carrying a dependency tree to do it.
 //

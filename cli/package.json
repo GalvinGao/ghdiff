@@ -1,5 +1,5 @@
 {
-  "name": "ghdiff",
+  "name": "@imggdev/ghdiff",
   "version": "0.1.0",
   "description": "Read a local git diff in the ghdiff review surface.",
   "keywords": [

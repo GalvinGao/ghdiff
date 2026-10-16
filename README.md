@@ -22,7 +22,7 @@ invisible to the site. The `ghdiff` command is the same review surface over
 `git diff`, served from `127.0.0.1` by a process you start and stop:
 
 ```bash
-npx ghdiff              # uncommitted work, in a browser
+npx @imggdev/ghdiff     # uncommitted work, in a browser
 ghdiff --staged         # what is about to be committed
 ghdiff main             # this branch against its base
 ghdiff main..feature    # any two revisions

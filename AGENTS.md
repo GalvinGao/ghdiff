@@ -3262,7 +3262,8 @@ Nothing loads the example, since nobody passes `--env example`.
   credentials, so a change workerd cannot run fails the pull request instead of
   the deploy. Then `pnpm build:node`, so a change that breaks the self-hosted
   build fails the same way. Then `pnpm build:cli` and `npm pack --dry-run` over
-  `dist/cli`, so a change that breaks `npx ghdiff` fails before a release does.
+  `dist/cli`, so a change that breaks `npx @imggdev/ghdiff` fails before a
+  release does.
 
 A third job, **deploy**, waits on both and runs only on a push to `main`. It
 builds again before it calls `cloudflare/wrangler-action`, because
@@ -3273,13 +3274,14 @@ id is in `wrangler.jsonc`, so `CLOUDFLARE_API_TOKEN` is the only secret the job
 carries. The workflow cancels a superseded run only on a pull request, and the
 deploy job holds a concurrency group of its own, so no deploy is killed halfway.
 
-`.github/workflows/release-cli.yml` publishes the command to npm as `ghdiff`. A
-tag is the ask: bump `cli/package.json`, merge, then push `cli-v<version>`; the
-job refuses a tag that names a different version from the manifest. It publishes
-through npm's trusted publishing, so the run's OIDC token is the only credential
-and no npm token is stored as a secret — npm trusts this repository and that
-workflow file by name, so renaming the file breaks the release until the
-package's settings on npmjs.com are changed to match.
+`.github/workflows/release-cli.yml` publishes the command to npm as
+`@imggdev/ghdiff`, whose bin is still `ghdiff`. A tag is the ask: bump
+`cli/package.json`, merge, then push `cli-v<version>`; the job refuses a tag
+that names a different version from the manifest. It publishes through npm's
+trusted publishing, so the run's OIDC token is the only credential and no npm
+token is stored as a secret — npm trusts this repository and that workflow file
+by name, so renaming the file breaks the release until the package's settings on
+npmjs.com are changed to match.
 
 `workflow_dispatch` starts the two checks by hand and never the deploy, which
 stays gated on a push to main. It is there because a push was once the only way

@@ -67,7 +67,7 @@ jobs:
         run: pnpm exec wrangler deploy --dry-run
 
       # The command, packed exactly as the release job publishes it, so a change
-      # that breaks `npx ghdiff` fails here rather than on a tag.
+      # that breaks `npx @imggdev/ghdiff` fails here rather than on a tag.
       - name: CLI build and pack
         run: |
           pnpm build:cli
