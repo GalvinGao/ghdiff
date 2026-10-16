@@ -24,7 +24,7 @@ import {
   pullFilesFetch,
   synthesizePatch,
 } from '@/lib/server/github/patch';
-import { recordServe } from '@/lib/server/platform';
+import { recordServe } from '@/lib/server/served';
 import { m } from '@/paraglide/messages.js';
 
 // Returns the unified diff for one review target as text/plain.

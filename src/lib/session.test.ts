@@ -5,6 +5,7 @@ import {
   accessTokenFresh,
   accessTokenUsable,
   clearCookieHeader,
+  type GitHubGrant,
   originAllowed,
   readCookie,
   refreshable,
@@ -23,15 +24,18 @@ import {
 const NOW = 1_800_000_000_000;
 const HOUR = 60 * 60 * 1000;
 
-function session(overrides: Partial<SessionPayload> = {}): SessionPayload {
+function grant(overrides: Partial<GitHubGrant> = {}): GitHubGrant {
   return {
     accessToken: 'ghu_test',
     accessExpiresAt: NOW + 8 * HOUR,
     refreshToken: 'ghr_test',
     refreshExpiresAt: NOW + 180 * 24 * HOUR,
-    issuedAt: NOW,
     ...overrides,
   };
+}
+
+function session(overrides: Partial<SessionPayload> = {}): SessionPayload {
+  return { issuedAt: NOW, github: grant(), ...overrides };
 }
 
 describe('readCookie', () => {
@@ -92,18 +96,18 @@ describe('accessTokenUsable', () => {
     // The whole reason this is not the same question as accessTokenFresh: a
     // token five minutes from its expiry works, and answering no here would
     // drop a signed-in reviewer to anonymous until their own refresh landed.
-    const nearly = session({ accessExpiresAt: NOW + REFRESH_SKEW_MS - 1000 });
+    const nearly = grant({ accessExpiresAt: NOW + REFRESH_SKEW_MS - 1000 });
     assert.equal(accessTokenUsable(nearly, NOW), true);
     assert.equal(accessTokenFresh(nearly, NOW), false);
   });
 
   it('stops at the expiry itself', () => {
     assert.equal(
-      accessTokenUsable(session({ accessExpiresAt: NOW - 1 }), NOW),
+      accessTokenUsable(grant({ accessExpiresAt: NOW - 1 }), NOW),
       false
     );
     assert.equal(
-      accessTokenUsable(session({ accessExpiresAt: NOW + 1 }), NOW),
+      accessTokenUsable(grant({ accessExpiresAt: NOW + 1 }), NOW),
       true
     );
   });
@@ -111,9 +115,9 @@ describe('accessTokenUsable', () => {
 
 describe('accessTokenFresh', () => {
   it('counts a token spent while it is still inside the skew', () => {
-    const nearly = session({ accessExpiresAt: NOW + REFRESH_SKEW_MS - 1000 });
+    const nearly = grant({ accessExpiresAt: NOW + REFRESH_SKEW_MS - 1000 });
     assert.equal(accessTokenFresh(nearly, NOW), false);
-    assert.equal(accessTokenFresh(session(), NOW), true);
+    assert.equal(accessTokenFresh(grant(), NOW), true);
   });
 });
 
@@ -121,7 +125,7 @@ describe('a token with no stated expiry', () => {
   it('is both usable and fresh', () => {
     // The App can have user-to-server expiry turned off, and GitHub then states
     // no life at all rather than a life of zero.
-    const forever = session({ accessExpiresAt: undefined });
+    const forever = grant({ accessExpiresAt: undefined });
     assert.equal(accessTokenUsable(forever, NOW), true);
     assert.equal(accessTokenFresh(forever, NOW), true);
   });
@@ -129,41 +133,39 @@ describe('a token with no stated expiry', () => {
 
 describe('refreshable', () => {
   it('needs a refresh token', () => {
-    assert.equal(refreshable(session({ refreshToken: undefined }), NOW), false);
+    assert.equal(refreshable(grant({ refreshToken: undefined }), NOW), false);
   });
 
   it('reads an absent expiry as no expiry, and a past one as spent', () => {
     assert.equal(
-      refreshable(session({ refreshExpiresAt: undefined }), NOW),
+      refreshable(grant({ refreshExpiresAt: undefined }), NOW),
       true
     );
-    assert.equal(
-      refreshable(session({ refreshExpiresAt: NOW - 1 }), NOW),
-      false
-    );
+    assert.equal(refreshable(grant({ refreshExpiresAt: NOW - 1 }), NOW), false);
   });
 });
 
 describe('sessionLive', () => {
   it('holds a spent access token up on its refresh token', () => {
-    const spent = session({ accessExpiresAt: NOW - 1 });
+    const spent = grant({ accessExpiresAt: NOW - 1 });
     assert.equal(accessTokenUsable(spent, NOW), false);
-    assert.equal(sessionLive(spent, NOW), true);
+    assert.equal(sessionLive({ issuedAt: NOW, github: spent }, NOW), true);
   });
 
   it('is dead once both are spent', () => {
-    const dead = session({
+    const dead = grant({
       accessExpiresAt: NOW - 1,
       refreshExpiresAt: NOW - 1,
     });
-    assert.equal(sessionLive(dead, NOW), false);
+    assert.equal(sessionLive({ issuedAt: NOW, github: dead }, NOW), false);
   });
 
   it('is dead past the ceiling however good the refresh token is', () => {
     // The ceiling is the point of this: GitHub would honour the refresh token
     // for six months, and this app will not.
-    const old = session({ issuedAt: NOW - SESSION_MAX_AGE_MS - 1 });
-    assert.equal(refreshable(old, NOW), true);
+    const github = grant();
+    const old = { issuedAt: NOW - SESSION_MAX_AGE_MS - 1, github };
+    assert.equal(refreshable(github, NOW), true);
     assert.equal(withinMaxAge(old, NOW), false);
     assert.equal(sessionLive(old, NOW), false);
   });
@@ -173,7 +175,10 @@ describe('refreshDue', () => {
   it('names a spent access token with a live refresh token behind it', () => {
     // The one state a request answers 401 for: the browser holds a cookie the
     // refresh route can mend, and 401 is the only thing that sends it there.
-    const spent = session({ accessExpiresAt: NOW - 1 });
+    const spent = {
+      issuedAt: NOW,
+      github: grant({ accessExpiresAt: NOW - 1 }),
+    };
     assert.equal(refreshDue(spent, NOW), true);
   });
 
@@ -181,37 +186,40 @@ describe('refreshDue', () => {
     // `accessTokenUsable` is the test and not `accessTokenFresh`: a token inside
     // the skew is sent as it is, and the refresh route is asked nothing.
     assert.equal(refreshDue(session(), NOW), false);
-    const inside = session({ accessExpiresAt: NOW + REFRESH_SKEW_MS - 1 });
+    const inside = grant({ accessExpiresAt: NOW + REFRESH_SKEW_MS - 1 });
     assert.equal(accessTokenFresh(inside, NOW), false);
-    assert.equal(refreshDue(inside, NOW), false);
+    assert.equal(refreshDue({ issuedAt: NOW, github: inside }, NOW), false);
   });
 
   it('is not due for a session a refresh could not mend', () => {
     // Nothing to send the browser to fetch, so it goes on as nobody. Both
     // readings agree with `sessionLive`: a session that is dead is not due.
-    const noRefresh = session({
+    const noRefresh = grant({
       accessExpiresAt: NOW - 1,
       refreshToken: undefined,
     });
-    const refreshSpent = session({
+    const refreshSpent = grant({
       accessExpiresAt: NOW - 1,
       refreshExpiresAt: NOW - 1,
     });
-    const old = session({
-      accessExpiresAt: NOW - 1,
-      issuedAt: NOW - SESSION_MAX_AGE_MS - 1,
-    });
-    for (const dead of [noRefresh, refreshSpent, old]) {
+    for (const github of [noRefresh, refreshSpent]) {
+      const dead = { issuedAt: NOW, github };
       assert.equal(sessionLive(dead, NOW), false);
       assert.equal(refreshDue(dead, NOW), false);
     }
+    const old = {
+      issuedAt: NOW - SESSION_MAX_AGE_MS - 1,
+      github: grant({ accessExpiresAt: NOW - 1 }),
+    };
+    assert.equal(sessionLive(old, NOW), false);
+    assert.equal(refreshDue(old, NOW), false);
   });
 
   it('is never due for a token that states no expiry', () => {
-    const forever = session({
-      accessExpiresAt: undefined,
-      refreshToken: undefined,
-    });
+    const forever = {
+      issuedAt: NOW,
+      github: grant({ accessExpiresAt: undefined, refreshToken: undefined }),
+    };
     assert.equal(refreshDue(forever, NOW), false);
   });
 });
@@ -259,7 +267,7 @@ describe('safeReturnTo', () => {
   it('refuses anything that could split the Location header', () => {
     assert.equal(safeReturnTo('/a\r\nSet-Cookie: x=1'), '/');
     assert.equal(safeReturnTo('/a\nb'), '/');
-    assert.equal(safeReturnTo('/a b'), '/');
+    assert.equal(safeReturnTo('/a\0b'), '/');
   });
 
   it('normalizes a path that climbs, rather than refusing it', () => {

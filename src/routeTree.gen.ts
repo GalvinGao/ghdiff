@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as GhdiffDotuserDotjsRouteImport } from './routes/ghdiff[.]user[.]js'
 import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
@@ -30,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GhdiffDotuserDotjsRoute = GhdiffDotuserDotjsRouteImport.update({
+  id: '/ghdiff.user.js',
+  path: '/ghdiff.user.js',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthzRoute = HealthzRouteImport.update({
@@ -86,6 +92,7 @@ const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/ghdiff.user.js': typeof GhdiffDotuserDotjsRoute
   '/healthz': typeof HealthzRoute
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/ghdiff.user.js': typeof GhdiffDotuserDotjsRoute
   '/healthz': typeof HealthzRoute
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/ghdiff.user.js': typeof GhdiffDotuserDotjsRoute
   '/healthz': typeof HealthzRoute
   '/setup': typeof SetupRoute
   '/api/diff': typeof ApiDiffRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/ghdiff.user.js'
     | '/healthz'
     | '/setup'
     | '/api/diff'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
+    | '/ghdiff.user.js'
     | '/healthz'
     | '/setup'
     | '/api/diff'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$'
+    | '/ghdiff.user.js'
     | '/healthz'
     | '/setup'
     | '/api/diff'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  GhdiffDotuserDotjsRoute: typeof GhdiffDotuserDotjsRoute
   HealthzRoute: typeof HealthzRoute
   SetupRoute: typeof SetupRoute
   ApiDiffRoute: typeof ApiDiffRoute
@@ -200,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ghdiff.user.js': {
+      id: '/ghdiff.user.js'
+      path: '/ghdiff.user.js'
+      fullPath: '/ghdiff.user.js'
+      preLoaderRoute: typeof GhdiffDotuserDotjsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/healthz': {
@@ -278,6 +298,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  GhdiffDotuserDotjsRoute: GhdiffDotuserDotjsRoute,
   HealthzRoute: HealthzRoute,
   SetupRoute: SetupRoute,
   ApiDiffRoute: ApiDiffRoute,

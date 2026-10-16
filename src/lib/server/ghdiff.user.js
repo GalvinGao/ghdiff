@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         ghdiff
 // @namespace    https://ghdiff.com/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Adds a ghdiff button to the tab row of every GitHub pull request, and beside Browse files on every commit.
 // @author       GalvinGao
 // @homepageURL  https://github.com/GalvinGao/ghdiff
 // @supportURL   https://github.com/GalvinGao/ghdiff/issues
-// @downloadURL  https://ghdiff.com/ghdiff.user.js
-// @updateURL    https://ghdiff.com/ghdiff.user.js
-// @match        https://github.com/*
+// @downloadURL  __GHDIFF_ORIGIN__/ghdiff.user.js
+// @updateURL    __GHDIFF_ORIGIN__/ghdiff.user.js
+// @match        __GHDIFF_MATCHES__
 // @run-at       document-idle
 // @noframes
 // @grant        none
@@ -791,7 +791,7 @@
 	}
 	(() => {
 		"use strict";
-		const APP_ORIGIN = "https://ghdiff.com";
+		const APP_ORIGIN = "__GHDIFF_ORIGIN__";
 		const BUTTON_ID = "ghdiff-open-button";
 		const STYLE_ID = "ghdiff-open-style";
 		const PULL_PATH = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:\/|$)/;

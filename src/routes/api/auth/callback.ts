@@ -7,13 +7,13 @@ import {
 } from '@/lib/github/app';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
-  externalRequestUrl,
   notConfigured,
   readAuthSetup,
   redirectTo,
 } from '@/lib/server/authRoute';
 import { exchangeCode } from '@/lib/server/github/app';
-import { clearHandoff, readHandoff, writeSession } from '@/lib/server/session';
+import { externalRequestUrl } from '@/lib/server/origin';
+import { SessionSeal } from '@/lib/server/session';
 
 // Where GitHub sends the reviewer back. It spends the code and seals the session.
 //
@@ -38,8 +38,9 @@ const callback = withEvlog(async ({ request }: { request: Request }) => {
     return notConfigured();
   }
 
-  const spent = clearHandoff();
-  const handoff = await readHandoff(request, setup.keyring);
+  const seal = new SessionSeal(setup.keyring);
+  const spent = seal.clearHandoff();
+  const handoff = await seal.readHandoff(request);
   const params = new URL(request.url).searchParams;
 
   function failed(reason: AuthFailure): Response {
@@ -80,7 +81,7 @@ const callback = withEvlog(async ({ request }: { request: Request }) => {
       spent,
       // `issuedAt` is now and never again: a refresh carries this same moment
       // forward, so the ceiling is measured from this sign-in.
-      await writeSession({ ...grant, issuedAt: now }, setup.keyring, now),
+      await seal.writeSession({ github: grant, issuedAt: now }, now),
     ]);
   } catch (error) {
     // The code itself never reaches the log, here or anywhere: it is a

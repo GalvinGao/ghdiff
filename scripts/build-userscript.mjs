@@ -31,7 +31,10 @@ const chunk = output.output.find(
   (item) => item.type === 'chunk' && item.isEntry
 );
 if (!chunk) throw new Error('Userscript build produced no entry chunk');
+// The deployment-blind template the `/ghdiff.user.js` route fills: its own
+// origin and one `@match` per host it serves are the server's to write, so the
+// placeholders survive the bundle as plain strings.
 await writeFile(
-  'public/ghdiff.user.js',
+  'src/lib/server/ghdiff.user.js',
   `${metadata}\n\n// Generated from src/userscript.js and messages/en.json.\n${chunk.code}`
 );

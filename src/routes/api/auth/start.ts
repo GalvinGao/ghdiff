@@ -3,12 +3,12 @@ import { createFileRoute } from '@tanstack/react-router';
 import { authorizeUrl, callbackUrl } from '@/lib/github/app';
 import { requestLog, withEvlog } from '@/lib/logger';
 import {
-  externalRequestUrl,
   notConfigured,
   readAuthSetup,
   redirectTo,
 } from '@/lib/server/authRoute';
-import { codeChallenge, randomToken, writeHandoff } from '@/lib/server/session';
+import { externalRequestUrl } from '@/lib/server/origin';
+import { codeChallenge, randomToken, SessionSeal } from '@/lib/server/session';
 import { safeReturnTo } from '@/lib/session';
 
 // Where a sign-in begins. It puts three things aside and sends the reviewer to
@@ -47,7 +47,13 @@ const start = withEvlog(async ({ request }: { request: Request }) => {
       redirectUri: callbackUrl(externalRequestUrl(request)),
       state,
     }),
-    [await writeHandoff({ state, verifier, returnTo }, setup.keyring)]
+    [
+      await new SessionSeal(setup.keyring).writeHandoff({
+        state,
+        verifier,
+        returnTo,
+      }),
+    ]
   );
 });
 

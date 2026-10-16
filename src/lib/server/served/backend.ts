@@ -4,7 +4,7 @@ import { createStorage } from 'unstorage';
  * The two things a runtime must supply for the served counter: somewhere to
  * keep the figure, and a way to let a flush outlive the request that started
  * it. Everything else — the batching, the backoff, the guard against a stale
- * read — is runtime-agnostic and lives in `servedCount.ts`.
+ * read — is runtime-agnostic and lives in `count.ts`.
  */
 export interface ServedBackend {
   /** The stored figure, or null when nothing has been written yet. */
@@ -63,12 +63,12 @@ function memoryBackend(): ServedBackend {
 /**
  * Which backend this bundle gets, answered at build time and folded by
  * dead-code elimination: the Cloudflare build drops the in-memory branch, the
- * Node build drops `cloudflareBackend()` and its imports with it. KV exists
- * only where the build says `cloudflare`; the self-hosted server and the
- * tests (whose runner writes no `import.meta.env`) share the in-memory one.
+ * Node build drops `cloudflareBackend()` and its imports with it. Cloudflare
+ * is the default path; `node` is the branch that gets named — the convention
+ * everywhere in this app.
  */
 export async function servedBackend(): Promise<ServedBackend> {
-  return import.meta.env?.VITE_GHDIFF_TARGET === 'cloudflare'
-    ? await cloudflareBackend()
-    : memoryBackend();
+  return import.meta.env.VITE_GHDIFF_TARGET === 'node'
+    ? memoryBackend()
+    : await cloudflareBackend();
 }

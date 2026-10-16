@@ -39,22 +39,6 @@ export function notConfigured(): Response {
 }
 
 /**
- * The URL this request arrived on from outside. Behind a TLS-terminating
- * proxy the server hears plain http, so the scheme the browser used comes
- * from the proxy's `X-Forwarded-Proto` — the one header every ingress sets.
- * Only the scheme is taken: the `Host` header is already the one every
- * absolute URL in this app is built from, and `X-Forwarded-Host` is not —
- * a redirect URI is not a thing a forwarded header gets to name.
- */
-export function externalRequestUrl(request: Request): string {
-  if (request.headers.get('x-forwarded-proto') !== 'https') return request.url;
-  const url = new URL(request.url);
-  if (url.protocol !== 'http:') return request.url;
-  url.protocol = 'https:';
-  return url.toString();
-}
-
-/**
  * A response with no body, and however many cookies the caller has. `Headers`
  * is built and appended to rather than handed an object, because two cookies in
  * one object literal are one cookie by the time the browser sees it.

@@ -33,7 +33,7 @@ const managerMarkup = {
  * `Browse files` are two controls they can already picture.
  */
 
-/** Served from `public/`, so `@downloadURL` in the script itself agrees. */
+/** Served by the route of the same name, so `@downloadURL` in the script agrees. */
 export const USERSCRIPT_PATH = '/ghdiff.user.js';
 
 /**

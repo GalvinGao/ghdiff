@@ -5,32 +5,33 @@ and the test layers.
 
 **A serve is counted where the serve happens, and the figure is an estimate on
 purpose.** The footer's **Served** line is one key, `served:total`, and
-`src/lib/server/servedCount.ts` is what stands between a counter and a store
+`src/lib/server/served/count.ts` is what stands between a counter and a store
 that is not one. The store is a `ServedBackend` from
-`src/lib/server/servedBackend.ts`: Workers KV behind unstorage's binding driver
-on workerd, an in-memory unstorage everywhere else. KV takes one write per
-second per key and answers a second one with 429, and two writes that overlap
-overwrite each other rather than add up. Neither is an edge case here: a
-reviewer who opens three pull requests in three tabs is a burst of three serves
-in one second. So a serve writes nothing. It adds one to a number the process
-holds, and one flush later folds however many arrived into a single
-read-add-write, kept alive past the response by the backend's `keepAlive` —
-`waitUntil` on workerd, a floating promise in the fallback. `lastWritten` guards
-the read, because a read that came back stale would take the figure backwards.
-What is still lost is a process that dies with a flush outstanding, and two
-locations that write in the same moment. A footer figure is allowed to be an
-estimate. The exact one costs a strongly consistent store, which a footer line
-is not worth.
+`src/lib/server/served/backend.ts`: Workers KV behind unstorage's binding driver
+on workerd, an in-memory unstorage on Node. KV takes one write per second per
+key and answers a second one with 429, and two writes that overlap overwrite
+each other rather than add up. So a serve writes nothing. It adds one to a
+number the process holds, and one flush later folds however many arrived into a
+single read-add-write, kept alive past the response by the backend's `keepAlive`
+— `waitUntil` on workerd, a floating promise on Node. A flush runs at most
+`MAX_FLUSH_ROUNDS` — 5 — rounds, a second apart, because the flush runs behind
+`keepAlive` and an unbounded loop would hold one request open for as long as
+traffic lasts. `lastWritten` guards the read, because a read that came back
+stale would take the figure backwards. What is still lost is a process that dies
+with a flush outstanding, and two locations that write in the same moment. A
+footer figure is allowed to be an estimate. The exact one costs a strongly
+consistent store, which a footer line is not worth.
 
 Which backend a bundle gets is answered at build time, never sniffed at runtime,
-and dead-code elimination drops the other half: `servedBackend()` compares the
-target against `'cloudflare'` — KV exists only where the build says Cloudflare —
-so the Cloudflare build never sees the in-memory backend, and the Node build
-never sees `cloudflareBackend()` or its `cloudflare:workers` and unstorage
-driver imports. The imports are dynamic because a static one would fail at
-bundle resolution time on the Node build; here they sit in the branch DCE
-removes. The tests share the in-memory backend, since their runner writes no
-`import.meta.env`.
+and dead-code elimination drops the other half: `servedBackend()` compares
+`import.meta.env.VITE_GHDIFF_TARGET` against `'node'` — Cloudflare is the
+default path, Node is the branch that gets named, the convention everywhere in
+this app — so the Cloudflare build never sees the in-memory backend, and the
+Node build never sees `cloudflareBackend()` or its `cloudflare:workers` and
+unstorage driver imports. The imports are dynamic because a static one would
+fail at bundle resolution time on the Node build; here they sit in the branch
+DCE removes. vitest.config.ts defines the same target `node` for the tests, so
+they run the in-memory half and the dynamic import never executes.
 
 `/api/diff` takes the count and no other route does, because that route **is**
 the serve: `gitHubResponse` returns only when a source answered, so a 404 and a
@@ -53,12 +54,14 @@ needs: `AsyncLocalStorage` for the request logger, and a populated
 store. It holds one key today, the one the footer's **Served** counter reads and
 writes, and it is named for the app rather than for that counter so the next
 thing that needs a key has a place to go. The Worker reaches it through
-`import('cloudflare:workers')` rather than through a handler argument, because
-the counter is called from a route and from an RPC procedure and neither of them
-is handed a Cloudflare `env`. The import is dynamic and sits in
-`src/lib/server/servedBackend.ts`'s Cloudflare branch — the one the Node build's
-dead-code elimination removes, so the specifier never enters a bundle that
-cannot resolve it.
+`import { env } from 'cloudflare:workers'` rather than through a handler
+argument, because the counter is called from a route and from an RPC procedure
+and neither of them is handed a Cloudflare `env`. That import lives only in
+`src/lib/server/served/backend.ts`, dynamically inside `cloudflareBackend()`, so
+a static one would fail at bundle resolution time on the Node build; which
+backend a bundle gets is answered at build time, never sniffed at runtime, and
+dead-code elimination drops the other half — so no stub of the
+`cloudflare:workers` specifier exists anywhere.
 
 That import is typed by `worker-configuration.d.ts`, which `wrangler types`
 generates from `wrangler.jsonc` and which is **not** committed — `.gitignore`

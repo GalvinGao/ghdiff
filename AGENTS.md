@@ -73,16 +73,16 @@ Every environment variable the server reads is validated by one zod schema,
 `parseDeploymentConfig` in `src/lib/server/config.ts` — parsed at each request
 boundary and handed down as a plain parameter, so no process-wide singleton
 exists for a test to poke. The build reads exactly one of them, `GHDIFF_TARGET`,
-as one zod line — `cloudflare` when unset, a ZodError naming the two runtimes on
-a typo. Cloudflare is the default runtime everywhere; Node is the branch that
-gets named. The served counter's backend is the case in point: `servedBackend()`
-in `src/lib/server/servedBackend.ts` compares the target against `'cloudflare'`,
-and dead-code elimination drops the other half — the Cloudflare build never sees
-the in-memory backend, the Node build never sees `cloudflareBackend()` or its
-`cloudflare:workers` and unstorage driver imports. The imports are dynamic
-because a static one would fail at bundle resolution time on the Node build;
-here they sit in the branch DCE removes. The tests share the in-memory backend,
-since their runner writes no `import.meta.env`.
+and Cloudflare is the default runtime everywhere; Node is the branch that gets
+named. An unset `GHDIFF_TARGET` is the Cloudflare build, and runtime code spells
+the self-hosted server's special cases as `=== 'node'` — the log line's shape,
+and which store the served counter gets in `src/lib/server/served/backend.ts`.
+The check sits in code as a plain comparison against the target the build writes
+into the bundle, so dead-code elimination drops the other half: the Cloudflare
+build never sees the in-memory backend, and the Node build never sees
+`cloudflareBackend()` or its `cloudflare:workers` and unstorage driver imports.
+Tests name the target the same way the build does — vitest.config.ts defines it
+`node` — so they run the in-memory half and the dynamic import never executes.
 
 The `Dockerfile` builds with `pnpm build:node` behind a BuildKit cache mount for
 the pnpm store; the bundle Nitro emits is self-contained, so the runtime stage
@@ -121,6 +121,7 @@ src/
     index.tsx              home: a box for any GitHub URL, and the watch list
     setup.tsx              why a private diff will not load, as three steps
     healthz.ts             the liveness probe's one-word answer
+    ghdiff[.]user[.]js.ts  the userscript, filled for this deployment
     $.tsx                  mirrors github.com paths: /owner/repo/pull/123
     gh/$.tsx               the old /gh prefix, redirected to the route above
     api/diff.ts            one unified diff, as text/plain
@@ -147,7 +148,6 @@ src/
   lib/github/error.ts      the sentence a GitHub failure carries
   lib/session.ts           the cookies, the two clocks, and where a redirect may go
   lib/installations.ts     how far an installation reaches, in words
-  lib/base64url.ts         both directions, for a cookie and for a `state`
   lib/fileLimit.ts         the cap on a whole file, where three hosts can read it
   lib/prePaintScripts.ts   the colour mode and the code font, as source text
   lib/authFetch.ts         every call to this Worker, with one retry behind it
@@ -158,12 +158,20 @@ src/
   lib/rpc/contract.ts      the API, stated once: shared by both sides
   lib/rpc/router.ts        the Worker's half of it, server-only
   lib/rpc/client.ts        the browser's half of it
-  lib/server/              server-only: the cipher half of the session, the
-                           runtime seam and the counter's two backends
+  lib/server/              server-only: the deployment's config, and the cipher
+                           half of the session
+  lib/server/session/      the JWE every cookie is sealed as, the claims it
+                           carries, and the legacy seal it still reads
+  lib/server/served/       the served counter: the batching, and the backend
+                           the build-time target picks by dead-code elimination
+  lib/server/origin.ts     where a request arrived from outside: the scheme
+                           behind the proxy, and the origin the userscript
+                           points at
+  lib/server/ghdiff.user.js the userscript's template, generated from
+                           src/userscript.js and committed
+  lib/server/userscript.ts the template's filling, as one pure function
   lib/server/github/       the client, the App's own three calls, the patch
                            fallback, and where the App is installed
-public/
-  ghdiff.user.js           the userscript, copied to dist/client as it is
 cli/
   package.json             the published manifest: name, bin, files
   src/args.ts              the command citty parses, and what it means
@@ -185,14 +193,19 @@ client. `@/*` resolves to `./src/*`, `@cli/*` to `./cli/*` and `@scripts/*` to
 `./scripts/*`; the paths live only in `tsconfig.json`, which tsc, Vite, and
 vitest (`resolve.tsconfigPaths`) all read.
 
-`public/` is Vite's own directory and this app has one file in it. The app does
-not bundle that artifact: the build copies it to `dist/client`, wrangler uploads
-it with the rest of the assets, and Cloudflare answers `/ghdiff.user.js` from
-the asset store before the Worker runs — which is why the splat route does not
-catch it. The artifact is generated from `src/userscript.js` by
-`scripts/build-userscript.mjs`, which bundles its Paraglide messages and
-preserves the userscript metadata. Lint and format the source, not the generated
-artifact. See [I18N.md](I18N.md) for catalog ownership and localization checks.
+`public/` is Vite's own directory and this app keeps nothing in it: the file
+that used to answer `/ghdiff.user.js` from the asset store is a server route
+now, because a self-hosted deployment's script has to point at that deployment,
+which only the server knows. The route fills the template in
+`src/lib/server/ghdiff.user.js` with the deployment's own origin — the button's
+target and the script's update address — and the address is the one the script
+has always had, so scripts already installed keep updating. The template is
+generated: `scripts/build-userscript.mjs` bundles `src/userscript.js` with the
+Paraglide messages it names and keeps its metadata block, as part of
+`pnpm i18n:compile`, and it is committed, as the copy in `public/` was. Lint and
+format the source, not the generated template. Bump the source's `@version` when
+the installed script changes. See [I18N.md](I18N.md) for catalog ownership and
+localization checks.
 
 ## How this project's docs are organized
 
@@ -259,8 +272,10 @@ same-directory `./x` import stays as it is.
 | `GHDIFF_TARGET`            | Build-time: `node` builds the self-hosted server.           |
 | `PORT` / `HOST`            | Node-only: where the self-hosted server listens.            |
 
-All five are absent-tolerant except one: `SESSION_SECRET` set to something that
-is not a key throws, while unset simply means no sign-in. Generate one with
+Every one is absent-tolerant; what throws is a typo, because a loud failure is
+what tells somebody so: `SESSION_SECRET` set to something that is not a key
+(unset simply means no sign-in), and half a `GITHUB_APP_CLIENT_ID` /
+`GITHUB_APP_CLIENT_SECRET` pair. Generate one with
 
 ```bash
 node -e "console.log(Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url'))"
@@ -367,6 +382,14 @@ the tab is what the cache is shared between; and the local command makes one per
 page. The browser client's defaults are the ones the hand-written hooks had — no
 retry, no refetch on focus — because a failure from GitHub is usually an answer
 and an anonymous reviewer has sixty requests an hour.
+
+jose is the session cookie's seal: every cookie is a compact JWE — `dir` key
+management, A256GCM content encryption — and it replaced a hand-rolled
+AES-256-GCM seal of about the same shape. What that buys is a standard wire
+format with the expiry in the claims, verified by a library whose whole job is
+getting JWT right. Cookies sealed before the migration are still read —
+`LegacyCipher` in `src/lib/server/session/`, gone 180 days after the deploy,
+when the last of them has expired.
 
 `vitest` runs the test workspace. It is a devDependency, so it never reaches a
 bundle, and it reads `tsconfig.json`'s paths the way the build does.

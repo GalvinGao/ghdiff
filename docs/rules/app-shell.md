@@ -28,10 +28,10 @@ throws a `redirect`, which keeps every link already written alive. `PullRail`
 reads through a leading `gh` segment for the one navigation the redirect takes.
 
 **The userscript makes that host swap a button, and the tab bar is where it
-goes.** `public/ghdiff.user.js` adds one link to github.com, beside **Files
-changed** at the end of the pull request's own tab row. That row is the one part
-of the page that both of GitHub's headers still draw and that the conversation
-and the diff share, so a single insertion point covers all four combinations:
+goes.** The userscript adds one link to github.com, beside **Files changed** at
+the end of the pull request's own tab row. That row is the one part of the page
+that both of GitHub's headers still draw and that the conversation and the diff
+share, so a single insertion point covers all four combinations:
 `nav[aria-label="Pull request navigation"]` is the React header and
 `.tabnav-tabs` is the one it has not replaced yet. Neither selector is a
 contract, so `findRowByLinkTo` says what the row _is_ — the row that holds the

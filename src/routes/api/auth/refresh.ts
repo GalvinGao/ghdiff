@@ -7,7 +7,7 @@ import {
   REFRESH_ALREADY_SPENT,
   refreshGrant,
 } from '@/lib/server/github/app';
-import { clearSession, readSession, writeSession } from '@/lib/server/session';
+import { SessionSeal } from '@/lib/server/session';
 import {
   accessTokenFresh,
   originAllowed,
@@ -62,21 +62,23 @@ const refresh = withEvlog(async ({ request }: { request: Request }) => {
   }
 
   const now = Date.now();
-  const session = await readSession(request, setup.keyring);
-  if (session == null || !withinMaxAge(session, now)) {
+  const seal = new SessionSeal(setup.keyring);
+  const session = await seal.readSession(request);
+  const github = session?.github;
+  if (session == null || github == null || !withinMaxAge(session, now)) {
     log.set({ outcome: 'no-session' });
-    return empty(401, [clearSession()]);
+    return empty(401, [seal.clearSession()]);
   }
 
-  if (accessTokenFresh(session, now)) {
+  if (accessTokenFresh(github, now)) {
     log.set({ outcome: 'already-fresh' });
     return empty(204);
   }
 
-  const refreshToken = session.refreshToken;
-  if (refreshToken == null || !refreshable(session, now)) {
+  const refreshToken = github.refreshToken;
+  if (refreshToken == null || !refreshable(github, now)) {
     log.set({ outcome: 'not-refreshable' });
-    return empty(401, [clearSession()]);
+    return empty(401, [seal.clearSession()]);
   }
 
   try {
@@ -88,9 +90,8 @@ const refresh = withEvlog(async ({ request }: { request: Request }) => {
     log.set({ outcome: 'refreshed' });
     return empty(204, [
       // `issuedAt` carried forward, so a refresh does not extend the ceiling.
-      await writeSession(
-        { ...grant, issuedAt: session.issuedAt },
-        setup.keyring,
+      await seal.writeSession(
+        { github: grant, issuedAt: session.issuedAt },
         now
       ),
     ]);
@@ -104,7 +105,7 @@ const refresh = withEvlog(async ({ request }: { request: Request }) => {
     }
     log.error(toLoggable(error), { step: 'refresh-token' });
     log.set({ outcome: 'refresh-failed' });
-    return empty(401, [clearSession()]);
+    return empty(401, [seal.clearSession()]);
   }
 });
 

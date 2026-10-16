@@ -24,6 +24,7 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@test/*": ["./test/*"],
       "@cli/*": ["./cli/*"],
       "@scripts/*": ["./scripts/*"]
     }
