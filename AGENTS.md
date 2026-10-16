@@ -126,8 +126,11 @@ pnpm build:cli    # two more vite builds: dist/cli/web and dist/cli/bin
 pnpm preview      # vite preview, the built Worker on workerd
 pnpm start        # node --env-file-if-exists=.dev.vars .output/server/index.mjs
 pnpm deploy       # wrangler deploy
-pnpm test         # every suite
+pnpm test         # every suite: test:lib and test:e2e (the wildcard excludes
+                  # the single-leg scripts, so nothing runs twice)
 pnpm test:lib     # vitest over src/lib/**/*.test.ts and cli/src
+pnpm test:e2e     # live e2e against the fixture repos, local only
+pnpm test:e2e:gitlab / :github   # one leg of it
 pnpm typecheck    # wrangler types, then tsc --noEmit
 pnpm codegen      # the generated types no build writes: wrangler types and the
                   # GraphQL document types (codegen:cf / :gql). The route tree
