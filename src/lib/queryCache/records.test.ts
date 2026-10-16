@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { entriesWithoutAttachments, withoutAttachments } from './persist.ts';
+import { entriesWithoutAttachments, withoutAttachments } from './persist';
 import {
   ANONYMOUS_NAMESPACE,
   blobsOverBudget,
@@ -15,7 +15,7 @@ import {
   queryHash,
   recordId,
   viewerNamespace,
-} from './records.ts';
+} from './records';
 
 const NOW = 1_800_000_000_000;
 

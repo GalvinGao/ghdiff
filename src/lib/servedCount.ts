@@ -1,4 +1,4 @@
-import { formatNumber } from './locale.ts';
+import { formatNumber } from './locale';
 // The "Served" figure in the home page's footer. The store's half of it lives
 // in `@/lib/server/servedCount`, which is a Workers module and cannot be
 // imported here: this file is read by the browser and by the test runner.

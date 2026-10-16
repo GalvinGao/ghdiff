@@ -1,8 +1,8 @@
 import { realpath } from 'node:fs/promises';
 
-import type { LocalDiffRange } from '../../src/lib/reviewTarget.ts';
-import { git } from './git.ts';
-import { revisionsToVerify, untrackedListArgs } from './gitRange.ts';
+import { git } from './git';
+import { revisionsToVerify, untrackedListArgs } from './gitRange';
+import type { LocalDiffRange } from '@/lib/reviewTarget';
 
 // What this command asks the repository itself, as opposed to the argument
 // vectors it hands git.

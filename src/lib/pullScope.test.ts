@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import type { PullSummary } from './pulls.ts';
+import type { PullSummary } from './pulls';
 import {
   availablePullScopes,
   countPullScopes,
@@ -9,7 +9,7 @@ import {
   expectedPullScopes,
   effectivePullScope,
   scopePulls,
-} from './pullScope.ts';
+} from './pullScope';
 
 function pull(
   author: string,

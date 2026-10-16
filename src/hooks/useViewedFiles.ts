@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { readStoredJson, writeStoredString } from './useLocalStorage';
 import { useForcedRefetch, useSharedQuery } from './useSharedQuery';
 import type { ReviewFileEntry } from '@/lib/reviewData';
@@ -8,6 +7,7 @@ import { type ReviewTarget, reviewTargetKey } from '@/lib/reviewTarget';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { localViewedFilesStorageKey } from '@/lib/storageKeys';
 import type { ViewedFilesData } from '@/lib/viewedFiles';
+import { m } from '@/paraglide/messages.js';
 
 // Which files the reviewer has already read, and where that fact is kept.
 //

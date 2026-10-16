@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 /** The built-in hunk controls live inside the viewer's shadow roots. */
 export const EXPANSION_LOADING_CSS = `
 [data-expand-button][aria-busy='true'] {

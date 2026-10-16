@@ -6,10 +6,10 @@ import {
 } from '@pierre/diffs';
 import type { GitStatus, GitStatusEntry } from '@pierre/trees';
 
-import { m } from '../paraglide/messages.js';
-import type { CommentMetadata } from './comments.ts';
-import { diffLanguage } from './diffLanguage.ts';
-import { isGitPatch, unquoteGitPath } from './gitPath.ts';
+import type { CommentMetadata } from './comments';
+import { diffLanguage } from './diffLanguage';
+import { isGitPatch, unquoteGitPath } from './gitPath';
+import { m } from '@/paraglide/messages.js';
 
 export interface ReviewDiffStats {
   addedLines: number;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { diffLanguage } from './diffLanguage.ts';
+import { diffLanguage } from './diffLanguage';
 
 describe('diffLanguage', () => {
   it('names a Dockerfile wherever it sits', () => {

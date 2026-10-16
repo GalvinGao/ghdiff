@@ -143,7 +143,7 @@ pnpm lint         pnpm fmt          pnpm fmt:check
 pnpm build:cli    # the ghdiff command, into dist/cli
 ```
 
-`AGENTS.md` holds the project conventions.
+`AGENTS.md` points at the project conventions, which live in `docs/rules/`.
 
 ## Component captures
 

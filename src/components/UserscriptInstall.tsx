@@ -2,8 +2,8 @@ import { ParaglideMessage } from '@inlang/paraglide-js-react';
 import { IconDownload } from '@pierre/icons';
 import type { ReactNode } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { buttonClass } from '@/components/ui/buttonClass';
+import { m } from '@/paraglide/messages.js';
 
 const managerMarkup = {
   manager: ({ children }: { children?: ReactNode }) => (

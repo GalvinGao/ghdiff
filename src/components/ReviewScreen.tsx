@@ -10,7 +10,6 @@ import { IconCiWarningFill, IconXSquircle } from '@pierre/icons';
 import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { AttachmentsProvider } from '@/components/CommentBody';
 import { DiffSearchBar } from '@/components/DiffSearchBar';
@@ -84,6 +83,7 @@ import {
 import { stackPosition, stackPullTarget } from '@/lib/stackReview';
 import { buildTreeStatIndex } from '@/lib/treeStats';
 import { defaultViewerControls } from '@/lib/viewerControls';
+import { m } from '@/paraglide/messages.js';
 
 // Frames a range anchor is given to resolve. The scroll to the file is what
 // renders it, and the range can only be measured once it has been. Four frames

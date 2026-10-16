@@ -1,7 +1,7 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
 
-import { commentLineText } from './commentLine.ts';
-import type { CommentListEntry, CommentListSection } from './comments.ts';
+import { commentLineText } from './commentLine';
+import type { CommentListEntry, CommentListSection } from './comments';
 
 // The review, as text to hand to a coding agent.
 //

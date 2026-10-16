@@ -10,15 +10,15 @@ import type { AnnotationSide } from '@pierre/diffs';
 // three-dot diff runs from. Neither `base.sha` nor the base branch is that
 // commit once the base has moved on.
 
-import { m } from '../../paraglide/messages.js';
-import type { GitHubRepoRef } from '../reviewTarget.ts';
+import type { GitHubRepoRef } from '@/lib/reviewTarget';
 import {
   encodeRefForPath,
   GitHubError,
   type GitHubPullRequest,
   githubGraphQL,
   githubJson,
-} from './github.ts';
+} from '@/lib/server/github/client';
+import { m } from '@/paraglide/messages.js';
 
 export type IssueSource =
   | { kind: 'github-pull'; number: number }

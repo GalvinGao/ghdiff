@@ -1,8 +1,8 @@
 import { IconCiWarningFill } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
-import { m } from '../paraglide/messages.js';
 import { buttonClass } from '@/components/ui/buttonClass';
+import { m } from '@/paraglide/messages.js';
 
 export function NotFound() {
   return (

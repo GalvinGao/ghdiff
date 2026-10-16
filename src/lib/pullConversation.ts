@@ -1,11 +1,8 @@
-import {
-  readSignedAttachments,
-  type SignedAttachments,
-} from './attachments.ts';
+import { readSignedAttachments, type SignedAttachments } from './attachments';
 import type {
   CommentAuthorCounts,
   CommentAuthorFilter,
-} from './commentAuthors.ts';
+} from './commentAuthors';
 
 // What was said about a pull request as a whole, rather than on one of its
 // lines: the comments under the description, and the reviews that carried a

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import { isFileViewed } from './viewedFiles.ts';
+import { isFileViewed } from './viewedFiles';
 
 test('only VIEWED counts as read', () => {
   assert.equal(isFileViewed('VIEWED'), true);

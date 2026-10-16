@@ -3,7 +3,6 @@ import { IconArrowUpRight, IconBrandGithub, IconRefresh } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import {
@@ -24,13 +23,14 @@ import {
 } from '@/components/ui/StepRail';
 import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { useInstallations } from '@/hooks/useInstallations';
-import { personalAccessTokensUrl } from '@/lib/githubUrls';
+import { personalAccessTokensUrl } from '@/lib/github/urls';
 import {
   installationForAccount,
   reachesAnyRepository,
 } from '@/lib/installations';
 import { gitHubTargetFromSegments } from '@/lib/reviewTarget';
 import { safeReturnTo } from '@/lib/session';
+import { m } from '@/paraglide/messages.js';
 
 const setupMarkup = {
   strong: ({ children }: { children?: ReactNode }) => (

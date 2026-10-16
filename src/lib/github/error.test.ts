@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { gitHubErrorMessage } from './githubError.ts';
+import { gitHubErrorMessage } from './error';
 
 describe('gitHubErrorMessage', () => {
   it("prefers GitHub's own reason over the status name", () => {

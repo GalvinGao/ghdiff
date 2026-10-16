@@ -1,13 +1,13 @@
 import { IconXSquircle } from '@pierre/icons';
 import { type ReactNode, useEffect, useRef } from 'react';
 
-import { m } from '../../paraglide/messages.js';
-import { getLocale } from '../../paraglide/runtime.js';
 import { AnimatedHeight } from '@/components/ui/AnimatedHeight';
 import { Button } from '@/components/ui/Button';
 import { useSheetDrag } from '@/hooks/useSheetDrag';
 import { cn } from '@/lib/cn';
 import { textDirection } from '@/lib/locale';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 // The platform's own dialog, driven by React state.
 //

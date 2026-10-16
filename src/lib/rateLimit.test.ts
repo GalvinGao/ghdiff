@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { isRateLimited, rateLimitedStatus } from './rateLimit.ts';
+import { isRateLimited, rateLimitedStatus } from './rateLimit';
 
 function headers(entries: Record<string, string> = {}): Headers {
   return new Headers(entries);

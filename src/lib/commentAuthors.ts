@@ -1,4 +1,4 @@
-import type { CommentListSection } from './comments.ts';
+import type { CommentListSection } from './comments';
 
 // Who wrote a thread, and whether the sidebar should list it.
 //

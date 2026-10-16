@@ -1,4 +1,4 @@
-import { m } from '../../../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // The parts of a translated message a reviewer has to check by eye.
 //
 // A message is prose around placeholders, and the placeholders are the one part

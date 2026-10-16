@@ -1,8 +1,5 @@
-import { codeFontStacks, DEFAULT_CODE_FONT } from './codeFonts.ts';
-import {
-  CODE_FONT_STORAGE_KEY,
-  COLOR_MODE_STORAGE_KEY,
-} from './storageKeys.ts';
+import { codeFontStacks, DEFAULT_CODE_FONT } from './codeFonts';
+import { CODE_FONT_STORAGE_KEY, COLOR_MODE_STORAGE_KEY } from './storageKeys';
 
 // The two settings that have to be on the document element before anything is
 // drawn, as source text rather than as components.

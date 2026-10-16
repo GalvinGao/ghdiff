@@ -1,4 +1,3 @@
-import { m } from '../../paraglide/messages.js';
 // Minimal GitHub REST client.
 //
 // The token never reaches the server's disk. A reviewer who signed in through
@@ -7,11 +6,12 @@ import { m } from '../../paraglide/messages.js';
 // ahead of that, which is what keeps curl and a script working; and
 // GITHUB_TOKEN is the last fallback, so a single-user deployment can skip the
 // browser step. `resolveGitHubToken` is where those three meet.
-import { gitHubErrorMessage } from '../githubError.ts';
-import { rateLimitedStatus } from '../rateLimit.ts';
-import { accessTokenUsable, refreshDue, withinMaxAge } from '../session.ts';
-import { parseDeploymentConfig } from './config.ts';
-import { readKeyring, readSession } from './session.ts';
+import { gitHubErrorMessage } from '@/lib/github/error';
+import { rateLimitedStatus } from '@/lib/rateLimit';
+import { parseDeploymentConfig } from '@/lib/server/config';
+import { readKeyring, readSession } from '@/lib/server/session';
+import { accessTokenUsable, refreshDue, withinMaxAge } from '@/lib/session';
+import { m } from '@/paraglide/messages.js';
 
 const GITHUB_API_ROOT = 'https://api.github.com';
 const GITHUB_API_VERSION = '2022-11-28';

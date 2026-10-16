@@ -1,22 +1,22 @@
 import type { FileDiffMetadata } from '@pierre/diffs';
 
-import { m } from '../../paraglide/messages.js';
-import type { ReviewTarget } from '../reviewTarget.ts';
 import {
   acceptEffectSettings,
   DEFAULT_EFFECT_SETTINGS,
   type EffectSettings,
-} from './effect/config.ts';
+} from '@/lib/lenses/effect/config';
 import {
   acceptLocalizationSettings,
   DEFAULT_LOCALIZATION_SETTINGS,
   type LocalizationSettings,
   resolveLocaleSources,
-} from './localization/config.ts';
+} from '@/lib/lenses/localization/config';
 import {
   buildLocalizationModel,
   type LocalizationModel,
-} from './localization/model.ts';
+} from '@/lib/lenses/localization/model';
+import type { ReviewTarget } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
 
 // A lens is a way to read one kind of file that a diff draws badly.
 //

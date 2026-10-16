@@ -1,11 +1,11 @@
-import type { LocaleSource } from './config.ts';
+import type { LocaleSource } from './config';
 import {
   type CatalogueChange,
   type CatalogueSource,
   readFlatCatalogue,
-} from './flatJson.ts';
-import { matchLocalePath, patternLabel } from './localePaths.ts';
-import { placeholderNames } from './placeholders.ts';
+} from './flatJson';
+import { matchLocalePath, patternLabel } from './localePaths';
+import { placeholderNames } from './placeholders';
 
 // A catalogue's changes, turned around: by key first and by locale second.
 //

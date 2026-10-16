@@ -4,8 +4,8 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
+import { m } from '@/paraglide/messages.js';
 
 // The seam at the edge of a resizable pane.
 //

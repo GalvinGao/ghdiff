@@ -1,16 +1,13 @@
-import { m } from '../paraglide/messages.js';
-import { getLocale } from '../paraglide/runtime.js';
 // One pull request's own facts, for the card behind its title in the header.
 //
 // The switcher's `PullSummary` is what a list row needs. This is what the card
 // needs: the description, the counts, and the two dates. It is a separate shape
 // because it costs a separate request, and only the pull request on screen pays
 // for it.
-import {
-  readSignedAttachments,
-  type SignedAttachments,
-} from './attachments.ts';
-import { type PullState, pullState } from './pulls.ts';
+import { readSignedAttachments, type SignedAttachments } from './attachments';
+import { type PullState, pullState } from './pulls';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 export interface PullDetails {
   owner: string;

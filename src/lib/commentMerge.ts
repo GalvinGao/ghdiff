@@ -14,7 +14,7 @@ import {
   type CommentMetadata,
   type CommentThread,
   isCommentThread,
-} from './comments.ts';
+} from './comments';
 
 type Annotation = DiffLineAnnotation<CommentMetadata>;
 type ByItemId = ReadonlyMap<string, readonly Annotation[]>;

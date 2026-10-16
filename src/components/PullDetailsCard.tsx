@@ -1,11 +1,11 @@
 import { IconShare } from '@pierre/icons';
 
-import { m } from '../paraglide/messages.js';
 import { CommentBody } from '@/components/CommentBody';
 import { PullStateIcon, pullStateLabel } from '@/components/PullStateIcon';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { formatNumber } from '@/lib/locale';
 import { describeAge, type PullDetails } from '@/lib/pullDetails';
+import { m } from '@/paraglide/messages.js';
 
 // What the pull request is for, which the diff cannot say. It is a card behind
 // the title rather than a panel in the layout: it is read once at the start of a

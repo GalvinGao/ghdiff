@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { usePublish, useSessionTicket, useSharedQuery } from './useSharedQuery';
 import type {
   ReviewEvent,
@@ -8,6 +7,7 @@ import type {
   TeamReview,
 } from '@/lib/reviewDecision';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
+import { m } from '@/paraglide/messages.js';
 
 // The state of one reviewer's verdict on one pull request: the one they left
 // before this visit, and the one they are sending now.

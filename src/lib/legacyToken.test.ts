@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { heldLegacyToken } from './legacyToken.ts';
+import { heldLegacyToken } from './legacyToken';
 
 // The point of this file is the second block: ghdiff works signed out, and a
 // reviewer who never held a token must never be redirected off the page they

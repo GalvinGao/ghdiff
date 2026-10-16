@@ -1,7 +1,6 @@
 import { oc, type } from '@orpc/contract';
 import * as z from 'zod';
 
-import { m } from '../../paraglide/messages.js';
 import type { CreatedIssue } from '@/lib/commentIssue';
 import type { CommentPayload } from '@/lib/comments';
 import type { DeploymentsData } from '@/lib/deployments';
@@ -12,6 +11,7 @@ import type { OpenPullsData } from '@/lib/pulls';
 import type { SubmittedReview, TeamReview } from '@/lib/reviewDecision';
 import type { ViewedFilesData } from '@/lib/viewedFiles';
 import type { GitHubViewer } from '@/lib/viewer';
+import { m } from '@/paraglide/messages.js';
 
 // The whole API, stated once, in a module that imports nothing from a server
 // and nothing from a component. The Worker implements this and the browser

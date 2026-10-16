@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   acceptViewerControls,
   DEFAULT_VIEWER_CONTROLS,
   defaultViewerControls,
-} from './viewerControls.ts';
+} from './viewerControls';
 
 describe('defaultViewerControls', () => {
   it('reads split on anything wider than a phone', () => {

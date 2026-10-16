@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { m } from '../../paraglide/messages.js';
 import { FILE_TOO_LARGE, MAX_FILE_BYTES } from '@/lib/diffHydration';
 import { isReadablePath } from '@/lib/filePath';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
@@ -17,7 +16,8 @@ import {
   githubWebRaw,
   resolveGitHubToken,
   SIGN_IN_EXPIRED,
-} from '@/lib/server/github';
+} from '@/lib/server/github/client';
+import { m } from '@/paraglide/messages.js';
 
 // One file's contents, as text/plain, at the commit the target's diff ends on.
 //

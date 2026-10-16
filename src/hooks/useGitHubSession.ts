@@ -1,15 +1,15 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useSharedCache, useSharedQuery } from './useSharedQuery';
-import { AUTH_ERROR_PARAM, authFailureMessage } from '@/lib/githubApp';
+import { AUTH_ERROR_PARAM, authFailureMessage } from '@/lib/github/app';
 import { heldLegacyToken } from '@/lib/legacyToken';
 import { viewerNamespace } from '@/lib/queryCache/records';
 import { SESSION_QUERY_KEY } from '@/lib/queryCache/sharedCache';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
 import { LEGACY_GITHUB_TOKEN_STORAGE_KEY } from '@/lib/storageKeys';
 import type { GitHubViewer } from '@/lib/viewer';
+import { m } from '@/paraglide/messages.js';
 
 export type { GitHubViewer };
 

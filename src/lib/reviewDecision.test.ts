@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { reviewTone } from './pullStatus.ts';
+import { reviewTone } from './pullStatus';
 import {
   canSubmitReview,
   isOwnPullRequest,
@@ -11,7 +11,7 @@ import {
   REVIEW_EVENTS,
   reviewEventSpec,
   reviewVerdict,
-} from './reviewDecision.ts';
+} from './reviewDecision';
 
 describe('REVIEW_EVENTS', () => {
   it('is the three GitHub takes, in its own spelling', () => {

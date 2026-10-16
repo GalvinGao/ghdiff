@@ -6,7 +6,7 @@
 // the second. `gh-stack` and every other stacking tool build their chains the
 // same way, so ghdiff needs no extra field from the API to draw them.
 
-import type { PullSummary } from './pulls.ts';
+import type { PullSummary } from './pulls';
 
 export interface PullStackNode {
   pull: PullSummary;

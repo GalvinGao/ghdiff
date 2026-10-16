@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   countCommentAuthors,
   filterCommentSections,
   isBotLogin,
   isCommentAuthorFilter,
-} from './commentAuthors.ts';
-import { commentSection, commentThread } from './commentFixtures.ts';
+} from './commentAuthors';
+import { commentSection, commentThread } from './commentFixtures';
 
 describe('isBotLogin', () => {
   it('accepts the suffix GitHub reserves for an app', () => {

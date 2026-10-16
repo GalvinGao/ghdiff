@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { m } from '../paraglide/messages.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { CommentBody } from '@/components/CommentBody';
 import { GitHubTextLink } from '@/components/GitHubLink';
@@ -12,6 +11,7 @@ import { commentPreviewText } from '@/lib/commentHeight';
 import type { CommentListEntry, CommentListSection } from '@/lib/comments';
 import type { ConversationEntry } from '@/lib/pullConversation';
 import { reviewVerdict } from '@/lib/reviewDecision';
+import { m } from '@/paraglide/messages.js';
 
 interface CommentsListProps {
   /** The thread the diff has selected. Its row is marked as the current one. */

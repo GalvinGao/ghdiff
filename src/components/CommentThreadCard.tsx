@@ -1,9 +1,6 @@
 import { IconArrowUpRight, IconReply } from '@pierre/icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { formatList } from '../lib/locale.ts';
-import { m } from '../paraglide/messages.js';
-import { getLocale } from '../paraglide/runtime.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { CommentBody } from '@/components/CommentBody';
 import { CommentExpansion } from '@/components/CommentExpansion';
@@ -19,7 +16,10 @@ import {
   type ThreadComment,
   threadParticipants,
 } from '@/lib/comments';
+import { formatList } from '@/lib/locale';
 import { textDirection } from '@/lib/locale';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 interface CommentThreadCardProps {
   itemId: string;

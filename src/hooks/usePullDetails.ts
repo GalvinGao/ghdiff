@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { useSharedQuery } from './useSharedQuery';
 import type { PullDetails } from '@/lib/pullDetails';
 import { withoutAttachments } from '@/lib/queryCache/persist';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
+import { m } from '@/paraglide/messages.js';
 
 export interface PullDetailsState {
   data?: PullDetails;

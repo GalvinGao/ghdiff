@@ -1,6 +1,6 @@
 import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   indexMatchesByLine,
@@ -8,7 +8,7 @@ import {
   type SearchableItem,
   type SearchMatch,
   searchDiff,
-} from './diffSearch.ts';
+} from './diffSearch';
 
 // Every patch below is written the way git writes one, and parsed by the same
 // `parsePatchFiles` the app itself feeds, so the line numbers under test are

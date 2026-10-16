@@ -1,4 +1,3 @@
-import { m } from '../paraglide/messages.js';
 // Submitting a review: the three verdicts GitHub takes, and the one rule that
 // separates them.
 //
@@ -7,7 +6,8 @@ import { m } from '../paraglide/messages.js';
 // them. A review submitted from ghdiff is a standalone review: the line
 // comments this app writes are posted as they are written, so there is never a
 // pending batch for a verdict to carry.
-import type { StatusTone } from './pullStatus.ts';
+import type { StatusTone } from './pullStatus';
+import { m } from '@/paraglide/messages.js';
 
 /** GitHub's `event`, verbatim. */
 export type ReviewEvent = 'APPROVE' | 'COMMENT' | 'REQUEST_CHANGES';

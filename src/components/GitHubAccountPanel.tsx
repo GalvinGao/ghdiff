@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router';
 
-import { m } from '../paraglide/messages.js';
 import {
   InstallationRow,
   InstallationRowSkeleton,
@@ -15,6 +14,7 @@ import { useCurrentAccount } from '@/hooks/useCurrentPull';
 import { type GitHubSessionState } from '@/hooks/useGitHubSession';
 import { useInstallations } from '@/hooks/useInstallations';
 import { installationForAccount } from '@/lib/installations';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * The account, and the accounts ghdiff may read on its behalf.

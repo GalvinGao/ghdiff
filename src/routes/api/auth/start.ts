@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { authorizeUrl, callbackUrl } from '@/lib/githubApp';
+import { authorizeUrl, callbackUrl } from '@/lib/github/app';
 import { requestLog, withEvlog } from '@/lib/logger';
 import {
   externalRequestUrl,

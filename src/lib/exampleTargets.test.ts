@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { EXAMPLE_TARGETS } from './exampleTargets.ts';
+import { EXAMPLE_TARGETS } from './exampleTargets';
 import {
   gitHubTargetFromSegments,
   reviewTargetKey,
   reviewTargetSplat,
-} from './reviewTarget.ts';
+} from './reviewTarget';
 
 describe('EXAMPLE_TARGETS', () => {
   it('gives every row a splat the /gh route reads back', () => {

@@ -5,10 +5,7 @@ import {
   renderUsage,
 } from 'citty';
 
-import {
-  parseCompareRange,
-  type LocalDiffRange,
-} from '../../src/lib/reviewTarget.ts';
+import { parseCompareRange, type LocalDiffRange } from '@/lib/reviewTarget';
 
 // What the command was asked for, read off `process.argv` and nothing else.
 //

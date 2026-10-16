@@ -1,5 +1,5 @@
-import { m } from '../paraglide/messages.js';
-import { formatNumber } from './locale.ts';
+import { formatNumber } from './locale';
+import { m } from '@/paraglide/messages.js';
 // How much has arrived, in words a reviewer reads at a glance.
 //
 // Decimal and not binary — kB and MB, a thousand each — because that is what a

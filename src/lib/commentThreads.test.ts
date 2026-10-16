@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import type { CommentPayload } from './comments.ts';
-import { groupCommentThreads, threadComments } from './commentThreads.ts';
+import type { CommentPayload } from './comments';
+import { groupCommentThreads, threadComments } from './commentThreads';
 
 function comment(
   githubId: number,

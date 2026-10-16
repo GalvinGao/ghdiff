@@ -1,4 +1,4 @@
-import type { CommentListEntry, CommentListSection } from './comments.ts';
+import type { CommentListEntry, CommentListSection } from './comments';
 
 // The comment shapes the tests build. Test-only, so nothing here reaches a
 // bundle. Both test files need the same shapes, and a `CommentListEntry` has

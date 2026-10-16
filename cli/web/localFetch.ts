@@ -1,4 +1,4 @@
-import { TOKEN_HEADER, TOKEN_PARAM } from '../src/guards.ts';
+import { TOKEN_HEADER, TOKEN_PARAM } from '@cli/src/guards';
 
 // How this run's token gets onto every request the app makes, without a single
 // hook or component being told it exists.

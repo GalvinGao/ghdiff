@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   buildDiffAnchorIndex,
@@ -8,8 +8,8 @@ import {
   formatLineRange,
   lookupDiffAnchor,
   parseLineRange,
-} from './diffAnchor.ts';
-import type { ReviewFileEntry } from './reviewData.ts';
+} from './diffAnchor';
+import type { ReviewFileEntry } from './reviewData';
 
 function entry(path: string, itemId = path): ReviewFileEntry {
   return {

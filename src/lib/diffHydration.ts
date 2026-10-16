@@ -27,8 +27,8 @@ import { type FileDiffMetadata, SPLIT_WITH_NEWLINES } from '@pierre/diffs';
 // from here. `src/lib/fileLimit.ts` is where they are stated, because the
 // `ghdiff` command's own server needs the same two figures and must not import
 // a diff library to get them.
-export { MAX_FILE_BYTES } from './fileLimit.ts';
-import { m } from '../paraglide/messages.js';
+export { MAX_FILE_BYTES } from './fileLimit';
+import { m } from '@/paraglide/messages.js';
 export const FILE_TOO_LARGE =
   m.diff_hydration_that_file_is_too_large_to_show_its;
 

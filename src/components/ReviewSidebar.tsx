@@ -11,8 +11,6 @@ import type { GitStatus } from '@pierre/trees';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
-import { getLocale } from '../paraglide/runtime.js';
 import { CommentAuthorFilterBar } from '@/components/CommentAuthorFilterBar';
 import { CommentsList } from '@/components/CommentsList';
 import { FilterMenu } from '@/components/FilterMenu';
@@ -44,6 +42,8 @@ import {
   type ReviewTreeSource,
 } from '@/lib/reviewFilter';
 import type { TreeStatIndex } from '@/lib/treeStats';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 const fileSummaryMarkup = {
   total: ({ children }: { children?: ReactNode }) => (

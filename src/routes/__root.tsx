@@ -6,9 +6,6 @@ import {
 } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 
-import { textDirection } from '../lib/locale.ts';
-import { m } from '../paraglide/messages.js';
-import { getLocale } from '../paraglide/runtime.js';
 import { AppShell } from '@/components/AppShell';
 import { CodeFontScript } from '@/components/CodeFontScript';
 import { ColorModeScript } from '@/components/ColorModeScript';
@@ -17,6 +14,9 @@ import { PageError } from '@/components/PageError';
 import { WatchedReposScript } from '@/components/WatchedReposScript';
 import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import appCss from '@/globals.css?url';
+import { textDirection } from '@/lib/locale';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 export const Route = createRootRoute({
   head: () => ({

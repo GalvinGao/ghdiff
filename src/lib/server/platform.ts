@@ -2,8 +2,8 @@
 // dead-code elimination in `servedBackend.ts` — nothing about it is asked at
 // runtime.
 
-import { servedBackend } from './servedBackend.ts';
-import { createServedCounter } from './servedCount.ts';
+import { servedBackend } from './servedBackend';
+import { createServedCounter } from './servedCount';
 
 const counter = createServedCounter(await servedBackend());
 

@@ -8,8 +8,8 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { m } from '../paraglide/messages.js';
 import { cn } from '@/lib/cn';
+import { m } from '@/paraglide/messages.js';
 
 // The expanded reading view for one comment.
 //

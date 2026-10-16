@@ -1,12 +1,9 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 
-import {
-  type AppData,
-  AppDataContext,
-} from '../../src/components/AppDataProvider';
-import { useCodeFont } from '../../src/hooks/useCodeFont';
-import { useColorMode } from '../../src/hooks/useColorMode';
+import { type AppData, AppDataContext } from '@/components/AppDataProvider';
+import { useCodeFont } from '@/hooks/useCodeFont';
+import { useColorMode } from '@/hooks/useColorMode';
 
 // What `AppDataProvider` is on a machine with no GitHub in the picture.
 //

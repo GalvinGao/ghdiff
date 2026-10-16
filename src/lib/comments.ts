@@ -1,7 +1,7 @@
 import type { AnnotationSide, SelectedLineRange } from '@pierre/diffs';
 
-import type { SignedAttachments } from './attachments.ts';
-import type { CreatedIssue } from './commentIssue.ts';
+import type { SignedAttachments } from './attachments';
+import type { CreatedIssue } from './commentIssue';
 
 /** One message inside a thread. */
 export interface ThreadComment {

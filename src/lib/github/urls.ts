@@ -9,7 +9,7 @@
 // reviewer stays, and a link that replaced the diff with github.com would cost
 // them the scroll position, the filter and the fragment they had built up.
 
-import type { GitHubReviewTarget } from './reviewTarget.ts';
+import type { GitHubReviewTarget } from '@/lib/reviewTarget';
 
 const GITHUB = 'https://github.com';
 

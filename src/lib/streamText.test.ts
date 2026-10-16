@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import { readStreamedText } from './streamText.ts';
+import { readStreamedText } from './streamText';
 
 // The response bodies here are real streams, because the whole point of this
 // module is that it reads one a chunk at a time: a body handed over whole would

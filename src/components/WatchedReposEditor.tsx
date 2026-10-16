@@ -17,7 +17,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { GrabberIcon } from '@primer/octicons-react';
 import { useId, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { Input } from '@/components/ui/Input';
@@ -28,6 +27,7 @@ import {
   watchedRepoKey,
   type WatchedRepo,
 } from '@/lib/pulls';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * The watch list, and nothing around it: the dialog that shows this owns the

@@ -1,4 +1,4 @@
-import { m } from '../../paraglide/messages.js';
+import { githubJson } from './client';
 // What the setup page asks GitHub: where is this App installed, and how far does
 // each installation reach.
 //
@@ -11,8 +11,8 @@ import { m } from '../../paraglide/messages.js';
 // second call asks for one repository per page and reads `total_count` off the
 // answer, so a reviewer with an installation over three hundred repositories
 // pays for one of them.
-import type { AppInstallation } from '../installations.ts';
-import { githubJson } from './github.ts';
+import type { AppInstallation } from '@/lib/installations';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * How many installations get their reach counted. A reviewer with more accounts

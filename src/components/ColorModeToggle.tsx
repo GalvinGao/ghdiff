@@ -1,6 +1,5 @@
 import { IconColorAuto, IconColorDark, IconColorLight } from '@pierre/icons';
 
-import { m } from '../paraglide/messages.js';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenuLabel,
@@ -9,6 +8,7 @@ import {
 } from '@/components/ui/DropdownMenu';
 import type { ColorModeState } from '@/hooks/useColorMode';
 import { wipeOriginFromClick } from '@/lib/colorSchemeWipe';
+import { m } from '@/paraglide/messages.js';
 
 const ORDER = ['system', 'light', 'dark'] as const;
 const LABEL = {

@@ -1,6 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { type AuthFailure, authFailureUrl, callbackUrl } from '@/lib/githubApp';
+import {
+  type AuthFailure,
+  authFailureUrl,
+  callbackUrl,
+} from '@/lib/github/app';
 import { requestLog, toLoggable, withEvlog } from '@/lib/logger';
 import {
   externalRequestUrl,
@@ -8,7 +12,7 @@ import {
   readAuthSetup,
   redirectTo,
 } from '@/lib/server/authRoute';
-import { exchangeCode } from '@/lib/server/githubApp';
+import { exchangeCode } from '@/lib/server/github/app';
 import { clearHandoff, readHandoff, writeSession } from '@/lib/server/session';
 
 // Where GitHub sends the reviewer back. It spends the code and seals the session.

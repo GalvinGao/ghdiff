@@ -15,7 +15,6 @@ import { GitPullRequestClosedIcon } from '@primer/octicons-react/GitPullRequestC
 import { Link } from '@tanstack/react-router';
 import { useId, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { ColorModeMenuItems } from '@/components/ColorModeToggle';
 import { DeploymentMenu } from '@/components/DeploymentMenu';
 import { GitHubAccountControl } from '@/components/GitHubAccountControl';
@@ -47,7 +46,7 @@ import type { PullDetailsState } from '@/hooks/usePullDetails';
 import type { SubmitReviewState } from '@/hooks/useSubmitReview';
 import { cn } from '@/lib/cn';
 import { CODE_FONTS, type CodeFontId } from '@/lib/codeFonts';
-import { reviewTargetUrl } from '@/lib/githubUrls';
+import { reviewTargetUrl } from '@/lib/github/urls';
 import type { PullState } from '@/lib/pulls';
 import {
   describeSubmittedReview,
@@ -62,6 +61,7 @@ import {
 } from '@/lib/reviewTarget';
 import type { StackPosition } from '@/lib/stackReview';
 import type { ViewerControls } from '@/lib/viewerControls';
+import { m } from '@/paraglide/messages.js';
 
 /** The label wears this whether or not there is a page for it to link to. */
 const TARGET_LABEL_CLASS =

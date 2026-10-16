@@ -2,7 +2,7 @@ import { createORPCClient } from '@orpc/client';
 import { RPCLink } from '@orpc/client/fetch';
 import type { ContractRouterClient } from '@orpc/contract';
 
-import { contract } from './contract.ts';
+import { contract } from './contract';
 import { withRefresh } from '@/lib/authFetch';
 
 // The browser's half. It is built from `contract` and never from the router, so

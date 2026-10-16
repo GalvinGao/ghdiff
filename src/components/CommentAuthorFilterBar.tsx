@@ -1,7 +1,6 @@
 import { HubotIcon } from '@primer/octicons-react/HubotIcon';
 import { PersonIcon } from '@primer/octicons-react/PersonIcon';
 
-import { m } from '../paraglide/messages.js';
 import {
   Segmented,
   SegmentedCount,
@@ -11,6 +10,7 @@ import type {
   CommentAuthorCounts,
   CommentAuthorFilter,
 } from '@/lib/commentAuthors';
+import { m } from '@/paraglide/messages.js';
 
 // Who wrote the threads the list shows.
 //

@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import { AuthorAvatar } from '@/components/AuthorAvatar';
 import { VERDICT_COLOR, VERDICT_ICON } from '@/components/reviewVerdictStyle';
 import { Button } from '@/components/ui/Button';
@@ -24,6 +23,7 @@ import {
   type TeamReview,
 } from '@/lib/reviewDecision';
 import { type StackPosition, stackPullTarget } from '@/lib/stackReview';
+import { m } from '@/paraglide/messages.js';
 
 const reviewMarkup = {
   strong: ({ children }: { children?: ReactNode }) => (

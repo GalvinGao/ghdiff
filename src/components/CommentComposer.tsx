@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
-import { getLocale } from '../paraglide/runtime.js';
 import { Button } from '@/components/ui/Button';
 import { CheckBox } from '@/components/ui/CheckBox';
 import type { DraftComment } from '@/lib/comments';
 import { textDirection } from '@/lib/locale';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 interface CommentComposerProps {
   /** Whether the note can be filed as an issue instead. */

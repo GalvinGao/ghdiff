@@ -7,8 +7,6 @@ import {
 import { Link } from '@tanstack/react-router';
 import { type Ref, useMemo, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
-import { getLocale } from '../paraglide/runtime.js';
 import { useAppData } from '@/components/AppDataProvider';
 import { PaneResizeHandle } from '@/components/PaneResizeHandle';
 import {
@@ -53,6 +51,8 @@ import {
   type WatchedRepo,
 } from '@/lib/pulls';
 import { type GitHubPullTarget, reviewTargetSplat } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 // The left-most bar, on every page. Reviewing is moving between pull requests,
 // so the list of them is not a menu the reviewer opens: it is the edge of the

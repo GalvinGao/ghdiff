@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import type { LocalDiffRange } from '../../src/lib/reviewTarget.ts';
 import {
   diffArgs,
   newSideSource,
@@ -11,7 +10,8 @@ import {
   untrackedDiffArgs,
   untrackedListArgs,
   untrackedStageArgs,
-} from './gitRange.ts';
+} from './gitRange';
+import type { LocalDiffRange } from '@/lib/reviewTarget';
 
 const FLAGS = ['--no-color', '--no-ext-diff', '--no-textconv', '-M'];
 

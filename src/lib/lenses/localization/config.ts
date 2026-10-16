@@ -2,8 +2,8 @@ import {
   detectLocalePatterns,
   isGeneratedLocaleName,
   LOCALE_TOKEN,
-} from './localePaths.ts';
-import { isPlaceholderSyntax, type PlaceholderSyntax } from './placeholders.ts';
+} from './localePaths';
+import { isPlaceholderSyntax, type PlaceholderSyntax } from './placeholders';
 
 // What a reviewer tells the localization lens about one repository.
 //

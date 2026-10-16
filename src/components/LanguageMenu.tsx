@@ -1,12 +1,5 @@
 import { GlobeIcon } from '@primer/octicons-react';
 
-import { m } from '../paraglide/messages.js';
-import {
-  getLocale,
-  isLocale,
-  locales,
-  setLocale,
-} from '../paraglide/runtime.js';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -19,6 +12,13 @@ import {
   DropdownMenuSubContent,
 } from '@/components/ui/DropdownMenu';
 import { textDirection } from '@/lib/locale';
+import { m } from '@/paraglide/messages.js';
+import {
+  getLocale,
+  isLocale,
+  locales,
+  setLocale,
+} from '@/paraglide/runtime.js';
 
 export function LanguageMenu() {
   if (locales.length < 2) return null;

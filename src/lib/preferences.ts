@@ -1,21 +1,16 @@
-import { type CodeFontId, DEFAULT_CODE_FONT, isCodeFont } from './codeFonts.ts';
+import { type CodeFontId, DEFAULT_CODE_FONT, isCodeFont } from './codeFonts';
 import {
   type CommentAuthorFilter,
   DEFAULT_COMMENT_AUTHOR_FILTER,
   isCommentAuthorFilter,
-} from './commentAuthors.ts';
-import {
-  acceptRepoLensStore,
-  EMPTY_REPO_LENS_STORE,
-  type RepoLensStore,
-} from './lenses/lenses.ts';
-import { dedupeWatchedRepos, type WatchedRepo } from './pulls.ts';
-import { isPullScope, type PullScope } from './pullScope.ts';
+} from './commentAuthors';
+import { dedupeWatchedRepos, type WatchedRepo } from './pulls';
+import { isPullScope, type PullScope } from './pullScope';
 import {
   acceptReviewFilterStore,
   EMPTY_REVIEW_FILTER_STORE,
   type ReviewFilterStore,
-} from './reviewFilterStore.ts';
+} from './reviewFilterStore';
 import {
   CODE_FONT_STORAGE_KEY,
   COLOR_MODE_STORAGE_KEY,
@@ -29,8 +24,13 @@ import {
   VIEWER_CONTROLS_STORAGE_KEY,
   WATCH_OFFER_STORAGE_KEY,
   WATCHED_REPOS_STORAGE_KEY,
-} from './storageKeys.ts';
-import { acceptViewerControls, type ViewerControls } from './viewerControls.ts';
+} from './storageKeys';
+import { acceptViewerControls, type ViewerControls } from './viewerControls';
+import {
+  acceptRepoLensStore,
+  EMPTY_REPO_LENS_STORE,
+  type RepoLensStore,
+} from '@/lib/lenses/lenses';
 
 // Every setting the browser remembers, named once.
 //

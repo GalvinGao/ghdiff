@@ -9,8 +9,8 @@ import {
   buildPullStacks,
   countStackNodes,
   type PullStackNode,
-} from './pullStacks.ts';
-import type { PullReviewStatus } from './pullStatus.ts';
+} from './pullStacks';
+import type { PullReviewStatus } from './pullStatus';
 
 export interface WatchedRepo {
   owner: string;

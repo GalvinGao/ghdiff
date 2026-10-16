@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // What reviewer is looking at.
 //
 // Three of the four targets are a place on GitHub that resolves to one unified

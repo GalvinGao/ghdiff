@@ -1,13 +1,13 @@
 import { IconGear } from '@pierre/icons';
 import type { ReactNode } from 'react';
 
-import { m } from '../../paraglide/messages.js';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import { textDirection } from '@/lib/locale';
+import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 
 // The one piece of chrome every lens panel shares.

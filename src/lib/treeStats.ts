@@ -1,4 +1,4 @@
-import type { ReviewFileEntry } from './reviewData.ts';
+import type { ReviewFileEntry } from './reviewData';
 
 // Diff stats for one file tree row.
 //

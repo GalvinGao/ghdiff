@@ -1,15 +1,15 @@
 import type { CodeViewDiffItem, DiffLineAnnotation } from '@pierre/diffs';
 
-import { isBotLogin } from './commentAuthors.ts';
-import { classifyCommentLineType } from './commentLine.ts';
+import { isBotLogin } from './commentAuthors';
+import { classifyCommentLineType } from './commentLine';
 import {
   type CommentListSection,
   type CommentMetadata,
   isCommentThread,
   threadParticipants,
   threadRoot,
-} from './comments.ts';
-import type { ReviewFileEntry } from './reviewData.ts';
+} from './comments';
+import type { ReviewFileEntry } from './reviewData';
 
 /**
  * Builds the sidebar list: one row per thread, grouped by file in diff order

@@ -1,13 +1,13 @@
 import { parsePatchFiles } from '@pierre/diffs';
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { buildReviewData } from '../reviewData.ts';
 import {
   describeSynthesisGaps,
   type GitHubPullFile,
   synthesizePatch,
-} from './githubPatch.ts';
+} from './patch';
+import { buildReviewData } from '@/lib/reviewData';
 
 function file(overrides: Partial<GitHubPullFile>): GitHubPullFile {
   return {

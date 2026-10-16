@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import type { ReviewFileEntry } from './reviewData.ts';
-import { buildTreeStatIndex } from './treeStats.ts';
+import type { ReviewFileEntry } from './reviewData';
+import { buildTreeStatIndex } from './treeStats';
 
 function entry(overrides: Partial<ReviewFileEntry>): ReviewFileEntry {
   const path = overrides.path ?? 'src/index.ts';

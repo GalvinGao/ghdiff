@@ -1,4 +1,4 @@
-import { m } from '../paraglide/messages.js';
+import { m } from '@/paraglide/messages.js';
 // Reading a response body as text, a chunk at a time.
 //
 // `response.text()` is one line and answers with the whole body, which is the

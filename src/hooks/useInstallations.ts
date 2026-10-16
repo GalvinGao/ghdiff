@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { m } from '../paraglide/messages.js';
 import type { AppInstallation } from '@/lib/installations';
 import { rpc, rpcErrorMessage } from '@/lib/rpc/client';
+import { m } from '@/paraglide/messages.js';
 
 export interface InstallationsState {
   installations: readonly AppInstallation[];

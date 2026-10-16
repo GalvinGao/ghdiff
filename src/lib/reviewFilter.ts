@@ -1,19 +1,19 @@
 import type { CodeViewDiffItem } from '@pierre/diffs';
 import type { GitStatus, GitStatusEntry } from '@pierre/trees';
 
-import type { CommentMetadata } from './comments.ts';
+import type { CommentMetadata } from './comments';
 import {
   type FilterPresetId,
   getFilterPreset,
   matchesPresets,
   NO_PRESETS,
-} from './filterRules.ts';
+} from './filterRules';
 import {
   gitStatusEntries,
   type ReviewData,
   type ReviewDiffStats,
   type ReviewFileEntry,
-} from './reviewData.ts';
+} from './reviewData';
 
 export interface ReviewFilterState {
   /**

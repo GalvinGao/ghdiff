@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   accessTokenFresh,
@@ -18,7 +18,7 @@ import {
   sessionLive,
   setCookieHeader,
   withinMaxAge,
-} from './session.ts';
+} from './session';
 
 const NOW = 1_800_000_000_000;
 const HOUR = 60 * 60 * 1000;

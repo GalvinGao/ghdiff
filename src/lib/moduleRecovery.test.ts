@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { claimModuleReload, isModuleLoadError } from './moduleRecovery.ts';
+import { claimModuleReload, isModuleLoadError } from './moduleRecovery';
 
 describe('module recovery', () => {
   it('recognizes browser module download failures without reloading other errors', () => {

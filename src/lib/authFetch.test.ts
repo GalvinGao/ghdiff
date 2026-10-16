@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it } from 'node:test';
+import { afterEach, describe, it } from 'vitest';
 
-import { withRefresh } from './authFetch.ts';
+import { withRefresh } from './authFetch';
 
 // The retry, and the two things a refresh can come back with. `fetch` is stood
 // in for by a Worker that answers the two auth routes as each case says, and a

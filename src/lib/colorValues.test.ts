@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
-import { findColorValues } from './colorValues.ts';
+import { findColorValues } from './colorValues';
 
 test('finds several colors with their exact source offsets in any code', () => {
   const line = 'const colors = ["#FFFFFF", "#000", "rgb(12, 34, 56)"];';

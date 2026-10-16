@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
-import { acceptRepoLensStore, lensSettings } from '../lenses.ts';
-import { acceptEffectSettings, DEFAULT_EFFECT_SETTINGS } from './config.ts';
+import { acceptEffectSettings, DEFAULT_EFFECT_SETTINGS } from './config';
+import { acceptRepoLensStore, lensSettings } from '@/lib/lenses/lenses';
 
 describe('the Effect lens settings', () => {
   it('is on for a repository nobody has touched', () => {

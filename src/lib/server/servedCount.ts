@@ -1,6 +1,6 @@
-import { log, toLoggable } from '../logger.ts';
-import { parseServedCount } from '../servedCount.ts';
-import type { ServedBackend } from './servedBackend.ts';
+import type { ServedBackend } from './servedBackend';
+import { log, toLoggable } from '@/lib/logger';
+import { parseServedCount } from '@/lib/servedCount';
 
 // How many diffs this deployment has served, kept in one key-value record.
 //

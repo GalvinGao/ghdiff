@@ -10,21 +10,21 @@ import { Provider } from 'jotai';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { textDirection } from '../../src/lib/locale';
-import { m } from '../../src/paraglide/messages.js';
-import { getLocale } from '../../src/paraglide/runtime.js';
 import { LocalAppData } from './LocalAppData';
 import { claimToken, installTokenHeader } from './localFetch';
 import { ReviewScreen } from '@/components/ReviewScreen';
 import { RouteError } from '@/components/RouteError';
+import { CenteredNotice } from '@/components/ui/CenteredNotice';
+import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
+import { textDirection } from '@/lib/locale';
 // The whole stylesheet, as a side effect, which is what a stylesheet is in a
 // bundled page. `__root.tsx` imports the same file `?url` instead, because a
 // server-rendered document needs a `<link>` to name.
 // oxlint-disable-next-line import/no-unassigned-import
 import '@/globals.css';
-import { CenteredNotice } from '@/components/ui/CenteredNotice';
-import { WorkerPoolProvider } from '@/components/WorkerPoolProvider';
 import type { LocalDiffTarget } from '@/lib/reviewTarget';
+import { m } from '@/paraglide/messages.js';
+import { getLocale } from '@/paraglide/runtime.js';
 
 // The ghdiff review surface, mounted against a diff on this machine.
 //
