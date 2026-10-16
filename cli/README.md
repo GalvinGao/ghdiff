@@ -8,7 +8,7 @@ on your own machine — uncommitted work, what is staged, or a branch against it
 base. Nothing is uploaded anywhere.
 
 ```bash
-npx ghdiff              # or: npm install -g ghdiff
+npx @imggdev/ghdiff     # or: npm install -g @imggdev/ghdiff
 ```
 
 ## What it shows

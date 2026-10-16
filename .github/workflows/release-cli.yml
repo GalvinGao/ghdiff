@@ -1,0 +1,50 @@
+name: Release CLI
+
+# Publishes `dist/cli` to npm as `@imggdev/ghdiff`, the package
+# `npx @imggdev/ghdiff` fetches. The command it installs is still `ghdiff`.
+#
+# A tag is the ask: bump `cli/package.json`, merge it, then push
+# `cli-v<version>`. The tag and the manifest have to name the same version, or
+# the job stops before it builds anything — a tag that published some other
+# figure would leave the two disagreeing on npm forever.
+on:
+  push:
+    tags: ['cli-v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-cli
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    # npm trusted publishing: the registry trusts this workflow in this
+    # repository, and the OIDC token GitHub mints for the run is the whole of
+    # the credential. No npm token is stored anywhere, and the package gets a
+    # provenance statement naming the commit it was built from.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup
+
+      - name: Tag matches the manifest
+        run: |
+          version=$(node -p "require('./cli/package.json').version")
+          if [ "${GITHUB_REF_NAME}" != "cli-v${version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match cli/package.json ${version}."
+            exit 1
+          fi
+
+      - name: Build
+        run: pnpm build:cli
+
+      - name: Publish
+        working-directory: dist/cli
+        run: npm publish --access public

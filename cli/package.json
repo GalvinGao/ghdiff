@@ -1,6 +1,6 @@
 {
-  "name": "ghdiff",
-  "version": "0.1.0",
+  "name": "@imggdev/ghdiff",
+  "version": "0.1.1",
   "description": "Read a local git diff in the ghdiff review surface.",
   "keywords": [
     "cli",
@@ -8,6 +8,16 @@
     "git",
     "review"
   ],
+  "homepage": "https://github.com/GalvinGao/ghdiff/tree/main/cli#readme",
+  "bugs": {
+    "url": "https://github.com/GalvinGao/ghdiff/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GalvinGao/ghdiff.git",
+    "directory": "cli"
+  },
   "bin": {
     "ghdiff": "bin/ghdiff.js"
   },
