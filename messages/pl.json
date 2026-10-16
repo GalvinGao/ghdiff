@@ -932,5 +932,8 @@
   "deployment_menu_opens_build": "Otwiera build {sha}.",
   "deployment_menu_opens_log": "Otwiera jego log.",
   "deployment_menu_opens_nothing": "Nie ma tu adresu do otwarcia.",
-  "router_could_not_load_the_deployments": "Nie udało się wczytać wdrożeń."
+  "router_could_not_load_the_deployments": "Nie udało się wczytać wdrożeń.",
+  "image_preview_label": "Podgląd obrazu: {url}",
+  "image_preview_loading": "Wczytywanie obrazu…",
+  "image_preview_failed": "Nie udało się wczytać tego obrazu."
 }

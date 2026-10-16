@@ -874,5 +874,8 @@
   "deployment_menu_opens_build": "इससे {sha} का बिल्ड खुलता है।",
   "deployment_menu_opens_log": "इससे उसका लॉग खुलता है।",
   "deployment_menu_opens_nothing": "यहाँ खोलने के लिए कोई पता नहीं है।",
-  "router_could_not_load_the_deployments": "डिप्लॉयमेंट लोड नहीं हो सके।"
+  "router_could_not_load_the_deployments": "डिप्लॉयमेंट लोड नहीं हो सके।",
+  "image_preview_label": "चित्र का पूर्वावलोकन: {url}",
+  "image_preview_loading": "चित्र लोड हो रहा है…",
+  "image_preview_failed": "यह चित्र लोड नहीं हो सका।"
 }

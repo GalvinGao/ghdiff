@@ -874,5 +874,8 @@
   "deployment_menu_opens_build": "Dit opent de build van {sha}.",
   "deployment_menu_opens_log": "Dit opent het log.",
   "deployment_menu_opens_nothing": "Hier is geen adres om te openen.",
-  "router_could_not_load_the_deployments": "De deployments konden niet worden geladen."
+  "router_could_not_load_the_deployments": "De deployments konden niet worden geladen.",
+  "image_preview_label": "Afbeeldingsvoorbeeld: {url}",
+  "image_preview_loading": "Afbeelding laden…",
+  "image_preview_failed": "Deze afbeelding kon niet worden geladen."
 }

@@ -852,5 +852,8 @@
   "deployment_menu_opens_build": "Ini membuka build {sha}.",
   "deployment_menu_opens_log": "Ini membuka log-nya.",
   "deployment_menu_opens_nothing": "Tidak ada alamat yang bisa dibuka di sini.",
-  "router_could_not_load_the_deployments": "Tidak dapat memuat deployment."
+  "router_could_not_load_the_deployments": "Tidak dapat memuat deployment.",
+  "image_preview_label": "Pratinjau gambar: {url}",
+  "image_preview_loading": "Memuat gambar…",
+  "image_preview_failed": "Gambar ini tidak dapat dimuat."
 }

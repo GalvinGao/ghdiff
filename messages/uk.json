@@ -946,5 +946,8 @@
   "deployment_menu_opens_build": "Відкриється збірка {sha}.",
   "deployment_menu_opens_log": "Відкриється її журнал.",
   "deployment_menu_opens_nothing": "Тут немає адреси, яку можна відкрити.",
-  "router_could_not_load_the_deployments": "Не вдалося завантажити розгортання."
+  "router_could_not_load_the_deployments": "Не вдалося завантажити розгортання.",
+  "image_preview_label": "Попередній перегляд зображення: {url}",
+  "image_preview_loading": "Завантаження зображення…",
+  "image_preview_failed": "Не вдалося завантажити це зображення."
 }

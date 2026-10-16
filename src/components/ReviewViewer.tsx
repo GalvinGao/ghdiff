@@ -48,6 +48,7 @@ import { Button } from '@/components/ui/Button';
 import { CheckBox } from '@/components/ui/CheckBox';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useColorPreviews } from '@/hooks/useColorPreviews';
+import { useImagePreviews } from '@/hooks/useImagePreviews';
 import type { CommentStore } from '@/hooks/useReviewComments';
 import { cn } from '@/lib/cn';
 import { type CommentMetadata, isDraftComment } from '@/lib/comments';
@@ -322,13 +323,14 @@ export const ReviewViewer = memo(function ReviewViewer({
   );
 
   const colorOptions = useColorPreviews(options);
+  const previewOptions = useImagePreviews(colorOptions);
 
   return (
     <CodeView<CommentMetadata>
       ref={viewerRef}
       containerRef={scrollRef}
       items={items}
-      options={colorOptions}
+      options={previewOptions}
       selectedLines={selectedLines}
       onScroll={onScroll}
       onSelectedLinesChange={onSelectedLinesChange}

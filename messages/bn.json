@@ -875,5 +875,8 @@
   "deployment_menu_opens_build": "এটি {sha}-এর বিল্ড খোলে।",
   "deployment_menu_opens_log": "এটি এর লগ খোলে।",
   "deployment_menu_opens_nothing": "এখানে খোলার মতো কোনো ঠিকানা নেই।",
-  "router_could_not_load_the_deployments": "ডিপ্লয়মেন্ট লোড করা যায়নি।"
+  "router_could_not_load_the_deployments": "ডিপ্লয়মেন্ট লোড করা যায়নি।",
+  "image_preview_label": "ছবির পূর্বরূপ: {url}",
+  "image_preview_loading": "ছবি লোড হচ্ছে…",
+  "image_preview_failed": "এই ছবিটি লোড করা যায়নি।"
 }

@@ -859,5 +859,8 @@
   "deployment_menu_opens_build": "这会打开 {sha} 的构建。",
   "deployment_menu_opens_log": "这会打开它的日志。",
   "deployment_menu_opens_nothing": "这里没有可打开的地址。",
-  "router_could_not_load_the_deployments": "无法加载部署。"
+  "router_could_not_load_the_deployments": "无法加载部署。",
+  "image_preview_label": "预览图片：{url}",
+  "image_preview_loading": "正在加载图片…",
+  "image_preview_failed": "无法加载这张图片。"
 }

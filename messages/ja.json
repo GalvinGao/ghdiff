@@ -864,5 +864,8 @@
   "deployment_menu_opens_build": "{sha} のビルドを開きます。",
   "deployment_menu_opens_log": "そのログを開きます。",
   "deployment_menu_opens_nothing": "ここには開けるアドレスがありません。",
-  "router_could_not_load_the_deployments": "デプロイを読み込めませんでした。"
+  "router_could_not_load_the_deployments": "デプロイを読み込めませんでした。",
+  "image_preview_label": "画像のプレビュー: {url}",
+  "image_preview_loading": "画像を読み込み中…",
+  "image_preview_failed": "この画像を読み込めませんでした。"
 }

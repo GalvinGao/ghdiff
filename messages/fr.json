@@ -887,5 +887,8 @@
   "deployment_menu_opens_build": "Ceci ouvre la version de {sha}.",
   "deployment_menu_opens_log": "Ceci ouvre son journal.",
   "deployment_menu_opens_nothing": "Aucune adresse à ouvrir ici.",
-  "router_could_not_load_the_deployments": "Impossible de charger les déploiements."
+  "router_could_not_load_the_deployments": "Impossible de charger les déploiements.",
+  "image_preview_label": "Aperçu de l’image : {url}",
+  "image_preview_loading": "Chargement de l’image…",
+  "image_preview_failed": "Impossible de charger cette image."
 }

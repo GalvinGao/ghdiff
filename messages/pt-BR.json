@@ -875,5 +875,8 @@
   "deployment_menu_opens_build": "Isto abre a versão de {sha}.",
   "deployment_menu_opens_log": "Isto abre o log.",
   "deployment_menu_opens_nothing": "Não há nenhum endereço para abrir aqui.",
-  "router_could_not_load_the_deployments": "Não foi possível carregar as implantações."
+  "router_could_not_load_the_deployments": "Não foi possível carregar as implantações.",
+  "image_preview_label": "Prévia da imagem: {url}",
+  "image_preview_loading": "Carregando imagem…",
+  "image_preview_failed": "Não foi possível carregar esta imagem."
 }

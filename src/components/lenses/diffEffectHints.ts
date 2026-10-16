@@ -340,10 +340,18 @@ function foldRange(
   if (first == null) return;
 
   const parts = pieces.map((piece) => {
+    const imagePreview = piece.previousSibling;
     const part = document.createElement('span');
     part.setAttribute('data-ghdiff-fold-part', '');
     piece.parentNode?.insertBefore(part, piece);
     part.appendChild(piece);
+    // The image control belongs to the source the fold hides, including when
+    // the lens is enabled after the preview buttons have already been added.
+    if (
+      imagePreview instanceof HTMLButtonElement &&
+      imagePreview.hasAttribute('data-ghdiff-image')
+    )
+      part.insertBefore(imagePreview, piece);
     return part;
   });
 
