@@ -28,6 +28,33 @@ test('handles Markdown delimiters without removing balanced filename parentheses
   );
 });
 
+test('excludes enclosing syntax after signed image links without changing query bytes', () => {
+  for (const url of [
+    'https://example.com/image.png?token=abc',
+    'https://example.com/image.png?token=a(b)',
+    'https://example.com/photo(1).png?token=a(b)c.,;%2F#view',
+    'https://example.com/image.png#section',
+  ]) {
+    for (const text of [
+      `background: url(${url});`,
+      `![image](${url}).`,
+      `[${url}],`,
+      `{${url}};`,
+    ]) {
+      const links = findImageLinks(text);
+      assert.equal(links.length, 1, text);
+      assert.equal(links[0].url, url, text);
+      assert.equal(text.slice(links[0].start, links[0].end), url, text);
+    }
+  }
+});
+
+test('preserves punctuation in quoted and unenclosed signed query strings', () => {
+  const url = 'https://example.com/image.png?token=abc.)';
+  for (const text of [`"${url}"`, `'${url}'`, url])
+    assert.equal(findImageLinks(text)[0].url, url);
+});
+
 test('ignores pages, non-web schemes, embedded credentials and malformed URLs', () => {
   for (const text of [
     'https://example.com/page?image=photo.png',
