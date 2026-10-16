@@ -875,5 +875,8 @@
   "deployment_menu_opens_build": "Esto abre la compilación de {sha}.",
   "deployment_menu_opens_log": "Esto abre su registro.",
   "deployment_menu_opens_nothing": "Aquí no hay ninguna dirección para abrir.",
-  "router_could_not_load_the_deployments": "No se pudieron cargar los despliegues."
+  "router_could_not_load_the_deployments": "No se pudieron cargar los despliegues.",
+  "image_preview_label": "Vista previa de la imagen: {url}",
+  "image_preview_loading": "Cargando imagen…",
+  "image_preview_failed": "No se pudo cargar esta imagen."
 }

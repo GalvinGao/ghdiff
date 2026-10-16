@@ -864,5 +864,8 @@
   "deployment_menu_opens_build": "Bu, {sha} derlemesini açar.",
   "deployment_menu_opens_log": "Bu, günlüğünü açar.",
   "deployment_menu_opens_nothing": "Burada açılacak bir adres yok.",
-  "router_could_not_load_the_deployments": "Dağıtımlar yüklenemedi."
+  "router_could_not_load_the_deployments": "Dağıtımlar yüklenemedi.",
+  "image_preview_label": "Görsel önizlemesi: {url}",
+  "image_preview_loading": "Görsel yükleniyor…",
+  "image_preview_failed": "Bu görsel yüklenemedi."
 }

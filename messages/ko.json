@@ -856,5 +856,8 @@
   "deployment_menu_opens_build": "{sha} 빌드를 열어요.",
   "deployment_menu_opens_log": "로그를 열어요.",
   "deployment_menu_opens_nothing": "여기에는 열 수 있는 주소가 없어요.",
-  "router_could_not_load_the_deployments": "배포를 불러올 수 없어요."
+  "router_could_not_load_the_deployments": "배포를 불러올 수 없어요.",
+  "image_preview_label": "이미지 미리보기: {url}",
+  "image_preview_loading": "이미지 불러오는 중…",
+  "image_preview_failed": "이 이미지를 불러올 수 없습니다."
 }

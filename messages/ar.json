@@ -989,5 +989,8 @@
   "deployment_menu_opens_build": "يفتح هذا بناء ⁦{sha}⁩.",
   "deployment_menu_opens_log": "يفتح هذا سجله.",
   "deployment_menu_opens_nothing": "لا يوجد هنا عنوان لفتحه.",
-  "router_could_not_load_the_deployments": "تعذر تحميل عمليات النشر."
+  "router_could_not_load_the_deployments": "تعذر تحميل عمليات النشر.",
+  "image_preview_label": "معاينة الصورة: ⁨{url}⁩",
+  "image_preview_loading": "جارٍ تحميل الصورة…",
+  "image_preview_failed": "تعذّر تحميل هذه الصورة."
 }

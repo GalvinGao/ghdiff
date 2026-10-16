@@ -934,5 +934,8 @@
   "deployment_menu_opens_build": "Откроется сборка {sha}.",
   "deployment_menu_opens_log": "Откроется её журнал.",
   "deployment_menu_opens_nothing": "Здесь нет адреса, который можно открыть.",
-  "router_could_not_load_the_deployments": "Не удалось загрузить развёртывания."
+  "router_could_not_load_the_deployments": "Не удалось загрузить развёртывания.",
+  "image_preview_label": "Предпросмотр изображения: {url}",
+  "image_preview_loading": "Загрузка изображения…",
+  "image_preview_failed": "Не удалось загрузить это изображение."
 }

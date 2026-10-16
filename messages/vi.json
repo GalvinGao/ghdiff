@@ -860,5 +860,8 @@
   "deployment_menu_opens_build": "Mục này mở bản dựng của {sha}.",
   "deployment_menu_opens_log": "Mục này mở nhật ký của nó.",
   "deployment_menu_opens_nothing": "Ở đây không có địa chỉ nào để mở.",
-  "router_could_not_load_the_deployments": "Không thể tải các bản triển khai."
+  "router_could_not_load_the_deployments": "Không thể tải các bản triển khai.",
+  "image_preview_label": "Xem trước ảnh: {url}",
+  "image_preview_loading": "Đang tải ảnh…",
+  "image_preview_failed": "Không tải được ảnh này."
 }

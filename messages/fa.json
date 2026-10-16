@@ -875,5 +875,8 @@
   "deployment_menu_opens_build": "این، ساخت ⁦{sha}⁩ را باز می‌کند.",
   "deployment_menu_opens_log": "این، گزارش آن را باز می‌کند.",
   "deployment_menu_opens_nothing": "اینجا نشانی‌ای برای باز کردن نیست.",
-  "router_could_not_load_the_deployments": "بارگیری استقرارها ممکن نشد."
+  "router_could_not_load_the_deployments": "بارگیری استقرارها ممکن نشد.",
+  "image_preview_label": "پیش‌نمایش تصویر: ⁨{url}⁩",
+  "image_preview_loading": "در حال بارگیری تصویر…",
+  "image_preview_failed": "این تصویر بارگیری نشد."
 }
