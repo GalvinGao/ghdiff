@@ -65,7 +65,7 @@ export function WatchedReposEditor({
               setError(undefined);
             } else {
               setError(
-                m.watched_repos_editor_enter_a_repository_as_owner_repo()
+                m.watched_repos_editor_enter_a_repository_or_a_gitlab_project()
               );
             }
           }}

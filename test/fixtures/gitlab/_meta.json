@@ -1,0 +1,91 @@
+{
+  "recordedAt": "2026-09-08T07:13:42.695Z",
+  "note": "Anonymous reads of a public gitlab.com project; see record/gitlab.mjs.",
+  "sources": [
+    {
+      "file": "mr-show.json",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/merge_requests/3334",
+      "status": 200
+    },
+    {
+      "file": "mr-diffs.json",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/merge_requests/3334/diffs?per_page=100&page=1",
+      "status": 200
+    },
+    {
+      "file": "mr-list.json",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/merge_requests?state=opened&per_page=5&page=1",
+      "status": 200
+    },
+    {
+      "file": "mr-raw-diffs.diff",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/merge_requests/3334/raw_diffs",
+      "status": 200
+    },
+    {
+      "file": "commit-diff.json",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/repository/commits/ee095772260696052b74058d58bb7adf2b1aead9/diff?per_page=100",
+      "status": 200
+    },
+    {
+      "file": "compare.json",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/repository/compare?from=925c5a41&to=ee095772260696052b74058d58bb7adf2b1aead9",
+      "status": 200
+    },
+    {
+      "file": "file.txt",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/repository/files/.eslintrc.json/raw?ref=ee095772260696052b74058d58bb7adf2b1aead9",
+      "status": 200
+    },
+    {
+      "file": "approval-state.json",
+      "url": "https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-vscode-extension/merge_requests/3334/approval_state",
+      "status": 200
+    },
+    {
+      "file": "project-404.json",
+      "url": "https://gitlab.com/api/v4/projects/ghdiff-bogus%2Fnope",
+      "status": 404
+    },
+    {
+      "file": "user-401.json",
+      "url": "https://gitlab.com/api/v4/user",
+      "status": 401
+    },
+    {
+      "file": "mr-discussions-threads.json",
+      "url": "private instance, project 2000 MR 102 discussions; anonymized by record/gitlab-discussions.mjs (bodies, usernames, avatars, file paths and the instance's own ids replaced; note types, system flags, positions, line_ranges and resolved flags kept)",
+      "status": 200
+    },
+    {
+      "file": "mr-discussions-bot.json",
+      "url": "private instance, project 1000 MR 101 discussions; anonymized the same way — a project access-token bot's whole-MR notes, with the restricted author object (no bot field) that the discussions API serializes",
+      "status": 200
+    },
+    {
+      "file": "user-review-bot.json",
+      "url": "private instance, GET /users/12; a custom-named review bot (bot: true the heuristic cannot see)",
+      "status": 200
+    },
+    {
+      "file": "user-project-bot.json",
+      "url": "private instance, GET /users/11; a project access-token bot (bot: true, and the username shape the heuristic matches)",
+      "status": 200
+    },
+    {
+      "file": "user-human.json",
+      "url": "private instance, GET /users/13; a person (bot: false)",
+      "status": 200
+    },
+    {
+      "file": "user-human-two.json",
+      "url": "private instance, GET /users/14; a person (bot: false)",
+      "status": 200
+    },
+    {
+      "file": "user-human-three.json",
+      "url": "private instance, GET /users/15; a person (bot: false)",
+      "status": 200
+    }
+  ]
+}

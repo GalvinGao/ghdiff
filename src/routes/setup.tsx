@@ -12,10 +12,12 @@ import { SetupScreen } from '@/components/SetupScreen';
 // 404 before this file existed. It claims a dead address and shadows nothing a
 // reviewer could have reached.
 //
-// What the page sets up is the three GitHub steps — sign in, grant the App its
-// reach, open the diff. They render only when the deployment has a sign-in to
-// offer: the instance answer arrives with the page in the root route's loader
-// data.
+// What the page sets up is every forge the deployment serves, as one page:
+// the three GitHub steps — sign in, grant the App its reach, open the diff —
+// then a GitLab section per configured host. Each section renders only when
+// the deployment has something to offer there: the instance answer arrives
+// with the page in the root route's loader data, so a section for a forge
+// this ghdiff does not serve is simply absent.
 //
 // Two search parameters, because two places send a reviewer here and they know
 // different things. The review panel knows the path a diff would not load from,

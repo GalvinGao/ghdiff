@@ -4,7 +4,7 @@ import { describe, it } from 'vitest';
 import { reviewCapabilities } from './forges';
 
 describe('reviewCapabilities', () => {
-  it('gives a pull request the forge comment store', () => {
+  it('gives a pull request and a merge request the forge comment store', () => {
     assert.equal(
       reviewCapabilities({
         kind: 'github-pull',
@@ -14,12 +14,34 @@ describe('reviewCapabilities', () => {
       }).commentStore,
       'forge'
     );
+    assert.equal(
+      reviewCapabilities({
+        kind: 'gitlab-mr',
+        host: 'gitlab.com',
+        project: 'group/repo',
+        number: 2,
+      }).commentStore,
+      'forge'
+    );
   });
 
   it('keeps commits and compare ranges browser-local', () => {
     for (const target of [
       { kind: 'github-commit', owner: 'o', repo: 'r', sha: '0800fbaa' },
+      {
+        kind: 'gitlab-commit',
+        host: 'gitlab.com',
+        project: 'group/repo',
+        sha: '0800fbaa',
+      },
       { kind: 'github-compare', owner: 'o', repo: 'r', base: 'v1', head: 'v2' },
+      {
+        kind: 'gitlab-compare',
+        host: 'gitlab.com',
+        project: 'group/repo',
+        base: 'v1',
+        head: 'v2',
+      },
     ] as const) {
       assert.equal(reviewCapabilities(target).commentStore, 'local');
     }

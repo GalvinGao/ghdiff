@@ -14,26 +14,43 @@ so it sits above the home page, a review, and a 404 alike.
 `src/routes/$.tsx` is a splat over the whole path, and a canonical URL names the
 host in its first segment, glued to the owner with a colon:
 `ghdiff.com/github.com:owner/repo/pull/123` is the github.com URL with the host
-moved inside the path. A port survives — in `/host:8443:owner/repo/...` the
-first segment is `host:port:owner`, and the split keeps the port with the host.
-The host decides the grammar: `github.com` takes GitHub's (`pull`, `commit`,
-`compare`), and a host that speaks no forge's grammar names no target. No GitHub
-owner may hold a colon, so the glue never collides with a name. `GITHUB_HOSTS`
-in `src/lib/github/hosts.ts` is the whole GitHub list — one host today, and the
-marked seam GHES widens.
+moved inside the path, and `/gitlab.corp.com:group/repo/-/merge_requests/123` is
+the same move for GitLab. A port survives — in
+`/gitlab.corp.com:8443:group/repo/-/...` the first segment is `host:port:owner`,
+and the split keeps the port with the host. The host decides the grammar:
+`github.com` takes GitHub's (`pull`, `commit`, `compare`), and anything else
+takes GitLab's (`/-/...`). No namespace on either forge may hold a colon, so the
+two readings never collide — the dotted-group heuristic the host-as-segment form
+needed is gone with it. `GITHUB_HOSTS` in `src/lib/github/hosts.ts` is the whole
+GitHub list — one host today, and the marked seam GHES widens.
 
 Hostless URLs are entry points, and the splat's loader answers each:
 
-| A path that arrives as                           | The loader's answer                                 |
-| ------------------------------------------------ | --------------------------------------------------- |
-| `/owner/repo/pull/123` — GitHub-shaped, no colon | 302 to `/github.com:owner/repo/pull/123`            |
-| the colon form                                   | parsed as the target, with no membership check here |
+| A path that arrives as                                     | The loader's answer                                 |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| `/owner/repo/pull/123` — GitHub-shaped, no colon           | 302 to `/github.com:owner/repo/pull/123`            |
+| `/host/group/repo/-/...` — the legacy host-as-segment form | 301 to the colon form                               |
+| `/group/repo/-/...` — bare GitLab                          | the app, which finds the host in the browser        |
+| the colon form, any host                                   | parsed as the target, with no membership check here |
 
 The loader stays client-safe — no server import, no self-fetch, which would leak
-into the client bundle or fail on workerd — so whether this deployment serves
-the host is not its question to ask. A colon URL renders the page, and the forge
-gate's 404 names what the deployment does serve, in the sentence
-`ReviewStatusPanel` shows.
+into the client bundle or fail on workerd — so whether the host is one this
+deployment serves is not its question to ask. A colon URL for an unconfigured
+host renders the page, and the forge gate's 404 names what the deployment does
+serve, in the sentence `ReviewStatusPanel` shows. A bare GitLab path renders a
+resolve marker instead of a redirect: the browser asks `/api/resolve` through
+`fetchWithRefresh` — `src/lib/resolveHost.ts` owns the call for that entry and
+the home page's box alike — and navigates to the canonical path the 200's body
+names, keeping the fragment. Two things rule the answer's shape. A document
+redirect could never carry the session's refresh, so a spent grant dead-ended on
+a text/plain 401; the marker way, the refresh and the retry happen first. And an
+HTTP redirect cannot carry the answer itself: fetch hands a manual redirect back
+as an opaque-redirect filtered response — no status, no headers to read — so the
+canonical path travels as the 200's plain-text body. The endpoint itself probes
+the configured hosts in config order, with the reviewer's own grant for each
+where the session holds one, answers 200 with the canonical path of the first
+host where the project is visible, and answers 404 naming the configured hosts
+when none can see it.
 
 Every static route — `/`, `/ghdiff.user.js`, and each `/api/...` handler —
 outranks the splat, so adding one is safe; a top-level _page_ route is still
@@ -41,50 +58,64 @@ what would shadow a bare path under its name. A canonical URL can never be
 shadowed — its first segment always carries a colon and no route name does — so
 the rule now bites only the bare entry-point paths. `/setup` is the one static
 **page** route besides `/`, and it claims a dead address: one colon-less segment
-parses as no target, so `/setup` was already a 404. Check that before adding
-another: a name a bare GitHub-shaped path resolves under is a name this app
-cannot take. `/healthz` passes the same check and is taken for the liveness
-probe: a server-only route like the `/api/...` handlers, and the one route with
-no request log, because a platform fires it every few seconds and each answer
-depends on nothing but the process being up. `/ghdiff.user.js` passes it too —
-the `[.]` in its filename is the router's literal-dot escape, and it is the one
-route whose answer is built from the deployment rather than the build.
+parses as no target on either grammar, so `/setup` was already a 404. Check that
+before adding another: a name a bare GitHub-shaped path resolves under is a name
+this app cannot take. `/healthz` passes the same check and is taken for the
+liveness probe: a server-only route like the `/api/...` handlers, and the one
+route with no request log, because a platform fires it every few seconds and
+each answer depends on nothing but the process being up. `/ghdiff.user.js`
+passes it too — the `[.]` in its filename is the router's literal-dot escape,
+and it is the one route whose answer is built from the deployment rather than
+the build.
 
 `src/routes/gh/$.tsx` is the old prefix and holds no component: its loader
 throws a `redirect`, which keeps every link already written alive. `PullRail`
 reads through a leading `gh` segment for the one navigation the redirect takes.
 
-**The userscript makes that URL a button, and the tab bar is where it goes.**
-`/ghdiff.user.js` is a server route, not a static asset: a self-hosted
-deployment's script has to point at that deployment, which only the server
-knows, so the route fills the template in `src/lib/server/ghdiff.user.js` with
-the origin the request arrived on, scheme from `X-Forwarded-Proto`. The address
-is the one the script has always had, so scripts already installed keep
-updating. The button sits on github.com beside **Files changed** at the end of
-the pull request's own tab row. That row is the one part of the page that both
-of GitHub's headers still draw and that the conversation and the diff share, so
-a single insertion point covers all four combinations:
+**The userscript makes that URL a button, and the tab bar is where it goes — on
+either forge.** `/ghdiff.user.js` is a server route, not a static asset: a
+self-hosted deployment's script has to point at that deployment, which only the
+server knows, so the route fills the template in `src/lib/server/ghdiff.user.js`
+with the origin the request arrived on, scheme from `X-Forwarded-Proto`, and one
+`@match` per host it serves. A match pattern cannot name a port, so the script
+also carries the served hosts with their ports and runs only where
+`location.host` is one of them. The address is the one the script has always
+had, so scripts already installed keep updating. On github.com the button sits
+beside **Files changed** at the end of the pull request's own tab row — the one
+part of the page both of GitHub's headers still draw.
 `nav[aria-label="Pull request navigation"]` is the React header and
-`.tabnav-tabs` is the one it has not replaced yet. Neither selector is a
-contract, so `findRowByLinkTo` says what the row _is_ — the row that holds the
-link to this pull request's own `/files` page — and finds it again when the
-names change.
+`.tabnav-tabs` the one it has not replaced yet; neither is a contract, so
+`findRowByLinkTo` finds the row by what it _is_ — the row that holds the link to
+this pull request's own `/files` page. On GitLab the tab bar styles any `li > a`
+of its own, so the button arrives wrapped in one. The bar itself is found by the
+company it keeps: the Changes tab links to the merge request's own `/diffs`
+page, but the breadcrumb links to the same address and, once Vue has rendered
+it, comes first — so the bar is the `<ul>` that also holds the tab to the merge
+request itself, which a breadcrumb never does. And there can be two such bars at
+once — the inline one and a skeleton or a sticky clone — so among them the first
+one actually on screen wins, and the button follows when they trade places.
 
 **A commit is the other page that is one diff, and its button goes beside Browse
-files.** A commit header has no tab row, so `findHost` sends a commit to the
-same `findRowByLinkTo` with a different question: the row that holds the link to
-this commit's own `/tree/<sha>` page. No selector is named for a commit at all,
-because every class on that header is hashed per build.
+files — on either forge.** A commit header has no tab row, so `findHost` asks
+the same `findRowByLinkTo` a different question: the row that holds the link to
+this commit's own tree page — `/tree/<sha>` on github.com, `/-/tree/<sha>` on
+GitLab. No selector is named for a commit at all, because every class on that
+header is hashed per build.
 
-The button wears two skins, both read off the live page. In the tab row it is
-github.com's own `TabNavLink`: transparent and borderless at rest, `8px 12px` of
-padding at `--text-body-size-medium` and weight 400, stretched to the row's
-height, a leading `link-external` octicon in `--fgColor-muted`, gone under
-github.com's `sm` breakpoint the way theirs are. Beside **Browse files** it is
-Primer React's default `Button` — `prc-Button-ButtonBase`, a medium control at
-`--control-medium-size` and weight 500, the 80 ms colour transition, and the
-focus ring. The custom properties are Primer's design tokens, set by github.com
-itself for both colour schemes; the fallbacks are the ones Primer ships.
+The button wears two skins on github.com, both read off the live page. In the
+tab row it is github.com's own `TabNavLink`: transparent and borderless at rest,
+`8px 12px` of padding at `--text-body-size-medium` and weight 400, stretched to
+the row's height, a leading `link-external` octicon in `--fgColor-muted`, gone
+under github.com's `sm` breakpoint the way theirs are. Beside **Browse files**
+it is Primer React's default `Button` — `prc-Button-ButtonBase`, a medium
+control at `--control-medium-size` and weight 500, the 80 ms colour transition,
+and the focus ring. The custom properties are Primer's design tokens, set by
+github.com itself for both colour schemes; the fallbacks are the ones Primer
+ships. On GitLab there is no skin to copy: the tab bar dresses a plain `li > a`
+itself, the commit header's own `gl-button btn btn-md btn-default` classes dress
+the button, and the octicon is github.com's habit, so GitLab draws none.
+`data-ghdiff-forge` scopes every GitHub rule in the stylesheet, so a GitLab page
+gets none of them.
 
 The two rows are not the same row, and `data-ghdiff-place` on the button is what
 lets one stylesheet dress it for both. The tab row has no gap of its own, so the
@@ -92,30 +123,38 @@ tab skin sits flush against **Files changed**; the commit header's action row is
 a flex row with an 8px gap of its own, so the button skin carries no margin
 there. The old server-rendered `.tabnav-tabs` draws its tabs wider and quieter —
 muted at rest, spacious padding, a colour-only hover — and a descendant override
-under the same selector github.com scopes its own rules with follows it. GitHub
-moves between its own pages without reloading, and the script reuses this one
-button, so `sync` writes the href, the place and the title on every pass rather
-than at build time. A compare range is the third target ghdiff has an address
-for, and it has no button: its header carries no control of its own to sit
-beside.
+under the same selector github.com scopes its own rules with follows it. Both
+forges move between their own pages without reloading, and the script reuses
+this one button, so `sync` writes the href, the forge, the place and the title
+on every pass rather than at build time. A compare range is the third target
+ghdiff has an address for, and it has no button: its header carries no control
+of its own to sit beside.
 
-The script matches every page on github.com, because a userscript manager starts
-a script once per document and GitHub navigates without reloading. A
-`MutationObserver` re-appends the button that React's next render drops, and a
-50 ms timer — not `requestAnimationFrame`, which a background tab never runs —
-turns a diff's thousands of mutations into one `sync` at a time. The button
-carries the fragment over only when it is github.com's own `#diff-<64 hex>` form
-with an optional line part, which is the one fragment `lookupDiffAnchor` can
-resolve.
+The script matches every page on the hosts this deployment serves, because a
+userscript manager starts a script once per document and both forges navigate
+without reloading. A `MutationObserver` re-appends the button that the next
+render drops — and it watches `class` and `style` as well as children, because a
+bar's life after it is added is class-driven, with a scroll listener beside them
+for the sticky bar a scroll brings on screen. A 50 ms timer — not
+`requestAnimationFrame`, which a background tab never runs — turns a diff's
+thousands of mutations into one `sync` at a time. Watching `class` binds the
+script's own writes: an assignment reports a mutation even when the value does
+not change, so `sync` writes a class or an attribute only when it differs, or
+every sync would schedule the next one on an idle page. The button carries the
+fragment over only when it is github.com's own `#diff-<64 hex>` form with an
+optional line part, which is the one fragment `lookupDiffAnchor` can resolve.
 
 `UserscriptInstall` offers it from the home page, under the form and above the
-examples. The line above the button names one manager and links to its install
-page, because Install pressed in a browser with no manager downloads a file that
-browser can do nothing with. Its Install control is a plain `<a>` and never a
-`Link`: a client-side navigation makes no request, and the request is the whole
-point. Bump `@version` in the script when it changes, or nobody who installed it
-gets the change — `@updateURL` is what every manager re-reads, and the version
-is what it compares.
+examples, and names the places the button lands — `Files changed` on a pull
+request, `Changes` on a merge request, `Browse files` on a commit — naming only
+the forges this deployment serves, so the offer never promises a page the script
+cannot cover. The line above the button names one manager and links to its
+install page, because Install pressed in a browser with no manager downloads a
+file that browser can do nothing with. Its Install control is a plain `<a>` and
+never a `Link`: a client-side navigation makes no request, and the request is
+the whole point. Bump `@version` in the script when it changes, or nobody who
+installed it gets the change — `@updateURL` is what every manager re-reads, and
+the version is what it compares.
 
 **The left bar is not there when it has nothing to list.** `PullRail` returns
 `null` while the watch list is empty, and the test is
@@ -195,11 +234,11 @@ reading take `instance.host`, the host the request arrived on, so an example
 shown on a self-hosted deployment is an address that works there. Both ride the
 loader, so the server markup and the first client render cannot disagree. The
 rest of the page reads what the deployment serves in the same certain way: the
-instruction pair shows while GitHub is served, the box rejects a GitHub target
-on a deployment that serves no GitHub with a sentence rather than navigating to
-the gate's 404, and the examples arrive already narrowed to the hosts served — a
-deployment with no rows to show hides the section, the way the bar hides when it
-has nothing to list.
+instruction pair shows a GitHub address while GitHub is served and a GitLab one
+otherwise, the box rejects a GitHub target with the same kind of sentence an
+unconfigured GitLab host gets rather than navigating to the gate's 404, and the
+examples arrive already narrowed to the hosts served — a deployment with no rows
+to show hides the section, the way the bar hides when it has nothing to list.
 
 **A field's border is its promise of a click target.** The card around the home
 page's URL box is that border, and the `<input>` is only the middle of it.
@@ -300,13 +339,14 @@ none of that and costs nothing.
 
 **What leaves a tab belongs to one account, and the session query says which.**
 A forge answers the same question differently for a signed-in reviewer and for
-nobody, so a record is filed under `viewerNamespace`, a broadcast names it, and
-a tab reads and takes only its confirmed account's. The session query,
-`SESSION_QUERY_KEY`, is what confirms the account. It asks with this tab's own
-cookie every time — another tab's answer to "who is this" may predate the
-sign-in this document is the result of — and it is never borrowed, broadcast or
-stored. An answer it got across a change of session is asked again, since React
-Query hands an invalidated request already in flight back as it is.
+nobody, so a record is filed under `sessionNamespace` — the GitHub viewer and
+every GitLab connection by host —, a broadcast names it, and a tab reads and
+takes only its confirmed account's. The session query, `SESSION_QUERY_KEY`, is
+what confirms the account. It asks with this tab's own cookie every time —
+another tab's answer to "who is this" may predate the sign-in this document is
+the result of — and it is never borrowed, broadcast or stored. An answer it got
+across a change of session is asked again, since React Query hands an
+invalidated request already in flight back as it is.
 
 Nothing leaves a tab before that confirmation, to the other tabs or to the disk,
 and nothing reaches it. So every request waits for the confirmation, at most
@@ -389,21 +429,22 @@ list at once would each erase the other's mark. A verdict is the one write that
 is published as it is — a single value with nothing to merge — and it carries
 the session's `ticket` from the moment it was sent.
 
-A pull request's line comments are shared the same way, and the merge is the
-part to get right. `useReviewComments` seeds its threads from the first answer
-for a diff, and every later one — a comment posted in another tab, a reload —
-goes through `mergeForgeThreads` in `src/lib/commentMerge.ts`. What only this
-tab knows survives it: an open composer, a message still on its way, a failure
-with the reviewer's text in it, and the issue link a thread holds in memory. A
-thread the forge already has keeps the key this tab gave it, so its card is not
-mounted again. A message that never reached the forge is laid after the forge's
-own messages in that thread, failure and all, rather than lost to a later reply
-that did — and a thread deleted elsewhere stays as this tab drew it while it
-holds such a message, since that text is the reviewer's and nowhere else. After
-a write the forge took — a post, a reply, a delete — the tab asks for the list
-afresh instead of patching it and publishing the result: two tabs patching the
-same old list at once would each erase the other's comment. The answer reaches
-every tab on the review, and each merges it in, the writing tab included.
+A pull request's and a merge request's line comments are shared the same way,
+and the merge is the part to get right. `useReviewComments` seeds its threads
+from the first answer for a diff, and every later one — a comment posted in
+another tab, a reload — goes through `mergeForgeThreads` in
+`src/lib/commentMerge.ts`. What only this tab knows survives it: an open
+composer, a message still on its way, a failure with the reviewer's text in it,
+and the issue link a thread holds in memory. A thread the forge already has
+keeps the key this tab gave it, so its card is not mounted again. A message that
+never reached the forge is laid after GitHub's own messages in that thread,
+failure and all, rather than lost to a later reply that did — and a thread
+deleted elsewhere stays as this tab drew it while it holds such a message, since
+that text is the reviewer's and nowhere else. After a write the forge took — a
+post, a reply, a delete — the tab asks for the list afresh instead of patching
+it and publishing the result: two tabs patching the same old list at once would
+each erase the other's comment. The answer reaches every tab on the review, and
+each merges it in, the writing tab included.
 
 **A patch and a whole file are kept too, and the forge says whether they are
 still right.** They are too large for the channel and too large to trust by age,
@@ -412,7 +453,13 @@ budget of `BLOB_BUDGET_BYTES`, oldest use first out. The next ask sends the
 stored ETag as `If-None-Match`; `/api/diff` and `/api/file` hand it to the
 forge, and a 304 comes back as a 304 with no body, which is the stored text
 confirmed and none of the quota spent. On GitHub the web diff host, the raw file
-host and the API all answer it. A synthesized patch has no ETag and is never
+host and the API all answer it. GitLab states no ETag a review can lean on, so
+the GitLab forge writes its own from the commits the answer was read at — a
+merge request's diff refs, a commit's or a range's full shas, a file's commit
+and path — with the host and project in the tag, so one project's copy is never
+confirmed for another — and answers 304 off that before it reads a byte of the
+diff. A branch moves with every push, so a range named by branches has no tag
+and is read afresh every time. A synthesized patch has no ETag and is never
 stored. A tab that waited on another's download takes the stored text if it is
 younger than the share window, and does not ask the forge at all. A stored copy
 is read under the confirmed account and no other, and a download waits for the
@@ -431,31 +478,45 @@ stored and checked the same way as the screen's own read, with no hook in reach.
 React Query still holds the text for its five minutes; the blob store is what
 the next load and the other tabs start from.
 
-**The pull request list is repository, then author, then stack.**
-`groupPullsByRepo` in `src/lib/pulls.ts` produces that shape, `buildPullStacks`
-in `src/lib/pullStacks.ts` produces the stacks, and everything still level with
-something else goes by pull request number, newest first. GitHub has no stack
-object to ask for, so a stack is read off the branches: one open pull request
-whose base branch is another open pull request's head branch is stacked on it.
-Stacks are built inside an author group, so two people never share one chain. A
-row links to its review through `reviewTargetFromPull` in the same file.
+**The pull request list is repository, then author, then stack — and both forges
+fill it the same way.** `groupPullsByRepo` in `src/lib/pulls.ts` produces that
+shape, `buildPullStacks` in `src/lib/pullStacks.ts` produces the stacks, and
+everything still level with something else goes by pull request number, newest
+first. GitHub has no stack object to ask for, so a stack is read off the
+branches: one open pull request whose base branch is another open pull request's
+head branch is stacked on it. Stacks are built inside an author group, so two
+people never share one chain. A GitLab merge request has the same two branches,
+so the shape just works; the row's navigation is the only thing that differs,
+and a `forge` field on `PullSummary` tells the row which splat to build —
+`reviewTargetFromPull` in the same file builds it.
 
-**A watch list row is `{owner, repo}`.** `formatWatchedRepo` labels it
-`owner/repo`, and `parseWatchedRepo` reads that or a github.com URL back.
-`pulls.list` groups the refs by forge group, and one that fails fails only its
-own rows; a failing group names its repository as `formatRepoRef`.
+**A watch list row is a forge ref, and old rows stay GitHub.** `WatchedRepo` is
+`{owner, repo}` or `{forge:'gitlab', host, project}` — GitHub rows stay bare on
+purpose, so an older build reads a newer browser's list with only the GitLab
+rows dropped. The codec accepts both, `formatWatchedRepo` labels both
+(`host/project` on GitLab), and `parseWatchedRepo` reads a bare two-segment path
+as GitHub, a bare longer one as the first configured GitLab host, and a
+`host:path` or dotted `host/path` as that GitLab host, validated against the
+configured list. `pulls.list` groups the refs by forge and by host, because two
+GitLab hosts are two credentials, and one that fails fails only its own rows; a
+failing group names its repository as `formatRepoRef` — `host:project` on
+GitLab.
 
-**A row waiting on the reviewer leads its author group and says so.** GitHub's
-own list answers who is asked — `reviewRequests` — and the mapper compares them
-with the group's own viewer, case-insensitively, the way GitHub treats a login,
-and never against a team, which a request cannot be resolved to without another
-call. The flag rides `PullSummary` as `reviewRequested`, absent on the anonymous
-reads for the same reason `status` is: there is no viewer to compare against,
-and a row must not claim "not requested" about a pull request it never asked
-about. A requested row draws a **Requested** chip in the accent pair beside the
-Draft chip's neutral one, and the author group's roots stable-sort
-requested-first — a stack bubbles as one block when any member is requested,
-because a chain is read top to bottom and is never split for this.
+**A row waiting on the reviewer leads its author group and says so.** The
+forge's own list answers who is asked: `reviewRequests` on GitHub, the reviewers
+list on GitLab, and the mapper compares them with the group's own viewer —
+case-insensitively, the way the forges treat a login, and never against a team,
+which a request cannot be resolved to without another call. The flag rides
+`PullSummary` as `reviewRequested`, absent on the anonymous reads for the same
+reason `status` is: there is no viewer to compare against, and a row must not
+claim "not requested" about a pull request it never asked about. A requested row
+draws a **Requested** chip in the accent pair beside the Draft chip's neutral
+one, and the author group's roots stable-sort requested-first — a stack bubbles
+as one block when any member is requested, because a chain is read top to bottom
+and is never split for this. Each group's viewer stays with its own rows, keyed
+by group: a GitHub viewer marks no GitLab row as the reviewer's own, and one
+host's viewer marks nobody on another, because a login that matches across
+forges is not the same person.
 
 **The list has one scope, and the bar's header is where it is set.**
 `PullScopeSwitch` sits between the name and the collapse button. It is a set of
@@ -552,13 +613,14 @@ the badge alone.
 **A stack's caption opens the whole stack as one diff.** Beside the word,
 `StackCompareLink` reads **Compare with main** — the base the stack lands on,
 whatever its name — and opens the compare range from that base to the head of
-the stack's last pull request, in ghdiff rather than on the forge. A row opens
-one layer; this answers what all of them do to main before the first one merges.
-The range is a merge-base range, so main's own later commits are not in it.
-`stackCompareRange` in `src/lib/pullStacks.ts` draws nothing for a stack that
-branches: two tips have no one head. The tip's head is read as a branch of the
-base repository; a tip opened from a fork would need `owner:branch`, which
-`PullSummary` does not carry.
+the stack's last pull request or merge request, in ghdiff rather than on the
+forge — a `github-compare` target for a GitHub stack, a `gitlab-compare` one for
+a GitLab stack. A row opens one layer; this answers what all of them do to main
+before the first one merges. The range is a merge-base range, so main's own
+later commits are not in it. `stackCompareRange` in `src/lib/pullStacks.ts`
+draws nothing for a stack that branches: two tips have no one head. The tip's
+head is read as a branch of the base repository; a GitHub tip opened from a fork
+would need `owner:branch`, which `PullSummary` does not carry.
 
 **A group boundary is a rule, not a heading.** A heading sits closer to the rows
 under it than the rows sit to each other, so it cannot also be the boundary: two
@@ -587,21 +649,35 @@ invisible, or every heading would move as the pointer crossed the list.
 the largest single page GitHub gives: REST caps `per_page` there and GraphQL
 caps `first`. Both queries sort by most recently updated, so what a busier
 repository loses is what nobody has touched. Raising it past 100 buys nothing
-without pagination.
+without pagination. The GitLab forge holds the same cap by passing `maxPages: 1`
+to gitbeaker, which otherwise follows every page.
 
-**The review and the check axes need a credential.** `pulls.list` asks GraphQL
-for `latestOpinionatedReviews`, `reviewDecision` and the head commit's
-`statusCheckRollup`, none of which REST carries. GraphQL refuses an anonymous
-caller, so a signed-out caller gets the REST list and `PullSummary.status` stays
-**absent** — not `none`. Absent means "never asked", and `PullRow` leaves the
-square off the row rather than claim there is no review and no CI. The lane the
-square sits in is the list's to keep or drop, never one row's: one answer is
-asked with a token or without one, so every row in it has the axes or none does.
-A signed-out list drops the lane on every row and gives the titles its width; a
-signed-in one keeps it on every row, so every number starts on the same pixel.
-`reviewRequested` follows the same rule: the reviewers the list names are
-compared with a viewer only a token names, so the **Requested** chip is absent
-signed out rather than false.
+**The review and the check axes need a credential, on both forges.**
+`pulls.list` asks GraphQL for `latestOpinionatedReviews`, `reviewDecision` and
+the head commit's `statusCheckRollup`, none of which REST carries. GraphQL
+refuses an anonymous caller, so a signed-out caller gets the REST list and
+`PullSummary.status` stays **absent** — not `none`. Absent means "never asked",
+and `PullRow` leaves the square off the row rather than claim there is no review
+and no CI. The lane the square sits in is the list's to keep or drop, never one
+row's: one answer is asked with a token or without one, so every row in it has
+the axes or none does. A signed-out list drops the lane on every row and gives
+the titles its width; a signed-in one keeps it on every row, so every number
+starts on the same pixel. `reviewRequested` follows the same rule: the reviewers
+the list names are compared with a viewer only a token names, so the
+**Requested** chip is absent signed out rather than false.
+
+GitLab reads the same axes differently and keeps the same rule. The review axis
+is one call per merge request to the all-tiers `GET …/approvals` endpoint — an
+approval shows in its `approved_by`; `approval_state` exists only on EE, so on a
+CE instance every read of it 404s — and the check axis is `head_pipeline.status`
+on the list payload itself. Both need a token, so an anonymous caller gets the
+list with the status absent, exactly as GitHub's anonymous rule works. A token
+that cannot read approvals loses the review axis for that merge request and
+keeps the pipeline's half rather than failing the project, and a cancelled or
+skipped pipeline reads as no mark rather than as the failure it is not.
+`pullStatusFromGitLab` in `src/lib/pullStatus.ts` holds the mapping, and the
+square's colours mean the same thing they mean on GitHub — the floodgate
+contract stands on both forges.
 
 **The review axis is the reviews, and `reviewDecision` only adds to them.**
 GitHub computes that field against the base branch's own rule about who has to
@@ -635,22 +711,32 @@ by then, and the figure beside it is what explains the 404 they are still
 getting. `describeInstallationReach` gives zero its own sentence for the same
 reason.
 
-The page shows the three GitHub steps when an App is configured. The instance
-answer arrives with the page in the root route's loader data, so a deployment
-with no App to sign in through gets no sign-in that would 501: the page says
-plainly that there is nothing to set up.
+The page shows what the deployment has to set up: the three GitHub steps when an
+App is configured, then a GitLab section per configured host — connect, then
+open the diff. Each section renders only when the deployment has something to
+offer there, and the instance answer arrives with the page in the root route's
+loader data, so a forge this ghdiff is not set up for is simply absent — no
+sign-in that would 501, no section that would lie. With neither on offer the
+page says so plainly, because that is the one deployment with nothing to set up.
+A connection needs no installation step, because it reads whatever the account
+behind it can see. The connect step offers the host's OAuth application when the
+instance answer says one is configured, and the personal access token form
+otherwise — the same two paths the connect dialog offers, with `GitLabPatForm`
+shared between them, and the GitLab sign-in is a plain `<a>`.
 
 Two callers, and they know different things. The review panel knows the path the
 diff would not load from and sends `from`, which also gives step three somewhere
 to go back to. `PullRequestList` knows only that a repository would not list and
 sends `account`; it cannot say whether the repository is absent or merely
 unreachable, because GitHub deliberately answers both the same way, so it names
-the one cause that can be acted on. It offers that once, only when signed in,
-and only when every failing row shares one owner — two accounts failing is a
-general question, and `undefined` is what asks it. Step three is a plain `<a>`
-and a whole page load, not a `Link`: the point of going back is a fresh request
-to GitHub under an installation that did not exist a minute ago. Nothing polls
-for step two: a reviewer installs in the other tab, comes back knowing they have
+the one cause that can be acted on. Only the GitHub rows count toward the offer:
+a GitLab failure names `host:project`, and the page has no installation step to
+offer a project. It offers that once, only when signed in, and only when every
+failing GitHub row shares one owner — two accounts failing is a general
+question, and `undefined` is what asks it. Step three is a plain `<a>` and a
+whole page load, not a `Link`: the point of going back is a fresh request to
+GitHub under an installation that did not exist a minute ago. Nothing polls for
+step two: a reviewer installs in the other tab, comes back knowing they have
 finished, and presses **Check again**.
 
 **The square is the only glyph on a row.** The lifecycle octicon that stood

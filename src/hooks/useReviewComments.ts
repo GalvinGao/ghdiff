@@ -15,6 +15,7 @@ import {
   type CommentMetadata,
   type CommentPayload,
   isCommentThread,
+  MERGE_REQUEST_ITEM_ID,
   rangeFromCommentPayload,
   type StagedReviewComment,
 } from '@/lib/comments';
@@ -23,6 +24,10 @@ import {
   threadComment,
   threadComments,
 } from '@/lib/commentThreads';
+import {
+  type GitLabDiffPosition,
+  gitLabPositionForAnchor,
+} from '@/lib/diffCursors';
 import {
   type ForgeName,
   forgeLabel,
@@ -43,13 +48,14 @@ import { rpc, rpcErrorMessage, rpcFailure } from '@/lib/rpc/client';
 import { localCommentsStorageKey } from '@/lib/storageKeys';
 import { m } from '@/paraglide/messages.js';
 
-// Where a comment lives depends on the target. A pull request has an upstream
-// review thread, so a comment written here shows up on the forge. Every other target has none, so those comments stay in this
+// Where a comment lives depends on the target. A pull request or a merge
+// request has an upstream review thread, so a comment written here shows up on
+// the forge. Every other target has none, so those comments stay in this
 // browser and the sidebar says so.
 //
 // A comment on a forge target can also be staged instead of posted: it becomes
-// the forge's own draft — a thread on the viewer's pending review on GitHub —
-// shown here with a Draft chip, and published by the
+// the forge's own draft — a thread on the viewer's pending review on GitHub, a
+// draft note on GitLab — shown here with a Draft chip, and published by the
 // verdict. A draft lives on the forge, so it survives a reload and shows on
 // the forge's own UI as pending, and one started there lists here.
 
@@ -191,9 +197,24 @@ function annotationFromThread(
     ...(root.threadId != null ? { threadId: root.threadId } : {}),
     ...(staged ? { staged: true } : {}),
   };
+  if (root.scope === 'merge-request') {
+    return {
+      side: 'additions',
+      lineNumber: 1,
+      metadata: {
+        kind: 'thread',
+        key,
+        scope: 'merge-request',
+        // Never rendered in the diff, so the range is a formality.
+        range: { start: 1, end: 1, side: 'additions', endSide: 'additions' },
+        comments,
+        ...flags,
+      },
+    };
+  }
   return {
-    side: root.side,
-    lineNumber: root.line,
+    side: root.side ?? 'additions',
+    lineNumber: root.line ?? 1,
     metadata: {
       kind: 'thread',
       key,
@@ -302,6 +323,10 @@ export function settledStagedThreads(
         continue;
       }
       const range = commentPayloadRangeFields(metadata.range);
+      // Both always come back for a line-anchored thread; the payload type
+      // marks them optional for the merge-request comment, which a draft
+      // thread never is.
+      if (range.line == null || range.side == null) continue;
       const drafts =
         metadata.staged === true
           ? [{ key: metadata.key, comment: metadata.comments[0] }]
@@ -341,7 +366,8 @@ export function draftRowKeys(
 }
 
 /**
- * One annotation per thread, on the file each thread's path names. A
+ * One annotation per thread, on the file each thread's path names — or under
+ * the id that names no file, for the threads on the merge request itself. A
  * comment on a path absent from this diff is dropped, which is what happens
  * after a force push rewrites the branch under it.
  */
@@ -365,7 +391,11 @@ function placeRows(
   // Group first, so a reply lands in its root's card instead of stacking
   // as a separate annotation on the same line.
   const byItemId = new Map<string, Annotation[]>();
-  const byPath = Map.groupBy(rows, (row) => row.path);
+  const mergeRequestRows = rows.filter((row) => row.scope === 'merge-request');
+  const byPath = Map.groupBy(
+    rows.filter((row) => row.scope !== 'merge-request'),
+    (row) => row.path
+  );
 
   for (const [path, payloads] of byPath) {
     const itemId = itemIdByPath.get(path);
@@ -386,6 +416,23 @@ function placeRows(
     }
     byItemId.set(itemId, annotations);
   }
+
+  // Threads on the merge request itself: no file, so they are filed under
+  // the id that names none, and the comments tab lists them first.
+  if (mergeRequestRows.length > 0) {
+    const annotations: Annotation[] = [];
+    for (const thread of groupCommentThreads(mergeRequestRows)) {
+      annotations.push(
+        annotationFromThread(
+          thread.key,
+          thread.comments,
+          threadComments(thread),
+          thread.comments[0].staged === true
+        )
+      );
+    }
+    byItemId.set(MERGE_REQUEST_ITEM_ID, annotations);
+  }
   return byItemId;
 }
 
@@ -402,14 +449,22 @@ export function useReviewComments(options: {
   /** True once the diff is parsed. Comments only map onto known files. */
   ready: boolean;
   /**
+   * The raw unified diff, straight from the patch read. Only the GitLab
+   * create paths ask for it: a GitLab comment states its diff position as
+   * raw cursors, and only the patch text can say what they are.
+   */
+  patchText?: string;
+  /**
    * True while a verdict submission is in flight. Every comment write is
    * blocked for its duration: the verdict publishes what the forge holds, and
    * a write that lands mid-submit is one its answer cannot account for.
    */
   verdictPending?: boolean;
 }): ReviewCommentsState {
-  const { entries, ready, target, viewerAvatarUrl, viewerLogin } = options;
-  // The forge-backed store answers wherever a pull request is on screen; everything else keeps its comments in this browser. The
+  const { entries, patchText, ready, target, viewerAvatarUrl, viewerLogin } =
+    options;
+  // The forge-backed store answers wherever a pull request or merge request
+  // is on screen; everything else keeps its comments in this browser. The
   // memos are keyed on the target's own string, so the values are as stable
   // as the strings they replace.
   const targetKey = reviewTargetKey(target);
@@ -657,8 +712,9 @@ export function useReviewComments(options: {
           ...payload,
           // The key names the row in this store's own key space, so it says
           // where the row lives rather than which forge: `remote-` for a
-          // posted comment, beside the `staged-` space the forge's drafts
-          // keep, so the two never merge.
+          // posted comment on either forge, beside the `staged-` space the
+          // forge's drafts keep — a GitLab draft note's id is a sequence of
+          // its own, so the two must never merge.
           key: `remote-${payload.remoteId ?? nextKeyRef.current++}`,
         })),
         ...answer.drafts.map((payload) => {
@@ -783,6 +839,33 @@ export function useReviewComments(options: {
     [update]
   );
 
+  /**
+   * The GitLab diff position for a create, when this is a GitLab target and
+   * the patch can state it exactly: raw cursors on both sides, a renamed
+   * file's real paths included. Undefined keeps the scalar
+   * `path`/`line`/`side` shape the call has always carried — GitLab's answer
+   * to that is what it always was.
+   */
+  const gitlabPositionFor = useCallback(
+    (input: {
+      path: string;
+      line?: number;
+      side?: CommentPayload['side'];
+      startLine?: number;
+      startSide?: CommentPayload['startSide'];
+    }): GitLabDiffPosition | undefined => {
+      if (forge !== 'gitlab' || patchText == null) return undefined;
+      if (input.line == null || input.side == null) return undefined;
+      return gitLabPositionForAnchor(patchText, input.path, {
+        line: input.line,
+        side: input.side,
+        ...(input.startLine == null ? {} : { startLine: input.startLine }),
+        ...(input.startSide == null ? {} : { startSide: input.startSide }),
+      });
+    },
+    [forge, patchText]
+  );
+
   const postToGitHub = useCallback(
     async (
       itemId: string,
@@ -795,7 +878,12 @@ export function useReviewComments(options: {
       if (pullRef == null) return;
       beginWrite();
       try {
-        const comment = await rpc.comments.create({ ...pullRef, ...input });
+        const gitlabPosition = gitlabPositionFor(input);
+        const comment = await rpc.comments.create({
+          ...pullRef,
+          ...input,
+          ...(gitlabPosition == null ? {} : { gitlabPosition }),
+        });
         if (!rowExists(itemId, key)) {
           // A read that landed while the create was on the wire placed a map
           // without the optimistic row. The forge has the comment now; a
@@ -809,7 +897,8 @@ export function useReviewComments(options: {
           range: rangeFromCommentPayload(comment),
           comments: [threadComment(comment, key)],
           // The create answer carries the thread's identity where the forge
-          // states it — GitHub's review-thread node id. Kept here, so a thread born on this screen can be resolved
+          // states it — GitHub's review-thread node id, GitLab's discussion
+          // id. Kept here, so a thread born on this screen can be resolved
           // without a reload.
           ...(comment.threadId == null ? {} : { threadId: comment.threadId }),
           ...(comment.resolved == null ? {} : { resolved: comment.resolved }),
@@ -837,7 +926,15 @@ export function useReviewComments(options: {
         endWrite();
       }
     },
-    [beginWrite, endWrite, forge, pullRef, replace, rowExists]
+    [
+      beginWrite,
+      endWrite,
+      forge,
+      gitlabPositionFor,
+      pullRef,
+      replace,
+      rowExists,
+    ]
   );
 
   const postDraft = useCallback(
@@ -856,7 +953,12 @@ export function useReviewComments(options: {
       if (pullRef == null) return;
       beginWrite();
       try {
-        const draft = await rpc.drafts.create({ ...pullRef, ...input });
+        const gitlabPosition = gitlabPositionFor(input);
+        const draft = await rpc.drafts.create({
+          ...pullRef,
+          ...input,
+          ...(gitlabPosition == null ? {} : { gitlabPosition }),
+        });
         if (!rowExists(itemId, key)) {
           void reloadRef.current();
           return;
@@ -892,7 +994,15 @@ export function useReviewComments(options: {
         endWrite();
       }
     },
-    [beginWrite, endWrite, forge, pullRef, replace, rowExists]
+    [
+      beginWrite,
+      endWrite,
+      forge,
+      gitlabPositionFor,
+      pullRef,
+      replace,
+      rowExists,
+    ]
   );
 
   const postReply = useCallback(
@@ -1349,7 +1459,8 @@ export function useReviewComments(options: {
 
       if (thread.staged === true) {
         // A draft is a single comment, and the drafts endpoint addresses it
-        // by the id its list reported — GitHub's node id.
+        // by the id its list reported — GitHub's node id, GitLab's numeric
+        // one.
         if (root.remoteId == null && root.remoteNodeId == null) {
           // The create never landed, so there is nothing upstream to delete.
           replace(itemId, key, () => undefined);

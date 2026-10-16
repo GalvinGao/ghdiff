@@ -6,6 +6,7 @@ import {
   filterCommentSections,
   isBotLogin,
   isCommentAuthorFilter,
+  isGitLabBotLogin,
 } from './commentAuthors';
 import { commentSection, commentThread } from './commentFixtures';
 
@@ -21,6 +22,33 @@ describe('isBotLogin', () => {
     assert.equal(isBotLogin('robotics-fan'), false);
     assert.equal(isBotLogin('bot'), false);
     assert.equal(isBotLogin('[bot]-first'), false);
+  });
+});
+
+describe('isGitLabBotLogin', () => {
+  it('accepts GitLab’s reserved access-token bot names', () => {
+    assert.equal(
+      isGitLabBotLogin('project_1000_bot_1a2b3c4d5e6f708192a3b4c5d6e7f809'),
+      true
+    );
+    assert.equal(isGitLabBotLogin('group_42_bot_9f8e7d6c'), true);
+  });
+
+  it('accepts the conventional suffixes, at a separator', () => {
+    assert.equal(isGitLabBotLogin('renovate-bot'), true);
+    assert.equal(isGitLabBotLogin('gitlab-dependency-update-bot'), true);
+    assert.equal(isGitLabBotLogin('ci_bot'), true);
+    assert.equal(isGitLabBotLogin('Bot'), true);
+  });
+
+  it('rejects a person, a suffix without a separator, and a custom bot name', () => {
+    assert.equal(isGitLabBotLogin('reviewer-one'), false);
+    assert.equal(isGitLabBotLogin('abbott'), false);
+    assert.equal(isGitLabBotLogin('robot'), false);
+    assert.equal(isGitLabBotLogin('bothan'), false);
+    // A custom-named service account: only the user object’s `bot` field
+    // catches this one, never the name.
+    assert.equal(isGitLabBotLogin('waffle'), false);
   });
 });
 

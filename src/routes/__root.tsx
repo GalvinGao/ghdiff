@@ -31,7 +31,9 @@ export const Route = createRootRoute({
       { title: 'ghdiff' },
       {
         name: 'description',
-        content: m.app_description(),
+        // What a search engine reads. ghdiff.com serves both forges, so the
+        // words name both.
+        content: m.app_description_both_forges(),
       },
     ],
     links: [

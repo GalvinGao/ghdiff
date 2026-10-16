@@ -1,18 +1,24 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
+import { watchedRepoName } from './pulls';
 import {
   countRepoPulls,
   dedupeWatchedRepos,
   failedSetupAccount,
   flattenStacks,
   formatWatchedRepo,
+  gluedWatchedRepo,
   groupPullsByRepo,
   groupReposByOwner,
   parseWatchedRepo,
   pullState,
   type PullSummary,
+  type WatchedRepo,
 } from './pulls';
+
+/** The hosts of a two-instance deployment, first one the default. */
+const HOSTS = ['gitlab.com', 'gitlab.corp.com'];
 
 function pull(
   author: string,
@@ -36,35 +42,159 @@ function pull(
 }
 
 describe('parseWatchedRepo', () => {
-  it('parses owner/repo', () => {
-    assert.deepEqual(parseWatchedRepo('acme/app'), {
+  it('parses owner/repo as GitHub, hosts configured or not', () => {
+    assert.deepEqual(parseWatchedRepo('acme/app', HOSTS), {
+      owner: 'acme',
+      repo: 'app',
+    });
+    assert.deepEqual(parseWatchedRepo('acme/app', []), {
       owner: 'acme',
       repo: 'app',
     });
   });
 
   it('parses a github URL', () => {
-    assert.deepEqual(parseWatchedRepo('https://github.com/acme/app'), {
+    assert.deepEqual(parseWatchedRepo('https://github.com/acme/app', HOSTS), {
+      owner: 'acme',
+      repo: 'app',
+    });
+  });
+
+  it('parses the canonical github.com: form', () => {
+    assert.deepEqual(parseWatchedRepo('github.com:acme/app', HOSTS), {
       owner: 'acme',
       repo: 'app',
     });
   });
 
   it('drops a trailing .git and slash', () => {
-    assert.deepEqual(parseWatchedRepo('acme/app.git'), {
+    assert.deepEqual(parseWatchedRepo('acme/app.git', HOSTS), {
       owner: 'acme',
       repo: 'app',
     });
-    assert.deepEqual(parseWatchedRepo('acme/app/'), {
+    assert.deepEqual(parseWatchedRepo('acme/app/', HOSTS), {
       owner: 'acme',
       repo: 'app',
     });
   });
 
   it('rejects input that is not a repository', () => {
-    assert.equal(parseWatchedRepo('acme'), undefined);
-    assert.equal(parseWatchedRepo('acme/app/extra'), undefined);
-    assert.equal(parseWatchedRepo(''), undefined);
+    assert.equal(parseWatchedRepo('acme', HOSTS), undefined);
+    assert.equal(parseWatchedRepo('', HOSTS), undefined);
+    assert.equal(parseWatchedRepo('acme/app/extra', []), undefined);
+  });
+
+  it('reads a bare nested path as a project on the first configured host', () => {
+    assert.deepEqual(parseWatchedRepo('acme/sub/app', HOSTS), {
+      forge: 'gitlab',
+      host: 'gitlab.com',
+      project: 'acme/sub/app',
+    });
+    // With no host configured, a bare nested path names nothing.
+    assert.equal(parseWatchedRepo('acme/sub/app', []), undefined);
+  });
+
+  it('reads host:path as a project on that host', () => {
+    assert.deepEqual(parseWatchedRepo('gitlab.corp.com:acme/app', HOSTS), {
+      forge: 'gitlab',
+      host: 'gitlab.corp.com',
+      project: 'acme/app',
+    });
+  });
+
+  it('matches a named host without regard to case', () => {
+    assert.deepEqual(parseWatchedRepo('GITLAB.corp.com:acme/app', HOSTS), {
+      forge: 'gitlab',
+      host: 'gitlab.corp.com',
+      project: 'acme/app',
+    });
+  });
+
+  it('reads a URL on a configured host, `/-/` and all', () => {
+    assert.deepEqual(
+      parseWatchedRepo('https://gitlab.corp.com/acme/app', HOSTS),
+      {
+        forge: 'gitlab',
+        host: 'gitlab.corp.com',
+        project: 'acme/app',
+      }
+    );
+    assert.deepEqual(
+      parseWatchedRepo(
+        'https://gitlab.corp.com/acme/app/-/merge_requests/1',
+        HOSTS
+      ),
+      {
+        forge: 'gitlab',
+        host: 'gitlab.corp.com',
+        project: 'acme/app',
+      }
+    );
+  });
+
+  it('rejects a host the deployment does not serve', () => {
+    assert.equal(
+      parseWatchedRepo('gitlab.other.com/acme/app', HOSTS),
+      undefined
+    );
+    assert.equal(
+      parseWatchedRepo('gitlab.other.com:acme/app', HOSTS),
+      undefined
+    );
+    assert.equal(
+      parseWatchedRepo('https://gitlab.corp.com/acme/app', []),
+      undefined
+    );
+  });
+
+  it('keeps a host its port', () => {
+    assert.deepEqual(
+      parseWatchedRepo('https://gitlab.corp.com:8443/acme/app', [
+        'gitlab.corp.com:8443',
+      ]),
+      {
+        forge: 'gitlab',
+        host: 'gitlab.corp.com:8443',
+        project: 'acme/app',
+      }
+    );
+    assert.deepEqual(
+      parseWatchedRepo('gitlab.corp.com:8443:acme/app', [
+        'gitlab.corp.com:8443',
+      ]),
+      {
+        forge: 'gitlab',
+        host: 'gitlab.corp.com:8443',
+        project: 'acme/app',
+      }
+    );
+  });
+
+  it('round-trips a GitLab row through its own label', () => {
+    const repo = parseWatchedRepo('gitlab.corp.com:acme/sub/app', HOSTS);
+    assert.ok(repo != null);
+    assert.deepEqual(parseWatchedRepo(formatWatchedRepo(repo), HOSTS), repo);
+  });
+});
+
+describe('gluedWatchedRepo', () => {
+  it('round-trips through the parse for every host shape', () => {
+    const repos: WatchedRepo[] = [
+      { owner: 'acme', repo: 'app' },
+      { forge: 'gitlab', host: 'gitlab.corp.com', project: 'group/proj' },
+      { forge: 'gitlab', host: 'gitlab.corp.com:8443', project: 'group/proj' },
+      // A single-label host glued with a colon cannot be misread as a
+      // namespace, the way its `host/project` display label can.
+      { forge: 'gitlab', host: 'localhost', project: 'group/proj' },
+    ];
+    for (const repo of repos) {
+      const hosts = repo.forge === 'gitlab' ? [repo.host] : [];
+      assert.deepEqual(
+        parseWatchedRepo(gluedWatchedRepo(repo), hosts),
+        repo,
+        gluedWatchedRepo(repo)
+      );
+    }
   });
 });
 
@@ -91,7 +221,7 @@ describe('groupReposByOwner', () => {
       ['acme', 'zeta']
     );
     assert.deepEqual(
-      groups[0].repos.map((repo) => repo.repo),
+      groups[0].repos.map((repo) => watchedRepoName(repo)),
       ['api', 'web']
     );
   });
@@ -174,6 +304,38 @@ describe('groupPullsByRepo', () => {
       groups[0].authors.map((author) => author.author),
       ['grace', 'galvin', 'ada']
     );
+  });
+
+  it('marks a row as the viewer’s only on its own forge group’s answer', () => {
+    const rows = [
+      pull('galvin', 1, '2026-08-20T00:00:00Z'),
+      pull('galvin', 2, '2026-08-21T00:00:00Z', {
+        forge: 'gitlab',
+        host: 'gitlab.corp.com',
+        project: 'acme/app',
+        htmlUrl: 'https://gitlab.corp.com/acme/app/-/merge_requests/2',
+      }),
+    ];
+    const isViewer = (viewers: Record<string, string>) => {
+      const groups = groupPullsByRepo(rows, viewers);
+      return [
+        groups.find((group) => group.key === 'acme/app')?.authors[0].isViewer,
+        groups.find((group) => group.key === 'gitlab.corp.com/acme/app')
+          ?.authors[0].isViewer,
+      ];
+    };
+    // A login that matches across forges is not the same person: the GitHub
+    // viewer names nobody on GitLab.
+    assert.deepEqual(isViewer({ github: 'galvin' }), [true, false]);
+    // The host's own viewer names its own rows, and nobody else's.
+    assert.deepEqual(
+      isViewer({ github: 'galvin', 'gitlab:gitlab.corp.com': 'galvin' }),
+      [true, true]
+    );
+    assert.deepEqual(isViewer({ 'gitlab:gitlab.corp.com': 'galvin' }), [
+      false,
+      true,
+    ]);
   });
 
   it("orders an author's unstacked pull requests by number, newest first", () => {
@@ -292,6 +454,23 @@ describe('failedSetupAccount', () => {
   it('offers nothing when nothing failed or nobody is signed in', () => {
     assert.equal(failedSetupAccount([], true), null);
     assert.equal(failedSetupAccount([{ repo: 'acme/app' }], false), null);
+  });
+
+  it('leaves GitLab rows out of the offer', () => {
+    // A GitLab failure names `host:project`, and the setup page has no
+    // installation step to offer a project.
+    assert.equal(
+      failedSetupAccount([{ repo: 'gitlab.corp.com:group/proj' }], true),
+      null
+    );
+    // A port host mangles nothing either: the row is still no GitHub owner.
+    assert.equal(
+      failedSetupAccount(
+        [{ repo: 'gitlab.corp.com:8443:group/proj' }, { repo: 'acme/app' }],
+        true
+      ),
+      'acme'
+    );
   });
 });
 

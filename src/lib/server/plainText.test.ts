@@ -15,6 +15,22 @@ describe('textResponse', () => {
     assert.equal(failureFromHeaders(response.headers), null);
   });
 
+  it('rides the failure headers when a failure is attached', () => {
+    const response = textResponse('Your connection is no longer valid.', {
+      status: 401,
+      failure: {
+        reason: 'auth-expired',
+        forge: 'gitlab',
+        host: 'gitlab.com',
+      },
+    });
+    assert.deepEqual(failureFromHeaders(response.headers), {
+      reason: 'auth-expired',
+      forge: 'gitlab',
+      host: 'gitlab.com',
+    });
+  });
+
   it('sets only the reason when the forge is not known', () => {
     const response = textResponse('Your sign-in is no longer valid.', {
       status: 401,

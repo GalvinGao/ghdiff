@@ -10,6 +10,11 @@ import { GitHubError } from '@/lib/server/github/client';
 
 describe('forgeFor', () => {
   const githubRef = { forge: 'github', owner: 'o', repo: 'r' } as const;
+  const gitLabRef = {
+    forge: 'gitlab',
+    host: 'gitlab.corp.com',
+    project: 'g/r',
+  } as const;
 
   it('answers a GitHub ref while the App or the token is configured', () => {
     const app = parseDeploymentConfig({
@@ -22,14 +27,33 @@ describe('forgeFor', () => {
   });
 
   it('answers a GitHub ref 404 when GitHub is not served', () => {
+    const config = parseDeploymentConfig({
+      GITLAB_HOSTS: '[{"host":"gitlab.corp.com"}]',
+    });
     assert.throws(
-      () => forgeFor(parseDeploymentConfig({}), githubRef),
+      () => forgeFor(config, githubRef),
       (error) =>
         error instanceof GitHubError &&
         error.status === 404 &&
+        error.message.includes('GitLab on gitlab.corp.com') &&
         // Typed, so the client never reads this 404 as a missing repository.
         error.failure?.reason === 'not-served' &&
         error.failure.forge === 'github'
+    );
+  });
+
+  it('answers a GitLab ref only for a configured host', () => {
+    const config = parseDeploymentConfig({
+      GITLAB_HOSTS: '[{"host":"gitlab.corp.com"}]',
+    });
+    assert.equal(forgeFor(config, gitLabRef), forgeNamed('gitlab'));
+    assert.throws(
+      () => forgeFor(config, { ...gitLabRef, host: 'gitlab.other.com' }),
+      (error) =>
+        error instanceof GitHubError &&
+        error.status === 404 &&
+        error.failure?.reason === 'not-served' &&
+        error.failure.host === 'gitlab.other.com'
     );
   });
 });

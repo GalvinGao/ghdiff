@@ -124,8 +124,10 @@ export function useSubmitReview(options: { ref?: PullRef }): SubmitReviewState {
             m.use_submit_review_could_not_submit_this_review()
           )
         );
-        // A submit can fail after the forge recorded it, so the verdict on
-        // record is read again rather than assumed unchanged.
+        // A submit can fail after the forge recorded it — on GitLab the drafts
+        // are published before the note posts, and the second call is the one
+        // that failed — so the verdict on record is read again rather than
+        // assumed unchanged.
         void refetchMine();
         return undefined;
       } finally {

@@ -18,6 +18,15 @@ describe('exampleDisplayPath', () => {
     assert.equal(
       exampleDisplayPath({
         title: 't',
+        path: 'gitlab-org/gitlab/-/commit/908cae1aed60fd4fb98b0e8d9c4702732969aaa0',
+        scale: 's',
+        note: 'n',
+      }),
+      'gitlab-org/gitlab/-/commit/908cae1'
+    );
+    assert.equal(
+      exampleDisplayPath({
+        title: 't',
         path: 'oven-sh/bun/pull/30412',
         scale: 's',
         note: 'n',
@@ -28,6 +37,20 @@ describe('exampleDisplayPath', () => {
 });
 
 describe('DEFAULT_EXAMPLES', () => {
+  it('gives every row a path that parses as a target on its host', () => {
+    for (const [host, rows] of Object.entries(DEFAULT_EXAMPLES)) {
+      for (const row of rows) {
+        assert.equal(
+          reviewInputFrom(`https://${host}/${row.path}`, {
+            gitlabHosts: [host],
+          }).kind,
+          'target',
+          `${row.title} does not parse on ${host}`
+        );
+      }
+    }
+  });
+
   it('names each path once per host', () => {
     for (const [host, rows] of Object.entries(DEFAULT_EXAMPLES)) {
       const paths = rows.map((row) => row.path);
@@ -38,7 +61,9 @@ describe('DEFAULT_EXAMPLES', () => {
   it('covers all three GitHub target kinds', () => {
     const kinds = new Set(
       DEFAULT_EXAMPLES['github.com'].map((row) => {
-        const result = reviewInputFrom(`https://github.com/${row.path}`, {});
+        const result = reviewInputFrom(`https://github.com/${row.path}`, {
+          gitlabHosts: [],
+        });
         return result.kind === 'target' ? result.target.kind : '';
       })
     );

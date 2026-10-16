@@ -7,7 +7,7 @@ import {
 } from './useSharedQuery';
 import type { RepoRef } from '@/lib/forges';
 import {
-  formatWatchedRepo,
+  gluedWatchedRepo,
   type OpenPullsAnswer,
   parseWatchedRepo,
   type WatchedRepo,
@@ -25,16 +25,16 @@ export interface OpenPullsState {
 const EMPTY_DATA: OpenPullsAnswer = { viewers: {}, pulls: [], failures: [] };
 
 /** The watch list back out of the joined key the hook depends on. */
-function reposFromKey(key: string): RepoRef[] {
+function reposFromKey(key: string, gitlabHosts: readonly string[]): RepoRef[] {
   return key
     .split(',')
-    .map((entry) => parseWatchedRepo(entry))
+    .map((entry) => parseWatchedRepo(entry, gitlabHosts))
     .filter((entry): entry is WatchedRepo => entry != null)
-    .map((repo) => ({
-      forge: 'github' as const,
-      owner: repo.owner,
-      repo: repo.repo,
-    }));
+    .map((repo) =>
+      repo.forge === 'gitlab'
+        ? { forge: 'gitlab' as const, host: repo.host, project: repo.project }
+        : { forge: 'github' as const, owner: repo.owner, repo: repo.repo }
+    );
 }
 
 /**
@@ -50,7 +50,8 @@ const PULLS_STALE_MS = 30_000;
  * page, so this runs for the whole session and one instance feeds every list.
  *
  * `ready` holds the first request back until the watch list has been read out
- * of storage. Without it the app asks the forge about no repositories at all,
+ * of storage and the deployment's hosts have been learned. Without it the app
+ * asks the forge about no repositories at all, or about only the GitHub ones,
  * and then asks again a tick later. The credential needs no such wait: it is
  * in a cookie the browser attaches itself.
  *
@@ -62,19 +63,22 @@ const PULLS_STALE_MS = 30_000;
 export function useOpenPulls(options: {
   ready: boolean;
   repos: readonly WatchedRepo[];
+  gitlabHosts: readonly string[];
 }): OpenPullsState {
-  const { ready, repos } = options;
+  const { ready, repos, gitlabHosts } = options;
 
   // The watch list travels as one comma-joined string and the request is built
-  // back out of it. The array's identity changes on every render of whatever
-  // owns it, and a key built from the array would ask again each time. The
-  // string compares by value. It is sorted, because the order is the list's to
-  // draw and not the forge's to answer: a drag in the watch list reorders the
-  // rows on screen and asks nothing.
-  const repoKey = repos.map(formatWatchedRepo).toSorted().join(',');
-  // The third part keeps a record from before the answer carried `viewers`
-  // — persisted or broadcast by an older tab — from ever matching this one.
-  const queryKey = ['pulls.list', repoKey, ''];
+  // back out of it — GitLab rows in the colon glue, which the parse reads back
+  // for every host shape, where the display label would mistake a single-label
+  // host for a namespace. The array's identity changes on every render of
+  // whatever owns it, and a key built from the array would ask again each
+  // time. The string compares by value. It is sorted, because the order is the
+  // list's to draw and not the forge's to answer: a drag in the watch list
+  // reorders the rows on screen and asks nothing. The hosts join the same way:
+  // they are what the parse reads the list against.
+  const repoKey = repos.map(gluedWatchedRepo).toSorted().join(',');
+  const hostKey = gitlabHosts.join(',');
+  const queryKey = ['pulls.list', repoKey, hostKey];
   const shared = useSharedCache();
   // The session the rows on screen were fetched under. A change of watch list
   // keeps them on screen until the new ones arrive, but only within that
@@ -85,7 +89,16 @@ export function useOpenPulls(options: {
   const query = useSharedQuery<OpenPullsAnswer>({
     queryKey,
     fetch: (signal) =>
-      rpc.pulls.list({ repos: reposFromKey(repoKey) }, { signal }),
+      rpc.pulls.list(
+        {
+          // An empty key is no hosts, not one empty one.
+          repos: reposFromKey(
+            repoKey,
+            hostKey.length === 0 ? [] : hostKey.split(',')
+          ),
+        },
+        { signal }
+      ),
     enabled: ready && repoKey.length > 0,
     // A list with a failure in it is shown, and never kept: the next load
     // would draw a rate limit from an hour ago before GitHub had been asked.

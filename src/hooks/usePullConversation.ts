@@ -11,7 +11,7 @@ import type { ConversationEntry } from '@/lib/pullConversation';
 import { entriesWithoutAttachments } from '@/lib/queryCache/persist';
 import { rpc } from '@/lib/rpc/client';
 
-// What was said about one pull request as a whole, for the
+// What was said about one pull request or merge request as a whole, for the
 // top of the comment list. Only those have a conversation: a commit and a
 // compare range have no thread on their forge above their lines.
 //

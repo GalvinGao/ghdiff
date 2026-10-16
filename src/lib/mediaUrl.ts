@@ -1,3 +1,4 @@
+import { isGitLabTarget } from './forges';
 import { isGitHubMediaUrl } from './github/hosts';
 import {
   isForgeTarget,
@@ -26,6 +27,16 @@ function absolute(src: string): URL | undefined {
   }
 }
 
+function gitLabSrc(src: string, target: ReviewTarget): string {
+  if (!isGitLabTarget(target)) return src;
+  if (src.startsWith('/') && !src.startsWith('//')) return proxied(src, target);
+  const parsed = absolute(src);
+  if (parsed == null) return src;
+  if (parsed.protocol !== 'https:') return src;
+  if (parsed.host.toLowerCase() !== target.host.toLowerCase()) return src;
+  return proxied(parsed.toString(), target);
+}
+
 function gitHubSrc(src: string, target: ReviewTarget): string {
   const parsed = absolute(src);
   if (parsed == null) return src;
@@ -39,5 +50,7 @@ export function mediaSrc(
 ): string {
   // A local diff is on no forge, so nothing it shows needs a grant.
   if (target == null || !isForgeTarget(target)) return src;
-  return gitHubSrc(src, target);
+  return isGitLabTarget(target)
+    ? gitLabSrc(src, target)
+    : gitHubSrc(src, target);
 }

@@ -1,8 +1,8 @@
-import { parsePatchFiles } from '@pierre/diffs';
+import { parsePatchFiles, type SelectedLineRange } from '@pierre/diffs';
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 
-import { findLineMarks } from './lineMarks';
+import { findLineMarks, rangeTouchesContextLines } from './lineMarks';
 
 // Every patch below is written the way git writes one, and parsed by the same
 // `parsePatchFiles` the app itself feeds, so the line numbers under test are
@@ -89,4 +89,88 @@ test('whitespace inside a string is quiet by design', () => {
   ]);
   assert.ok(marks != null);
   assert.deepEqual(sorted(marks.quietAdditions), [1]);
+});
+
+// The gate's fixture: old lines 1-4, new lines 1-5; the changed lines are
+// old 2 and new 2 + 5, everything else is context.
+const GATE_PATCH = [
+  '@@ -1,4 +1,5 @@',
+  ' one',
+  '-two',
+  '+TWO',
+  ' three',
+  ' four',
+  '+five added',
+];
+
+function touchesContext(lines: string[], range: SelectedLineRange) {
+  const patch = [
+    'diff --git a/f.txt b/f.txt',
+    'index 1111111..2222222 100644',
+    '--- a/f.txt',
+    '+++ b/f.txt',
+    ...lines,
+    '',
+  ].join('\n');
+  const file = parsePatchFiles(patch, 'test')[0]?.files[0];
+  assert.ok(file != null, 'the patch parsed to a file diff');
+  return rangeTouchesContextLines(file, range);
+}
+
+test('a changed line is not a context line, on either side', () => {
+  assert.equal(
+    touchesContext(GATE_PATCH, { start: 2, end: 2, side: 'additions' }),
+    false
+  );
+  assert.equal(
+    touchesContext(GATE_PATCH, { start: 5, end: 5, side: 'additions' }),
+    false
+  );
+  assert.equal(
+    touchesContext(GATE_PATCH, { start: 2, end: 2, side: 'deletions' }),
+    false
+  );
+});
+
+test('a context line blocks, on either side', () => {
+  assert.equal(
+    touchesContext(GATE_PATCH, { start: 3, end: 3, side: 'additions' }),
+    true
+  );
+  assert.equal(
+    touchesContext(GATE_PATCH, { start: 1, end: 1, side: 'deletions' }),
+    true
+  );
+});
+
+test('a range that covers a context line blocks', () => {
+  assert.equal(
+    touchesContext(GATE_PATCH, { start: 2, end: 5, side: 'additions' }),
+    true
+  );
+  assert.equal(
+    touchesContext(GATE_PATCH, { start: 5, end: 5, side: 'additions' }),
+    false
+  );
+});
+
+test('a range across the sides is read by its two ends', () => {
+  assert.equal(
+    touchesContext(GATE_PATCH, {
+      start: 2,
+      end: 5,
+      side: 'deletions',
+      endSide: 'additions',
+    }),
+    false
+  );
+  assert.equal(
+    touchesContext(GATE_PATCH, {
+      start: 1,
+      end: 5,
+      side: 'deletions',
+      endSide: 'additions',
+    }),
+    true
+  );
 });

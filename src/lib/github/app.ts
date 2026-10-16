@@ -64,13 +64,20 @@ export function authorizeUrl(input: {
 // parameter and the screen reads it, says its line, and takes it back out of the
 // address. One reason per way this ends badly, and they are not the same advice:
 // three of them are "start again" and one of them is the reviewer having decided
-// not to. The three shared reasons name no forge; the forge's own failure is
-// one reason per forge.
+// not to. The three shared reasons name no forge, because a deployment serves
+// both and the parameter does not say which one the reviewer was signing in to;
+// the forge's own failure is one reason per forge, so a failed GitLab sign-in
+// does not say GitHub.
 
 /** The query parameter a failed sign-in leaves on the page it returns to. */
 export const AUTH_ERROR_PARAM = 'ghdiff_auth';
 
-export type AuthFailure = 'denied' | 'expired' | 'mismatch' | 'github';
+export type AuthFailure =
+  | 'denied'
+  | 'expired'
+  | 'mismatch'
+  | 'github'
+  | 'gitlab';
 
 const AUTH_FAILURE_MESSAGE: Record<AuthFailure, string> = {
   get denied() {
@@ -84,6 +91,9 @@ const AUTH_FAILURE_MESSAGE: Record<AuthFailure, string> = {
   },
   get github() {
     return m.github_app_github_could_not_complete_the_sign_in_try();
+  },
+  get gitlab() {
+    return m.github_app_gitlab_could_not_complete_the_sign_in_try();
   },
 };
 

@@ -1,6 +1,6 @@
 # SOP: self-host ghdiff on Node or Docker
 
-How to run your own ghdiff, on a machine you choose.
+How to run your own ghdiff, for example next to a firewalled GitLab.
 
 ## What you need
 
@@ -63,10 +63,12 @@ anywhere.
   GitHub ref with a 404.
   `curl -sf "http://localhost:3000/api/diff?kind=github-commit&owner=GalvinGao&repo=ghdiff&sha=24ff1db"`
   prints a patch starting with `diff --git`.
+- For a GitLab target on your own instance:
+  `curl -sf "http://localhost:3000/api/diff?kind=gitlab-mr&host=gitlab.corp.com&project=group/repo&number=1"`
 
 If the diff call 404s and the target is private, nothing is wrong with the
-server — sign in, and install the App on the account (`/setup` walks through
-both).
+server — connect an account (see `gitlab-pat-connect.md` or
+`gitlab-instance-onboarding.md`).
 
 ## Upgrade
 

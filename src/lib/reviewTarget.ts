@@ -1,17 +1,21 @@
 // What reviewer is looking at.
 //
 // Every target is a place on a git forge that resolves to one unified diff.
-// On GitHub that is a pull request, a commit, or a compare range. A pull
-// request is the only one that can carry comments upstream, because it is the
-// only one GitHub has a review-comment thread for. A commit and a compare range
-// keep their comments in the browser.
+// On GitHub that is a pull request, a commit, or a compare range; on GitLab a
+// merge request, a commit, or a compare range. A pull request is the only
+// GitHub one that can carry comments upstream, because it is the only one
+// GitHub has a review-comment thread for. A commit and a compare range keep
+// their comments in the browser, on either forge.
 //
-// A target's URL names its host: the canonical path glues it to the first path
-// segment with a colon — `/github.com:owner/repo/pull/123`. Hostless paths are
+// One deployment serves GitHub and any number of GitLab hosts — GitHub while
+// the App or a token is configured, GitLab for the configured hosts — so a
+// target's URL names its host: the canonical path glues it to the first path
+// segment with a colon — `/github.com:owner/repo/pull/123`,
+// `/gitlab.corp.com:group/sub/repo/-/merge_requests/1`. Hostless paths are
 // entry points, never targets: `classifyRouteSegments` sends the loader's
-// answer — canonicalize or 404. And a colon host the deployment does not serve
-// still parses here: membership is enforced where data is fetched, by the
-// server-side forge gate, whose 404 names what this deployment serves.
+// answer — canonicalize, resolve, or 404. And a colon host the deployment is
+// not configured for still parses here: membership is enforced where data is
+// fetched, by the server-side forge gate, whose 404 names the served hosts.
 //
 // One target is on no forge at all: a diff on a developer's own disk, which
 // exists because the `ghdiff` command serves one. The Worker can never answer
@@ -48,6 +52,29 @@ export interface GitHubCompareTarget extends GitHubRepoRef {
   head: string;
 }
 
+export interface GitLabProjectRef {
+  /** `gitlab.com`, or a self-hosted instance's hostname. */
+  host: string;
+  /** The project's full path, namespaces included: `group/sub/repo`. */
+  project: string;
+}
+
+export interface GitLabMergeRequestTarget extends GitLabProjectRef {
+  kind: 'gitlab-mr';
+  number: number;
+}
+
+export interface GitLabCommitTarget extends GitLabProjectRef {
+  kind: 'gitlab-commit';
+  sha: string;
+}
+
+export interface GitLabCompareTarget extends GitLabProjectRef {
+  kind: 'gitlab-compare';
+  base: string;
+  head: string;
+}
+
 /** Which diff of the repository the `ghdiff` command was asked for. */
 export type LocalDiffRange =
   | { mode: 'worktree' }
@@ -80,15 +107,20 @@ export const LOCAL_TARGET_NOT_SERVED = m.local_diff_remote;
 export type ForgeTarget =
   | GitHubPullTarget
   | GitHubCommitTarget
-  | GitHubCompareTarget;
+  | GitHubCompareTarget
+  | GitLabMergeRequestTarget
+  | GitLabCommitTarget
+  | GitLabCompareTarget;
 
 export type ReviewTarget = ForgeTarget | LocalDiffTarget;
 
-/** The targets GitHub answers for. */
-export type GitHubTarget = ForgeTarget;
+export type GitHubTarget = Exclude<ForgeTarget, GitLabProjectRef>;
+export type GitLabTarget = Extract<ForgeTarget, GitLabProjectRef>;
 
 const OWNER_REPO_PATTERN = /^[A-Za-z0-9._-]+$/;
 const SHA_PATTERN = /^[0-9a-f]{7,40}$/i;
+/** A hostname, with an optional port: `gitlab.com`, `gitlab.corp.com:8443`. */
+export const HOST_PATTERN = /^[a-z0-9.-]+(:\d+)?$/i;
 
 /**
  * True when this target is somewhere on a forge, which is what every address,
@@ -161,12 +193,20 @@ export function reviewTargetKey(target: ReviewTarget): string {
       return `github:${target.owner}/${target.repo}@${target.sha}`;
     case 'github-compare':
       return `github:${target.owner}/${target.repo}:${target.base}...${target.head}`;
+    case 'gitlab-mr':
+      return `gitlab:${target.host}:${target.project}#${target.number}`;
+    case 'gitlab-commit':
+      return `gitlab:${target.host}:${target.project}@${target.sha}`;
+    case 'gitlab-compare':
+      return `gitlab:${target.host}:${target.project}:${target.base}...${target.head}`;
     case 'local-diff':
       return `local:${target.root}:${describeLocalRange(target.range)}`;
   }
 }
 
-/** Short human label for the header. */
+/** Short human label for the header. A GitLab label always carries the host:
+ * one deployment serves many, and the project path alone no longer says
+ * where the diff lives. */
 export function describeReviewTarget(target: ReviewTarget): string {
   switch (target.kind) {
     case 'github-pull':
@@ -175,6 +215,15 @@ export function describeReviewTarget(target: ReviewTarget): string {
       return `${target.owner}/${target.repo} @ ${target.sha.slice(0, 7)}`;
     case 'github-compare':
       return `${target.owner}/${target.repo} ${labelRevision(
+        target.base
+      )}...${labelRevision(target.head)}`;
+    case 'gitlab-mr':
+      // GitLab's own notation: a merge request is `!12`, an issue `#12`.
+      return `${target.host}/${target.project} !${target.number}`;
+    case 'gitlab-commit':
+      return `${target.host}/${target.project} @ ${target.sha.slice(0, 7)}`;
+    case 'gitlab-compare':
+      return `${target.host}/${target.project} ${labelRevision(
         target.base
       )}...${labelRevision(target.head)}`;
     case 'local-diff':
@@ -191,10 +240,13 @@ export type ReviewTabType = 'pull' | 'commit' | 'compare';
 export function reviewTabType(target: ReviewTarget): ReviewTabType {
   switch (target.kind) {
     case 'github-pull':
+    case 'gitlab-mr':
       return 'pull';
     case 'github-commit':
+    case 'gitlab-commit':
       return 'commit';
     case 'github-compare':
+    case 'gitlab-compare':
       return 'compare';
     case 'local-diff':
       return target.range.mode === 'commit' ? 'commit' : 'compare';
@@ -204,8 +256,8 @@ export function reviewTabType(target: ReviewTarget): ReviewTabType {
 /**
  * The browser tab's title for a review, in the forges' own habit of naming
  * the change and where it lives: the pull request's title when it has been
- * read, then the host and the path with the forge's own `#` marker, then the
- * app's name — a ghdiff tab reads as a
+ * read, then the host and the path with the forge's own marker (`#` on
+ * GitHub, `!` on GitLab), then the app's name — a ghdiff tab reads as a
  * ghdiff tab next to the forge's own.
  */
 export function reviewTabTitle(
@@ -220,10 +272,20 @@ export function reviewTabTitle(
         ? `${place} · ${brand}`
         : `${pullTitle} · ${place} · ${brand}`;
     }
+    case 'gitlab-mr': {
+      const place = `${target.host}/${target.project} !${target.number}`;
+      return pullTitle == null
+        ? `${place} · ${brand}`
+        : `${pullTitle} · ${place} · ${brand}`;
+    }
     case 'github-commit':
       return `${GITHUB_HOSTS[0]}/${target.owner}/${target.repo} @ ${target.sha.slice(0, 7)} · ${brand}`;
+    case 'gitlab-commit':
+      return `${target.host}/${target.project} @ ${target.sha.slice(0, 7)} · ${brand}`;
     case 'github-compare':
       return `${GITHUB_HOSTS[0]}/${target.owner}/${target.repo} ${target.base}...${target.head} · ${brand}`;
+    case 'gitlab-compare':
+      return `${target.host}/${target.project} ${target.base}...${target.head} · ${brand}`;
     case 'local-diff':
       return `${describeReviewTarget(target)} · ${brand}`;
   }
@@ -245,6 +307,12 @@ export function reviewTargetSplat(target: ForgeTarget): string {
       return `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}/commit/${target.sha}`;
     case 'github-compare':
       return `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}/compare/${target.base}...${target.head}`;
+    case 'gitlab-mr':
+      return `${target.host}:${target.project}/-/merge_requests/${target.number}`;
+    case 'gitlab-commit':
+      return `${target.host}:${target.project}/-/commit/${target.sha}`;
+    case 'gitlab-compare':
+      return `${target.host}:${target.project}/-/compare/${target.base}...${target.head}`;
   }
 }
 
@@ -273,6 +341,28 @@ export function reviewTargetQuery(target: ReviewTarget): URLSearchParams {
         base: target.base,
         head: target.head,
       });
+    case 'gitlab-mr':
+      return new URLSearchParams({
+        kind: target.kind,
+        host: target.host,
+        project: target.project,
+        number: String(target.number),
+      });
+    case 'gitlab-commit':
+      return new URLSearchParams({
+        kind: target.kind,
+        host: target.host,
+        project: target.project,
+        sha: target.sha,
+      });
+    case 'gitlab-compare':
+      return new URLSearchParams({
+        kind: target.kind,
+        host: target.host,
+        project: target.project,
+        base: target.base,
+        head: target.head,
+      });
     case 'local-diff':
       return new URLSearchParams({
         kind: target.kind,
@@ -282,8 +372,13 @@ export function reviewTargetQuery(target: ReviewTarget): URLSearchParams {
   }
 }
 
+/** A GitLab project's full path: one or more owner/repo-shaped segments. */
+const GITLAB_PROJECT_PATTERN = /^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*$/;
+
 const ownerRepoSchema = z.string().regex(OWNER_REPO_PATTERN);
 const shaSchema = z.string().regex(SHA_PATTERN);
+const hostSchema = z.string().toLowerCase().regex(HOST_PATTERN);
+const projectSchema = z.string().regex(GITLAB_PROJECT_PATTERN);
 const numberSchema = z.coerce.number().int().positive();
 
 /**
@@ -309,6 +404,25 @@ export const reviewTargetSearch = z.discriminatedUnion('kind', [
     kind: z.literal('github-compare'),
     owner: ownerRepoSchema,
     repo: ownerRepoSchema,
+    base: z.string(),
+    head: z.string(),
+  }),
+  z.object({
+    kind: z.literal('gitlab-mr'),
+    host: hostSchema,
+    project: projectSchema,
+    number: numberSchema,
+  }),
+  z.object({
+    kind: z.literal('gitlab-commit'),
+    host: hostSchema,
+    project: projectSchema,
+    sha: shaSchema,
+  }),
+  z.object({
+    kind: z.literal('gitlab-compare'),
+    host: hostSchema,
+    project: projectSchema,
     base: z.string(),
     head: z.string(),
   }),
@@ -381,11 +495,11 @@ function localRangeFromQuery(
 
 /**
  * The canonical glue, split: `host:first-path-segment`. The port-safe order
- * matters — `git.example:8443:owner` is host `git.example:8443` with first
- * segment `owner`, while `git.example:8443` alone is a host with a port and no
- * path at all: an all-digits right side of a single colon is the port, so that
- * segment is not the colon form. The host lowercases, the way a URL's hostname
- * does.
+ * matters — `gitlab.corp.com:8443:group` is host `gitlab.corp.com:8443` with
+ * first segment `group`, while `gitlab.corp.com:8443` alone is a host with a
+ * port and no path at all: an all-digits right side of a single colon is the
+ * port, so that segment is not the colon form (the legacy segment form
+ * claims it). The host lowercases, the way a URL's hostname does.
  */
 const HOST_PORT_COLON_PATTERN = /^([a-z0-9.-]+:\d+):(.+)$/i;
 const HOST_COLON_PATTERN = /^([a-z0-9.-]+):(.+)$/i;
@@ -405,16 +519,18 @@ export function splitColonHost(
 }
 
 /**
- * The one shape a review path can have, read in a single match: GitHub's
- * `owner/repo/page/…`, with every parameter captured by name — the review
- * number, the commit sha, the compare range's base and head. The host is not
- * read here: it arrives glued with a colon (splitColonHost), from a URL's
- * hostname, or not at all — and which grammar it speaks is `forgeOfHost`'s
- * answer, not this pattern's. Nobody matches against the pattern directly;
- * `pathShapeOf` is the typed way in.
+ * The one shape a review path can have, read in a single match: a GitHub
+ * shape (`owner/repo/page/…`) or a GitLab shape (nested `project/-/page/…`),
+ * with every parameter captured by name — the review number, the commit sha,
+ * the compare range's base and head. A segment may not be exactly `-` (that
+ * is GitLab's marker), so the GitLab shape carries no backtracking ambiguity.
+ * The host is not read here: it arrives glued with a colon (splitColonHost),
+ * from a URL's hostname, or not at all — and which grammar it speaks is
+ * `forgeOfHost`'s answer, not this pattern's. Nobody matches against the
+ * pattern directly; `pathShapeOf` is the typed way in.
  */
 const PATH_SHAPE =
-  /^(?<owner>[\w.-]+)\/(?<repo>[\w.-]+)\/(?:(?<githubPull>pulls?\/(?<pullNumber>[1-9]\d*))|(?<githubCommit>commits?\/(?<githubSha>[0-9a-fA-F]{7,40}))|(?<githubCompare>compare\/(?<githubBase>.+?)\.\.\.?(?<githubHead>.+)))(?:\/.*)?$/;
+  /^(?:(?<owner>(?!-($|\/))[\w.-]+)\/(?<repo>(?!-($|\/))[\w.-]+)\/(?:(?<githubPull>pulls?\/(?<pullNumber>[1-9]\d*))|(?<githubCommit>commits?\/(?<githubSha>[0-9a-fA-F]{7,40}))|(?<githubCompare>compare\/(?<githubBase>.+?)\.\.\.?(?<githubHead>.+)))|(?<project>(?!-($|\/))[\w.-]+(?:\/(?!-($|\/))[\w.-]+)+)\/-\/(?:(?<gitlabMr>merge_requests\/(?<mrNumber>[1-9]\d*))|(?<gitlabCommit>commits?\/(?<gitlabSha>[0-9a-fA-F]{7,40}))|(?<gitlabCompare>compare\/(?<gitlabBase>.+?)\.\.\.?(?<gitlabHead>.+))))(?:\/.*)?$/;
 
 /** The page a review path names, with its parameters read. */
 export type PathPage =
@@ -424,15 +540,12 @@ export type PathPage =
 
 /**
  * What a review path says it is: the GitHub shape with its owner and repo,
- * and the page's parameters already read. Undefined when the path is no
- * review's shape.
+ * or the GitLab shape with its nested project — either way with the page's
+ * parameters already read. Undefined when the path is no review's shape.
  */
-export type PathShape = {
-  forge: 'github';
-  owner: string;
-  repo: string;
-  page: PathPage;
-};
+export type PathShape =
+  | { forge: 'github'; owner: string; repo: string; page: PathPage }
+  | { forge: 'gitlab'; project: string; page: PathPage };
 
 /** What a review path says it is, or undefined when it is no review's shape. */
 export function pathShapeOf(path: string): PathShape | undefined {
@@ -442,6 +555,12 @@ export function pathShapeOf(path: string): PathShape | undefined {
     return page == null
       ? undefined
       : { forge: 'github', owner: g.owner, repo: g.repo, page };
+  }
+  if (g.project != null) {
+    const page = gitLabPage(g);
+    return page == null
+      ? undefined
+      : { forge: 'gitlab', project: g.project, page };
   }
   return undefined;
 }
@@ -461,40 +580,98 @@ function gitHubPage(g: Record<string, string>): PathPage | undefined {
   return undefined;
 }
 
+function gitLabPage(g: Record<string, string>): PathPage | undefined {
+  if (g.gitlabMr != null) {
+    return { kind: 'pull', number: Number(g.mrNumber) };
+  }
+  if (g.gitlabCommit != null) {
+    return { kind: 'commit', sha: g.gitlabSha };
+  }
+  if (g.gitlabCompare != null) {
+    return {
+      kind: 'compare',
+      base: decodeRange(g.gitlabBase),
+      head: decodeRange(g.gitlabHead),
+    };
+  }
+  return undefined;
+}
+
 /**
  * The target a path's shape stands for on a host — the two must agree: a
- * GitHub page belongs to a GitHub-speaking host, or to no host at all, the
- * hostless form the route canonicalizes. Anything else is no target.
+ * GitHub page belongs to a GitHub-speaking host (or to no host at all, the
+ * hostless form the route canonicalizes), a GitLab page to a GitLab-speaking
+ * one. Anything else is no target.
  */
 export function targetFromPathShape(
   shape: PathShape,
   host: string | undefined
 ): ForgeTarget | undefined {
-  if (host != null && forgeOfHost(host) !== 'github') return undefined;
+  if (shape.forge === 'github') {
+    if (host != null && forgeOfHost(host) !== 'github') return undefined;
+    switch (shape.page.kind) {
+      case 'pull':
+        return {
+          kind: 'github-pull',
+          owner: shape.owner,
+          repo: shape.repo,
+          number: shape.page.number,
+        };
+      case 'commit':
+        return {
+          kind: 'github-commit',
+          owner: shape.owner,
+          repo: shape.repo,
+          sha: shape.page.sha,
+        };
+      case 'compare':
+        return {
+          kind: 'github-compare',
+          owner: shape.owner,
+          repo: shape.repo,
+          base: shape.page.base,
+          head: shape.page.head,
+        };
+    }
+  }
+  if (host == null || forgeOfHost(host) !== 'gitlab') return undefined;
   switch (shape.page.kind) {
     case 'pull':
       return {
-        kind: 'github-pull',
-        owner: shape.owner,
-        repo: shape.repo,
+        kind: 'gitlab-mr',
+        host,
+        project: shape.project,
         number: shape.page.number,
       };
     case 'commit':
       return {
-        kind: 'github-commit',
-        owner: shape.owner,
-        repo: shape.repo,
+        kind: 'gitlab-commit',
+        host,
+        project: shape.project,
         sha: shape.page.sha,
       };
     case 'compare':
       return {
-        kind: 'github-compare',
-        owner: shape.owner,
-        repo: shape.repo,
+        kind: 'gitlab-compare',
+        host,
+        project: shape.project,
         base: shape.page.base,
         head: shape.page.head,
       };
   }
+}
+
+/**
+ * True when a path's first segment names a host rather than a group: a colon
+ * says so outright, and a dotted head with a group and a project still
+ * standing between it and the `-` marker is the legacy host form. A dotted
+ * head with less behind it is a bare path whose group happens to carry a dot.
+ */
+export function headNamesHost(segments: readonly string[]): boolean {
+  const head = segments[0] ?? '';
+  return (
+    head.includes(':') || (head.includes('.') && segments.indexOf('-') >= 3)
+  );
 }
 
 /**
@@ -514,8 +691,11 @@ export function segmentsFromPath(input: string): string[] {
 /**
  * Rebuilds a target from the route's path segments, in the canonical colon
  * form alone: the first segment carries the host glued on with a colon, and
- * the rest reads `owner/repo/pull/123` the way github.com does. A host that
- * speaks no forge's grammar is no target.
+ * the host picks the grammar. A GitHub host reads `owner/repo/pull/123` the
+ * way github.com does; any other host reads GitLab's own `project/-/page`.
+ * A host this deployment is not configured for still parses — the
+ * server-side forge gate answers it with the 404 that names the served
+ * hosts.
  */
 export function reviewTargetFromSegments(
   segments: readonly string[]
@@ -563,17 +743,25 @@ function decodeRange(range: string): string {
 /** What the `/$` loader does with a path, before any target exists. */
 export type RouteParse =
   | { kind: 'target'; target: ForgeTarget }
-  | { kind: 'redirect'; splat: string; status: 302 }
+  | { kind: 'redirect'; splat: string; status: 301 | 302 }
+  | { kind: 'resolve'; splat: string }
   | { kind: 'none' };
 
 /**
  * Classifies the route's path segments for the `/$` loader. Pure and
- * client-safe — no config, no network: whether this deployment serves GitHub
- * is the server-side forge gate's to answer, so a colon target is a target
- * here and may be a 404 there.
+ * client-safe — no config, no network: host membership is the server-side
+ * forge gate's to answer, so an unknown colon host is a target here and a
+ * 404 there.
  *
  * - The canonical colon form parses to a target, or to nothing when the rest
  *   of the path holds no grammar.
+ * - The legacy segment form — a dotted or coloned first segment, GitLab's
+ *   `-` marker, and at least a group and a project standing between them —
+ *   redirects permanently to the colon form. (A dotted GitLab *group* deep
+ *   enough to trip that read loses, as it always has; the escape is the
+ *   colon form, now the only form.)
+ * - Any other path with the marker is a bare GitLab path: it names no host,
+ *   so `/api/resolve` probes the configured hosts for the project.
  * - A hostless GitHub-shaped path redirects to the one GitHub host.
  */
 export function classifyRouteSegments(segments: readonly string[]): RouteParse {
@@ -589,7 +777,25 @@ export function classifyRouteSegments(segments: readonly string[]): RouteParse {
     return target == null ? { kind: 'none' } : { kind: 'target', target };
   }
 
+  // A head that names a host is the legacy form, and canonicalizes with a
+  // permanent redirect — GitLab's grammar, not the shape, is what the head
+  // heuristic decides here. The redirect goes out only when its own head
+  // reads as the canonical form: a head the colon grammar rejects would
+  // classify the same way again, and redirect forever.
+  if (headNamesHost(segments)) {
+    const glued = `${first}:${segments.slice(1).join('/')}`;
+    if (splitColonHost(segmentsFromPath(glued)[0] ?? '') == null) {
+      return { kind: 'none' };
+    }
+    return { kind: 'redirect', splat: glued, status: 301 };
+  }
+
   const shape = pathShapeOf(splat);
+  if (shape?.forge === 'gitlab') {
+    // A bare GitLab path names no host, so `/api/resolve` probes the
+    // configured hosts for the project.
+    return { kind: 'resolve', splat };
+  }
   if (shape != null) {
     // A GitHub shape with no host: the one GitHub host is the canonical one.
     return {

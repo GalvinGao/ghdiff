@@ -8,21 +8,23 @@ import {
   type CommentMetadata,
   type CommentThread,
   isCommentThread,
+  MERGE_REQUEST_ITEM_ID,
   threadParticipants,
   threadRoot,
 } from './comments';
 import type { ReviewFileEntry } from './reviewData';
+import { m } from '@/paraglide/messages.js';
 
 /**
  * The fields every thread row shares, whichever section builds it: who opened
- * the thread, what it says, and how it stands. Each file section spreads its
- * own extras over this.
+ * the thread, what it says, and how it stands. The file sections and the
+ * merge-request section each spread their own extras over this.
  */
 function listEntryFromThread(
   itemId: string,
   path: string,
   metadata: CommentThread
-): Omit<CommentListEntry, 'lineNumber' | 'lineType' | 'side' | 'range'> {
+): CommentListEntry {
   const root = threadRoot(metadata);
   return {
     itemId,
@@ -99,7 +101,10 @@ export function buildCommentSections(
           },
         ];
       })
-      .sort((a, b) => compareResolvedLast(a, b) || a.lineNumber - b.lineNumber);
+      .sort(
+        (a, b) =>
+          compareResolvedLast(a, b) || (a.lineNumber ?? 0) - (b.lineNumber ?? 0)
+      );
 
     if (threads.length === 0) continue;
     sections.push({
@@ -111,6 +116,38 @@ export function buildCommentSections(
   }
 
   return sections.sort((a, b) => a.fileOrder - b.fileOrder);
+}
+
+/**
+ * The threads on the merge request itself, as one section that the sidebar
+ * lists before the files. The heading is not a file and opens nothing; the
+ * rows carry no line numbers. Open threads first, resolved ones after, each
+ * in the order they were written.
+ */
+export function buildMergeRequestSection(
+  annotations: readonly DiffLineAnnotation<CommentMetadata>[]
+): CommentListSection | undefined {
+  const threads: CommentListEntry[] = [];
+  for (const annotation of annotations) {
+    const metadata = annotation.metadata;
+    if (!isCommentThread(metadata)) continue;
+    threads.push({
+      ...listEntryFromThread(
+        MERGE_REQUEST_ITEM_ID,
+        m.comment_sections_merge_request(),
+        metadata
+      ),
+      scope: 'merge-request',
+    });
+  }
+  if (threads.length === 0) return undefined;
+  threads.sort(compareResolvedLast);
+  return {
+    itemId: MERGE_REQUEST_ITEM_ID,
+    path: m.comment_sections_merge_request(),
+    fileOrder: -1,
+    threads,
+  };
 }
 
 /** Total messages across every thread, which is what the tab badge counts. */

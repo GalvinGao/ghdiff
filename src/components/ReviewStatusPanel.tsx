@@ -2,12 +2,17 @@ import { IconCiWarningFill, IconRefresh } from '@pierre/icons';
 import { Link } from '@tanstack/react-router';
 
 import { useAppData } from '@/components/AppDataProvider';
+import { GitLabConnectButton } from '@/components/GitLabConnectDialog';
 import { Button } from '@/components/ui/Button';
 import { buttonClass } from '@/components/ui/buttonClass';
 import { CenteredNotice } from '@/components/ui/CenteredNotice';
-import type { GitHubSessionState } from '@/hooks/useGitHubSession';
+import {
+  gitLabConnectionFor,
+  type GitHubSessionState,
+} from '@/hooks/useGitHubSession';
 import { formatBytes } from '@/lib/byteSize';
 import type { FailureMeta } from '@/lib/failure';
+import { forgeOfTarget, isGitLabTarget } from '@/lib/forges';
 import { describeReviewFailure } from '@/lib/reviewFailure';
 import {
   describeReviewTarget,
@@ -55,10 +60,11 @@ const COPY: Record<
  * button rather than a line of underlined text when one of them breaks.
  *
  * Which button it leads with is `describeReviewFailure`'s answer, and there are
- * two. Anything a reviewer can fix on GitHub by granting something leads to
+ * three. Anything a reviewer can fix on GitHub by granting something leads to
  * `/setup`, which is the one screen that asks GitHub whether the missing piece
- * is the sign-in or the installation. Everything else keeps "Try again" as the
- * only offer worth making.
+ * is the sign-in or the installation. A GitLab failure a credential would fix
+ * opens the connect dialog on the instance itself. Everything else keeps "Try
+ * again" as the only offer worth making.
  */
 export function ReviewStatusPanel({
   bytes,
@@ -105,6 +111,12 @@ export function ReviewStatusPanel({
     message: error,
     status,
     failure,
+    forge: isForgeTarget(target) ? forgeOfTarget(target) : undefined,
+    // A grant on another host is no connection here: the 'connected' readings
+    // and the connect offer are the target's own host's answer.
+    gitlabConnected:
+      isGitLabTarget(target) &&
+      gitLabConnectionFor(session.gitlab, target.host) != null,
     // A deployment with no GitHub App has no `/setup` to send a reviewer to:
     // the failures that would offer it degrade to the retry alone.
     githubOAuth: instance.github.oauth,
@@ -168,6 +180,9 @@ export function ReviewStatusPanel({
             >
               {m.review_status_panel_set_up_repository_access()}
             </Link>
+          )}
+          {described.action === 'connect' && isForgeTarget(target) && (
+            <GitLabConnectButton target={target} />
           )}
           <Button variant="outline" onClick={onRetry}>
             {m.review_status_panel_try_again()}

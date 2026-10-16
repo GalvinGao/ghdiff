@@ -87,13 +87,14 @@ What it turned out to need is a host that does not draw what it cannot serve.
 and a query client, and mounts no `AppShell` and no `AppDataProvider` — so there
 is no left bar, no watch list, no account menu, no `/setup`, no served counter,
 and **not one request to a forge or to the RPC handler**. `LocalAppData`
-supplies the forge-shaped fields of `AppData` inert — no session, an instance
-that serves nothing — and every one of those states is one the app already
-answers: an empty hydrated watch list is what `PullRail` and `PullListButton`
-already draw nothing for, and a session with no viewer is the signed-out case.
-Two fields are real, because they are settings rather than questions for a forge
-— the colour mode and the code font are the same choice wherever the diff came
-from, under the same keys, shared with every other ghdiff tab.
+supplies the forge-shaped fields of `AppData` inert — no session, no GitLab
+connection, an instance that serves nothing — and every one of those states is
+one the app already answers: an empty hydrated watch list is what `PullRail` and
+`PullListButton` already draw nothing for, and a session with no viewer is the
+signed-out case. Two fields are real, because they are settings rather than
+questions for a forge — the colour mode and the code font are the same choice
+wherever the diff came from, under the same keys, shared with every other ghdiff
+tab.
 
 `ReviewScreen` then makes a few small allowances, each derived from
 `isForgeTarget` and nothing else: the header draws no account control and no

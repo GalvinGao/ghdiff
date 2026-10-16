@@ -39,6 +39,29 @@ export function viewerNamespace(login: string | undefined): string {
   return login == null ? ANONYMOUS_NAMESPACE : `user:${login.toLowerCase()}`;
 }
 
+/**
+ * The namespace of a whole session: the GitHub viewer and every GitLab
+ * connection, by host. Two sessions share answers only when they speak as the
+ * same accounts everywhere — a GitLab connection added or dropped reaches
+ * private projects the other session cannot, so its answers are its own.
+ */
+export function sessionNamespace(
+  githubLogin: string | undefined,
+  gitlab: readonly { host: string; viewer: { login: string } }[]
+): string {
+  if (gitlab.length === 0) return viewerNamespace(githubLogin);
+  const parts = [
+    githubLogin == null ? '' : githubLogin.toLowerCase(),
+    ...gitlab
+      .map(
+        ({ host, viewer }) =>
+          `${host.toLowerCase()}:${viewer.login.toLowerCase()}`
+      )
+      .sort(),
+  ];
+  return `user:${parts.join('|')}`;
+}
+
 export interface CacheRecord {
   /** `namespace` and `hash` together, so two accounts never share a record. */
   id: string;

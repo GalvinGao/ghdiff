@@ -5,6 +5,7 @@ import {
   authExpiredMessage,
   FAILURE_FORGE_HEADER,
   FAILURE_HEADER,
+  FAILURE_HOST_HEADER,
   failureForStatus,
   failureFromHeaders,
   isFailureMeta,
@@ -15,14 +16,16 @@ import {
 // have a status.
 
 describe('failureFromHeaders', () => {
-  it('reads the reason and the forge back', () => {
+  it('reads the reason, forge and host back', () => {
     const headers = new Headers({
       [FAILURE_HEADER]: 'auth-expired',
-      [FAILURE_FORGE_HEADER]: 'github',
+      [FAILURE_FORGE_HEADER]: 'gitlab',
+      [FAILURE_HOST_HEADER]: 'gitlab.com',
     });
     assert.deepEqual(failureFromHeaders(headers), {
       reason: 'auth-expired',
-      forge: 'github',
+      forge: 'gitlab',
+      host: 'gitlab.com',
     });
   });
 
@@ -55,10 +58,14 @@ describe('failureForStatus', () => {
     );
   });
 
-  it('carries the forge it is given', () => {
+  it('carries the forge and host it is given', () => {
     assert.deepEqual(
-      failureForStatus(403, { forge: 'github', credentialed: true }),
-      { reason: 'permission-denied', forge: 'github' }
+      failureForStatus(403, {
+        forge: 'gitlab',
+        host: 'gitlab.com',
+        credentialed: true,
+      }),
+      { reason: 'permission-denied', forge: 'gitlab', host: 'gitlab.com' }
     );
   });
 
@@ -92,7 +99,8 @@ describe('isFailureMeta', () => {
 describe('authExpiredMessage', () => {
   it('names the forge, and no forge when the gate cannot know it', () => {
     assert.match(authExpiredMessage('github'), /GitHub/);
-    // The RPC edge cannot tell which grant died.
-    assert.doesNotMatch(authExpiredMessage(), /GitHub/);
+    assert.match(authExpiredMessage('gitlab', 'gitlab.com'), /gitlab\.com/);
+    // The RPC edge and /api/resolve cannot tell which grant died.
+    assert.doesNotMatch(authExpiredMessage(), /GitHub|GitLab/);
   });
 });

@@ -276,12 +276,13 @@ describe('composerActions', () => {
       store: 'local',
       canStage: false,
       draftsExist: false,
+      stageBlocked: false,
       stageNeedsSignIn: false,
     });
     assert.equal(actions.primaryLabel, 'Save comment');
     assert.equal(actions.joinsDraft, false);
     assert.equal(actions.stageOffered, false);
-    assert.match(actions.stageDisabledReason ?? '', /pull request/);
+    assert.match(actions.stageDisabledReason ?? '', /pull or merge request/);
     assert.match(actions.localHint ?? '', /this browser/);
   });
 
@@ -290,6 +291,7 @@ describe('composerActions', () => {
       store: 'forge',
       canStage: true,
       draftsExist: true,
+      stageBlocked: false,
       stageNeedsSignIn: false,
     });
     assert.equal(actions.joinsDraft, true);
@@ -303,6 +305,7 @@ describe('composerActions', () => {
       store: 'forge',
       canStage: true,
       draftsExist: false,
+      stageBlocked: false,
       stageNeedsSignIn: false,
     });
     assert.equal(actions.primaryLabel, 'Comment');
@@ -315,9 +318,23 @@ describe('composerActions', () => {
       store: 'forge',
       canStage: false,
       draftsExist: false,
+      stageBlocked: false,
       stageNeedsSignIn: true,
     });
     assert.equal(actions.stageOffered, false);
     assert.match(actions.stageDisabledReason ?? '', /Sign in/);
+  });
+
+  it('keeps the suggestion off a context line, even with a draft waiting', () => {
+    const actions = composerActions({
+      store: 'forge',
+      canStage: true,
+      draftsExist: true,
+      stageBlocked: true,
+      stageNeedsSignIn: false,
+    });
+    assert.equal(actions.joinsDraft, false);
+    assert.equal(actions.stageOffered, false);
+    assert.match(actions.stageDisabledReason ?? '', /changed line/);
   });
 });

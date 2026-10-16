@@ -3,9 +3,11 @@
 //
 // GitHub calls these `event` on `POST /pulls/{n}/reviews`, and the names are
 // its own — the API takes `APPROVE`, not `approve`, and nothing here translates
-// them. A line comment is posted where it is written, or staged as the forge's
-// own draft — a pending-review thread on GitHub — and the verdict publishes the
-// drafts, so the call itself carries none.
+// them. GitLab has approvals and comments and no request-changes state, so a
+// GitLab target offers two of the three (`verdictsForForge`). A line comment
+// is posted where it is written, or staged as the forge's own draft — a
+// pending-review thread on GitHub, a draft note on GitLab — and the verdict
+// publishes the drafts, so the call itself carries none.
 
 import { forgeLabel, type ForgeName } from './forges';
 import type { StatusTone } from './pullStatus';
@@ -76,9 +78,17 @@ export const REVIEW_EVENTS: readonly ReviewEventSpec[] = [
   },
 ];
 
-/** The verdicts a forge takes, in the contract's spelling. */
-export function verdictsForForge(_forge: ForgeName): readonly ReviewEvent[] {
-  return ['APPROVE', 'COMMENT', 'REQUEST_CHANGES'];
+/**
+ * The verdicts a forge takes, in the contract's spelling. GitLab has
+ * approvals and comments and no request-changes state, so the dialog offers
+ * two of the three there.
+ */
+export function verdictsForForge(
+  forge: 'github' | 'gitlab'
+): readonly ReviewEvent[] {
+  return forge === 'gitlab'
+    ? ['APPROVE', 'COMMENT']
+    : ['APPROVE', 'COMMENT', 'REQUEST_CHANGES'];
 }
 
 export function reviewEventSpec(event: ReviewEvent): ReviewEventSpec {
@@ -95,7 +105,7 @@ export function reviewEventSpec(event: ReviewEvent): ReviewEventSpec {
  * Two things stop one, and they are not the same kind of thing. A missing note
  * is the reviewer's to fix and clears the moment they type — and while a draft
  * is waiting it is no block at all, since a review whose content is its line
- * comments needs no summary: GitHub takes that. Their own pull request
+ * comments needs no summary: both forges take that. Their own pull request
  * never clears — GitHub refuses an approval and a change request from the
  * person who opened it, whatever they write.
  *
@@ -104,6 +114,11 @@ export function reviewEventSpec(event: ReviewEvent): ReviewEventSpec {
  * note, so reporting the note would send a reviewer to write one that changes
  * nothing. `Comment` is the one verdict GitHub does take on your own, so it
  * falls through to the note rule like any other.
+ *
+ * GitLab is different, and the difference is why the rule is the forge's and
+ * not the spec's: whether the author may approve is a per-project setting
+ * there, so the client cannot know. Nothing is blocked on ownership — the
+ * button stays live and the instance's own sentence comes back as the error.
  *
  * This replaced a boolean. The boolean was enough to disable a button and not
  * enough to say why, and a control that is grey for an unstated reason is a
@@ -135,6 +150,12 @@ export function reviewBlock(input: {
   /** Whether the reviewer is the one who opened this pull request. */
   ownPullRequest: boolean;
   /**
+   * The target's forge. GitHub's ownership refusal does not map to GitLab,
+   * where author approval is a per-project setting — so a GitLab target
+   * blocks nothing on ownership and lets the instance decide.
+   */
+  forge?: ForgeName;
+  /**
    * How many draft comments the verdict carries. A review whose content is
    * its line comments needs no summary, so `needs-note` fires only when the
    * body is empty and there are none.
@@ -142,7 +163,7 @@ export function reviewBlock(input: {
   draftCount?: number;
 }): ReviewBlock | undefined {
   const spec = reviewEventSpec(input.event);
-  if (input.ownPullRequest && !spec.allowedOnOwn) {
+  if (input.forge !== 'gitlab' && input.ownPullRequest && !spec.allowedOnOwn) {
     return 'own-pull-request';
   }
   if (
@@ -163,9 +184,12 @@ export function canSubmitReview(
   event: ReviewEvent,
   body: string,
   ownPullRequest = false,
+  forge?: ForgeName,
   draftCount?: number
 ): boolean {
-  return reviewBlock({ body, draftCount, event, ownPullRequest }) == null;
+  return (
+    reviewBlock({ body, draftCount, event, ownPullRequest, forge }) == null
+  );
 }
 
 /**
@@ -242,11 +266,17 @@ export function describeSubmittedReview(
 ): string {
   switch (review.state) {
     case 'APPROVED':
-      return m.review_decision_you_approved_this_pull_request();
+      return forge === 'gitlab'
+        ? m.review_decision_you_approved_this_merge_request()
+        : m.review_decision_you_approved_this_pull_request();
     case 'CHANGES_REQUESTED':
-      return m.review_decision_you_requested_changes_on_this_pull_request();
+      return forge === 'gitlab'
+        ? m.review_decision_you_requested_changes_on_this_merge_request()
+        : m.review_decision_you_requested_changes_on_this_pull_request();
     case 'COMMENTED':
-      return m.review_decision_you_commented_on_this_pull_request();
+      return forge === 'gitlab'
+        ? m.review_decision_you_commented_on_this_merge_request()
+        : m.review_decision_you_commented_on_this_pull_request();
     default:
       // A forge has states this app does not offer, `DISMISSED` among them,
       // and a review read back in one of them is still a review that landed.

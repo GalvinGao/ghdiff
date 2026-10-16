@@ -3,8 +3,8 @@
 // commit's checks at the bottom — each glyph drawn bare, as large as its
 // ground holds.
 //
-// The top mark says what the tab holds — a pull request, a commit, or a
-// compare range — in the app's one accent colour, and it is
+// The top mark says what the tab holds — a pull request or merge request, a
+// commit, or a compare range — in the app's one accent colour, and it is
 // always there: the kind is known from the URL, no forge answer needed. It
 // has a fourth state: a draft pull request takes the draft octicon. The state
 // is the glyph's shape alone — the mark's colour never changes, so a tab
@@ -47,7 +47,7 @@ export interface ReviewFaviconColors {
 
 export interface ReviewFaviconInput {
   type: ReviewTabType;
-  /** True when the pull request is a draft: the type glyph takes its fourth state. */
+  /** True when the merge request is a draft: the type glyph takes its fourth state. */
   draft?: boolean;
   /** The head commit's checks. Absent or `'none'` paints no status mark. */
   check?: CheckState;

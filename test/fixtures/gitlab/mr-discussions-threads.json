@@ -1,0 +1,572 @@
+[
+  {
+    "id": "d60cf954fa2facc072f7939544bd7527e937326e",
+    "individual_note": true,
+    "notes": [
+      {
+        "id": 1562070,
+        "type": null,
+        "body": "…",
+        "author": {
+          "id": 12,
+          "username": "review-bot",
+          "public_email": null,
+          "name": "review-bot",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-07T13:27:15.949+08:00",
+        "updated_at": "2026-09-07T13:27:15.949+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "39f40d74541e43c3c9085cdf89573ff683a080df",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 1562098,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 12,
+          "username": "review-bot",
+          "public_email": null,
+          "name": "review-bot",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-07T13:30:02.951+08:00",
+        "updated_at": "2026-09-07T13:31:12.712+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "c9b0e219cb4b7eed6c3965b2c5c88b4487a8a0bc",
+          "start_sha": "b80e87f44ee2328d789ff03e90889bad44bba7df",
+          "head_sha": "44ae8984359111821af60580514a3defad110195",
+          "old_path": "src/file-1.ts",
+          "new_path": "src/file-1.ts",
+          "position_type": "text",
+          "old_line": null,
+          "new_line": 22,
+          "line_range": null
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-07T13:31:12.712+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      },
+      {
+        "id": 1562104,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 13,
+          "username": "reviewer-one",
+          "public_email": null,
+          "name": "reviewer-one",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-07T13:30:56.781+08:00",
+        "updated_at": "2026-09-07T13:30:56.781+08:00",
+        "system": true,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "c9b0e219cb4b7eed6c3965b2c5c88b4487a8a0bc",
+          "start_sha": "b80e87f44ee2328d789ff03e90889bad44bba7df",
+          "head_sha": "44ae8984359111821af60580514a3defad110195",
+          "old_path": "src/file-1.ts",
+          "new_path": "src/file-1.ts",
+          "position_type": "text",
+          "old_line": null,
+          "new_line": 22,
+          "line_range": null
+        },
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      },
+      {
+        "id": 1562106,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 13,
+          "username": "reviewer-one",
+          "public_email": null,
+          "name": "reviewer-one",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-07T13:31:12.435+08:00",
+        "updated_at": "2026-09-07T13:31:12.712+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "c9b0e219cb4b7eed6c3965b2c5c88b4487a8a0bc",
+          "start_sha": "b80e87f44ee2328d789ff03e90889bad44bba7df",
+          "head_sha": "44ae8984359111821af60580514a3defad110195",
+          "old_path": "src/file-1.ts",
+          "new_path": "src/file-1.ts",
+          "position_type": "text",
+          "old_line": null,
+          "new_line": 22,
+          "line_range": null
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-07T13:31:12.712+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "83bfd518140f1b9ac8f25fb0a9c1230d3290b596",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 1562099,
+        "type": "DiscussionNote",
+        "body": "…",
+        "author": {
+          "id": 12,
+          "username": "review-bot",
+          "public_email": null,
+          "name": "review-bot",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-07T13:30:03.201+08:00",
+        "updated_at": "2026-09-07T20:00:25.770+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-07T20:00:25.770+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      },
+      {
+        "id": 1567323,
+        "type": "DiscussionNote",
+        "body": "…",
+        "author": {
+          "id": 13,
+          "username": "reviewer-one",
+          "public_email": null,
+          "name": "reviewer-one",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-07T20:00:25.573+08:00",
+        "updated_at": "2026-09-07T20:00:25.770+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-07T20:00:25.770+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "d2a345c98252ccdb396ef99857404444d211bb12",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 1572351,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 14,
+          "username": "reviewer-two",
+          "public_email": null,
+          "name": "reviewer-two",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-08T15:01:02.867+08:00",
+        "updated_at": "2026-09-08T15:41:13.066+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "start_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "head_sha": "3103de27202e605efef4f3dd3505d147bf9a638b",
+          "old_path": "src/file-3.ts",
+          "new_path": "src/file-2.ts",
+          "position_type": "text",
+          "old_line": 22,
+          "new_line": 22,
+          "line_range": {
+            "start": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            },
+            "end": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-08T15:41:13.066+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      },
+      {
+        "id": 1572402,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 15,
+          "username": "reviewer-three",
+          "public_email": null,
+          "name": "reviewer-three",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-08T15:04:39.460+08:00",
+        "updated_at": "2026-09-08T15:41:13.066+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "start_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "head_sha": "3103de27202e605efef4f3dd3505d147bf9a638b",
+          "old_path": "src/file-3.ts",
+          "new_path": "src/file-2.ts",
+          "position_type": "text",
+          "old_line": 22,
+          "new_line": 22,
+          "line_range": {
+            "start": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            },
+            "end": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-08T15:41:13.066+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      },
+      {
+        "id": 1572745,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 13,
+          "username": "reviewer-one",
+          "public_email": null,
+          "name": "reviewer-one",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-08T15:36:36.569+08:00",
+        "updated_at": "2026-09-08T15:36:36.569+08:00",
+        "system": true,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "start_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "head_sha": "3103de27202e605efef4f3dd3505d147bf9a638b",
+          "old_path": "src/file-3.ts",
+          "new_path": "src/file-2.ts",
+          "position_type": "text",
+          "old_line": 22,
+          "new_line": 22,
+          "line_range": {
+            "start": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            },
+            "end": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            }
+          }
+        },
+        "resolvable": false,
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      },
+      {
+        "id": 1572784,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 13,
+          "username": "reviewer-one",
+          "public_email": null,
+          "name": "reviewer-one",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-08T15:41:12.751+08:00",
+        "updated_at": "2026-09-08T15:41:13.066+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "start_sha": "87195bf021fdf1994629bfa0cd84986684f88cee",
+          "head_sha": "3103de27202e605efef4f3dd3505d147bf9a638b",
+          "old_path": "src/file-3.ts",
+          "new_path": "src/file-2.ts",
+          "position_type": "text",
+          "old_line": 22,
+          "new_line": 22,
+          "line_range": {
+            "start": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            },
+            "end": {
+              "line_code": "646dcb94031e6edee55d68fb232e903957165f5a_22_22",
+              "type": "expanded",
+              "old_line": 22,
+              "new_line": 22
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-08T15:41:13.066+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "bcb05291ea6fed74b4379f11eaa62407ee06dbbc",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 1572760,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 14,
+          "username": "reviewer-two",
+          "public_email": null,
+          "name": "reviewer-two",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-08T15:38:02.231+08:00",
+        "updated_at": "2026-09-08T15:41:13.581+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "00d8f96e63b2ad4d77844e233dd53942e8cb22b9",
+          "start_sha": "00d8f96e63b2ad4d77844e233dd53942e8cb22b9",
+          "head_sha": "9e27696fcb4ebd2cfe3c184b1ab421cf1725716f",
+          "old_path": "src/file-4.ts",
+          "new_path": "src/file-4.ts",
+          "position_type": "text",
+          "old_line": null,
+          "new_line": 188,
+          "line_range": {
+            "start": {
+              "line_code": "221824fa017e4cf3bcd3e74e402146eb59ceb278_180_187",
+              "type": "new",
+              "old_line": null,
+              "new_line": 187
+            },
+            "end": {
+              "line_code": "221824fa017e4cf3bcd3e74e402146eb59ceb278_180_187",
+              "type": "new",
+              "old_line": null,
+              "new_line": 187
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-08T15:41:13.581+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      },
+      {
+        "id": 1572785,
+        "type": "DiffNote",
+        "body": "…",
+        "author": {
+          "id": 13,
+          "username": "reviewer-one",
+          "public_email": null,
+          "name": "reviewer-one",
+          "state": "active",
+          "locked": false,
+          "avatar_url": "",
+          "web_url": ""
+        },
+        "created_at": "2026-09-08T15:41:13.294+08:00",
+        "updated_at": "2026-09-08T15:41:13.581+08:00",
+        "system": false,
+        "noteable_id": 5002,
+        "noteable_type": "MergeRequest",
+        "project_id": 2000,
+        "commit_id": null,
+        "position": {
+          "base_sha": "00d8f96e63b2ad4d77844e233dd53942e8cb22b9",
+          "start_sha": "00d8f96e63b2ad4d77844e233dd53942e8cb22b9",
+          "head_sha": "9e27696fcb4ebd2cfe3c184b1ab421cf1725716f",
+          "old_path": "src/file-4.ts",
+          "new_path": "src/file-4.ts",
+          "position_type": "text",
+          "old_line": null,
+          "new_line": 188,
+          "line_range": {
+            "start": {
+              "line_code": "221824fa017e4cf3bcd3e74e402146eb59ceb278_180_187",
+              "type": "new",
+              "old_line": null,
+              "new_line": 187
+            },
+            "end": {
+              "line_code": "221824fa017e4cf3bcd3e74e402146eb59ceb278_180_187",
+              "type": "new",
+              "old_line": null,
+              "new_line": 187
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-09-08T15:41:13.581+08:00",
+        "confidential": false,
+        "internal": false,
+        "imported": false,
+        "imported_from": "none",
+        "noteable_iid": 102,
+        "commands_changes": {}
+      }
+    ]
+  }
+]

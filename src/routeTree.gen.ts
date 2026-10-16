@@ -17,12 +17,14 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ApiDiffRouteImport } from './routes/api/diff'
 import { Route as ApiFileRouteImport } from './routes/api/file'
 import { Route as ApiMediaRouteImport } from './routes/api/media'
+import { Route as ApiResolveRouteImport } from './routes/api/resolve'
 import { Route as GhSplatRouteImport } from './routes/gh/$'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as ApiAuthRefreshRouteImport } from './routes/api/auth/refresh'
 import { Route as ApiAuthSignoutRouteImport } from './routes/api/auth/signout'
 import { Route as ApiAuthStartRouteImport } from './routes/api/auth/start'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
+import { Route as ApiAuthGitlabPatRouteImport } from './routes/api/auth/gitlab/pat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +66,11 @@ const ApiMediaRoute = ApiMediaRouteImport.update({
   path: '/api/media',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiResolveRoute = ApiResolveRouteImport.update({
+  id: '/api/resolve',
+  path: '/api/resolve',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GhSplatRoute = GhSplatRouteImport.update({
   id: '/gh/$',
   path: '/gh/$',
@@ -94,6 +101,11 @@ const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   path: '/api/rpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthGitlabPatRoute = ApiAuthGitlabPatRouteImport.update({
+  id: '/api/auth/gitlab/pat',
+  path: '/api/auth/gitlab/pat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -104,12 +116,14 @@ export interface FileRoutesByFullPath {
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
   '/api/media': typeof ApiMediaRoute
+  '/api/resolve': typeof ApiResolveRoute
   '/gh/$': typeof GhSplatRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/refresh': typeof ApiAuthRefreshRoute
   '/api/auth/signout': typeof ApiAuthSignoutRoute
   '/api/auth/start': typeof ApiAuthStartRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/auth/gitlab/pat': typeof ApiAuthGitlabPatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -120,12 +134,14 @@ export interface FileRoutesByTo {
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
   '/api/media': typeof ApiMediaRoute
+  '/api/resolve': typeof ApiResolveRoute
   '/gh/$': typeof GhSplatRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/refresh': typeof ApiAuthRefreshRoute
   '/api/auth/signout': typeof ApiAuthSignoutRoute
   '/api/auth/start': typeof ApiAuthStartRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/auth/gitlab/pat': typeof ApiAuthGitlabPatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -137,12 +153,14 @@ export interface FileRoutesById {
   '/api/diff': typeof ApiDiffRoute
   '/api/file': typeof ApiFileRoute
   '/api/media': typeof ApiMediaRoute
+  '/api/resolve': typeof ApiResolveRoute
   '/gh/$': typeof GhSplatRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/refresh': typeof ApiAuthRefreshRoute
   '/api/auth/signout': typeof ApiAuthSignoutRoute
   '/api/auth/start': typeof ApiAuthStartRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/api/auth/gitlab/pat': typeof ApiAuthGitlabPatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -155,12 +173,14 @@ export interface FileRouteTypes {
     | '/api/diff'
     | '/api/file'
     | '/api/media'
+    | '/api/resolve'
     | '/gh/$'
     | '/api/auth/callback'
     | '/api/auth/refresh'
     | '/api/auth/signout'
     | '/api/auth/start'
     | '/api/rpc/$'
+    | '/api/auth/gitlab/pat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -171,12 +191,14 @@ export interface FileRouteTypes {
     | '/api/diff'
     | '/api/file'
     | '/api/media'
+    | '/api/resolve'
     | '/gh/$'
     | '/api/auth/callback'
     | '/api/auth/refresh'
     | '/api/auth/signout'
     | '/api/auth/start'
     | '/api/rpc/$'
+    | '/api/auth/gitlab/pat'
   id:
     | '__root__'
     | '/'
@@ -187,12 +209,14 @@ export interface FileRouteTypes {
     | '/api/diff'
     | '/api/file'
     | '/api/media'
+    | '/api/resolve'
     | '/gh/$'
     | '/api/auth/callback'
     | '/api/auth/refresh'
     | '/api/auth/signout'
     | '/api/auth/start'
     | '/api/rpc/$'
+    | '/api/auth/gitlab/pat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -204,12 +228,14 @@ export interface RootRouteChildren {
   ApiDiffRoute: typeof ApiDiffRoute
   ApiFileRoute: typeof ApiFileRoute
   ApiMediaRoute: typeof ApiMediaRoute
+  ApiResolveRoute: typeof ApiResolveRoute
   GhSplatRoute: typeof GhSplatRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthRefreshRoute: typeof ApiAuthRefreshRoute
   ApiAuthSignoutRoute: typeof ApiAuthSignoutRoute
   ApiAuthStartRoute: typeof ApiAuthStartRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  ApiAuthGitlabPatRoute: typeof ApiAuthGitlabPatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -270,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/resolve': {
+      id: '/api/resolve'
+      path: '/api/resolve'
+      fullPath: '/api/resolve'
+      preLoaderRoute: typeof ApiResolveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gh/$': {
       id: '/gh/$'
       path: '/gh/$'
@@ -312,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRpcSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/gitlab/pat': {
+      id: '/api/auth/gitlab/pat'
+      path: '/api/auth/gitlab/pat'
+      fullPath: '/api/auth/gitlab/pat'
+      preLoaderRoute: typeof ApiAuthGitlabPatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -324,12 +364,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDiffRoute: ApiDiffRoute,
   ApiFileRoute: ApiFileRoute,
   ApiMediaRoute: ApiMediaRoute,
+  ApiResolveRoute: ApiResolveRoute,
   GhSplatRoute: GhSplatRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthRefreshRoute: ApiAuthRefreshRoute,
   ApiAuthSignoutRoute: ApiAuthSignoutRoute,
   ApiAuthStartRoute: ApiAuthStartRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
+  ApiAuthGitlabPatRoute: ApiAuthGitlabPatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

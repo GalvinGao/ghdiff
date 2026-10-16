@@ -10,8 +10,8 @@
 // the truth about everything else.
 //
 // A thread is known by its root's remote id, and by which list it came from:
-// a draft and a posted comment are read from two lists, so the two never stand
-// for each other.
+// a draft and a posted comment are two id spaces on GitLab, whose draft notes
+// count from one of their own, so the two never stand for each other.
 
 import type { DiffLineAnnotation } from '@pierre/diffs';
 

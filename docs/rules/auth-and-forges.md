@@ -1,8 +1,8 @@
 # Auth and forges
 
 Credentials and the forge boundary: the session cookie and its guards, refresh,
-the GitHub App, the Forge interface, the RPC contract, the diff and file routes,
-verdicts, and error shapes.
+the GitHub App, GitLab access, the Forge interface, the RPC contract, the diff
+and file routes, verdicts, and error shapes.
 
 **A failure GitHub explained must reach the reviewer explained.** GitHub answers
 most failures with the useful sentence in the body's top-level `message`; a
@@ -20,18 +20,31 @@ those buttons rather than letting a 422 arrive after the reviewer has written
 them. `ReviewSubmitDialog` gives each event a button of its own instead of a
 radio group and a Submit. A line comment is posted where it is written, or
 staged as the forge's own draft for the review — and the verdict publishes the
-drafts: `POST /pulls/{n}/reviews/{id}/events` on GitHub, submitting the pending
-review they belong to. Either way the press is one: the dialog lists what the
-verdict is carrying, so there is nothing left to confirm. A failure keeps the
-dialog open with GitHub's own sentence in it, because GitHub is the one that
-knows a reviewer cannot approve their own pull request. A verdict that lands
-reloads the open pull requests, since the review half of every row's square has
-just changed.
+drafts: `bulk_publish` on GitLab, the note posted as its own call right after —
+an instance may ignore the publish's `note` param, so the body never rides only
+there — and `POST /pulls/{n}/reviews/{id}/events` on GitHub, submitting the
+pending review they belong to. Either way the press is one: the dialog lists
+what the verdict is carrying, so there is nothing left to confirm. A failure
+keeps the dialog open with GitHub's own sentence in it, because GitHub is the
+one that knows a reviewer cannot approve their own pull request. A verdict that
+lands reloads the open pull requests, since the review half of every row's
+square has just changed.
 
-**The dialog offers only the verdicts the forge takes.** `verdictsForForge`
-names them per forge and `capabilities.verdicts` says the same thing
-server-side: `reviews.submit` answers a verdict's absence rather than letting a
-404 arrive. GitHub takes all three.
+**The dialog offers only the verdicts the forge takes.** GitLab has approvals
+and comments and no request-changes state, so `verdictsForForge` filters the
+three to two there and `capabilities.verdicts` says the same thing server-side:
+`reviews.submit` answers that verdict's absence rather than letting a 404
+arrive. On GitLab, **Approve** is the approvals API and **Comment** is a plain
+note on the merge request — and `reviews.mine` reads the approval state, since
+that is the only verdict GitLab keeps. A repeated approval is a bare 401 there,
+and it is by design: `eligible_for_approval_by?` is false for a user who already
+approved, so the endpoint answers `unauthorized!` while the approval stands. The
+forge reads the state back and takes the viewer's presence in `approved_by` as
+the success it is — a 401 without them there is the real one. Whether the
+reviewer opened the thing is asked of the right account on each forge: the
+GitHub viewer for a GitHub target, the host's own connection for a GitLab one,
+because a GitLab author and a GitHub viewer are not the same person just because
+they share a login.
 
 **A grey button says why it is grey.** Two things stop a verdict, and they are
 not the same kind of thing. A missing note is the reviewer's to fix and clears
@@ -44,7 +57,9 @@ reason rather than a boolean, and `own-pull-request` is asked before
 a reviewer to write one is sending them to do work for no result.
 `isOwnPullRequest` compares logins without case and answers no when either side
 is unknown, which is the safe default — it leaves all three offered and lets
-GitHub decide.
+GitHub decide. GitLab greys nothing for ownership: whether the author may
+approve is a per-project setting there, so the client cannot know — the button
+stays live and the instance's own sentence comes back as the error.
 
 The reason reaches the reviewer twice, because the two ways of reading a screen
 need different things. A standing line beside the buttons is real text in the
@@ -90,6 +105,18 @@ popover's first paint and only the ages wait for the open, because the ages sit
 at the right edge of each row, where their arrival moves nothing. `VERDICT_ICON`
 and `VERDICT_COLOR` in `src/components/reviewVerdictStyle.ts` are shared with
 the header's button, so an approval is one glyph in one green in both places.
+
+GitLab keeps no review object, so `readTeamReviews` in
+`src/lib/server/gitlab/reviews.ts` builds the same list from two reads: the
+merge request's reviewers, whose state says approved, requested changes or
+reviewed, and its approvals, since an approval can come from somebody nobody
+asked. A reviewer with a state is listed under it, an approver who was never
+asked is listed as an approval, and the viewer's own and a bot's are left out
+the way they are on GitHub. Neither read says when a verdict was given — a
+reviewer row's `created_at` is when the review was asked for — so GitLab's rows
+carry no age rather than a wrong one, in the order GitLab gives them. An
+instance too old to answer the reviewers endpoint still answers with its
+approvals.
 
 **Inside a stack, Approve is Approve and next.** A stack is reviewed in order,
 so an approval ends one layer and starts the next, and the dialog makes that one
@@ -197,6 +224,16 @@ empty list: the header draws no menu, which is what a repository that deploys
 nothing draws too, and a reviewer cannot fix somebody else's installation from a
 diff.
 
+GitLab files a deployment under the job that ran it, and its REST list has no
+filter by commit, so `readGitLabDeployments` in
+`src/lib/server/gitlab/deployments.ts` reads the newest page of the project's
+deployments once and keeps the rows built from the commits under review: a merge
+request's newest twenty, or a commit's or a range's head. The head pipeline's
+status stands in for the check rollup — `created` through `scheduled` as
+pending, `success`, `failed` — and a skipped, manual or cancelled pipeline says
+nothing about whether to wait. A credential that may not list the project's
+deployments reads as nothing deployed, as on GitHub.
+
 **The API is one contract, and both sides read it.** `src/lib/rpc/contract.ts`
 names every procedure, its input and its output, and imports nothing from a
 server and nothing from a component. `router.ts` implements it and `client.ts`
@@ -219,38 +256,51 @@ implementations will not compile until they agree with it.
 
 **The router names no forge; the ref in the input names it.** Every repository
 reference in the contract is a discriminated union on `forge` —
-`{forge:'github', owner, repo}` today — defined once as TypeScript types in
-`src/lib/forges.ts` and mirrored as zod in the contract. The router resolves
-`forgeFor(config, ref)` from `src/lib/server/forges/index.ts` and calls the
-`Forge` interface in `src/lib/server/forges/types.ts`: a streamed diff and a
-streamed whole file, the viewer, the open pull requests, the details, the
-comments, the verdicts, the review drafts, and the viewed-file marks.
-`ForgeCapabilities` holds one flag, `verdicts`; what else a forge may decline is
-an optional seam on the interface — the `viewedFiles?` and `drafts?`
-sub-interfaces, `comments.resolve?` for the resolve mark, `media?` for an image
-only a grant can reach — and its absence is the flag: the router answers it (a
-drafts call where none are kept hears `This forge keeps no review drafts.`, a
-resolve call where none resolve `This forge resolves no review threads.`) rather
-than letting a 404 arrive, and `/api/media` answers `media`'s absence the same
-way. `registerForge` is the test seam: the router's procedures are unit-tested
-against an in-memory fake forge, so no procedure test needs a network.
+`{forge:'github', owner, repo}` or `{forge:'gitlab', host, project}` — defined
+once as TypeScript types in `src/lib/forges.ts` and mirrored as zod in the
+contract. The router resolves `forgeFor(config, ref)` from
+`src/lib/server/forges/index.ts` and calls the `Forge` interface in
+`src/lib/server/forges/types.ts`: a streamed diff and a streamed whole file, the
+viewer, the open pull requests, the details, the comments, the verdicts, the
+review drafts, and the viewed-file marks. `ForgeCapabilities` holds one flag,
+`verdicts`; what else a forge may decline is an optional seam on the interface —
+the `viewedFiles?` and `drafts?` sub-interfaces, `comments.resolve?` for the
+resolve mark, `media?` for an image only a grant can reach — and its absence is
+the flag: the router answers it (a drafts call where none are kept hears
+`This forge keeps no review drafts.`, a resolve call where none resolve
+`This forge resolves no review threads.`) rather than letting a 404 arrive, and
+`/api/media` answers `media`'s absence the same way. `registerForge` is the test
+seam: the router's procedures are unit-tested against an in-memory fake forge,
+so no procedure test needs a network.
 
 **The forge's JSON goes through an SDK; its streams never do.** The GitHub forge
 (`src/lib/server/forges/github.ts`) makes every JSON and GraphQL call through
-`@octokit/core`, whose response types come from GitHub's own OpenAPI
-description. **Every GraphQL operation is a `graphql()`-tagged document in the
+`@octokit/core` — whose response types come from GitHub's own OpenAPI
+description — and the GitLab one through gitbeaker. The preconfigured
+`@gitbeaker/rest` bundle cost about 22 KiB of gzipped Worker to no end, so the
+resources come from `@gitbeaker/core` behind a requester built from the SDK's
+own seams (`createRequesterFn` plus a handler that keeps the app's user agent
+and error shape). Two GitLab reads leave the SDK: the open-merge-request list
+and the reviewer's own approval, which need what REST answers only per merge
+request — the approval and the pipeline of every row, one serial call each — so
+they go to the instance's GraphQL in one query each through a hand-rolled POST
+to `/api/graphql`, typed like everything else. What GraphQL cannot do stays put:
+its `DiffPositionType` carries no `line_range`, so the comments read keeps
+REST's discussions, and draft notes and approvals exist only in REST. **Every
+GraphQL operation on either forge is a `graphql()`-tagged document in the
 forge's `<forge>.gql.ts` neighbor, typed by `@graphql-codegen/client-preset`**
-from the vendor's live schema (the URL in `codegen.ts`, so a run needs the
+from the vendors' live schemas (the URLs in `codegen.ts`, so a run needs the
 network). The generated files under `src/lib/server/forges/gqlgen/` are
 committed and sit in both linters' ignore lists next to `src/routeTree.gen.ts`.
-No response type is written by hand: the octokit `gql` wrapper takes the
-generated `TypedDocumentString`, so a field renamed upstream fails the compile.
-What no SDK covers stays on the hand-rolled fetchers in
+No response type is written by hand: the octokit `gql` wrapper and the GitLab
+POST both take the generated `TypedDocumentString`, so a field renamed upstream
+fails the compile. What no SDK covers stays on the hand-rolled fetchers in
 `src/lib/server/github/`: the streamed `.diff` and raw file in `client.ts` (tens
 of megabytes, with the byte counting and the size cap), and the GitHub App's own
 calls in `app.ts` and `installations.ts` (the OAuth exchange, revocation,
-installations). One adapter turns the SDK's error into the app's shape: a spent
-quota reads 429 and a validation failure reads its `errors[].message`, so
+installations), which have no GitLab counterpart and nothing to be uniform with.
+One adapter per forge turns an SDK's error into the app's shape: a spent quota
+reads 429 and a validation failure reads its `errors[].message`, so
 `describeReviewFailure` and the failure panels never ask which SDK threw.
 
 **The diff is not a procedure.** `/api/diff` stays a plain route that answers
@@ -261,35 +311,44 @@ first, on a runtime with neither the memory nor the CPU time to spare. It is
 also the one call whose HTTP status the client reads directly, for
 `describeReviewFailure`. `/api/file` is a route for the same reason and answers
 the same way; a source file is not much smaller than a patch. `/api/media` is
-the third such route, and its reason is different: not size but reach. A
-forge-hosted image on a private repository answers a browser only to the forge's
-own session cookie, which the reviewer does not have — the sealed grant lives on
-the server — so `CommentBody` points those `<img>` tags here and the forge
-fetches with that grant. The proxy reaches only the image hosts the forge
-allows, so it is not a credentialed GET of anywhere the markup pointed — and it
-fetches `https:` addresses only, because the first hop carries the reviewer's
-credential and a plaintext one would hand it to everyone on the path. Redirects
-are followed by hand, and the credential is sent only to the origin the address
-named — scheme and port included, so a hop down to plain http drops it. The
-answer must arrive as `image/*` or, for an upload whose type was never recorded,
-carry an image extension the gate maps its type from; anything else, a sign-in
-page included, is refused with a 415 that names what arrived. The answer is
-never cached — it depends on whose credential fetched it, and a browser keys its
-cache by URL alone — and it rides out under a `default-src 'none'; sandbox` CSP
-so a scripted SVG navigated to directly runs nowhere — the sandbox makes the
-answer an opaque origin and leaves its links and forms dead. There is no byte
-cap: the address space is the forge's image hosts and the body is piped, never
-buffered.
+the third such route, and its reason is different: not size but reach. An image
+on a private GitLab instance answers a browser only to the instance's own
+session cookie, which the reviewer does not have — the sealed grant lives on the
+server — so `CommentBody` points those `<img>` tags here and the forge fetches
+with that grant. The web path an upload renders to answers only to a browser
+session, which an API token is not, so an upload downloads through the project
+markdown uploads API (`GET /projects/:id/uploads/:secret/:filename`, Guest role)
+— the one door GitLab opens to a grant. All three forms a body can carry resolve
+to it: `/uploads/<secret>/<name>` as written, the v1 `/<project>/uploads/...` it
+renders to, and the v2 `/-/project/<id>/uploads/...`. The proxy reaches only the
+host the review target names, which the forge gate has already validated against
+the configured hosts, so it is not a credentialed GET of anywhere the markup
+pointed — and it fetches `https:` addresses only, because the first hop carries
+the reviewer's credential and a plaintext one would hand it to everyone on the
+path. Redirects are followed by hand because a download may leave the instance —
+object storage answers with a presigned URL — and the credential is sent only to
+the origin that issued the address, scheme and port included, so a hop down to
+plain http drops it. The answer must arrive as `image/*` or, for an upload whose
+type was never recorded — a pasted screenshot comes back as
+`application/octet-stream` — carry an image extension the gate maps its type
+from; anything else, the `text/html` sign-in page an expired token earns
+included, is refused with a 415 that names what arrived. The answer is never
+cached — it depends on whose credential fetched it, and a browser keys its cache
+by URL alone — and it rides out under a `default-src 'none'; sandbox` CSP so a
+scripted SVG navigated to directly runs nowhere — the sandbox makes the answer
+an opaque origin and leaves its links and forms dead. There is no byte cap: the
+address space is one configured host and the body is piped, never buffered.
 
-GitHub has that wall in two places, and both open to a user token: the
-`/owner/repo/assets/…` attachment on a private repository, which answers a
-browser's own session and a `ghu_` grant alike (an App _installation_ token is
-the one credential it refuses), and a raw file on `raw.githubusercontent.com`,
-which takes the same. `user-images` and avatars are public already and never
-come here. The GitHub forge's `media` fetches those two shapes through
-`src/lib/server/forges/media.ts`, which holds the redirect-following and the
-image gate any forge shares — and the assets answer's own redirect to the signed
-image host is the cross-host case the credential-stripping rule is for.
+GitHub has the same wall in two places, and unlike GitLab's uploads both open to
+a user token: the `/owner/repo/assets/…` attachment on a private repository,
+which answers a browser's own session and a `ghu_` grant alike (an App
+_installation_ token is the one credential it refuses), and a raw file on
+`raw.githubusercontent.com`, which takes the same. `user-images` and avatars are
+public already and never come here. The GitHub forge's `media` fetches those two
+shapes through the same machinery — `src/lib/server/forges/media.ts` holds the
+redirect-following and the image gate both forges share — and the assets
+answer's own redirect to the signed image host is the cross-host case the
+credential-stripping rule is for.
 
 **A private diff is capped, and the cap is GitHub App's fault.** github.com's
 `.diff` host has no file or line limit and is the primary source — but it does
@@ -307,21 +366,24 @@ fallback would use already exists — a `Bearer` header still reaches the web
 host, and `resolveGitHubToken` honours one ahead of the cookie. Whatever that
 follow-up does, it must not put a token form back in front of a reviewer who has
 just finished authorizing an App: it asks only when a diff has actually hit the
-limit, and nowhere else.
+limit, and nowhere else. A GitLab compare has the same shape of gap: an answer
+with `compare_timeout` set is a partial file list, and the route threads it into
+the `x-ghdiff-notice` response header.
 
-**A spent quota is one status, and the panel offers one of two actions.** GitHub
-reports the primary rate limit as 403 on `api.github.com` and as 429 on the web
-diff host, and a 403 is also its answer to an invisible repository and to a
-request that names no user agent. `rateLimitedStatus` in `src/lib/rateLimit.ts`
-reads `retry-after` and `x-ratelimit-remaining: 0` to tell those apart, and
-every throw in `src/lib/server/github/client.ts` reports 429 for a quota that is
-gone. `describeReviewFailure` in `src/lib/reviewFailure.ts` turns that status
-into the panel's copy and one of two actions: `setup` leads to `/setup` with the
-path the diff would not load from, and `retry` is the offer when there is
-nothing to grant. A signed-out browser over the limit leads with `setup` —
-retrying a spent anonymous quota does nothing for the hour, while signing in
-takes the ceiling from 60 requests to 5000 on the next one. A signed-in reviewer
-over quota gets the retry alone.
+**A spent quota is one status, and the panel offers one of three actions.**
+GitHub reports the primary rate limit as 403 on `api.github.com` and as 429 on
+the web diff host, and a 403 is also its answer to an invisible repository and
+to a request that names no user agent. `rateLimitedStatus` in
+`src/lib/rateLimit.ts` reads `retry-after` and `x-ratelimit-remaining: 0` to
+tell those apart, and every throw in `src/lib/server/github/client.ts` reports
+429 for a quota that is gone. `describeReviewFailure` in
+`src/lib/reviewFailure.ts` turns that status into the panel's copy and one of
+three actions: `setup` leads to `/setup` with the path the diff would not load
+from, `connect` opens the GitLab connect dialog on the target's own host,
+`retry` is the offer when there is nothing to grant. A signed-out browser over
+the limit leads with `setup` — retrying a spent anonymous quota does nothing for
+the hour, while signing in takes the ceiling from 60 requests to 5000 on the
+next one. A signed-in reviewer over quota gets the retry alone.
 
 Not Found is the other failure with a fix, and the one that does not look like
 it has one. GitHub answers 404 both for a diff that is not there and for a diff
@@ -330,7 +392,9 @@ private repository exists. Signed out, the repository is probably private and
 the fix is to sign in. Signed in, it is almost never the credential: a GitHub
 App reaches only the repositories it is **installed** on, so a signed-in 404
 means ghdiff is not installed on this one, and the action leads to `/setup`
-rather than to github.com.
+rather than to github.com. A GitLab 429, 401 or 404 offers the connection while
+the browser holds none; past that point a 429 is the wait and a 404 is just
+missing.
 
 **The credential never reaches the server's disk, and no script can read it.** A
 reviewer signs in through the ghdiff GitHub App. What comes back is a
@@ -354,8 +418,10 @@ entirely.
 
 It also answers `fromSession`, and that is the only thing that reads it: a
 viewer resolved from `GITHUB_TOKEN` has no sign-out to offer and one resolved
-from the cookie does. The account menu draws `canSignOut` — and its **Sign out**
-— from it rather than guessing from the viewer.
+from the cookie does. `viewer.get` sets it when **any** credential resolved from
+the cookie, a GitLab grant included, and the account menu draws `canSignOut` —
+and its **Sign out** — from it rather than guessing from the viewer, which is
+what makes sign-out work for a reviewer connected to GitLab alone.
 
 `accessTokenUsable` is asked there **without** the refresh skew, and
 `accessTokenFresh` with it. They are two different questions. A token five
@@ -416,7 +482,10 @@ store — the reviewer can revoke ghdiff from their own settings page at any
 moment, and every cookie dies with it. Both cookies go whatever GitHub says: a
 revocation that failed leaves a token outliving its session, which is a shame,
 where a cookie surviving the press would leave a reviewer signed in after asking
-not to be.
+not to be. The press is not always the whole session: the account panel also
+offers a disconnect per forge — and per GitLab host — which revokes only that
+connection's token and reseals what remains, ending the session only when the
+last credential goes.
 
 None of this stops a stolen cookie, and nothing here pretends to. A cookie is a
 bearer credential; what the six do is bound how long one lasts and give the
@@ -451,7 +520,35 @@ the session on that second 401 through `/api/auth/signout`, the route that
 already knows how to end one. It is the one place that sees both answers: a 401
 after a 204 is the proof the race had no winner here. The wrong guess costs one
 request; the opposite wrong guess would sign a reviewer out for having two tabs
-open.
+open. A GitLab grant plays by the same rules. The instance's `invalid_grant` —
+`GITLAB_REFRESH_ALREADY_SPENT`, read out of the RFC 6749 JSON body a 4xx token
+answer carries, which is Doorkeeper's shape — gets the same another-tab-won 204,
+and it ends the request there. That only holds if every refreshing request walks
+the same grants, and two tabs that read the clock a moment apart can disagree
+about which are due — one rotates B, the other rotates A and loses B, and each
+cookie holds a grant the other spent. So once anything is due, every grant that
+can be refreshed is, GitHub's first and then each GitLab host in the cookie's
+order: the loser loses the first contested grant before it has rotated anything,
+and the winner's cookie holds every grant. A grant rotated early whose refresh
+fails is kept as it was — the failed call rotated nothing — and only a due one
+is dropped or ends the session. The decision lives in `refreshSession` in
+`src/lib/server/refresh.ts`, with the two exchanges as parameters, so its test
+plays two requests against each other. A grant whose host is no longer
+configured, or whose refresh the instance refuses any other way, is dropped
+alone, and a drop is written back into the session cookie even when nothing was
+refreshed, because left in the cookie it would fail every load for the rest of
+its 180 days.
+
+`invalid_grant` is also Doorkeeper's answer for a refresh token revoked or
+expired rather than spent, and a stateless cookie cannot tell the two apart — so
+a genuinely dead GitLab grant takes the another-tab-won path too, and there the
+guess is wrong and the endgame is the expensive one: the retry carries the same
+dead grant, this server answers 401 again, and `withRefresh`'s second-401
+sign-out takes the GitHub sign-in and every other host's connection with it.
+That is the accepted price of the guess that is right nearly every time:
+dropping the grant on the spot would cost a two-tab reviewer a connection
+another tab had just refreshed, and a drop computed from the stale cookie this
+request read could clobber the fresh grant the winning tab sealed.
 
 **A spent token is answered 401, because nothing else asks for a refresh.**
 `withRefresh` calls the refresh route after a 401 and at no other time.
@@ -459,13 +556,13 @@ open.
 access token spent, refresh token live — and the routes that read the cookie
 answer it with 401 before the forge is asked: the RPC handler through one
 middleware over every procedure, so the client decodes a sentence rather than a
-body it cannot parse, and `/api/diff`, `/api/file` and `/api/media` as
-`text/plain`. It outranks `GITHUB_TOKEN`, or that reviewer's ninth hour would be
-spent as the deployment's own account. A session past the ceiling or with no
-refresh token gets no 401 and is anonymous, as it always was: there is nothing
-to send the browser to fetch. `describeReviewFailure` gives the status the
-`setup` action, since by the time a 401 reaches the panel the refresh has failed
-and the session is gone.
+body it cannot parse, and `/api/diff`, `/api/file`, `/api/media` and
+`/api/resolve` as `text/plain`. It outranks `GITHUB_TOKEN`, or that reviewer's
+ninth hour would be spent as the deployment's own account. A session past the
+ceiling or with no refresh token gets no 401 and is anonymous, as it always was:
+there is nothing to send the browser to fetch. `describeReviewFailure` gives the
+status the `setup` action, since by the time a 401 reaches the panel the refresh
+has failed and the session is gone.
 
 Inside one tab the same job is a promise. `withRefresh` in
 `src/lib/authFetch.ts` wraps every call this app makes to its own Worker: a 401
@@ -527,26 +624,43 @@ The key is deleted **before** the navigation, so a reviewer who presses back
 arrives at a browser with nothing left to migrate. `legacyToken.test.ts` is what
 holds all of that, and it is the anonymous rows it is really about.
 
-**Nothing signs in to GitHub except `/setup`.** The home page row, the header
-control and the failure panel are all plain links to that page;
-`session.signIn()` has one caller left, which is step one of the page itself.
-Signing in is only the first of two things GitHub needs, and a control that
-jumped to GitHub left the second to be discovered later as a 404 — the exact
-confusion `/setup` exists to remove. It is also why none of those three says
-**Sign in with GitHub** any more: a button promising a redirect it does not make
-is a small lie, so each says where it goes.
+**Nothing signs in to GitHub except `/setup`, and GitLab connects where it is
+needed.** The home page row, the header control and the failure panel are all
+plain links to that page; `session.signIn()` has one caller left, which is step
+one of the page itself. Signing in is only the first of two things GitHub needs,
+and a control that jumped to GitHub left the second to be discovered later as a
+404 — the exact confusion `/setup` exists to remove. It is also why none of
+those three says **Sign in with GitHub** any more: a button promising a redirect
+it does not make is a small lie, so each says where it goes.
+
+GitLab's half of that page is a connect per configured host and no more, because
+there is nothing to explain: an instance is either configured with an OAuth
+application or it is a PAT host, and the answer is a lookup, not a lesson. So
+`GitLabConnectDialog` asks where it is asked for — the failure panel's **Connect
+GitLab** button and the account panel's — with the host a select over the
+configured ones, so a typo cannot name one this deployment does not serve, and
+offers OAuth first when the instance answer says the host has one. The "serves
+no GitLab hosts" sentence is the one deployment fact the dialog states, and it
+is only ever true: the answer arrives with the page in the root route's loader
+data, so there is no failed read for it to echo. The OAuth path is a solid
+button-styled anchor built from `gitLabAuthStartUrl(host, returnTo)` in
+`src/lib/session.ts`; `GitLabPatForm` is a real `<form>` with a `type="submit"`
+connect, and it takes the outline variant when OAuth already carries the accent,
+because one screen gets one filled control. The PAT path proves the token before
+sealing it, and a successful connect reloads the page: the diff that would not
+load is the reason for the dialog, the session re-reads on the way up, and the
+fragment restores the file and lines, the same trade a sign-in makes.
 
 **The account popup manages accounts, not just the account.** A GitHub App keeps
 two facts apart: who a reviewer signed in as, which decides whose name their
 comments carry, and which accounts ghdiff is installed on, which decides what it
-can read at all. `GitHubAccountPanel` shows both — the identity, then every
-installation with its reach and a **Configure** link to GitHub's own settings
-for it, then a way to add another, then **Sign out**. A panel that showed only
-the first would answer the less useful of the two questions, and a reviewer
-would have to leave the diff to answer the other.
-
-It is only ever opened by somebody already signed in; both entries to it are
-drawn from the viewer, and a signed-out reviewer gets a link to `/setup`
+can read at all. `GitHubAccountPanel` shows both kinds of fact, each half only
+when it has something to show: the GitHub identity, then every installation with
+its reach and a **Configure** link to GitHub's own settings for it, then a way
+to add another; and each GitLab connection — the identity, the host, a way to
+reconnect — which has no installation object to list, so nothing in it waits and
+nothing travels. **Sign out** closes it either way. It is only ever opened by
+somebody already signed in; a signed-out reviewer gets a link to `/setup`
 instead.
 
 `active` is not decoration. The Radix menu it sits in is unmounted while closed,
@@ -583,16 +697,17 @@ address bar where anybody can type one, and `in` walks the prototype chain, so
 sentence.
 
 **Comments belong to their target's forge.** A pull request has a review thread
-on GitHub, so it posts upstream — `pullRefFromTarget` decides, and every other
-target keeps comments in this browser, with the sidebar saying which forge it
-means. A comment on a pull target can also be staged for the review instead: the
-forge's own draft — a thread on the viewer's pending review on GitHub — which
+on GitHub and a merge request has discussions on GitLab, so both post upstream —
+`pullRefFromTarget` decides, and every other target keeps comments in this
+browser, with the sidebar saying which forge it means. A comment on a pull
+target can also be staged for the review instead: the forge's own draft — a
+draft note on GitLab, a thread on the viewer's pending review on GitHub — which
 the verdict publishes, and which shows on the forge's own UI as pending until it
 does. Staging is a forge write and asks for a credential, because the draft is
 the user's own, through the same `withAuth` 401 as every other write. The
 comment store is `forge` or `local`, never a forge's name, because the label
-under a composer is the one place the difference shows, and it takes the forge's
-name as a parameter.
+under a composer is the one place the difference shows: "Reply on GitHub" and
+"Reply on GitLab" are different sentences.
 
 Which means the rest of the comment surface has to ask the store rather than
 assume a forge. `CommentThreadCard` names the forge in its delete confirmation
@@ -603,18 +718,25 @@ over a browser store: those threads are one reviewer's own notes and can hold no
 bot, so two of its three segments could never do anything. The strip stays
 behind it, because its height is what keeps that foot level with the left bar's.
 
-**A pull request's conversation leads the comment list.** Line threads were all
-the list held, so a summary written above the lines, or a remark under the
-description, could not be read here at all. `comments.conversation` reads
-GitHub's two lists — `/issues/{n}/comments` and `/pulls/{n}/reviews` — and
-`buildConversation` in `src/lib/pullConversation.ts` makes one timeline of them,
-oldest first, the way github.com reads. A verdict with no words is an entry and
-a remark with no words is not, for the same reason the dialog drops one: its
-words are line comments, and those are threads in the diff already. The section
-has no line to scroll to, so a press opens the whole body in place under its
-fixed-height row. The People and Bots filter and its counts cover the section as
-well. A commit and a compare range have no conversation, and
-`usePullConversation` asks for nothing there.
+**A pull request's or a merge request's conversation leads the comment list.**
+Line threads were all the list held, so a summary written above the lines, or a
+remark under the description, could not be read here at all.
+`comments.conversation` reads GitHub's two lists — `/issues/{n}/comments` and
+`/pulls/{n}/reviews` — and `buildConversation` in `src/lib/pullConversation.ts`
+makes one timeline of them, oldest first, the way github.com reads. A verdict
+with no words is an entry and a remark with no words is not, for the same reason
+the dialog drops one: its words are line comments, and those are threads in the
+diff already. The section has no line to scroll to, so a press opens the whole
+body in place under its fixed-height row. The People and Bots filter and its
+counts cover the section as well. On GitLab, `readConversation` in
+`src/lib/server/gitlab/reviews.ts` reads the merge request's history for the
+verdicts in it — the system notes GitLab writes for an approval and for a change
+request, untranslated by the instance, which is what makes them a reading at all
+— reading the newest page of notes, so a busy history never pushes its latest
+verdict off the page, and leaves the remarks out: GitLab files a remark under
+the description as a discussion, and the comment list already holds those. A
+commit and a compare range have no conversation, and `usePullConversation` asks
+for nothing there.
 
 **A browser-stored comment is a note to a coding agent, and that is the way out
 of the browser.** A comment that only one browser can see used to be a dead end
@@ -666,37 +788,76 @@ paste and find out.
 The composer's **Create issue** toggle, top right, sends the text to
 `issues.create` instead of `comments.create`. The issue gets the text, a
 permalink to the selected lines on a line of its own, and the review's own
-address; the comment on the line then says `see #N`. GitHub links both mentions,
-so each end shows the other and nothing here has to remember the pair. The
-card's link to the issue is held in memory and nowhere else — a reload keeps
+address; the comment on the line then says `see #N`. Both forges link both
+mentions, so each end shows the other and nothing here has to remember the pair.
+The card's link to the issue is held in memory and nowhere else — a reload keeps
 `see #N` and drops the button, because finding the issue again would be a search
 and the comment already names it.
 
 The permalink is the part that has to be exact. GitHub embeds a snippet only for
 a `blob` URL in the same repository, with a **full** sha and a `#L` anchor, and
 a rendered document such as a README needs `?plain=1` as well —
-`blobPermalinkUrl` in `src/lib/github/urls.ts` builds all of that. The browser
-holds a pull request number, a short sha or a branch, so `resolveSideCommit` in
-`src/lib/server/github/issue.ts` asks: the head for the new side, and for the
-old side the commit the diff was taken against — a commit's first parent, or the
-merge base of a pull request or range, never `base.sha`, which stops being the
-merge base the moment the base branch moves. A note on removed lines of a
-renamed file links the old name, which is why `ReviewFileEntry` carries
-`previousPath`.
+`blobPermalinkUrl` in `src/lib/github/urls.ts` builds all of that, and
+`gitLabBlobPermalinkUrl` in `src/lib/gitlab/urls.ts` builds GitLab's own, which
+wants the same full sha, the same `?plain=1`, and writes a range as `#L3-9`. The
+browser holds a pull request number, a short sha or a branch, so
+`resolveSideCommit` in `src/lib/server/github/issue.ts` and
+`resolveGitLabSideCommit` in `src/lib/server/gitlab/issue.ts` ask: the head for
+the new side, and for the old side the commit the diff was taken against — a
+commit's first parent, or the merge base of a pull request or range, never
+`base.sha`, which stops being the merge base the moment the base branch moves. A
+note on removed lines of a renamed file links the old name, which is why
+`ReviewFileEntry` carries `previousPath`.
 
-The toggle is offered on every forge target and only with a viewer. The App
-registration has to grant **Issues**. Without it GitHub answers 403 "Resource
-not accessible by integration", which names nothing, so the router replaces that
-sentence with one that names the permission. A failed issue leaves the typed
-text on the line, marked failed, the way a failed comment does.
+The toggle is offered on every forge target and only with a viewer. On GitHub
+the App registration has to grant **Issues**; on GitLab the token's `api` scope
+already covers it. Without it GitHub answers 403 "Resource not accessible by
+integration", which names nothing, so the router replaces that sentence with one
+that names the permission. A failed issue leaves the typed text on the line,
+marked failed, the way a failed comment does.
 
-GitHub's `reviewThreads` answers one node per thread, its comments root first.
-The forge maps what it gets to flat `CommentPayload` rows — `remoteId` is the
-comment id, `replyToId` is the thread's root comment id, and the thread-grouping
-the client already did needs no second shape. A reply is never staged: a draft
-is always a new thread on a diff line, so the reply composer keeps posting where
-it is written. GitHub refuses a comment on a line outside the diff, and the
-failure lands in the foot strip.
+On GitLab a thread is a **discussion**: the root note and its replies in one
+object, and GitHub's `reviewThreads` answers the same way — one node per thread,
+its comments root first. Each forge maps what it gets to the same flat
+`CommentPayload` rows — `remoteId` is the note id, `replyToId` is the thread's
+root note id, and the thread-grouping the client already did needs no second
+shape. A reply names the note it answers and GitLab threads by discussion
+instead, so the create path looks the discussion up first; a new diff note reads
+the merge request for its `diff_refs` first, the way the GitHub side reads the
+pull request for its `commit_id`. A reply is never staged: a draft is always a
+new thread on a diff line, so the reply composer keeps posting where it is
+written. GitLab refuses a note on a line outside the diff the same way GitHub
+does, and the failure lands in the same foot strip.
+
+**A GitLab position the client can state, it states as raw cursors.** The scalar
+`path`/`line`/`side` anchor cannot say which side of a rename a line is on, nor
+build the `line_code` a multiline range's ends require — GitLab's formula is
+`sha1(newPath || oldPath)_oldPos_newPos`, both cursors included even when the
+row hides one. So the client walks the loaded patch's hunks with
+`src/lib/diffCursors.ts` and sends `gitlabPosition` — real `oldPath`/`newPath`,
+an `end` cursor per row's sign, a `start` cursor for a range, and the hidden
+cursor as the counter at the row, never a synthesized zero. Where no honest
+cursor exists — an added or deleted file, an anchor outside the hunks — the
+helper answers nothing and the create travels the scalar path exactly as it
+always did: the server reads the merge request's `diff_refs` and places what it
+can. `useReviewPatch` keeps the raw text for this alone, and only on a GitLab
+target.
+
+**A staged comment is a draft note on GitLab.** `POST /draft_notes` takes the
+same `position` hash a discussion's create takes, so the create reads the merge
+request's `diff_refs` the way `comments.create` does; `GET /draft_notes` lists
+them, `DELETE /draft_notes/:id` drops one, and `POST /draft_notes/bulk_publish`
+publishes them all in one call. The review's summary note does not ride that
+publish: an instance may ignore its `note` param, so the note is posted as its
+own call — after the approval, when approval is the verdict, so a failed
+approval retried never duplicates the summary. A failed publish leaves the
+drafts in place: they are the staging, so the retry is safe. One failure mode is
+worth naming: a draft whose position the instance cannot place — a context line,
+say — fails the whole batch with a bare 500, and the forge answers 502 with the
+likely cause and the remedy instead. Any forge 5xx reaches the dialog the same
+defined way, mapped to `BAD_GATEWAY` in `src/lib/rpc/router.ts`'s `fail`,
+because oRPC masks `INTERNAL_SERVER_ERROR`'s message on the wire and a reviewer
+would otherwise read exactly that.
 
 **On GitHub the draft is the viewer's pending review** — one per pull request.
 `addPullRequestReview` with no event creates it, `addPullRequestReviewThread`
@@ -716,17 +877,31 @@ pending review the submit is the plain `POST /pulls/{n}/reviews` it always was.
 A pending review started on github.com lists here as drafts, and one started
 here shows there as pending.
 
-**A resolved thread is the forge's answer, carried on its root.** A resolved
-thread carries `resolved` on its root payload alone: in the diff its card
-collapses to one line until it is pressed, and in the list it sorts after the
-open threads. GitHub's comments read is GraphQL `reviewThreads` precisely
-because its REST comments carry no such state (an anonymous read stays on that
-REST list, as it always was, since GraphQL refuses it). The root payload also
-carries the id the resolve call addresses — GitHub's review-thread node id,
-present only when the thread takes the mark at all — and `comments.resolve`
-sends it to `resolveReviewThread` and `unresolveReviewThread`. Who may resolve
-is the forge's answer, not this app's: GitHub wants write access, and a refusal
-surfaces its own sentence in the thread, the way verdict refusals do.
+**A note is diff-anchored by its position, not by its type.** GitLab replies
+inside a diff thread can carry any `type`, and review conversations arrive as
+`DiscussionNote`s with none at all — a filter on `DiffNote` was dropping every
+review thread and every bot comment on one live instance. So
+`payloadsFromDiscussion` drops only `system` notes and reads the shape instead:
+a note with a `position` maps to a diff line, and one without maps to the merge
+request itself, as a `scope: 'merge-request'` payload the comments tab lists in
+its own section ahead of the files. Those threads are filed under
+`MERGE_REQUEST_ITEM_ID`, an item id that names no file, so they take the same
+mutation paths as every other thread and the viewer never draws them. A
+`line_range` whose two ends are the same diff row — one `line_code` — is not a
+range, and GitLab sends exactly those on single-line notes. A resolved thread
+carries `resolved` on its root payload alone: in the diff its card collapses to
+one line until it is pressed, and in the list it sorts after the open threads.
+Both forges report the state — GitLab's discussions serialize it, and GitHub's
+comments read is GraphQL `reviewThreads` precisely because its REST comments
+carry none (an anonymous read stays on that REST list, as it always was, since
+GraphQL refuses it). The root payload also carries the id the resolve call
+addresses — GitHub's review-thread node id, GitLab's discussion id, present only
+when the thread takes the mark at all — and `comments.resolve` sends it:
+`resolveReviewThread` and `unresolveReviewThread` on GitHub,
+`PUT …/discussions/:id?resolved=…` on GitLab. Who may resolve is the forge's
+answer, not this app's: GitLab allows the note's author, the merge request's
+author, or a maintainer, GitHub wants write access, and a refusal surfaces its
+own sentence in the thread, the way verdict refusals do.
 
 **A file the reviewer has read is marked in its own header, and GitHub keeps
 that mark.** `markFileAsViewed` and `unmarkFileAsViewed` are the two mutations,
@@ -762,8 +937,9 @@ row's gap.
 alike. Node's `fetch` supplies one; workerd supplies none, and GitHub answers a
 header-less request with 403 "Request forbidden by administrative rules". A new
 call path that bypasses `headers()` gets that 403 and nothing else. The octokit
-calls the GitHub forge makes are constructed with the same agent, so the rule
-holds on both sides of the SDK split.
+calls the GitHub forge makes are constructed with the same agent, and the GitLab
+requester sets the same `USER_AGENT`, so the rule holds on both sides of the SDK
+split.
 
 **One wide event per request, through a hand-rolled integration.** evlog ships
 adapters for Next, Nitro, and Hono, but not for a TanStack Start server route,
@@ -833,30 +1009,83 @@ it, and `code_verifier` is the half of the pair that never leaves the Worker —
 so a code lifted out of a redirect, a log or a referrer cannot be spent by
 whoever lifted it.
 
-## What a deployment serves
+## GitLab access
 
-GitHub is served while the App or `GITHUB_TOKEN` is set, and the server enforces
-that at the forge gate (`src/lib/server/forges/index.ts`): a ref for anything
-else is a 404 whose sentence says what this instance serves. The client learns
-the same answer with the page: the root route's loader calls a server function
-(`getInstanceInfo` in `src/lib/instance.ts`) that maps the deployment config to
-it — whether GitHub sign-in is on offer and GitHub served at all, and the home
-page's example diffs (the built-in catalog, or `GHDIFF_EXAMPLES`) narrowed to
-the hosts served — plus the brand, `GHDIFF_BRANDING` or ghdiff.com, and the host
-the request arrived on. It runs in the same process on the server, which is the
-thing a loader on workerd cannot do over HTTP, and the document carries it down.
-Every screen renders against one certain answer from the first paint, nothing
-about the deployment is baked at build time, and a fact about the deployment
-never travels the session's credential pipeline: an expired grant has no say in
-what this ghdiff serves. Components read `useAppData()`, and no `forge` prop is
+One deployment serves GitHub and any number of GitLab hosts, named at runtime.
+`GITLAB_HOSTS` holds them as a JSON array —
+`[{"host":"gitlab.com","clientId":"…","clientSecret":"…"}]` — parsed per request
+by `parseDeploymentConfig` in `src/lib/server/config.ts`, each host trimmed and
+lowercased with an optional port kept. What throws is a value that says
+something impossible: JSON that does not parse, a host that is not a host or
+that the URL parser will not read back as itself (a port past 65535), the same
+host twice, half an OAuth pair, or more than `MAX_GITLAB_HOSTS` — eight, the
+most OAuth grants beside GitHub's that one session cookie holds under the 4096
+bytes a browser keeps. Absent reads as no GitLab hosts — the `SESSION_SECRET`
+rule: a loud failure is what tells somebody so, and silence is only for a value
+that was never there. The server enforces the answer at the forge gate
+(`src/lib/server/forges/index.ts`): GitHub is served while the App or
+`GITHUB_TOKEN` is set, a GitLab ref answers only for a host in the list, and a
+ref for anything else is a 404 whose sentence says what this instance serves.
+The client learns the same answer with the page: the root route's loader calls a
+server function (`getInstanceInfo` in `src/lib/instance.ts`) that maps the
+deployment config to it — whether GitHub sign-in is on offer and GitHub served
+at all, the GitLab hosts with the way in to each, and the home page's example
+diffs (the built-in catalog, or `GHDIFF_EXAMPLES`) narrowed to the hosts served
+— plus the brand, `GHDIFF_BRANDING` or ghdiff.com, and the host the request
+arrived on. It runs in the same process on the server, which is the thing a
+loader on workerd cannot do over HTTP, and the document carries it down. Every
+screen renders against one certain answer from the first paint, nothing about
+the deployment is baked at build time, and a fact about the deployment never
+travels the session's credential pipeline: an expired grant has no say in what
+this ghdiff serves. Components read `useAppData()`, and no `forge` prop is
 threaded through `ReviewHeader`, `ReviewSubmitDialog`, `PullDetailsCard`,
 `CommentsList` or `CommentThreadCard`. A review address is read in one place,
-`reviewInputFrom` in `src/lib/resolveHost.ts`: the shorthand, a github.com URL,
-this deployment's own URL, and the colon form. A trailing `files` segment, or a
-`.diff` suffix, still names the same review.
+`reviewInputFrom` in `src/lib/resolveHost.ts`: the shorthand, a forge URL, this
+deployment's own URL, the colon form, and the bare GitLab path, each against the
+host list the instance answer carries. A trailing `files`, `changes` or `diffs`
+segment is stripped as a tab only at the final segment, because a GitLab project
+path nests and a `diffs` earlier in the path is a namespace.
 
-`resolveCredentials` in `src/lib/server/credentials.ts` answers every credential
-the request speaks with as `byForge`, keyed by `forgeGroupKey` — `github` — plus
-`headerToken` when a credential was named on the header, and one `refreshDue`
-for "a grant is spent with a live refresh behind it". The 401 that produces
-sends the browser to `/api/auth/refresh`, which mends it.
+**OAuth, for each host that has an application configured.** The
+`clientId`/`clientSecret` pair on a `GITLAB_HOSTS` entry names it; absent means
+that host is PAT-only. With them the host gets the same authorization-code flow
+as GitHub: `/api/auth/start?forge=gitlab&host=…` looks the host up in the
+configured list — an unconfigured host, or one without a pair, is a 501 whose
+sentence says which hosts this deployment serves — builds
+`https://<host>/oauth/authorize` with PKCE, and the callback spends the code at
+`https://<host>/oauth/token`. The flow's routes are forge-general rather than
+duplicated: the handoff cookie carries `forge` and `host`. The session the grant
+joins is additive across forges: a new grant merges into the cookie whatever
+sealed it before, through `withGitLabGrant` on the GitLab side and the same
+read-merge-write on the GitHub one, so signing in to one forge never signs the
+other out. A GitLab failure on the callback answers `failed('gitlab')`, which is
+what puts the GitLab-specific reason in the address. Register the application on
+each instance with the `api` scope and the same callback URL rule as GitHub — it
+derives from the request's origin, so one registration serves production and a
+laptop alike.
+
+**A personal access token, for each host that has none.**
+`POST /api/auth/gitlab/pat` takes `{host, token}`, refuses a host outside the
+configured list with the sentence that names them, proves the token against the
+instance (`GET /user` through the GitLab forge) and only then seals it — a token
+the instance refuses is answered with the instance's own sentence, not sealed
+and found out later. The PAT goes into the same sealed `httpOnly` cookie as an
+OAuth grant, so the security bar the old token form was removed for holds:
+nothing credential-shaped ever touches browser storage. A PAT never refreshes;
+the clocks simply do not apply to it.
+
+Grants resolve per host. `resolveCredentials` in `src/lib/server/credentials.ts`
+answers every credential the request speaks with as `byForge`, keyed by
+`forgeGroupKey` — `github`, or `gitlab:<host>` — plus `headerToken` when a
+credential was named on the header (which still wins on either forge), and one
+`refreshDue` for "any grant is spent with a live refresh behind it". A grant for
+a host the deployment does not serve is inert: it answers no request, and its
+staleness sends no refresh. `gitLabConnectionFor` matches a session's grants to
+a host without case and with no fallback to the first grant: a grant for another
+host is no connection here. The 401 that produces is the same one the GitHub
+expiry produces, and `/api/auth/refresh` mends them all in one call: the GitHub
+grant as before, and each due GitLab OAuth grant against its own instance.
+Sign-out revokes per forge: GitHub at its applications endpoint, each configured
+GitLab OAuth grant at its own `/oauth/revoke`, and a PAT nowhere — the cookie
+drop is its sign-out, since GitLab revokes PATs by hand on its own settings
+page.

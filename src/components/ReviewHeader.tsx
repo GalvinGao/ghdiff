@@ -51,6 +51,7 @@ import { CODE_FONTS, type CodeFontId } from '@/lib/codeFonts';
 import type { StagedReviewComment } from '@/lib/comments';
 import { forgeLabel, type ForgeName, forgeOfTarget } from '@/lib/forges';
 import { reviewTargetUrl } from '@/lib/github/urls';
+import { gitLabReviewTargetUrl } from '@/lib/gitlab/urls';
 import type { PullState } from '@/lib/pulls';
 import {
   describeSubmittedReview,
@@ -159,7 +160,10 @@ interface ReviewHeaderProps {
   /** Absent unless the target is a pull request, which is the only one to
       have a review to submit. */
   review?: SubmitReviewState;
-  /** The login the review flow compares the author against. */
+  /**
+   * The login the review flow compares the author against: the GitHub viewer
+   * for a GitHub target, the host's own connection for a GitLab one.
+   */
   reviewViewerLogin?: string;
   /** True when the left bar is not on screen and the way home has to be here. */
   showBrand?: boolean;
@@ -167,7 +171,10 @@ interface ReviewHeaderProps {
   staged?: StagedReviewComment[];
   /** How many are waiting, so the button can say `Review (N)`. */
   stagedCount?: number;
-  /** The target as the JSONL export names it: `github.com:owner/repo#123`. */
+  /**
+   * The target as the JSONL export names it: `github.com:owner/repo#123`, or
+   * the GitLab host in github.com's place.
+   */
   stagedTarget?: string;
   /** Where the pull request sits in its stack, when it is in one. */
   stack?: StackPosition;
@@ -229,7 +236,13 @@ export function ReviewHeader({
   const forge: ForgeName | undefined =
     forgeTarget == null ? undefined : forgeOfTarget(forgeTarget);
   const targetUrl =
-    forgeTarget == null ? undefined : reviewTargetUrl(forgeTarget);
+    forgeTarget == null
+      ? undefined
+      : forgeTarget.kind === 'gitlab-mr' ||
+          forgeTarget.kind === 'gitlab-commit' ||
+          forgeTarget.kind === 'gitlab-compare'
+        ? gitLabReviewTargetUrl(forgeTarget)
+        : reviewTargetUrl(forgeTarget);
   const targetLabel = describeReviewTarget(target);
   const split = controls.diffStyle === 'split';
   const [reviewing, setReviewing] = useState(false);
@@ -670,12 +683,17 @@ function ReviewButton({
 
   // Also the first paint of every review, before the forge has answered. The
   // button is pressable throughout, because the verdict on record changes what
-  // it says and never what it does. The tooltip names the verdicts on offer.
+  // it says and never what it does. The tooltip names the verdicts on offer,
+  // which are the target's forge's: GitLab takes no request-changes state.
   if (latest == null || verdict == null) {
     return (
       <Button
         size="sm"
-        title={m.review_header_approve_request_changes_or_comment()}
+        title={
+          forge === 'gitlab'
+            ? m.review_header_approve_or_comment()
+            : m.review_header_approve_request_changes_or_comment()
+        }
         variant="chrome"
         id={`${popoverId}-trigger`}
         popoverTarget={popoverId}

@@ -18,6 +18,7 @@ import {
   useWatchedRepos,
   type WatchedReposState,
 } from '@/hooks/useWatchedRepos';
+import { gitLabHostNames } from '@/lib/forges';
 import type { InstanceLoaderData } from '@/lib/instance';
 
 const rootRoute = getRouteApi('__root__');
@@ -66,10 +67,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const colorMode = useColorMode();
   const instance = rootRoute.useLoaderData();
   const session = useGitHubSession();
-  const watched = useWatchedRepos();
+  // One array per answer, so the hooks below hold a stable dependency.
+  const gitlabHosts = useMemo(() => gitLabHostNames(instance), [instance]);
+  const watched = useWatchedRepos({ gitlabHosts });
   const pulls = useOpenPulls({
     ready: watched.hydrated,
     repos: watched.repos,
+    gitlabHosts,
   });
 
   // The document's own answer to whether the left bar is there.

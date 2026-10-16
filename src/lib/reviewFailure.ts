@@ -9,15 +9,17 @@ import { m } from '@/paraglide/messages.js';
 // — the `x-ghdiff-failure` header on the plain routes' answers, the RPC
 // error's data — because a status alone cannot say which failures the reviewer
 // can act on: GitHub answers 404 for a missing diff and an invisible one alike,
-// and a 401 is GitHub asking for an account only when the caller is anonymous,
-// while a signed-in grant that died is `auth-expired`. An answer that carries no reason falls back to the
+// and a GitLab 401 is the instance asking for an account only when the caller
+// is anonymous, while a connected grant that died is `auth-expired` and wants
+// the reconnect instead. An answer that carries no reason falls back to the
 // status reading, which is where callers that never learned the header keep
 // working.
 //
-// Two actions. `setup` leads to `/setup` — the page that can tell a missing
+// Three actions. `setup` leads to `/setup` — the page that can tell a missing
 // sign-in from a missing installation apart, because it asks GitHub which of
 // them is missing instead of guessing from a status code. Both of those
 // failures arrive as `setup`, and the wording is where the difference lives.
+// `connect` opens the GitLab connect dialog on the target's own host, and
 // `retry` is the offer when there is nothing to grant. A deployment with no
 // GitHub App has no setup to offer at all: `githubOAuth: false` turns those
 // actions into `retry` and the copy drops its setup clause, rather than send
@@ -44,9 +46,10 @@ import { m } from '@/paraglide/messages.js';
 
 /**
  * Which button the panel leads with. `setup` goes to `/setup`, carrying the path
- * the diff would not load from so that page can name the account.
+ * the diff would not load from so that page can name the account. `connect`
+ * opens the GitLab connect dialog on the target's own host.
  */
-export type ReviewFailureAction = 'setup' | 'retry';
+export type ReviewFailureAction = 'setup' | 'retry' | 'connect';
 
 export interface ReviewFailure {
   action: ReviewFailureAction;
@@ -60,7 +63,7 @@ const FALLBACK_MESSAGE =
 const UNAUTHORIZED = 401;
 const NOT_FOUND = 404;
 
-/** The fallback panel: nothing to grant — just try again. */
+/** The fallback panel: nothing to grant, nothing to connect — just try again. */
 function couldNotLoadDiff(message?: string): ReviewFailure {
   return {
     action: 'retry',
@@ -78,6 +81,10 @@ export function describeReviewFailure(input: {
   message?: string;
   /** The status the request failed with. Absent for a network failure. */
   status?: number;
+  /** Which forge the target is on. Defaults to GitHub's wording. */
+  forge?: 'github' | 'gitlab';
+  /** Whether this browser holds a grant for the target's own GitLab host. */
+  gitlabConnected?: boolean;
   /**
    * Whether this deployment offers GitHub sign-in. When it does not, every
    * GitHub failure that would offer `/setup` degrades to the retry: the cause
@@ -91,9 +98,13 @@ export function describeReviewFailure(input: {
    */
   failure?: FailureMeta | null;
 }): ReviewFailure {
+  const forge = input.forge ?? input.failure?.forge ?? 'github';
   const reason = input.failure?.reason;
   if (reason != null) {
-    return describeByReason(input, reason);
+    return describeByReason(input, forge, reason);
+  }
+  if (forge === 'gitlab') {
+    return gitLabByStatus(input, input.status);
   }
   return gitHubByStatus(input, input.status);
 }
@@ -103,8 +114,10 @@ function describeByReason(
   input: {
     signedIn: boolean;
     message?: string;
+    gitlabConnected?: boolean;
     githubOAuth?: boolean;
   },
+  forge: 'github' | 'gitlab',
   reason: FailureReason
 ): ReviewFailure {
   const githubOAuth = input.githubOAuth ?? true;
@@ -114,17 +127,25 @@ function describeByReason(
       // there is nothing the reviewer can grant that changes it.
       return couldNotLoadDiff(input.message);
     case 'auth-expired':
-      return gitHubAuthExpired(githubOAuth);
+      return forge === 'gitlab'
+        ? gitLabAuthExpired()
+        : gitHubAuthExpired(githubOAuth);
     case 'auth-required':
-      return gitHubAuthRequired(githubOAuth);
+      return forge === 'gitlab'
+        ? gitLabAuthRequired()
+        : gitHubAuthRequired(githubOAuth);
     case 'permission-denied':
       // The forge refused the credential's permission, and its own sentence
       // says what was refused — the panel has nothing to add.
       return couldNotLoadDiff(input.message);
     case 'not-found':
-      return gitHubNotFound(input.signedIn, githubOAuth);
+      return forge === 'gitlab'
+        ? gitLabNotFound(input.gitlabConnected === true)
+        : gitHubNotFound(input.signedIn, githubOAuth);
     case 'rate-limited':
-      return gitHubRateLimited(input.signedIn, githubOAuth);
+      return forge === 'gitlab'
+        ? gitLabRateLimited(input.gitlabConnected === true)
+        : gitHubRateLimited(input.signedIn, githubOAuth);
     case 'bad-request':
       return couldNotLoadDiff(input.message);
   }
@@ -284,6 +305,105 @@ function gitHubNotFound(
         },
         get title() {
           return m.review_failure_repository_not_found_or_private();
+        },
+      };
+}
+
+/**
+ * The GitLab reading of the same failures, for an answer that carries no
+ * reason. The fix is `connect` where a credential would help — a rate limit an
+ * account raises, a 401 that is the instance asking for one, and a 404 that
+ * says private-or-missing with GitHub's own deliberate ambiguity. `connected`
+ * is whether this browser holds a grant for the target's own host: past that
+ * point a 404 is just missing, and a 401 is a grant that died rather than the
+ * instance asking for one.
+ */
+function gitLabByStatus(
+  input: { message?: string; gitlabConnected?: boolean },
+  status: number | undefined
+): ReviewFailure {
+  const connected = input.gitlabConnected === true;
+  if (isRateLimited(status)) {
+    return gitLabRateLimited(connected);
+  }
+  if (status === UNAUTHORIZED) {
+    return connected ? gitLabAuthExpired() : gitLabAuthRequired();
+  }
+  if (status === NOT_FOUND) {
+    return gitLabNotFound(connected);
+  }
+  return couldNotLoadDiff(input.message);
+}
+
+function gitLabRateLimited(connected: boolean): ReviewFailure {
+  return connected
+    ? {
+        action: 'retry',
+        get message() {
+          return m.review_failure_this_gitlab_instance_is_limiting_requests_wait_a_few();
+        },
+        get title() {
+          return m.review_failure_gitlab_rate_limit_reached();
+        },
+      }
+    : {
+        action: 'connect',
+        get message() {
+          return m.review_failure_this_gitlab_instance_is_limiting_anonymous_requests_connect_an();
+        },
+        get title() {
+          return m.review_failure_gitlab_rate_limit_reached();
+        },
+      };
+}
+
+function gitLabAuthRequired(): ReviewFailure {
+  // The genuinely anonymous case: the instance asks for an account the caller
+  // does not hold. Connected-but-refused is `gitLabAuthExpired` instead.
+  return {
+    action: 'connect',
+    get message() {
+      return m.review_failure_this_gitlab_instance_does_not_allow_anonymous_reads_connect();
+    },
+    get title() {
+      return m.review_failure_gitlab_requires_a_sign_in();
+    },
+  };
+}
+
+function gitLabAuthExpired(): ReviewFailure {
+  // A grant this browser holds is spent or revoked: reconnecting is the fix,
+  // and the wording must not read as "you are anonymous" — the reviewer
+  // connected already.
+  return {
+    action: 'connect',
+    get message() {
+      return m.review_failure_your_connection_to_this_gitlab_instance_is_no_longer();
+    },
+    get title() {
+      return m.review_failure_gitlab_connection_expired();
+    },
+  };
+}
+
+function gitLabNotFound(connected: boolean): ReviewFailure {
+  return connected
+    ? {
+        action: 'retry',
+        get message() {
+          return m.review_failure_gitlab_returned_not_found_the_project_does_not_exist();
+        },
+        get title() {
+          return m.review_failure_project_not_found();
+        },
+      }
+    : {
+        action: 'connect',
+        get message() {
+          return m.review_failure_gitlab_returns_not_found_for_private_projects_when_you();
+        },
+        get title() {
+          return m.review_failure_project_not_found_or_private();
         },
       };
 }

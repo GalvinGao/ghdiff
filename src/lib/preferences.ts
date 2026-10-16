@@ -155,7 +155,18 @@ function repoListPreference(key: string): PreferenceCodec<WatchedRepo[]> {
     const repos: WatchedRepo[] = [];
     for (const entry of value as unknown[]) {
       if (typeof entry !== 'object' || entry == null) continue;
-      const { owner, repo } = entry as Record<string, unknown>;
+      const fields = entry as Record<string, unknown>;
+      // A GitLab row names its forge, its host and its project; a GitHub row
+      // is bare `owner`/`repo`, which is also the shape every older browser
+      // already holds.
+      if (fields.forge === 'gitlab') {
+        const { host, project } = fields;
+        if (typeof host !== 'string' || typeof project !== 'string') continue;
+        if (host.length === 0 || project.length === 0) continue;
+        repos.push({ forge: 'gitlab', host, project });
+        continue;
+      }
+      const { owner, repo } = fields;
       if (typeof owner !== 'string' || typeof repo !== 'string') continue;
       if (owner.length === 0 || repo.length === 0) continue;
       repos.push({ owner, repo });

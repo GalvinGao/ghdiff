@@ -123,8 +123,9 @@ function gitHubRef(ref: PullRef): Extract<PullRef, { forge: 'github' }> {
 
 /**
  * Where a comment body's image is fetched from. What a grant reaches is an
- * attachment on the web host — which answers a browser's own session and a
- * user token as well — and a raw file on the raw host, which takes the same; `isGitHubMediaUrl` holds the allowlist both
+ * attachment on the web host — which answers a browser's own session and,
+ * unlike GitLab's uploads, a user token as well — and a raw file on the raw
+ * host, which takes the same; `isGitHubMediaUrl` holds the allowlist both
  * this gate and the client's share. HTTPS only: the first hop carries the
  * credential, and a plaintext one would hand it to everyone on the path.
  */

@@ -1,4 +1,9 @@
-import type { ChangeContent, FileDiffMetadata, Hunk } from '@pierre/diffs';
+import type {
+  ChangeContent,
+  FileDiffMetadata,
+  Hunk,
+  SelectedLineRange,
+} from '@pierre/diffs';
 
 // Which changed lines say less than their colour claims.
 //
@@ -99,4 +104,70 @@ function collectQuietPairs(
       )
     );
   }
+}
+
+/**
+ * Whether a selected range touches a line the diff does not change — a
+ * context line. On a merge request a staged comment can only sit on a changed
+ * line: GitLab takes a draft note at any position and then fails the whole
+ * publish for it, so the composer asks this before offering the stage action
+ * there. GitHub refuses a bad position as the comment is staged, so a pull
+ * request does not ask. Same patch-only arithmetic as `findLineMarks`, ready at
+ * parse time.
+ */
+export function rangeTouchesContextLines(
+  fileDiff: LineMarksSource,
+  range: SelectedLineRange
+): boolean {
+  const changed = changedLines(fileDiff);
+  const endSide = range.endSide ?? range.side ?? 'additions';
+  const startSide = range.side ?? endSide;
+  const setFor = (side: 'additions' | 'deletions') =>
+    side === 'deletions' ? changed.deletions : changed.additions;
+  if (startSide === endSide) {
+    const set = setFor(endSide);
+    const [lo, hi] =
+      range.start <= range.end
+        ? [range.start, range.end]
+        : [range.end, range.start];
+    for (let line = lo; line <= hi; line++) {
+      if (!set.has(line)) return true;
+    }
+    return false;
+  }
+  // A range across the sides names one line at each end.
+  return !setFor(startSide).has(range.start) || !setFor(endSide).has(range.end);
+}
+
+/** Every line a file's change blocks hold, as line numbers per side. */
+function changedLines(fileDiff: LineMarksSource): {
+  additions: Set<number>;
+  deletions: Set<number>;
+} {
+  const additions = new Set<number>();
+  const deletions = new Set<number>();
+  for (const hunk of fileDiff.hunks) {
+    for (const block of hunk.hunkContent) {
+      if (block.type !== 'change') continue;
+      for (let i = 0; i < block.additions; i++) {
+        additions.add(
+          lineNumberAt(
+            hunk.additionStart,
+            hunk.additionLineIndex,
+            block.additionLineIndex + i
+          )
+        );
+      }
+      for (let i = 0; i < block.deletions; i++) {
+        deletions.add(
+          lineNumberAt(
+            hunk.deletionStart,
+            hunk.deletionLineIndex,
+            block.deletionLineIndex + i
+          )
+        );
+      }
+    }
+  }
+  return { additions, deletions };
 }

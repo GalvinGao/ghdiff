@@ -108,7 +108,17 @@ export function PullRail() {
   const { ghost, beginToggle, clearGhost } = useRailFlip({
     asideRef,
     collapsed,
-    currentKey: current == null ? undefined : railPullFlipKey(current),
+    currentKey:
+      current == null
+        ? undefined
+        : railPullFlipKey(
+            // A target carries no `forge`, so the merge request's identity is
+            // restated in the row's shape first: read as-is it would key as
+            // `undefined/undefined` and never anchor a flight.
+            current.kind === 'gitlab-mr'
+              ? { forge: 'gitlab', ...current }
+              : current
+          ),
     scrollRef,
   });
 

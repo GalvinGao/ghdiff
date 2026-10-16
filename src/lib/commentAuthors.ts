@@ -24,7 +24,7 @@ export function isCommentAuthorFilter(
 /**
  * Whether a login belongs to a bot, judged from its name alone.
  *
- * GitHub reports `user.type` as `Bot` for an app, and `/api/comments` forwards
+ * GitHub reports `user.type` as `Bot` for an app, and the comments RPC forwards
  * that, so this is the fallback for the comments that never came from the API:
  * a comment made against a target with no upstream review thread lives in
  * browser storage, which keeps the login and nothing else. GitHub reserves the
@@ -32,6 +32,21 @@ export function isCommentAuthorFilter(
  */
 export function isBotLogin(login: string): boolean {
   return login.toLowerCase().endsWith('[bot]');
+}
+
+/**
+ * Whether a GitLab username belongs to a bot, judged from its name alone.
+ *
+ * The discussions API serializes a note's author without the user object's
+ * `bot` field, so this is the fallback when the per-author read cannot answer
+ * — an anonymous caller, a failed lookup, or an author past the enrichment
+ * cap. Two shapes are reserved enough to trust: GitLab's own access-token bot
+ * users (`project_123_bot_…`, `group_123_bot_…`) and the conventional
+ * `-bot`/`_bot` suffix. The separator is load-bearing: `abbott` is a person.
+ */
+export function isGitLabBotLogin(login: string): boolean {
+  if (/^(project|group)_\d+_bot_[0-9a-z]+$/i.test(login)) return true;
+  return /(^|[-_])bot$/i.test(login);
 }
 
 /** The two totals the filter bar puts against its buttons. */

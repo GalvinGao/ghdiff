@@ -23,7 +23,7 @@ export function NotFound() {
           {m.not_found_ghdiff_cannot_read_that_url()}
         </h1>
         <p className="text-ink-muted mt-1 text-sm text-pretty">
-          {serves} {m.not_found_a_review_needs_a_github_pull_request_a()}
+          {serves} {m.not_found_a_review_needs_a_pull_request_a_merge_request()}
         </p>
         <Link className={buttonClass({ className: 'mt-4' })} to="/">
           {m.not_found_open_a_different_review()}

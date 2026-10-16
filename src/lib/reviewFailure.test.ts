@@ -136,6 +136,64 @@ describe('describeReviewFailure', () => {
       assert.equal(failure.action, 'retry', String(status));
     }
   });
+
+  it('offers a connection to a GitLab reader with no grant', () => {
+    // A rate limit an account raises, a 401 that asks for one, and a 404
+    // that says private-or-missing all lead to the same button.
+    for (const status of [429, 401, 404]) {
+      const failure = describeReviewFailure({
+        signedIn: false,
+        status,
+        forge: 'gitlab',
+      });
+      assert.equal(failure.action, 'connect', String(status));
+    }
+  });
+
+  it('offers only the wait once a GitLab grant exists', () => {
+    // Past connecting, a rate limit is the wait and a 404 is just missing.
+    for (const status of [429, 404]) {
+      const failure = describeReviewFailure({
+        signedIn: false,
+        status,
+        forge: 'gitlab',
+        gitlabConnected: true,
+      });
+      assert.equal(failure.action, 'retry', String(status));
+    }
+  });
+
+  it('says a GitLab 404 is private or missing, then just missing', () => {
+    const anonymous = describeReviewFailure({
+      signedIn: false,
+      status: 404,
+      forge: 'gitlab',
+    });
+    assert.match(anonymous.message, /private projects/);
+    const connected = describeReviewFailure({
+      signedIn: false,
+      status: 404,
+      forge: 'gitlab',
+      gitlabConnected: true,
+    });
+    assert.match(connected.message, /does not exist|cannot see it/);
+    assert.doesNotMatch(connected.message, /connect/i);
+  });
+
+  it('reads a connected GitLab 401 as a dead grant, not an anonymous one', () => {
+    // Without the typed reason the status alone cannot tell the two apart, so
+    // the connection this browser holds is what says it: a grant that is spent
+    // or revoked gets the reconnect, never "does not allow anonymous reads".
+    const failure = describeReviewFailure({
+      signedIn: true,
+      status: 401,
+      forge: 'gitlab',
+      gitlabConnected: true,
+    });
+    assert.equal(failure.action, 'connect');
+    assert.match(failure.message, /no longer valid/);
+    assert.doesNotMatch(failure.message, /anonymous reads/);
+  });
 });
 
 // The typed path: the reason the server attached decides the panel, and the
@@ -189,6 +247,34 @@ describe('describeReviewFailure by reason', () => {
     }
   });
 
+  it('offers the anonymous GitLab reading only for auth-required', () => {
+    const failure = describeReviewFailure({
+      signedIn: false,
+      status: 401,
+      forge: 'gitlab',
+      failure: { reason: 'auth-required', forge: 'gitlab', host: 'gitlab.com' },
+    });
+    assert.equal(failure.action, 'connect');
+    assert.match(failure.message, /anonymous reads/);
+  });
+
+  it('offers the reconnect, not the anonymous reading, for a dead grant', () => {
+    // Connected-but-expired and revoked are the same reading: the reviewer
+    // connected already, and "does not allow anonymous reads" would be wrong.
+    for (const gitlabConnected of [false, true]) {
+      const failure = describeReviewFailure({
+        signedIn: true,
+        status: 401,
+        forge: 'gitlab',
+        gitlabConnected,
+        failure: { reason: 'auth-expired', forge: 'gitlab' },
+      });
+      assert.equal(failure.action, 'connect', String(gitlabConnected));
+      assert.match(failure.message, /no longer valid/);
+      assert.doesNotMatch(failure.message, /anonymous reads/);
+    }
+  });
+
   it('keeps the forge’s sentence for a refused permission', () => {
     const failure = describeReviewFailure({
       signedIn: true,
@@ -200,15 +286,37 @@ describe('describeReviewFailure by reason', () => {
     assert.match(failure.message, /Resource not accessible/);
   });
 
+  it('reads a missing GitLab project as just missing once connected', () => {
+    const failure = describeReviewFailure({
+      signedIn: true,
+      status: 404,
+      forge: 'gitlab',
+      gitlabConnected: true,
+      failure: { reason: 'not-found', forge: 'gitlab' },
+    });
+    assert.equal(failure.action, 'retry');
+    assert.match(failure.message, /does not exist|cannot see it/);
+  });
+
   it('lets the reason win over a misleading status', () => {
     // A 404 with auth-expired attached is a dead grant, not a missing diff.
     const failure = describeReviewFailure({
       signedIn: true,
       status: 404,
-      failure: { reason: 'auth-expired', forge: 'github' },
+      forge: 'gitlab',
+      failure: { reason: 'auth-expired', forge: 'gitlab' },
     });
-    assert.equal(failure.action, 'setup');
+    assert.equal(failure.action, 'connect');
     assert.match(failure.message, /no longer valid/);
+  });
+
+  it('takes the forge from the failure when the caller names none', () => {
+    const failure = describeReviewFailure({
+      signedIn: false,
+      failure: { reason: 'auth-required', forge: 'gitlab' },
+    });
+    assert.equal(failure.action, 'connect');
+    assert.match(failure.message, /GitLab/);
   });
 
   it('keeps the server’s sentence for a bad request', () => {

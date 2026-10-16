@@ -117,10 +117,12 @@ error panels, the empty states, the account panel, the buttons, the server's own
 failures — says the likely cause and the next step and then stops. The comments
 in this repository are composed prose and stay that way; the interface is not.
 `agy -p` wrote the current wording against that brief — every line of `/setup`,
-the four failure panels, the four sign-in failures in `lib/github/app.ts` (three
-shared and forge-neutral, plus one for GitHub), the reach captions in
-`installations.ts`, and the three entry-point labels. Write a new message the
-same way, not in the register of the code around it.
+the four failure panels, the five sign-in failures in `lib/github/app.ts` (three
+shared and forge-neutral — a deployment serves both forges and the parameter
+does not say which one the reviewer was signing in to — plus one each for GitHub
+and GitLab), the reach captions in `installations.ts`, and the three entry-point
+labels. Write a new message the same way, not in the register of the code around
+it.
 
 Which is why no test asserts a whole sentence. `reviewFailure.test.ts`,
 `installations.test.ts` and `router.test.ts` check the decision — which button

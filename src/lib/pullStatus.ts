@@ -65,6 +65,36 @@ const ROLLUP_CHECK: Record<string, CheckState> = {
   EXPECTED: 'pending',
 };
 
+/** GitLab's `head_pipeline.status`, narrowed the same way. */
+const PIPELINE_CHECK: Record<string, CheckState> = {
+  success: 'success',
+  failed: 'failure',
+  running: 'pending',
+  pending: 'pending',
+  created: 'pending',
+  waiting_for_resource: 'pending',
+  preparing: 'pending',
+  scheduled: 'pending',
+};
+
+/**
+ * The GitLab reading of the same two axes. The review axis is an approval,
+ * because that is the only verdict GitLab keeps — there is no request-changes
+ * state to map to red, and a cancelled or skipped pipeline is not a failure
+ * either, so both read as no mark rather than as a mark they are not.
+ */
+export function pullStatusFromGitLab(input: {
+  /** True when the merge request has at least one approval. */
+  approved?: boolean;
+  /** `head_pipeline.status` from the merge request payload. */
+  pipeline?: string | null;
+}): PullReviewStatus {
+  return {
+    review: input.approved === true ? 'approved' : 'none',
+    check: checkStateFromGitLabPipeline(input.pipeline),
+  };
+}
+
 /**
  * The review axis, read from the reviews first and from `reviewDecision`
  * second.
@@ -112,6 +142,13 @@ export function checkStateFromSource(source: PullStatusSource): CheckState {
   const rollup = isHead ? commit?.statusCheckRollup?.state : undefined;
   // A null rollup is 'none' — the branch has no checks — which is not 'pending'.
   return (rollup && ROLLUP_CHECK[rollup]) || 'none';
+}
+
+/** The GitLab check axis alone, from `head_pipeline.status`. */
+export function checkStateFromGitLabPipeline(
+  pipeline?: string | null
+): CheckState {
+  return PIPELINE_CHECK[pipeline ?? ''] ?? 'none';
 }
 
 /**

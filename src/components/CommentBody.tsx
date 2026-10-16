@@ -134,8 +134,8 @@ const MEDIA_CLASS =
 // An attachment on a private GitHub repository is loaded from the address
 // GitHub signed for it, because the address in the markdown answers only
 // github.com's own cookie. See `@/lib/attachments`. Anything else goes through
-// `mediaSrc`: a forge-hosted image on a private repository answers only the
-// forge's own session cookie, and the reviewer's grant is sealed on the
+// `mediaSrc`: an image on a private GitLab instance answers only the
+// instance's own session cookie, and the reviewer's grant is sealed on the
 // server, so the media proxy fetches it with that grant. The target is read
 // off the path here rather than threaded down as a prop, the way every other
 // reader of it gets it, and the memoized body parse above is untouched.

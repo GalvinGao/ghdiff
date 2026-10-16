@@ -46,8 +46,11 @@ describe('canSubmitReview', () => {
 
   it('asks for no note when the drafts are the words', () => {
     // A review whose content is its line comments needs no summary.
-    assert.equal(canSubmitReview('COMMENT', '', false, 2), true);
-    assert.equal(canSubmitReview('REQUEST_CHANGES', ' \n ', false, 1), true);
+    assert.equal(canSubmitReview('COMMENT', '', false, undefined, 2), true);
+    assert.equal(
+      canSubmitReview('REQUEST_CHANGES', ' \n ', false, undefined, 1),
+      true
+    );
   });
 });
 
@@ -73,6 +76,16 @@ describe('describeSubmittedReview', () => {
     assert.equal(
       describeSubmittedReview({ ...review, state: 'DISMISSED' }),
       'GitHub recorded your review.'
+    );
+  });
+
+  it('speaks GitLab for a GitLab verdict', () => {
+    // Fragments, not sentences: the decision under test is the forge switch,
+    // not the wording around it.
+    assert.match(describeSubmittedReview(review, 'gitlab'), /merge request/);
+    assert.match(
+      describeSubmittedReview({ ...review, state: 'DISMISSED' }, 'gitlab'),
+      /GitLab/
     );
   });
 });
@@ -220,7 +233,13 @@ describe('reviewBlock', () => {
         for (const ownPullRequest of [false, true]) {
           for (const draftCount of [undefined, 0, 2]) {
             assert.equal(
-              canSubmitReview(event, body, ownPullRequest, draftCount),
+              canSubmitReview(
+                event,
+                body,
+                ownPullRequest,
+                undefined,
+                draftCount
+              ),
               reviewBlock({ body, draftCount, event, ownPullRequest }) == null,
               `${event} body=${JSON.stringify(body)} own=${ownPullRequest} drafts=${draftCount}`
             );
@@ -228,6 +247,20 @@ describe('reviewBlock', () => {
         }
       }
     }
+  });
+
+  it('blocks nothing on ownership for a GitLab target', () => {
+    // GitLab decides author approval per project, so the client offers it and
+    // lets the instance answer. The note rule is the forge's own and stays.
+    assert.equal(
+      reviewBlock({ ...own, event: 'APPROVE', body: '', forge: 'gitlab' }),
+      undefined
+    );
+    assert.equal(
+      reviewBlock({ ...own, event: 'COMMENT', body: '', forge: 'gitlab' }),
+      'needs-note'
+    );
+    assert.equal(canSubmitReview('APPROVE', '', true, 'gitlab'), true);
   });
 });
 

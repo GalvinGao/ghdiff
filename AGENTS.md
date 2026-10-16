@@ -2,12 +2,15 @@
 
 A code review surface built on [`@pierre/diffs`](https://diffs.com) and
 `@pierre/trees`, served at ghdiff.com and self-hostable on Node. It renders one
-unified diff — a pull request, a commit, or a compare range on GitHub — filters
-the file list by preset path rules, and carries line comments back to the forge.
-A line comment is posted where it is written, or staged as the forge's own draft
-— a thread on the viewer's pending review on GitHub — drawn here with a
-**Draft** chip and a dashed border, and on the forge's own UI as pending. Then
-it all goes up with the verdict: `POST …/reviews/{id}/events` on GitHub.
+unified diff — a pull request or merge request, a commit, or a compare range, on
+GitHub or on GitLab — filters the file list by preset path rules, and carries
+line comments back to the forge. A line comment is posted where it is written,
+or staged as the forge's own draft — a draft note on GitLab, a thread on the
+viewer's pending review on GitHub — drawn here with a **Draft** chip and a
+dashed border, and on the forge's own UI as pending. Then it all goes up with
+the verdict: `bulk_publish` on GitLab, the review's note posted as its own call
+right after — an instance may ignore the publish's `note` param, so the body
+never rides only there — and `POST …/reviews/{id}/events` on GitHub.
 
 `diffs-hub` in the `pierrecomputer/pierre` monorepo is the reference
 implementation. ghdiff differs from it in the ways that matter:
@@ -21,9 +24,9 @@ implementation. ghdiff differs from it in the ways that matter:
 | Item ownership | `initialItems` plus an imperative handle, streamed | controlled `items`, whole patch in state                  |
 
 And in one more that it shares with nothing: every call to a forge goes through
-one `Forge` interface in `src/lib/server/forges/` — diffs, comments, approvals,
-and the status squares alike — so a second forge is one more implementation
-behind it, not a second app.
+one `Forge` interface in `src/lib/server/forges/`, so GitLab merge requests read
+and write exactly like GitHub pull requests — diffs, comments, approvals, and
+the status squares alike.
 
 It has a second host. `ghdiff` is a command a developer runs in their own
 repository, which serves the same surface over `git diff` — see
@@ -57,6 +60,9 @@ What to capture is whatever the change touched, in the state where it shows:
 - **The narrowest and widest a pane allows**, when the change sits in a
   resizable one. The left bar runs from 200px to 480px.
 - **Both colour schemes**, when the change touches a colour.
+- **Both forges**, when the change reaches a surface GitHub and GitLab both
+  draw, since a merge request and a pull request take different branches of the
+  same component.
 
 Take them from the running app — `pnpm dev` and a browser the agent drives —
 against real data where it can reach some, and say in the reply what the screen
@@ -147,22 +153,27 @@ src/
   globals.css              imported by __root.tsx as a `?url` stylesheet link
   routes/
     __root.tsx             the document, then AppShell: the left bar, then the page
-    index.tsx              home: a box for any GitHub URL, and the watch list
+    index.tsx              home: a box for any GitHub or GitLab URL, and the
+                           watch list
     setup.tsx              why a private diff will not load, as three steps
     healthz.ts             the liveness probe's one-word answer
     $.tsx                  the whole path as one splat: canonical
-                           /host:owner/repo/... reviews; a hostless path
-                           redirects there
+                           /host:owner/repo/... reviews; bare and legacy
+                           forms redirect there, a bare GitLab path resolves
+                           in the browser
     gh/$.tsx               the old /gh prefix, redirected to the route above
     ghdiff[.]user[.]js.ts  the userscript, filled for this deployment
     api/diff.ts            one unified diff, as text/plain
     api/file.ts            one whole file, as text/plain
     api/media.ts           one image the forge hosts, proxied with the grant
+    api/resolve.ts         which configured GitLab host a bare `/-/` path is
+                           on, answered as its canonical path
     api/rpc/$.ts           the oRPC handler: every JSON call the app makes
-    api/auth/start.ts      begins a sign-in, handoff put aside
-    api/auth/callback.ts   GitHub's answer: the code spent, the grant sealed
+    api/auth/start.ts      begins a sign-in, on either forge, handoff put aside
+    api/auth/callback.ts   the forge's answer: the code spent, the grant sealed
     api/auth/refresh.ts    the one route that spends a refresh token
-    api/auth/signout.ts    revokes at GitHub, then drops both cookies
+    api/auth/signout.ts    revokes at each forge, then drops both cookies
+    api/auth/gitlab/pat.ts a personal access token, proved, then sealed
   components/              the left bar, the review surface, and their chrome
   hooks/                   client state: the session, patch, comments, pulls,
                            the URL fragment, the files a hunk expansion reads,
@@ -180,6 +191,7 @@ src/
                            and the seam GHES widens
   lib/github/urls.ts       every address on github.com this app links to
   lib/github/app.ts        every address the ghdiff GitHub App has there
+  lib/gitlab/urls.ts       the same for a GitLab instance, host included
   lib/session.ts           the cookies, the two clocks, and where a redirect may go
   lib/installations.ts     how far an installation reaches, in words
   lib/authFetch.ts         every call to this Worker, with one retry behind it
@@ -214,13 +226,16 @@ src/
   lib/server/github/       the client, the App's own three calls, the patch
                            fallback, where the App is installed, and the reads
                            beside the forge: deployments and issues
+  lib/server/gitlab/       the hosts' OAuth calls, one typed REST call, and the
+                           reads gitbeaker has no resource for: reviewers,
+                           history, deployments and issues
   lib/server/served/       the served counter: the batching, and the backend
                            the build-time target picks by dead-code elimination
-  lib/server/forges/       the Forge interface, the registry, and the GitHub
-                           implementation, with a github.gql.ts holding its
-                           GraphQL documents; gqlgen/ holds the codegen's
+  lib/server/forges/       the Forge interface, the registry, and the two
+                           implementations, each with a <forge>.gql.ts holding
+                           its GraphQL documents; gqlgen/ holds the codegen's
                            types for them, committed and linted by nobody
-  lib/forges.ts            the forge's repository references and shared
+  lib/forges.ts            the two forges' repository references and shared
                            types, and the one place a kind, a host, or a ref
                            is asked which forge it belongs to
   server.ts                the server entry: Paraglide's locale middleware
@@ -293,13 +308,14 @@ binding as the ones in this file.
 
 ## Rules every task must hold to
 
-**A deployment serves the forges it is configured for.** GitHub is served while
-the App or `GITHUB_TOKEN` is set — with neither, a GitHub ref takes a 404. The
-server enforces the answer at the forge gate (`src/lib/server/forges/index.ts`):
-a ref for a forge not in the answer is a 404 whose sentence says what this
-instance serves. The client learns the same answer with the page, from the root
-route's loader (`getInstanceInfo` in `src/lib/instance.ts`), so the two cannot
-drift.
+**One deployment serves GitHub and any number of GitLab hosts.** GitHub is
+served while the App or `GITHUB_TOKEN` is set — with neither, a GitHub ref takes
+the same 404 an unconfigured GitLab host does — and `GITLAB_HOSTS` names the
+GitLab ones as a JSON array. The server enforces the answer at the forge gate
+(`src/lib/server/forges/index.ts`): a ref for a forge not in the answer is a 404
+whose sentence says what this instance serves. The client learns the same answer
+with the page, from the root route's loader (`getInstanceInfo` in
+`src/lib/instance.ts`), so the two cannot drift.
 
 **Ground claims in the code.** This document set's statements about the code
 were verified against it. Hold the same standard: no invented paths, symbol
@@ -315,8 +331,8 @@ the other nineteen — `pnpm lint` runs `i18n:check`, which fails on a missing
 key, a placeholder that differs, literal JSX text, or a message called while a
 module initializes. Call `m.*()` at render or request time, through a getter in
 an option table, never at module scope: a module-level call freezes one locale
-across every request the process serves. GitHub and ghdiff are protected names
-and stay as they are in every catalog.
+across every request the process serves. GitHub, GitLab and ghdiff are protected
+names and stay as they are in every catalog.
 
 **No test asserts a whole sentence.** Tests check the decision — which button
 appears, which status maps — and match the message only against the fragment
@@ -333,21 +349,24 @@ as it is.
 
 ## Environment
 
-| Variable                   | Effect                                                                                                  |
-| -------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `GITHUB_APP_CLIENT_ID`     | The App's client id. No App configured, no sign-in offered.                                             |
-| `GITHUB_APP_CLIENT_SECRET` | Signs the code exchange, the refresh, and the revocation.                                               |
-| `GITHUB_APP_SLUG`          | The App's name in a URL, for the install link.                                                          |
-| `SESSION_SECRET`           | Seals the session cookie. A comma-separated keyring.                                                    |
-| `GITHUB_TOKEN`             | Fallback token when the request carries none.                                                           |
-| `GHDIFF_BRANDING`          | What this deployment calls itself on screen: the home heading and the way home. Unset reads ghdiff.com. |
-| `GHDIFF_EXAMPLES`          | The home page's example diffs, as a JSON object of host to rows. Unset offers the built-in catalog.     |
-| `GHDIFF_TARGET`            | Build-time: `node` builds the self-hosted server.                                                       |
-| `PORT` / `HOST`            | Node-only: where the self-hosted server listens.                                                        |
+| Variable                   | Effect                                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_APP_CLIENT_ID`     | The App's client id. No App configured, no sign-in offered.                                                                  |
+| `GITHUB_APP_CLIENT_SECRET` | Signs the code exchange, the refresh, and the revocation.                                                                    |
+| `GITHUB_APP_SLUG`          | The App's name in a URL, for the install link.                                                                               |
+| `SESSION_SECRET`           | Seals the session cookie. A comma-separated keyring.                                                                         |
+| `GITHUB_TOKEN`             | Fallback token when the request carries none.                                                                                |
+| `GITLAB_HOSTS`             | The GitLab hosts, as a JSON array — `[{"host":"gitlab.com","clientId":"…","clientSecret":"…"}]`, the pair optional per host. |
+| `GHDIFF_BRANDING`          | What this deployment calls itself on screen: the home heading and the way home. Unset reads ghdiff.com.                      |
+| `GHDIFF_EXAMPLES`          | The home page's example diffs, as a JSON object of host to rows. Unset offers the built-in catalog.                          |
+| `GHDIFF_TARGET`            | Build-time: `node` builds the self-hosted server.                                                                            |
+| `PORT` / `HOST`            | Node-only: where the self-hosted server listens.                                                                             |
 
 Every one is absent-tolerant; what throws is a typo, because a loud failure is
 what tells somebody so: `SESSION_SECRET` set to something that is not a key
-(unset simply means no sign-in), half a
+(unset simply means no sign-in), a `GITLAB_HOSTS` value that is not JSON, an
+entry whose host is not a host, the same host twice or half its OAuth pair, more
+GitLab hosts than the session cookie holds a sign-in to (eight), half a
 `GITHUB_APP_CLIENT_ID`/`GITHUB_APP_CLIENT_SECRET` pair, a `GHDIFF_EXAMPLES`
 value that is not JSON or names a host this deployment does not serve or a path
 that is no target on it, and a `GHDIFF_TARGET` that is neither runtime.
@@ -446,17 +465,24 @@ than upstream. Everything else in this app is React state or a ref, and adding a
 second store would be the change to argue for.
 
 `@octokit/core` and `@octokit/graphql` are the GitHub forge's JSON and GraphQL
-client. They were chosen over more hand-rolled wiring because their types are
-generated from the vendor's own API description, which is a compile-time anchor
-no fixture in this repository can give. Every GraphQL operation is typed by
-`@graphql-codegen/client-preset` against the vendor's live schema (the URL in
-`codegen.ts`, so a run needs the network), so a field renamed upstream fails the
-compile here rather than a review at runtime; the generated files under
-`gqlgen/` are committed and ignored by both linters like `src/routeTree.gen.ts`.
-msw is the HTTP mock for the forge tests, and `vitest` runs the test workspace;
-both are devDependencies, so none of them reaches a bundle. The codegen is a
-devDependency the same way: the forges compile against its output and nothing of
-it ships but a one-kilobyte document helper.
+client, and `@gitbeaker/core` is the GitLab one's, behind a requester built from
+the SDK's own seams. They were chosen over more hand-rolled wiring because their
+types are generated from the vendors' own API descriptions, which is a
+compile-time anchor no fixture in this repository can give. What REST cannot
+serve in bulk — every open merge request's approval and pipeline state in one
+read — the GitLab forge asks of the instance's GraphQL instead, through one
+hand-rolled POST, because gitbeaker has no GraphQL half. Every GraphQL operation
+on either forge is typed by `@graphql-codegen/client-preset` against the
+vendors' live schemas (the URLs in `codegen.ts`, so a run needs the network), so
+a field renamed upstream fails the compile here rather than a review at runtime;
+the generated files under `gqlgen/` are committed and ignored by both linters
+like `src/routeTree.gen.ts`. gitbeaker's own `rate-limiter-flexible` ships in
+the bundle as it is — Cloudflare dropped the compressed-size limit, so the stub
+that used to stand in for it had nothing left to save. msw is the HTTP mock for
+the forge tests, and `vitest` runs the test workspace; both are devDependencies,
+so none of them reaches a bundle. The codegen is a devDependency the same way:
+the forges compile against its output and nothing of it ships but a one-kilobyte
+document helper.
 
 `@tanstack/react-query` holds the answers the forges give. Most of them go
 through `useSharedQuery`, and the shared cache behind it is written by hand:

@@ -1,12 +1,12 @@
 // The typed reason a call failed, carried beside the human sentence so the
 // client can act on the failure without parsing prose. A status alone cannot
 // say which failures the reviewer can act on: GitHub answers 404 for a missing
-// diff and an invisible one alike, and a 401 is GitHub asking for an account
-// only when the caller is anonymous — a signed-in grant that died is a
-// different failure with a different fix.
+// diff and an invisible one alike, and a GitLab 401 is the instance asking for
+// an account only when the caller is anonymous — a connected grant that died
+// is a different failure with a different fix.
 //
 // The plain routes carry the reason on the `x-ghdiff-failure` response header
-// (with `x-ghdiff-forge` beside it when known); the RPC
+// (with `x-ghdiff-forge` / `x-ghdiff-host` beside it when known); the RPC
 // router carries the same shape in the error's structured `data`. This module
 // is client-safe: both sides import it, and it imports nothing.
 
@@ -24,7 +24,8 @@ export type FailureReason =
 
 export interface FailureMeta {
   reason: FailureReason;
-  forge?: 'github';
+  forge?: 'github' | 'gitlab';
+  host?: string;
 }
 
 const REASONS: readonly FailureReason[] = [
@@ -51,6 +52,8 @@ export function isFailureMeta(value: unknown): value is FailureMeta {
 export const FAILURE_HEADER = 'x-ghdiff-failure';
 /** The forge the failure is against, when the answer knows it. */
 export const FAILURE_FORGE_HEADER = 'x-ghdiff-forge';
+/** The GitLab host the failure is against, when the answer knows it. */
+export const FAILURE_HOST_HEADER = 'x-ghdiff-host';
 
 /**
  * The failure a plain route's answer carries, read off its headers. Absent —
@@ -62,9 +65,11 @@ export function failureFromHeaders(headers: Headers): FailureMeta | null {
     return null;
   }
   const forge = headers.get(FAILURE_FORGE_HEADER);
+  const host = headers.get(FAILURE_HOST_HEADER);
   return {
     reason: reason as FailureReason,
-    ...(forge === 'github' ? { forge } : {}),
+    ...(forge === 'github' || forge === 'gitlab' ? { forge } : {}),
+    ...(host != null ? { host } : {}),
   };
 }
 
@@ -77,7 +82,7 @@ export function failureFromHeaders(headers: Headers): FailureMeta | null {
  */
 export function failureForStatus(
   status: number,
-  meta: { forge?: 'github'; credentialed: boolean }
+  meta: { forge?: 'github' | 'gitlab'; host?: string; credentialed: boolean }
 ): FailureMeta | undefined {
   let reason: FailureReason;
   switch (status) {
@@ -103,15 +108,24 @@ export function failureForStatus(
   return {
     reason,
     ...(meta.forge != null ? { forge: meta.forge } : {}),
+    ...(meta.host != null ? { host: meta.host } : {}),
   };
 }
 
 /**
  * The sentence a spent grant answers with. Forge-appropriate where the target
- * names the forge; a gate that cannot know which grant died — the RPC edge —
- * says so without naming one.
+ * names the forge; a gate that cannot know which grant died — the RPC edge, or
+ * `/api/resolve` — says so without naming one.
  */
-export function authExpiredMessage(forge?: 'github'): string {
+export function authExpiredMessage(
+  forge?: 'github' | 'gitlab',
+  host?: string
+): string {
+  if (forge === 'gitlab') {
+    return host == null
+      ? m.failure_your_connection_to_this_gitlab_instance_is_no_longer_valid()
+      : m.failure_your_connection_to_host_is_no_longer_valid({ host });
+  }
   if (forge === 'github') {
     return m.github_your_github_sign_in_is_no_longer_valid();
   }

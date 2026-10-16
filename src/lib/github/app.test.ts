@@ -96,8 +96,14 @@ describe('authFailureUrl', () => {
 });
 
 describe('authFailureMessage', () => {
-  it('has a line for each of the four reasons', () => {
-    for (const reason of ['denied', 'expired', 'mismatch', 'github']) {
+  it('has a line for each of the five reasons', () => {
+    for (const reason of [
+      'denied',
+      'expired',
+      'mismatch',
+      'github',
+      'gitlab',
+    ]) {
       const message = authFailureMessage(reason);
       assert.equal(typeof message, 'string', reason);
       assert.ok((message ?? '').length > 0, reason);

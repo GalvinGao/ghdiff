@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ghdiff
 // @namespace    https://ghdiff.com/
-// @version      1.3.1
-// @description  Adds a ghdiff button to the tab row of every GitHub pull request, and beside Browse files on every commit.
+// @version      1.4.1
+// @description  Adds a ghdiff button to the tab row of every pull request and merge request, and beside Browse files on every commit.
 // @author       GalvinGao
 // @homepageURL  https://github.com/GalvinGao/ghdiff
 // @supportURL   https://github.com/GalvinGao/ghdiff/issues
@@ -688,6 +688,102 @@
 		return en_userscript_open_commit(inputs);
 	});
 	//#endregion
+	//#region src/paraglide/messages/userscript_open_merge_request.js
+	/** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
+	/** @typedef {{}} Userscript_Open_Merge_RequestInputs */
+	var en_userscript_open_merge_request = () => {
+		return `Open this merge request in ghdiff`;
+	};
+	var zh_hans1_userscript_open_merge_request = () => {
+		return `在 ghdiff 中打开此合并请求`;
+	};
+	var es_userscript_open_merge_request = () => {
+		return `Abrir este merge request en ghdiff`;
+	};
+	var fr_userscript_open_merge_request = () => {
+		return `Ouvrir cette merge request dans ghdiff`;
+	};
+	var de_userscript_open_merge_request = () => {
+		return `Diesen Merge Request in ghdiff öffnen`;
+	};
+	var ja_userscript_open_merge_request = () => {
+		return `このマージリクエストを ghdiff で開く`;
+	};
+	var ko_userscript_open_merge_request = () => {
+		return `ghdiff에서 이 머지 리퀘스트 열기`;
+	};
+	var pt_br2_userscript_open_merge_request = () => {
+		return `Abrir este merge request no ghdiff`;
+	};
+	var ru_userscript_open_merge_request = () => {
+		return `Открыть этот мердж-реквест в ghdiff`;
+	};
+	var hi_userscript_open_merge_request = () => {
+		return `इस मर्ज रिक्वेस्ट को ghdiff में खोलें`;
+	};
+	var ar_userscript_open_merge_request = () => {
+		return `فتح طلب الدمج هذا في ghdiff`;
+	};
+	var id_userscript_open_merge_request = () => {
+		return `Buka merge request ini di ghdiff`;
+	};
+	var vi_userscript_open_merge_request = () => {
+		return `Mở merge request này trong ghdiff`;
+	};
+	var tr_userscript_open_merge_request = () => {
+		return `Bu merge request'i ghdiff ile aç`;
+	};
+	var pl_userscript_open_merge_request = () => {
+		return `Otwórz ten merge request w ghdiff`;
+	};
+	var it_userscript_open_merge_request = () => {
+		return `Apri questa merge request in ghdiff`;
+	};
+	var uk_userscript_open_merge_request = () => {
+		return `Відкрити цей мердж-реквест у ghdiff`;
+	};
+	var nl_userscript_open_merge_request = () => {
+		return `Deze merge request openen in ghdiff`;
+	};
+	var fa_userscript_open_merge_request = () => {
+		return `باز کردن این درخواست ادغام در ghdiff`;
+	};
+	var bn_userscript_open_merge_request = () => {
+		return `এই মার্জ রিকোয়েস্ট ghdiff-এ খুলুন`;
+	};
+	/**
+	* | output |
+	* | --- |
+	* | "Open this merge request in ghdiff" |
+	*
+	* @param {Userscript_Open_Merge_RequestInputs} inputs
+	* @param {{ locale?: "en" | "zh-Hans" | "es" | "fr" | "de" | "ja" | "ko" | "pt-BR" | "ru" | "hi" | "ar" | "id" | "vi" | "tr" | "pl" | "it" | "uk" | "nl" | "fa" | "bn" }} options
+	* @returns {LocalizedString}
+	*/
+	var userscript_open_merge_request = ((inputs = {}, options = {}) => {
+		const locale = options.locale ?? getLocale();
+		if (locale === "zh-Hans") return zh_hans1_userscript_open_merge_request(inputs);
+		if (locale === "es") return es_userscript_open_merge_request(inputs);
+		if (locale === "fr") return fr_userscript_open_merge_request(inputs);
+		if (locale === "de") return de_userscript_open_merge_request(inputs);
+		if (locale === "ja") return ja_userscript_open_merge_request(inputs);
+		if (locale === "ko") return ko_userscript_open_merge_request(inputs);
+		if (locale === "pt-BR") return pt_br2_userscript_open_merge_request(inputs);
+		if (locale === "ru") return ru_userscript_open_merge_request(inputs);
+		if (locale === "hi") return hi_userscript_open_merge_request(inputs);
+		if (locale === "ar") return ar_userscript_open_merge_request(inputs);
+		if (locale === "id") return id_userscript_open_merge_request(inputs);
+		if (locale === "vi") return vi_userscript_open_merge_request(inputs);
+		if (locale === "tr") return tr_userscript_open_merge_request(inputs);
+		if (locale === "pl") return pl_userscript_open_merge_request(inputs);
+		if (locale === "it") return it_userscript_open_merge_request(inputs);
+		if (locale === "uk") return uk_userscript_open_merge_request(inputs);
+		if (locale === "nl") return nl_userscript_open_merge_request(inputs);
+		if (locale === "fa") return fa_userscript_open_merge_request(inputs);
+		if (locale === "bn") return bn_userscript_open_merge_request(inputs);
+		return en_userscript_open_merge_request(inputs);
+	});
+	//#endregion
 	//#region src/paraglide/messages/userscript_open_pull.js
 	/** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
 	/** @typedef {{}} Userscript_Open_PullInputs */
@@ -792,13 +888,11 @@
 	(() => {
 		"use strict";
 		const APP_ORIGIN = "__GHDIFF_ORIGIN__";
+		if (!"__GHDIFF_HOSTS__".split(",").includes(location.host)) return;
 		const BUTTON_ID = "ghdiff-open-button";
 		const STYLE_ID = "ghdiff-open-style";
-		const PULL_PATH = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:\/|$)/;
-		const COMMIT_PATH = /^\/([^/]+)\/([^/]+)\/commit\/([0-9a-f]{7,40})(?:\/|$)/i;
-		const GITHUB_DIFF_HASH = /^#diff-[0-9a-f]{64}(?:[LR]\d+(?:-[LR]\d+)?)?$/;
 		const STYLE = `
-#${BUTTON_ID} {
+#${BUTTON_ID}[data-ghdiff-forge="github"] {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
@@ -809,11 +903,14 @@
   cursor: pointer;
   appearance: none;
 }
-#${BUTTON_ID} .ghdiff-icon {
+#${BUTTON_ID}[data-ghdiff-forge="github"] .ghdiff-icon {
   flex: 0 0 auto;
   color: var(--fgColor-muted, #59636e);
 }
-#${BUTTON_ID}[data-ghdiff-place="tabs"] {
+#${BUTTON_ID}[data-ghdiff-forge="gitlab"] .ghdiff-icon {
+  display: none;
+}
+#${BUTTON_ID}[data-ghdiff-forge="github"][data-ghdiff-place="tabs"] {
   align-self: stretch;
   padding: var(--base-size-8, 8px) var(--base-size-12, 12px);
   border: none;
@@ -824,16 +921,16 @@
   font-weight: var(--base-text-weight-normal, 400);
   line-height: 1.64em;
 }
-#${BUTTON_ID}[data-ghdiff-place="tabs"]:focus-visible {
+#${BUTTON_ID}[data-ghdiff-forge="github"][data-ghdiff-place="tabs"]:focus-visible {
   outline: var(--focus-outline, 2px solid var(--focus-outlineColor, #0969da));
   outline-offset: -6px;
 }
 @media (max-width: 575.98px) {
-  #${BUTTON_ID}[data-ghdiff-place="tabs"] .ghdiff-icon {
+  #${BUTTON_ID}[data-ghdiff-forge="github"][data-ghdiff-place="tabs"] .ghdiff-icon {
     display: none;
   }
 }
-#${BUTTON_ID}[data-ghdiff-place="actions"] {
+#${BUTTON_ID}[data-ghdiff-forge="github"][data-ghdiff-place="actions"] {
   align-self: center;
   height: var(--control-medium-size, 32px);
   padding: 0 var(--control-medium-paddingInline-normal, 12px);
@@ -850,15 +947,15 @@
     background-color 80ms cubic-bezier(0.65, 0, 0.35, 1),
     border-color 80ms cubic-bezier(0.65, 0, 0.35, 1);
 }
-#${BUTTON_ID}[data-ghdiff-place="actions"]:hover {
+#${BUTTON_ID}[data-ghdiff-forge="github"][data-ghdiff-place="actions"]:hover {
   background-color: var(--button-default-bgColor-hover, #eff2f5);
   border-color: var(--button-default-borderColor-hover, #d1d9e0);
 }
-#${BUTTON_ID}[data-ghdiff-place="actions"]:active {
+#${BUTTON_ID}[data-ghdiff-forge="github"][data-ghdiff-place="actions"]:active {
   background-color: var(--button-default-bgColor-active, #e6eaef);
   border-color: var(--button-default-borderColor-active, #d1d9e0);
 }
-#${BUTTON_ID}[data-ghdiff-place="actions"]:focus-visible {
+#${BUTTON_ID}[data-ghdiff-forge="github"][data-ghdiff-place="actions"]:focus-visible {
   box-shadow: none;
   outline: 2px solid var(--focus-outline-color, var(--focus-outlineColor, #0969da));
   outline-offset: -2px;
@@ -866,89 +963,181 @@
 /* The old server-rendered tab bar draws its tabs wider and quieter than the
    React one — muted at rest, generous padding, a colour-only hover — so the
    same descendant selector github.com scopes its own rules with scopes ours. */
-.tabnav-tabs #${BUTTON_ID} {
+.tabnav-tabs #${BUTTON_ID}[data-ghdiff-forge="github"] {
   padding-inline: var(--control-medium-paddingInline-spacious, 16px);
   color: var(--fgColor-muted, #59636e);
   transition: color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
 }
-.tabnav-tabs #${BUTTON_ID}:hover {
+.tabnav-tabs #${BUTTON_ID}[data-ghdiff-forge="github"]:hover {
   color: var(--fgColor-default, #1f2328);
 }
 `;
 		const LINK_EXTERNAL_PATH = "M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z";
-		/**
-		* The diff on screen, or null on any other page. A pull request and a commit
-		* are the two github.com pages that are one diff and that ghdiff has an
-		* address for; a compare range is the third, and its header carries no
-		* control of its own to sit beside.
-		*/
-		function currentTarget() {
-			const pull = PULL_PATH.exec(location.pathname);
-			if (pull != null) return {
-				kind: "pull",
-				owner: pull[1],
-				repo: pull[2],
-				number: pull[3]
-			};
-			const commit = COMMIT_PATH.exec(location.pathname);
-			if (commit != null) return {
-				kind: "commit",
-				owner: commit[1],
-				repo: commit[2],
-				sha: commit[3]
-			};
-			return null;
-		}
-		/** github.com's own path for this target, which is ghdiff's path as well. */
-		function targetPath(target) {
-			return target.kind === "pull" ? `/${target.owner}/${target.repo}/pull/${target.number}` : `/${target.owner}/${target.repo}/commit/${target.sha}`;
-		}
-		function ghdiffHref(target) {
-			const hash = GITHUB_DIFF_HASH.test(location.hash) ? location.hash : "";
-			return `${APP_ORIGIN}${targetPath(target)}${hash}`;
-		}
-		function buttonTitle(target) {
-			return target.kind === "pull" ? userscript_open_pull({}, { locale: userscriptLocale() }) : userscript_open_commit({}, { locale: userscriptLocale() });
-		}
-		const TAB_LISTS = ["nav[aria-label=\"Pull request navigation\"] > *", ".tabnav-tabs"];
-		/**
-		* Where the button goes for this target: the tab bar on a pull request, the
-		* action row on a commit. Both are found by what they hold rather than by
-		* what they are called — see the two functions below.
-		*/
-		function findHost(target) {
-			if (target.kind === "commit") return findRowByLinkTo(treePath(target));
-			for (const selector of TAB_LISTS) {
-				const found = document.querySelector(selector);
-				if (found != null) return found;
-			}
-			return findRowByLinkTo(`${targetPath(target)}/files`);
-		}
-		/** Browse files, which is this commit's own tree page. */
-		function treePath(target) {
-			return `/${target.owner}/${target.repo}/tree/${target.sha}`;
+		function isPlainVisibleLinkTo(link, path) {
+			const href = link.getAttribute("href");
+			if (href == null) return false;
+			const url = new URL(href, location.href);
+			if (url.pathname !== path) return false;
+			if (url.hash !== "" || url.search !== "") return false;
+			return link.offsetParent != null;
 		}
 		function findRowByLinkTo(path) {
 			for (const link of document.querySelectorAll("a[href]")) {
-				const href = link.getAttribute("href");
-				if (href == null) continue;
-				const url = new URL(href, location.href);
-				if (url.pathname !== path) continue;
-				if (url.hash !== "" || url.search !== "") continue;
-				if (link.offsetParent == null) continue;
+				if (!isPlainVisibleLinkTo(link, path)) continue;
 				const row = link.parentElement;
 				if (row != null && row.children.length > 1) return row;
 			}
 			return null;
 		}
-		function placeFor(target) {
-			return target.kind === "pull" ? "tabs" : "actions";
+		function findCommitRow(treePath) {
+			for (const link of document.querySelectorAll("a[href]")) {
+				if (!isPlainVisibleLinkTo(link, treePath)) continue;
+				if (link.closest("nav, aside, [role=\"navigation\"]") != null) continue;
+				const row = link.parentElement;
+				if (row != null && row.children.length > 1) return row;
+			}
+			return null;
 		}
-		function buildButton() {
-			const button = document.createElement("a");
-			button.id = BUTTON_ID;
-			const label = document.createElement("span");
-			label.textContent = "ghdiff";
+		function isOnScreen(element) {
+			if (typeof element.checkVisibility === "function") return element.checkVisibility({
+				checkVisibilityCSS: true,
+				opacityProperty: true,
+				visibilityProperty: true
+			});
+			const rect = element.getBoundingClientRect();
+			return element.offsetParent != null && rect.width > 0 && rect.height > 0;
+		}
+		function isInViewport(element) {
+			const rect = element.getBoundingClientRect();
+			return rect.bottom > 0 && rect.top < window.innerHeight;
+		}
+		const DRIVERS = [(() => {
+			const MR_PATH = /^(\/.+?\/-\/merge_requests\/\d+)(?:\/|$)/;
+			const COMMIT_PATH = /^(\/.+?\/-\/commit\/[0-9a-f]{7,40})(?:\/|$)/i;
+			function detect() {
+				const path = location.pathname;
+				if (!path.includes("/-/")) return null;
+				const mr = MR_PATH.exec(path);
+				if (mr != null) return {
+					kind: "pull",
+					path: mr[1]
+				};
+				const commit = COMMIT_PATH.exec(path);
+				if (commit != null) return {
+					kind: "commit",
+					path: commit[1],
+					treePath: commit[1].replace("/-/commit/", "/-/tree/")
+				};
+				return null;
+			}
+			function href(target) {
+				return `${APP_ORIGIN}/${location.host}:${target.path.slice(1)}`;
+			}
+			function title(target) {
+				return target.kind === "pull" ? userscript_open_merge_request({}, { locale: userscriptLocale() }) : userscript_open_commit({}, { locale: userscriptLocale() });
+			}
+			function findTabBar(mrPath) {
+				const bars = [];
+				for (const link of document.querySelectorAll("a[href]")) {
+					if (!isPlainVisibleLinkTo(link, `${mrPath}/diffs`)) continue;
+					const ul = link.closest("ul");
+					if (ul == null || bars.includes(ul)) continue;
+					for (const tab of ul.querySelectorAll("a[href]")) if (new URL(tab.getAttribute("href"), location.href).pathname === mrPath) {
+						bars.push(ul);
+						break;
+					}
+				}
+				const onScreen = bars.filter(isOnScreen);
+				return onScreen.find(isInViewport) ?? onScreen[0] ?? bars[0] ?? null;
+			}
+			function host(target) {
+				return target.kind === "commit" ? findCommitRow(target.treePath) : findTabBar(target.path);
+			}
+			function mount(target) {
+				if (target.kind !== "pull") return button;
+				if (button.parentElement !== listItem) listItem.append(button);
+				return listItem;
+			}
+			function dress(target) {
+				button.dataset.ghdiffForge = "gitlab";
+				const place = target.kind === "pull" ? "tabs" : "actions";
+				button.dataset.ghdiffPlace = place;
+				setClass(button, target.kind === "commit" ? "gl-button btn btn-md btn-default" : "");
+				setClass(label, target.kind === "commit" ? "gl-button-text" : "");
+			}
+			return {
+				detect,
+				href,
+				title,
+				host,
+				mount,
+				dress
+			};
+		})(), (() => {
+			const PULL_PATH = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:\/|$)/;
+			const COMMIT_PATH = /^\/([^/]+)\/([^/]+)\/commit\/([0-9a-f]{7,40})(?:\/|$)/i;
+			const DIFF_HASH = /^#diff-[0-9a-f]{64}(?:[LR]\d+(?:-[LR]\d+)?)?$/;
+			const TAB_LISTS = ["nav[aria-label=\"Pull request navigation\"] > *", ".tabnav-tabs"];
+			function detect() {
+				const pull = PULL_PATH.exec(location.pathname);
+				if (pull != null) return {
+					kind: "pull",
+					path: `/${pull[1]}/${pull[2]}/pull/${pull[3]}`
+				};
+				const commit = COMMIT_PATH.exec(location.pathname);
+				if (commit != null) return {
+					kind: "commit",
+					path: `/${commit[1]}/${commit[2]}/commit/${commit[3]}`,
+					treePath: `/${commit[1]}/${commit[2]}/tree/${commit[3]}`
+				};
+				return null;
+			}
+			function href(target) {
+				const hash = DIFF_HASH.test(location.hash) ? location.hash : "";
+				return `${APP_ORIGIN}/github.com:${target.path.slice(1)}${hash}`;
+			}
+			function title(target) {
+				return target.kind === "pull" ? userscript_open_pull({}, { locale: userscriptLocale() }) : userscript_open_commit({}, { locale: userscriptLocale() });
+			}
+			function host(target) {
+				if (target.kind === "commit") return findCommitRow(target.treePath);
+				for (const selector of TAB_LISTS) {
+					const found = document.querySelector(selector);
+					if (found != null) return found;
+				}
+				return findRowByLinkTo(`${target.path}/files`);
+			}
+			function mount() {
+				return button;
+			}
+			function dress(target) {
+				button.dataset.ghdiffForge = "github";
+				button.dataset.ghdiffPlace = target.kind === "pull" ? "tabs" : "actions";
+				setClass(button, "");
+				setClass(label, "");
+			}
+			return {
+				detect,
+				href,
+				title,
+				host,
+				mount,
+				dress
+			};
+		})()];
+		function activeDriver() {
+			for (const driver of DRIVERS) {
+				const target = driver.detect();
+				if (target != null) return {
+					driver,
+					target
+				};
+			}
+			return null;
+		}
+		const button = (() => {
+			const element = document.createElement("a");
+			element.id = BUTTON_ID;
 			const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 			icon.setAttribute("class", "ghdiff-icon");
 			icon.setAttribute("viewBox", "0 0 16 16");
@@ -957,11 +1146,16 @@
 			icon.setAttribute("fill", "currentColor");
 			icon.setAttribute("aria-hidden", "true");
 			icon.setAttribute("focusable", "false");
-			const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-			path.setAttribute("d", LINK_EXTERNAL_PATH);
-			icon.append(path);
-			button.append(icon, label);
-			return button;
+			const iconPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+			iconPath.setAttribute("d", LINK_EXTERNAL_PATH);
+			icon.append(iconPath);
+			element.append(icon, document.createElement("span"));
+			return element;
+		})();
+		const label = button.querySelector("span");
+		const listItem = document.createElement("li");
+		function setClass(element, value) {
+			if (element.className !== value) element.className = value;
 		}
 		function installStyle() {
 			if (document.getElementById(STYLE_ID) != null) return;
@@ -971,26 +1165,23 @@
 			(document.head ?? document.documentElement).append(style);
 		}
 		function sync() {
-			const target = currentTarget();
-			const existing = document.getElementById(BUTTON_ID);
-			if (target == null) {
-				existing?.remove();
+			const found = activeDriver();
+			const host = found == null ? null : found.driver.host(found.target);
+			if (found == null || host == null) {
+				button.remove();
+				listItem.remove();
 				return;
 			}
-			const host = findHost(target);
-			if (host == null) {
-				existing?.remove();
-				return;
-			}
+			const { driver, target } = found;
 			installStyle();
-			const button = existing ?? buildButton();
-			const href = ghdiffHref(target);
+			const href = driver.href(target);
 			if (button.getAttribute("href") !== href) button.setAttribute("href", href);
-			const place = placeFor(target);
-			if (button.dataset.ghdiffPlace !== place) button.dataset.ghdiffPlace = place;
-			const title = buttonTitle(target);
+			driver.dress(target);
+			const title = driver.title(target);
 			if (button.title !== title) button.title = title;
-			if (button.parentElement !== host || button.nextElementSibling != null) host.append(button);
+			const placed = driver.mount(target);
+			if (placed !== listItem) listItem.remove();
+			if (placed.parentElement !== host || placed.nextElementSibling != null) host.append(placed);
 		}
 		let pending = false;
 		function schedule() {
@@ -1001,13 +1192,20 @@
 				sync();
 			}, 50);
 		}
+		label.textContent = "ghdiff";
 		sync();
 		new MutationObserver(schedule).observe(document.documentElement, {
 			childList: true,
-			subtree: true
+			subtree: true,
+			attributes: true,
+			attributeFilter: ["class", "style"]
 		});
 		window.addEventListener("hashchange", schedule);
 		window.addEventListener("popstate", schedule);
+		window.addEventListener("scroll", schedule, {
+			capture: true,
+			passive: true
+		});
 	})();
 	//#endregion
 })();

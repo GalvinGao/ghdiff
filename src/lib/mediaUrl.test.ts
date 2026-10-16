@@ -2,7 +2,17 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
 import { mediaSrc } from './mediaUrl';
-import type { GitHubPullTarget } from './reviewTarget';
+import type {
+  GitHubPullTarget,
+  GitLabMergeRequestTarget,
+} from './reviewTarget';
+
+const GITLAB: GitLabMergeRequestTarget = {
+  kind: 'gitlab-mr',
+  host: 'gitlab.corp.com',
+  project: 'group/sub/repo',
+  number: 42,
+};
 
 const GITHUB: GitHubPullTarget = {
   kind: 'github-pull',
@@ -11,15 +21,49 @@ const GITHUB: GitHubPullTarget = {
   number: 7,
 };
 
+function proxiedUrl(src: string): string {
+  const parsed = new URL(src, 'https://ghdiff.test');
+  assert.equal(parsed.pathname, '/api/media');
+  assert.equal(parsed.searchParams.get('kind'), 'gitlab-mr');
+  assert.equal(parsed.searchParams.get('host'), 'gitlab.corp.com');
+  assert.equal(parsed.searchParams.get('project'), 'group/sub/repo');
+  assert.equal(parsed.searchParams.get('number'), '42');
+  return parsed.searchParams.get('url') ?? '';
+}
+
 describe('mediaSrc', () => {
+  it('proxies a root-relative upload on the target’s instance', () => {
+    const src = mediaSrc('/uploads/abc123/image.png', GITLAB);
+    assert.equal(proxiedUrl(src), '/uploads/abc123/image.png');
+  });
+
+  it('proxies an absolute URL on the target’s host', () => {
+    const src = mediaSrc(
+      'https://gitlab.corp.com/group/sub/repo/uploads/abc123/image.png',
+      GITLAB
+    );
+    assert.equal(
+      proxiedUrl(src),
+      'https://gitlab.corp.com/group/sub/repo/uploads/abc123/image.png'
+    );
+  });
+
+  it('reads a protocol-relative URL as https and matches the host caselessly', () => {
+    const src = mediaSrc('//GitLab.CORP.com/uploads/abc123/image.png', GITLAB);
+    assert.equal(
+      proxiedUrl(src),
+      'https://gitlab.corp.com/uploads/abc123/image.png'
+    );
+  });
+
   it('leaves a foreign host alone', () => {
     const src = 'https://example.com/image.png';
-    assert.equal(mediaSrc(src, GITHUB), src);
+    assert.equal(mediaSrc(src, GITLAB), src);
   });
 
   it('leaves a data URL alone', () => {
     const src = 'data:image/png;base64,iVBORw0KGgo=';
-    assert.equal(mediaSrc(src, GITHUB), src);
+    assert.equal(mediaSrc(src, GITLAB), src);
   });
 
   it('proxies a GitHub attachment address', () => {
@@ -64,6 +108,11 @@ describe('mediaSrc', () => {
     assert.equal(mediaSrc(assets, GITHUB), assets);
   });
 
+  it('leaves a plaintext same-host GitLab address alone', () => {
+    const upload = 'http://gitlab.corp.com/uploads/abc123/image.png';
+    assert.equal(mediaSrc(upload, GITLAB), upload);
+  });
+
   it('leaves a relative address alone on a GitHub target', () => {
     const relative = '/uploads/abc123/image.png';
     assert.equal(mediaSrc(relative, GITHUB), relative);
@@ -78,6 +127,6 @@ describe('mediaSrc', () => {
 
   it('leaves an unparseable address alone', () => {
     const src = 'not a url at all';
-    assert.equal(mediaSrc(src, GITHUB), src);
+    assert.equal(mediaSrc(src, GITLAB), src);
   });
 });

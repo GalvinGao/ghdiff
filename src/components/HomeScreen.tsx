@@ -20,9 +20,21 @@ import { ViewerAvatar, viewerDisplayName } from '@/components/ViewerIdentity';
 import { WatchedReposEditor } from '@/components/WatchedReposEditor';
 import { useServedCount } from '@/hooks/useServedCount';
 import { cn } from '@/lib/cn';
+import {
+  findGitLabHost,
+  forgeOfHost,
+  forgeOfTarget,
+  gitLabHostNames,
+} from '@/lib/forges';
 import { commitUrl, GHDIFF_REPO, repoUrl } from '@/lib/github/urls';
-import { reviewInputFrom } from '@/lib/resolveHost';
-import { reviewTargetSplat } from '@/lib/reviewTarget';
+import { formatList } from '@/lib/locale';
+import { resolveHostlessPath, reviewInputFrom } from '@/lib/resolveHost';
+import {
+  pathShapeOf,
+  reviewTargetSplat,
+  segmentsFromPath,
+  splitColonHost,
+} from '@/lib/reviewTarget';
 import { m } from '@/paraglide/messages.js';
 
 const creditsMarkup = {
@@ -62,6 +74,9 @@ export function HomeScreen() {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [editingAccount, setEditingAccount] = useState(false);
+  // While a hostless GitLab path is being resolved: the button waits, so one
+  // press cannot probe twice.
+  const [resolving, setResolving] = useState(false);
   const targetField = useRef<HTMLInputElement>(null);
 
   // The card's border is the field's promise of a click target, and the field
@@ -83,7 +98,11 @@ export function HomeScreen() {
     targetField.current?.focus();
   }
 
-  const identity = session.viewer;
+  // The identity this page's account strip shows: the GitHub viewer, or the
+  // first GitLab connection's when there is none — the panel behind the strip
+  // shows them all.
+  const identity = session.viewer ?? session.gitlab[0]?.viewer;
+  const hosts = gitLabHostNames(instance);
   const githubServed = instance.github.served;
 
   // The whole instruction is the host moving inside the path — worth showing
@@ -94,7 +113,13 @@ export function HomeScreen() {
         to: `${instance.host}/github.com:`,
         path: 'owner/repo/pull/123',
       }
-    : undefined;
+    : hosts[0] != null
+      ? {
+          from: hosts[0],
+          to: `${instance.host}/${hosts[0]}:`,
+          path: 'group/repo/-/merge_requests/123',
+        }
+      : undefined;
 
   return (
     // `m-auto` on the column below, not `items-center`: auto margins take the
@@ -123,15 +148,14 @@ export function HomeScreen() {
         {/* One line per thing the app does. Three clauses in one paragraph read
             as a sentence to get through; three lines read as a list. */}
         <div className="text-ink-muted mt-1.5 space-y-0.5 text-sm">
-          <p>
-            {m.home_screen_open_any_github_pull_request_commit_or_compare()}
-          </p>
+          <p>{m.home_screen_open_any_pull_request_or_merge_request()}</p>
           <p>{m.home_screen_narrow_the_file_list_with_preset_path_rules()}</p>
           <p>{m.home_screen_read_and_leave_comments()}</p>
         </div>
 
         {/* Square corners, because these two lines are a diff and a diff has
-            none. */}
+            none. GitLab addresses move the same way, so one pair teaches
+            both. */}
         {instruction != null && (
           <div
             dir="ltr"
@@ -161,14 +185,16 @@ export function HomeScreen() {
             onSubmit={(event) => {
               event.preventDefault();
               const result = reviewInputFrom(input, {
+                gitlabHosts: hosts,
                 ownHost: instance.host,
               });
               if (result.kind === 'target') {
                 const { target } = result;
-                // A target on a deployment that serves no GitHub is answered
-                // here, not by the forge gate's 404 after a navigation.
-                if (!githubServed) {
-                  setError(m.home_screen_serves_no_github());
+                // A GitHub target on a deployment that serves no GitHub is
+                // answered here, the way an unconfigured GitLab host is —
+                // not by the forge gate's 404 after a navigation.
+                if (!githubServed && forgeOfTarget(target) === 'github') {
+                  setError(githubRefusedSentence(hosts));
                   return;
                 }
                 setError(undefined);
@@ -178,22 +204,48 @@ export function HomeScreen() {
                 });
                 return;
               }
-              setError(
-                githubServed
-                  ? m.home_screen_paste_a_github_pull_request_commit_or_compare()
-                  : m.home_screen_serves_nothing()
-              );
+              // A bare GitLab path names no host, and guessing one
+              // client-side would be a guess: the resolve endpoint probes
+              // the configured hosts, through the same refresh-aware fetch
+              // every call this app makes gets. The navigation it makes on
+              // the win keeps the fragment the input carried.
+              if (result.kind === 'hostless') {
+                setError(undefined);
+                setResolving(true);
+                void (async () => {
+                  const outcome = await resolveHostlessPath({
+                    hash: result.hash,
+                    navigate,
+                    path: result.path,
+                  });
+                  if (outcome.kind === 'failed') {
+                    setResolving(false);
+                    setError(outcome.message);
+                  }
+                  // On the win the navigation below unmounts this page.
+                })();
+                return;
+              }
+              setError(targetError(input, hosts, githubServed));
             }}
           >
             <label className="sr-only" htmlFor="review-target">
-              {m.home_screen_github_pull_request_commit_or_compare_url()}
+              {m.home_screen_pull_request_merge_request_commit_or_compare_url()}
             </label>
             <input
               dir="ltr"
               ref={targetField}
               id="review-target"
               value={input}
-              placeholder="https://github.com/owner/repo/pull/123"
+              // The path being resolved is the one the navigation will open,
+              // so it stays as typed until the answer arrives.
+              readOnly={resolving}
+              aria-busy={resolving}
+              placeholder={
+                githubServed
+                  ? 'https://github.com/owner/repo/pull/123'
+                  : `https://${hosts[0] ?? 'gitlab.com'}/group/repo/-/merge_requests/123`
+              }
               enterKeyHint="go"
               className="text-ink placeholder:text-ink-faint h-12 min-w-0 flex-1 bg-transparent text-sm focus-visible:outline-none"
               onChange={(event) => {
@@ -204,7 +256,7 @@ export function HomeScreen() {
             {/* The page's primary action, so it is filled and it is named.
                 A bare glyph left the one thing to do here looking like a hint. */}
             <Button
-              disabled={input.trim().length === 0}
+              disabled={input.trim().length === 0 || resolving}
               size="md"
               title={m.home_screen_open_this_diff()}
               type="submit"
@@ -238,7 +290,7 @@ export function HomeScreen() {
               a middle-click, a right-click and the keyboard all behave the way
               the rest of the web does. */}
           <div className="border-line border-t">
-            {/* Before GitHub has said who this is, either control would be
+            {/* Before the forges have said who this is, either control would be
                 a guess, and the wrong one is a link to sign in shown to
                 somebody who already has. The row keeps its 40px either way. */}
             {session.checking ? (
@@ -295,9 +347,9 @@ export function HomeScreen() {
         {/* Pasting a URL is the page's own answer, and this is the answer for
             the reviewer who never leaves the forge. It follows the form
             because it is the same move, made by a button instead — and the
-            script is built for GitHub, so the offer stands whenever this
-            deployment serves it. */}
-        {githubServed && (
+            script is built for the forges this deployment serves, so the
+            offer stands whenever one of them is. */}
+        {(githubServed || hosts.length > 0) && (
           <>
             <div className="mt-10">
               <SectionLabel>{m.home_screen_userscript()}</SectionLabel>
@@ -383,6 +435,70 @@ export function HomeScreen() {
       </div>
     </main>
   );
+}
+
+/** What the box says to a GitHub URL on a deployment that serves no GitHub. */
+function githubRefusedSentence(hosts: readonly string[]): string {
+  return hosts.length === 0
+    ? m.home_screen_serves_no_github()
+    : m.home_screen_serves_no_github_paste_gitlab({
+        hosts: formatList([...hosts]),
+      });
+}
+
+/** What the box says when the input is no target this deployment serves. */
+function targetError(
+  input: string,
+  hosts: readonly string[],
+  githubServed: boolean
+): string {
+  const rejected = rejectedGitLabHost(input, hosts);
+  const list = formatList([...hosts]);
+  if (rejected != null) {
+    if (hosts.length === 0) {
+      return githubServed
+        ? m.home_screen_serves_no_gitlab_paste_github({ host: rejected })
+        : m.home_screen_serves_no_gitlab({ host: rejected });
+    }
+    return githubServed
+      ? m.home_screen_serves_other_gitlab_or_github({
+          hosts: list,
+          host: rejected,
+        })
+      : m.home_screen_serves_other_gitlab({ hosts: list, host: rejected });
+  }
+  if (hosts.length === 0) {
+    return githubServed
+      ? m.home_screen_paste_a_github_pull_request_commit_or_compare()
+      : m.home_screen_serves_nothing();
+  }
+  return githubServed
+    ? m.home_screen_paste_github_or_gitlab({ hosts: list })
+    : m.home_screen_paste_gitlab({ hosts: list });
+}
+
+/**
+ * The host of a GitLab URL this deployment does not serve, when that is what
+ * failed the parse — the one failure where naming the configured hosts is the
+ * answer.
+ */
+function rejectedGitLabHost(
+  input: string,
+  hosts: readonly string[]
+): string | undefined {
+  const segments = segmentsFromPath(input);
+  const first = segments[0];
+  if (first == null || pathShapeOf(segments.join('/'))?.forge !== 'gitlab') {
+    return undefined;
+  }
+  const glued = splitColonHost(first);
+  if (glued == null && !first.includes('.') && !first.includes(':')) {
+    return undefined;
+  }
+  const host = glued?.host ?? first.toLowerCase();
+  if (forgeOfHost(host) === 'github') return undefined;
+  if (findGitLabHost(hosts, host) != null) return undefined;
+  return host;
 }
 
 /**

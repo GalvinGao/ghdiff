@@ -37,12 +37,24 @@ export function isCurrentPull(
   pull: PullSummary,
   current?: ReviewTarget
 ): boolean {
-  return (
-    current?.kind === 'github-pull' &&
-    current.owner === pull.owner &&
-    current.repo === pull.repo &&
-    current.number === pull.number
-  );
+  if (current == null) return false;
+  if (current.kind === 'github-pull') {
+    return (
+      pull.forge !== 'gitlab' &&
+      current.owner === pull.owner &&
+      current.repo === pull.repo &&
+      current.number === pull.number
+    );
+  }
+  if (current.kind === 'gitlab-mr') {
+    return (
+      pull.forge === 'gitlab' &&
+      current.host === pull.host &&
+      current.project === pull.project &&
+      current.number === pull.number
+    );
+  }
+  return false;
 }
 
 /**

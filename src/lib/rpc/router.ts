@@ -54,8 +54,8 @@ export interface RpcContext {
 // response from the route, so that the one time a reviewer reads it — a
 // refresh that failed — the client decodes a sentence rather than a body it
 // cannot parse. The typed `auth-expired` rides the error's data; which grant
-// died is not knowable at this edge, so the failure names no forge and the
-// sentence names none either.
+// died is not knowable at this edge — GitHub's and GitLab's dues share one
+// reading — so the failure names no forge and the sentence names none either.
 const os = implement(contract)
   .$context<RpcContext>()
   .use(({ context, next }) => {
@@ -76,10 +76,11 @@ const MAX_WATCHED_REPOS = 25;
  * What `fail` needs to type a forge failure: the ref the call named, and
  * whether a credential spoke. The 401 reading turns on the second — a spent
  * or revoked grant is `auth-expired`, an anonymous refusal `auth-required` —
- * and the forge travels so the client never parses it out of the sentence.
+ * and the forge and host travel so the client never parses them out of the
+ * sentence.
  */
 interface FailureSource {
-  ref?: { forge: ForgeName };
+  ref?: { forge: ForgeName; host?: string };
   credentialed?: boolean;
 }
 
@@ -107,6 +108,7 @@ function fail(
       error.failure ??
       failureForStatus(status, {
         forge: source.ref?.forge,
+        host: source.ref?.host,
         credentialed: source.credentialed === true,
       });
     throw new ORPCError(codeForStatus(status), {
@@ -148,8 +150,11 @@ function credFor(
   ref: RepoRef
 ): ForgeCredential {
   // A credential named on the request itself wins, the way it wins for the
-  // plain routes: a caller that named one meant that one. GitHub's slot
-  // already holds it — `resolveGitHubToken`'s cascade puts the header first.
+  // plain routes: a caller that named one meant that one. (GitHub's slot
+  // already holds it — `resolveGitHubToken`'s cascade puts the header first.)
+  if (ref.forge === 'gitlab' && credentials.headerToken != null) {
+    return { token: credentials.headerToken, scheme: 'bearer' };
+  }
   return credentials.byForge[forgeGroupKey(ref)] ?? {};
 }
 
@@ -202,27 +207,35 @@ const withForge = <TOutput>(
 const AUTH_REQUIRED = {
   review: {
     github: m.auth_required_review,
+    gitlab: m.auth_required_gitlab_review,
   },
   comment: {
     github: m.auth_required_comment,
+    gitlab: m.auth_required_gitlab_comment,
   },
   delete: {
     github: m.auth_required_delete,
+    gitlab: m.auth_required_gitlab_delete,
   },
   resolve: {
     github: m.auth_required_resolve,
+    gitlab: m.auth_required_gitlab_resolve,
   },
   stage: {
     github: m.auth_required_stage,
+    gitlab: m.auth_required_gitlab_stage,
   },
   unstage: {
     github: m.auth_required_unstage,
+    gitlab: m.auth_required_gitlab_unstage,
   },
   viewed: {
     github: m.auth_required_viewed,
+    gitlab: m.auth_required_gitlab_viewed,
   },
   issue: {
     github: m.auth_required_issue,
+    gitlab: m.auth_required_gitlab_issue,
   },
 } satisfies Record<string, Record<ForgeName, () => string>>;
 
@@ -230,7 +243,7 @@ type AuthAction = keyof typeof AUTH_REQUIRED;
 
 /**
  * The 401 a write without a credential gets, naming the action. The failure is
- * typed `auth-required` with the ref's forge beside the sentence, so
+ * typed `auth-required` with the ref's forge and host beside the sentence, so
  * the client reads the reason without parsing the wording.
  */
 function authRequired(
@@ -244,6 +257,7 @@ function authRequired(
       failure: {
         reason: 'auth-required',
         forge: ref.forge,
+        ...(ref.forge === 'gitlab' ? { host: ref.host } : {}),
       } satisfies FailureMeta,
     },
   });
@@ -283,22 +297,65 @@ const withTargetForge = <TOutput>(
 };
 
 const getViewer = os.viewer.get.handler(
-  async ({ context: { log, credentials } }) => {
-    // A sign-out is offered when the credential came out of the sealed cookie.
-    // A viewer resolved from `GITHUB_TOKEN` or a named header has no session
-    // to end.
+  async ({ context: { config, log, credentials } }) => {
+    // A sign-out is offered when any credential came out of the sealed cookie —
+    // the GitHub grant's, or any GitLab connection's. A viewer resolved from
+    // `GITHUB_TOKEN` or a named header has no session to end.
     const fromSession = Object.values(credentials.byForge).some(
       (grant) => grant.fromSession === true
     );
+    // Disconnect GitHub ends the cookie's GitHub grant, so it is offered only
+    // when there is one — not for `GITHUB_TOKEN` beside a GitLab connection.
+    const githubFromSession =
+      credentials.byForge['github']?.fromSession === true;
+
+    // Each configured host the session holds a usable grant for names its
+    // viewer, in the configured order whichever answers first. A host that
+    // cannot say who the grant is fails the whole answer, as GitHub's does:
+    // left off, the answer would name a session without that connection, and
+    // the shared cache would file this one's private answers under it.
+    const gitlab = (
+      await Promise.all(
+        config.gitlabHosts.map(async ({ host }) => {
+          const cred =
+            credentials.byForge[forgeGroupKey({ forge: 'gitlab', host })];
+          if (cred == null) return undefined;
+          try {
+            const viewer = await forgeNamed('gitlab').viewer(cred, host);
+            return viewer == null ? undefined : { host, viewer };
+          } catch (error) {
+            log.set({ outcome: 'error', host });
+            return fail(
+              error,
+              m.router_could_not_check_who_you_are_signed_in(),
+              {
+                ref: { forge: 'gitlab', host },
+                credentialed: true,
+              }
+            );
+          }
+        })
+      )
+    ).filter((entry) => entry != null);
 
     const token = credentials.byForge['github']?.token;
     if (token == null) {
-      return { viewer: undefined, fromSession };
+      return {
+        viewer: undefined,
+        fromSession,
+        githubFromSession,
+        ...(gitlab.length === 0 ? {} : { gitlab }),
+      };
     }
     try {
       const viewer = await forgeNamed('github').viewer({ token, fromSession });
       log.set({ outcome: 'ok', viewer: viewer?.login });
-      return { fromSession, viewer };
+      return {
+        fromSession,
+        githubFromSession,
+        viewer,
+        ...(gitlab.length === 0 ? {} : { gitlab }),
+      };
     } catch (error) {
       log.set({ outcome: 'error' });
       return fail(error, m.router_could_not_check_who_you_are_signed_in(), {
@@ -343,7 +400,7 @@ const listPulls = os.pulls.list.handler(
     if (repos.length === 0) return { viewers: {}, pulls: [], failures: [] };
 
     // Each forge group answers its own repositories with its own credential,
-    // and one that fails fails only its own rows. A ref for a forge this
+    // and one that fails fails only its own rows. A ref for a host this
     // deployment does not serve fails at the gate with the sentence that says
     // what it does serve.
     const byForge = Map.groupBy(repos, (ref) => forgeGroupKey(ref));
@@ -463,8 +520,17 @@ const listComments = os.comments.list
 const createComment = os.comments.create
   .use(withAuth('comment'))
   .handler(async ({ context: { forge, cred, log }, input }) => {
-    const { body, replyToId, path, line, side, startLine, startSide, ...ref } =
-      input;
+    const {
+      body,
+      replyToId,
+      path,
+      line,
+      side,
+      startLine,
+      startSide,
+      gitlabPosition,
+      ...ref
+    } = input;
     log.set({ replyToId });
     try {
       const created = await forge.comments.create(
@@ -477,6 +543,7 @@ const createComment = os.comments.create
           side,
           startLine,
           startSide,
+          gitlabPosition,
         },
         cred
       );
@@ -555,7 +622,16 @@ const listDrafts = os.drafts.list
 const createDraft = os.drafts.create
   .use(withAuth('stage'))
   .handler(async ({ context: { forge, cred, log }, input }) => {
-    const { body, path, line, side, startLine, startSide, ...ref } = input;
+    const {
+      body,
+      path,
+      line,
+      side,
+      startLine,
+      startSide,
+      gitlabPosition,
+      ...ref
+    } = input;
     try {
       const drafts = requireCapability(
         forge.drafts,
@@ -563,7 +639,7 @@ const createDraft = os.drafts.create
       );
       const draft = await drafts.create(
         ref,
-        { body, path, line, side, startLine, startSide },
+        { body, path, line, side, startLine, startSide, gitlabPosition },
         cred
       );
       log.set({ outcome: 'created', commentId: draft.remoteId });

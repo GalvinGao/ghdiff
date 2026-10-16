@@ -52,7 +52,7 @@ export interface ResolvedToken {
 }
 
 /**
- * The error every forge's failure travels as — the forge's own, the media
+ * The error every forge's failure travels as — GitHub's, GitLab's, the media
  * proxy's — so no caller asks which SDK threw. `failure` is the typed reason
  * the client acts on, attached where the throw site knows it (the forge gate's
  * `not-served`); a bare status is mapped to one downstream by
@@ -113,6 +113,7 @@ export async function resolveGitHubToken(
   const now = Date.now();
   if (session != null) {
     const github = session.github;
+    // A GitLab-only session has no GitHub grant: for GitHub it is nobody.
     if (
       github != null &&
       withinMaxAge(session, now) &&

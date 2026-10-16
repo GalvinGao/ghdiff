@@ -1,6 +1,6 @@
 # SOP: rotate secrets
 
-`SESSION_SECRET` and the GitHub App client secret, without signing anybody out.
+`SESSION_SECRET` and the OAuth client secrets, without signing anybody out.
 
 ## `SESSION_SECRET` (the session-cookie keyring)
 
@@ -21,6 +21,20 @@ while and costs nobody their session.
    `SESSION_SECRET=<new>`.
 
 Removing a key early signs out exactly the sessions sealed with it.
+
+## A GitLab OAuth client secret
+
+An application holds exactly one secret — GitLab has no create-new/delete-old
+pair. **Renew an application secret** (`POST /applications/:id/renew-secret`, or
+the button on the application's page) replaces it in place, and the old secret
+is dead from that moment.
+
+1. Renew the secret on the instance's application page.
+2. Update the host's `clientSecret` in `GITLAB_HOSTS` and restart immediately —
+   no rebuild, the secret is runtime-only. It cannot wait: a refresh that comes
+   due against the old secret fails, and a failed refresh drops the grant.
+3. Existing OAuth grants keep working — they are bearer tokens, not signed by
+   the secret. The next refresh uses the new secret.
 
 ## The GitHub App client secret
 

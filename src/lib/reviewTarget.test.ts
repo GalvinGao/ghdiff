@@ -63,8 +63,159 @@ describe('reviewTargetFromSegments', () => {
     );
   });
 
+  it('parses a GitLab merge request in the colon form', () => {
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'gitlab.com:gitlab-org',
+        'gitlab',
+        '-',
+        'merge_requests',
+        '17',
+      ]),
+      {
+        kind: 'gitlab-mr',
+        host: 'gitlab.com',
+        project: 'gitlab-org/gitlab',
+        number: 17,
+      }
+    );
+  });
+
+  it('parses a GitLab commit in the colon form', () => {
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'gitlab.com:team',
+        'repo',
+        '-',
+        'commit',
+        '0800fbaa',
+      ]),
+      {
+        kind: 'gitlab-commit',
+        host: 'gitlab.com',
+        project: 'team/repo',
+        sha: '0800fbaa',
+      }
+    );
+  });
+
+  it('parses a GitLab compare range in the colon form', () => {
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'gitlab.com:team',
+        'repo',
+        '-',
+        'compare',
+        'v1.0...v1.1',
+      ]),
+      {
+        kind: 'gitlab-compare',
+        host: 'gitlab.com',
+        project: 'team/repo',
+        base: 'v1.0',
+        head: 'v1.1',
+      }
+    );
+  });
+
+  it('keeps the port with the host', () => {
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'gitlab.corp.com:8443:team',
+        'sub',
+        'repo',
+        '-',
+        'merge_requests',
+        '3',
+      ]),
+      {
+        kind: 'gitlab-mr',
+        host: 'gitlab.corp.com:8443',
+        project: 'team/sub/repo',
+        number: 3,
+      }
+    );
+  });
+
+  it('parses a host this deployment is not configured for', () => {
+    // Membership is the server-side forge gate's question, not the parse's:
+    // the target is real, and the gate's 404 names the served hosts.
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'gitlab.unknown.example:g',
+        'r',
+        '-',
+        'merge_requests',
+        '1',
+      ]),
+      {
+        kind: 'gitlab-mr',
+        host: 'gitlab.unknown.example',
+        project: 'g/r',
+        number: 1,
+      }
+    );
+  });
+
+  it('reads a dotted GitLab group as a project, unambiguously', () => {
+    // The colon form names the host outright, so a dotted first path segment
+    // is a namespace again — the old segment form's ambiguity is gone.
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'gitlab.com:that.group',
+        'sub',
+        'repo',
+        '-',
+        'merge_requests',
+        '1',
+      ]),
+      {
+        kind: 'gitlab-mr',
+        host: 'gitlab.com',
+        project: 'that.group/sub/repo',
+        number: 1,
+      }
+    );
+  });
+
+  it('lowercases the host', () => {
+    const target = reviewTargetFromSegments([
+      'GITLAB.com:g',
+      'r',
+      '-',
+      'merge_requests',
+      '1',
+    ]);
+    assert.deepEqual(target, {
+      kind: 'gitlab-mr',
+      host: 'gitlab.com',
+      project: 'g/r',
+      number: 1,
+    });
+  });
+
   it('is canonical-only: a hostless path is not a target', () => {
     assert.equal(reviewTargetFromSegments(['a', 'b', 'pull', '7']), undefined);
+    assert.equal(
+      reviewTargetFromSegments(['group', 'repo', '-', 'merge_requests', '42']),
+      undefined
+    );
+  });
+
+  it('reads host:port with no second colon as the legacy form, not the colon form', () => {
+    // `gitlab.corp.com:8443` alone is a host with a port, not a host glued to
+    // a path segment — the digits are the port, so this is not canonical.
+    assert.equal(
+      reviewTargetFromSegments([
+        'gitlab.corp.com:8443',
+        'group',
+        'repo',
+        '-',
+        'commit',
+        'deadbeef',
+      ]),
+      undefined
+    );
   });
 
   it('rejects what no grammar holds', () => {
@@ -78,6 +229,30 @@ describe('reviewTargetFromSegments', () => {
     );
     assert.equal(
       reviewTargetFromSegments(['github.com:a', 'b', 'commit', 'abc']),
+      undefined
+    );
+    // A one-segment project is no GitLab project: it always has a namespace.
+    assert.equal(
+      reviewTargetFromSegments([
+        'gitlab.com:repo',
+        '-',
+        'merge_requests',
+        '42',
+      ]),
+      undefined
+    );
+    assert.equal(
+      reviewTargetFromSegments(['gitlab.com:g', 'r', '-', 'issues', '42']),
+      undefined
+    );
+    assert.equal(
+      reviewTargetFromSegments([
+        'gitlab.com:g',
+        'r',
+        '-',
+        'merge_requests',
+        'x',
+      ]),
       undefined
     );
   });
@@ -117,6 +292,25 @@ describe('reviewTargetFromSegments', () => {
       }
     );
   });
+
+  it('reads a merge request past a trailing tab segment', () => {
+    assert.deepEqual(
+      reviewTargetFromSegments([
+        'gitlab.com:group',
+        'repo',
+        '-',
+        'merge_requests',
+        '42',
+        'diffs',
+      ]),
+      {
+        kind: 'gitlab-mr',
+        host: 'gitlab.com',
+        project: 'group/repo',
+        number: 42,
+      }
+    );
+  });
 });
 
 describe('classifyRouteSegments', () => {
@@ -134,6 +328,57 @@ describe('classifyRouteSegments', () => {
     assert.deepEqual(classifyRouteSegments(['github.com:a', 'b']), {
       kind: 'none',
     });
+  });
+
+  it('redirects the legacy dotted-host form to the colon form, permanently', () => {
+    assert.deepEqual(
+      classifyRouteSegments([
+        'gitlab.corp.com',
+        'group',
+        'repo',
+        '-',
+        'merge_requests',
+        '42',
+      ]),
+      {
+        kind: 'redirect',
+        splat: 'gitlab.corp.com:group/repo/-/merge_requests/42',
+        status: 301,
+      }
+    );
+  });
+
+  it('redirects the legacy host-with-port form, keeping the port', () => {
+    assert.deepEqual(
+      classifyRouteSegments([
+        'gitlab.corp.com:8443',
+        'group',
+        'repo',
+        '-',
+        'commit',
+        'deadbeef',
+      ]),
+      {
+        kind: 'redirect',
+        splat: 'gitlab.corp.com:8443:group/repo/-/commit/deadbeef',
+        status: 301,
+      }
+    );
+  });
+
+  it('reads a dotted first segment as a host only with two segments before the marker', () => {
+    // `that.group/repo` is a project to guess a host for, not a legacy host.
+    assert.deepEqual(
+      classifyRouteSegments(['that.group', 'repo', '-', 'merge_requests', '1']),
+      { kind: 'resolve', splat: 'that.group/repo/-/merge_requests/1' }
+    );
+  });
+
+  it('sends a bare GitLab path to resolve', () => {
+    assert.deepEqual(
+      classifyRouteSegments(['group', 'repo', '-', 'merge_requests', '42']),
+      { kind: 'resolve', splat: 'group/repo/-/merge_requests/42' }
+    );
   });
 
   it('redirects a hostless GitHub path to the one GitHub host', () => {
@@ -165,9 +410,14 @@ describe('classifyRouteSegments', () => {
     );
   });
 
-  it('is none for a colon head the canonical grammar rejects', () => {
+  it('does not redirect a colon head the canonical grammar rejects', () => {
+    // Gluing such a head again would classify the same way: a redirect loop.
     assert.deepEqual(classifyRouteSegments(['a_b:c']), { kind: 'none' });
     assert.deepEqual(classifyRouteSegments(['@x:y', 'z']), { kind: 'none' });
+    assert.deepEqual(
+      classifyRouteSegments(['a_b.com', 'g', 'p', '-', 'merge_requests', '1']),
+      { kind: 'none' }
+    );
   });
 
   it('is none for anything else', () => {
@@ -178,6 +428,12 @@ describe('classifyRouteSegments', () => {
     assert.deepEqual(classifyRouteSegments(['a', 'b', 'pull', '0']), {
       kind: 'none',
     });
+    // A one-segment project is no GitLab project, so a bare one is not a
+    // resolve input either — it names no page the grammar can read.
+    assert.deepEqual(
+      classifyRouteSegments(['repo', '-', 'merge_requests', '1']),
+      { kind: 'none' }
+    );
   });
 });
 
@@ -203,6 +459,20 @@ describe('the path shape', () => {
     );
   });
 
+  it('refuses a project segment that is exactly the marker', () => {
+    assert.equal(
+      reviewTargetFromSegments([
+        'gitlab.com:g',
+        '-',
+        'r',
+        '-',
+        'merge_requests',
+        '1',
+      ]),
+      undefined
+    );
+  });
+
   it('refuses a review number with a leading zero', () => {
     assert.equal(
       reviewTargetFromSegments(['github.com:a', 'b', 'pull', '007']),
@@ -210,9 +480,8 @@ describe('the path shape', () => {
     );
   });
 });
-
 describe('reviewTargetSplat', () => {
-  it('writes the canonical colon form for all three kinds', () => {
+  it('writes the canonical colon form for all six kinds', () => {
     assert.equal(
       reviewTargetSplat({
         kind: 'github-pull',
@@ -241,6 +510,46 @@ describe('reviewTargetSplat', () => {
       }),
       'github.com:a/b/compare/main...topic'
     );
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'gitlab-mr',
+        host: 'gitlab.com',
+        project: 'g/r',
+        number: 12,
+      }),
+      'gitlab.com:g/r/-/merge_requests/12'
+    );
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'gitlab-commit',
+        host: 'gitlab.com',
+        project: 'g/r',
+        sha: 'deadbeef',
+      }),
+      'gitlab.com:g/r/-/commit/deadbeef'
+    );
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'gitlab-compare',
+        host: 'gitlab.com',
+        project: 'g/r',
+        base: 'main',
+        head: 'topic',
+      }),
+      'gitlab.com:g/r/-/compare/main...topic'
+    );
+  });
+
+  it('glues a host with a port as host:port:project', () => {
+    assert.equal(
+      reviewTargetSplat({
+        kind: 'gitlab-mr',
+        host: 'gitlab.corp.com:8443',
+        project: 'g/r',
+        number: 12,
+      }),
+      'gitlab.corp.com:8443:g/r/-/merge_requests/12'
+    );
   });
 
   it('leaves a slash in a branch name alone', () => {
@@ -267,6 +576,32 @@ describe('round trips', () => {
       repo: 'b',
       base: 'main',
       head: 'feature/x',
+    },
+    { kind: 'gitlab-mr', host: 'gitlab.com', project: 'g/r', number: 12 },
+    {
+      kind: 'gitlab-commit',
+      host: 'gitlab.com',
+      project: 'g/r',
+      sha: 'deadbeef',
+    },
+    {
+      kind: 'gitlab-compare',
+      host: 'gitlab.com',
+      project: 'g/r',
+      base: 'main',
+      head: 'feature/x',
+    },
+    {
+      kind: 'gitlab-mr',
+      host: 'gitlab.corp.com',
+      project: 'g/s/r',
+      number: 12,
+    },
+    {
+      kind: 'gitlab-mr',
+      host: 'gitlab.corp.com:8443',
+      project: 'g/r',
+      number: 12,
     },
   ] as const;
 
@@ -295,6 +630,27 @@ describe('round trips', () => {
     }
   });
 
+  it('names the host in every GitLab label', () => {
+    assert.equal(
+      describeReviewTarget({
+        kind: 'gitlab-mr',
+        host: 'gitlab.com',
+        project: 'g/r',
+        number: 12,
+      }),
+      'gitlab.com/g/r !12'
+    );
+    assert.equal(
+      describeReviewTarget({
+        kind: 'gitlab-mr',
+        host: 'gitlab.corp.com',
+        project: 'g/r',
+        number: 12,
+      }),
+      'gitlab.corp.com/g/r !12'
+    );
+  });
+
   it('keeps the GitHub labels as they were', () => {
     assert.equal(
       describeReviewTarget({
@@ -304,6 +660,18 @@ describe('round trips', () => {
         number: 1,
       }),
       'a/b #1'
+    );
+  });
+
+  it('prefixes gitlab keys with the host', () => {
+    assert.equal(
+      reviewTargetKey({
+        kind: 'gitlab-mr',
+        host: 'gitlab.corp.com',
+        project: 'g/r',
+        number: 12,
+      }),
+      'gitlab:gitlab.corp.com:g/r#12'
     );
   });
 });
@@ -326,7 +694,24 @@ describe('reviewTabTitle', () => {
     );
   });
 
-  it('names a commit and a compare range', () => {
+  it('marks a GitLab merge request with ! and names the host', () => {
+    const target = {
+      kind: 'gitlab-mr' as const,
+      host: 'gitlab.corp.com:8443',
+      project: 'group/sub/repo',
+      number: 17,
+    };
+    assert.equal(
+      reviewTabTitle(target, 'Add the thing'),
+      'Add the thing · gitlab.corp.com:8443/group/sub/repo !17 · ghdiff'
+    );
+    assert.equal(
+      reviewTabTitle(target),
+      'gitlab.corp.com:8443/group/sub/repo !17 · ghdiff'
+    );
+  });
+
+  it('names a commit and a compare range on either forge', () => {
     assert.equal(
       reviewTabTitle({
         kind: 'github-commit',
@@ -338,6 +723,15 @@ describe('reviewTabTitle', () => {
     );
     assert.equal(
       reviewTabTitle({
+        kind: 'gitlab-commit',
+        host: 'gitlab.com',
+        project: 'g/r',
+        sha: '0800fbaa12',
+      }),
+      'gitlab.com/g/r @ 0800fba · ghdiff'
+    );
+    assert.equal(
+      reviewTabTitle({
         kind: 'github-compare',
         owner: 'a',
         repo: 'b',
@@ -346,13 +740,32 @@ describe('reviewTabTitle', () => {
       }),
       'github.com/a/b main...topic · ghdiff'
     );
+    assert.equal(
+      reviewTabTitle({
+        kind: 'gitlab-compare',
+        host: 'gitlab.com',
+        project: 'g/r',
+        base: 'main',
+        head: 'topic',
+      }),
+      'gitlab.com/g/r main...topic · ghdiff'
+    );
   });
 });
 
 describe('reviewTabType', () => {
-  it('maps the target kinds to the three badge types', () => {
+  it('maps the six target kinds to the three badge types', () => {
     assert.equal(
       reviewTabType({ kind: 'github-pull', owner: 'a', repo: 'b', number: 1 }),
+      'pull'
+    );
+    assert.equal(
+      reviewTabType({
+        kind: 'gitlab-mr',
+        host: 'gitlab.com',
+        project: 'g/r',
+        number: 1,
+      }),
       'pull'
     );
     assert.equal(
@@ -360,6 +773,15 @@ describe('reviewTabType', () => {
         kind: 'github-commit',
         owner: 'a',
         repo: 'b',
+        sha: 'deadbeef',
+      }),
+      'commit'
+    );
+    assert.equal(
+      reviewTabType({
+        kind: 'gitlab-commit',
+        host: 'gitlab.com',
+        project: 'g/r',
         sha: 'deadbeef',
       }),
       'commit'
@@ -374,11 +796,27 @@ describe('reviewTabType', () => {
       }),
       'compare'
     );
+    assert.equal(
+      reviewTabType({
+        kind: 'gitlab-compare',
+        host: 'gitlab.com',
+        project: 'g/r',
+        base: 'x',
+        head: 'y',
+      }),
+      'compare'
+    );
   });
 });
 
 describe('segmentsFromPath', () => {
   it('strips a scheme, a leading slash, and empty segments', () => {
+    assert.deepEqual(
+      segmentsFromPath(
+        ' https://gitlab.corp.com/group/repo/-/merge_requests/1 '
+      ),
+      ['gitlab.corp.com', 'group', 'repo', '-', 'merge_requests', '1']
+    );
     assert.deepEqual(segmentsFromPath('/github.com:acme/app/pull/1'), [
       'github.com:acme',
       'app',
@@ -396,8 +834,20 @@ describe('reviewTargetSearch', () => {
     number: '7',
   };
 
-  it('parses a target', () => {
+  it('parses a target and lowercases the host', () => {
     assert.deepEqual(reviewTargetSearch.safeParse(pull).success, true);
+    const parsed = reviewTargetSearch.parse({
+      kind: 'gitlab-mr',
+      host: 'GITLAB.CORP.COM',
+      project: 'g/r',
+      number: '12',
+    });
+    assert.deepEqual(parsed, {
+      kind: 'gitlab-mr',
+      host: 'gitlab.corp.com',
+      project: 'g/r',
+      number: 12,
+    });
   });
 
   it('strips keys the target does not name', () => {
@@ -449,6 +899,34 @@ describe('reviewTargetSearch', () => {
     for (const number of ['abc', '3.5', '0', '-2']) {
       assert.equal(
         reviewTargetSearch.safeParse({ ...pull, number }).success,
+        false
+      );
+    }
+  });
+
+  it('rejects a bad host', () => {
+    for (const host of ['not a host', 'gitlab.com:abc', 'gitlab.com:8:9', '']) {
+      assert.equal(
+        reviewTargetSearch.safeParse({
+          kind: 'gitlab-mr',
+          host,
+          project: 'g/r',
+          number: '1',
+        }).success,
+        false
+      );
+    }
+  });
+
+  it('rejects a bad project shape', () => {
+    for (const project of ['', 'g//r', '/g/r', 'g/r/', 'g r']) {
+      assert.equal(
+        reviewTargetSearch.safeParse({
+          kind: 'gitlab-mr',
+          host: 'gitlab.com',
+          project,
+          number: '1',
+        }).success,
         false
       );
     }

@@ -1,5 +1,9 @@
 import { Link } from '@tanstack/react-router';
+import { useState } from 'react';
 
+import { useAppData } from '@/components/AppDataProvider';
+import { GitLabConnectDialog } from '@/components/GitLabConnectDialog';
+import { GitLabMark } from '@/components/GitLabMark';
 import {
   InstallationRow,
   InstallationRowSkeleton,
@@ -11,13 +15,14 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import { ViewerIdentity } from '@/components/ViewerIdentity';
 import { useCurrentAccount } from '@/hooks/useCurrentPull';
-import { type GitHubSessionState } from '@/hooks/useGitHubSession';
+import type { GitHubSessionState } from '@/hooks/useGitHubSession';
 import { useInstallations } from '@/hooks/useInstallations';
+import type { InstanceInfo } from '@/lib/forges';
 import { installationForAccount } from '@/lib/installations';
 import { m } from '@/paraglide/messages.js';
 
 /**
- * The account, and the accounts ghdiff may read on its behalf.
+ * The accounts, and the accounts ghdiff may read on their behalf.
  *
  * Two facts, not one. Who a reviewer signed in as decides whose name their
  * comments carry; which accounts ghdiff is installed on decides what it can read
@@ -25,17 +30,24 @@ import { m } from '@/paraglide/messages.js';
  * would answer the less useful of the two questions — and the reviewer would
  * have to leave the diff to find out the answer to the other.
  *
- * Only ever shown to somebody already signed in. Both entries to it are drawn
- * from the viewer, and a signed-out reviewer gets a link to `/setup` instead.
+ * Shown when there is anything to say: a viewer, a GitLab connection or host,
+ * or a deployment whose GitHub sign-in is worth offering. A signed-out
+ * reviewer gets a link to `/setup` from the control instead, and a reviewer
+ * holding only GitLab connections gets the GitHub sign-in here, beside them.
  *
  * It names no permissions. GitHub's own consent screen names every one the App
  * asks for, it is the only authoritative statement of them, and a list here
  * would be free to drift from the registration it described.
  *
- * The identity at the top is on screen the moment the panel is, because the
- * session already holds it. Everything under the rule is a request to GitHub,
- * and that region is the one that waits — so it is the one that draws a skeleton
- * and the one whose height travels.
+ * The GitHub identity is on screen the moment the panel is, because the session
+ * already holds it. Everything under the rule is a request to GitHub, and that
+ * region is the one that waits — so it is the one that draws a skeleton and the
+ * one whose height travels.
+ *
+ * The panel is both sections: the GitHub identity and installations, and the
+ * GitLab connections. Each stands only when it has something to say — a
+ * reviewer with no GitLab hosts configured and no connections never reads the
+ * word GitLab here.
  */
 export function GitHubAccountPanel({
   active,
@@ -47,6 +59,141 @@ export function GitHubAccountPanel({
    * so without this, asking GitHub which accounts are installed would cost two
    * requests on every visit to the home page, opened or not.
    */
+  active: boolean;
+  session: GitHubSessionState;
+}) {
+  const { instance } = useAppData();
+  const hosts = instance.gitlab.hosts;
+  const showGitHub =
+    session.viewer != null || (instance.github.served && instance.github.oauth);
+  const showGitLab = session.gitlab.length > 0 || hosts.length > 0;
+
+  if (!showGitHub && !showGitLab) return null;
+
+  return (
+    <div className="min-w-0">
+      {showGitHub &&
+        (session.viewer == null ? (
+          <GitHubSignInSection session={session} />
+        ) : (
+          <GitHubAppSection active={active} session={session} />
+        ))}
+      {showGitHub && showGitLab && (
+        <div className="border-line my-3 border-t" />
+      )}
+      {showGitLab && <GitLabSection hosts={hosts} session={session} />}
+
+      {/* Only when there is a session to end. A deployment running on
+          `GITHUB_TOKEN` has a viewer and nothing to sign out of, and a button
+          that did nothing would be a button that lied. A connection made with
+          a personal access token still ends here: the cookie drop is its
+          sign-out. */}
+      {session.canSignOut && (
+        <>
+          <div className="border-line my-3 border-t" />
+          <Button onClick={() => session.signOut()} size="sm" variant="danger">
+            {m.git_hub_account_panel_sign_out()}
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The GitHub section for a reviewer with no GitHub sign-in: the way to make
+ * one. Drawn when the deployment serves GitHub and the session holds only
+ * GitLab connections, so the door in is where the connections are.
+ */
+function GitHubSignInSection({ session }: { session: GitHubSessionState }) {
+  return (
+    <div>
+      <SectionLabel className="block">GitHub</SectionLabel>
+      <p className="text-ink-muted mt-1.5 text-xs">
+        {m.git_hub_account_panel_sign_in_to_open_private_diffs_and_leave()}
+      </p>
+      <Button
+        className="mt-2 w-full justify-center"
+        onClick={() => session.signIn()}
+        size="sm"
+        variant="outline"
+      >
+        {m.setup_screen_sign_in_with_github()}
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * The GitLab half of the panel: the connections this session holds, and the
+ * way to make one. There is no second list to wait for — GitLab has no
+ * installation object the way the App does — so the whole section is on screen
+ * with the session, and nothing in it travels.
+ */
+function GitLabSection({
+  hosts,
+  session,
+}: {
+  hosts: InstanceInfo['gitlab']['hosts'];
+  session: GitHubSessionState;
+}) {
+  const [connecting, setConnecting] = useState(false);
+
+  return (
+    <div>
+      <SectionLabel className="block">GitLab</SectionLabel>
+      {session.gitlab.length > 0 ? (
+        <div className="mt-1.5 flex flex-col gap-2.5">
+          {session.gitlab.map((connection) => (
+            <div key={connection.host}>
+              <div className="flex items-center justify-between gap-2">
+                <ViewerIdentity viewer={connection.viewer} />
+                <Button
+                  onClick={() => session.disconnectGitLab(connection.host)}
+                  size="sm"
+                  variant="outline"
+                >
+                  {m.git_hub_account_panel_disconnect()}
+                </Button>
+              </div>
+              <p className="text-ink-faint mt-1 flex items-center gap-1.5 font-mono text-xs">
+                <GitLabMark aria-hidden="true" size={12} />
+                {connection.host}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-ink-muted mt-1.5 text-xs">
+          {m.git_hub_account_panel_no_gitlab_account_connected_yet()}
+        </p>
+      )}
+      <p className="text-ink-faint mt-2 text-xs">
+        {m.git_hub_account_panel_comments_on_a_gitlab_diff_post()}
+      </p>
+      {hosts.length > 0 && (
+        <Button
+          className="mt-2 w-full justify-center"
+          onClick={() => setConnecting(true)}
+          size="sm"
+          variant="outline"
+        >
+          {m.gitlab_connect_connect_gitlab()}
+        </Button>
+      )}
+      <GitLabConnectDialog
+        onClose={() => setConnecting(false)}
+        open={connecting}
+      />
+    </div>
+  );
+}
+
+/** The GitHub App section, as it always was. */
+function GitHubAppSection({
+  active,
+  session,
+}: {
   active: boolean;
   session: GitHubSessionState;
 }) {
@@ -65,7 +212,19 @@ export function GitHubAccountPanel({
 
   return (
     <div className="min-w-0">
-      <ViewerIdentity viewer={viewer} />
+      <SectionLabel className="block">GitHub</SectionLabel>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        <ViewerIdentity viewer={viewer} />
+        {session.canDisconnectGitHub && (
+          <Button
+            onClick={() => session.disconnectGitHub()}
+            size="sm"
+            variant="outline"
+          >
+            {m.git_hub_account_panel_disconnect()}
+          </Button>
+        )}
+      </div>
       <p className="text-ink-faint mt-2 text-xs">
         {m.git_hub_account_panel_comments_you_leave_go_to_github_under_this()}
       </p>
@@ -138,18 +297,6 @@ export function GitHubAccountPanel({
           </>
         )}
       </AnimatedHeight>
-
-      {/* Only when there is a session to end. A deployment running on
-          `GITHUB_TOKEN` has a viewer and nothing to sign out of, and a button
-          that did nothing would be a button that lied. */}
-      {session.canSignOut && (
-        <>
-          <div className="border-line my-3 border-t" />
-          <Button onClick={() => session.signOut()} size="sm" variant="danger">
-            {m.git_hub_account_panel_sign_out()}
-          </Button>
-        </>
-      )}
     </div>
   );
 }

@@ -2,16 +2,18 @@
 # in; that file is gitignored and this one is the list of names.
 #
 # Every line here is optional. ghdiff with none of them serves no forge and
-# offers no sign-in: a GitHub ref without the App or GITHUB_TOKEN below takes a
-# 404, and the sentence in that 404 says what the instance does serve. That is
-# a working deployment and not a broken one. The one exception is
-# SESSION_SECRET: unset means no sign-in, and set to something that is not a
-# key throws on the first request rather than sign everybody out in silence.
+# offers no sign-in: a GitHub ref without the App or GITHUB_TOKEN below takes
+# the same 404 an unconfigured GitLab host does, and the sentence in that 404
+# says what the instance does serve. That is a working deployment and not a
+# broken one. The one exception is SESSION_SECRET: unset means no sign-in, and
+# set to something that is not a key throws on the first request rather than
+# sign everybody out in silence.
 
 # --- The GitHub App -----------------------------------------------------------
 #
 # GitHub is served while the App or GITHUB_TOKEN below is set, so these are its
-# sign-in flow.
+# sign-in flow. GitLab hosts connect through the section at the bottom of this
+# file.
 #
 # Register a dev App of your own rather than sharing the production one, so a
 # laptop never holds the production secret. Its callback URL is
@@ -67,6 +69,31 @@ SESSION_SECRET=
 # PORT=
 # HOST=
 
+
+# --- GitLab ---------------------------------------------------------------------
+#
+# GITLAB_HOSTS names the GitLab hosts, as a JSON array with one entry per host.
+# The clientId/clientSecret pair is the OAuth application registered on that
+# host, for the sign-in flow — register it with the `api` scope and
+# <origin>/api/auth/callback as its redirect URI. An entry without the pair is
+# a PAT host: public projects read anonymously, and reviewers connect with a
+# personal access token.
+#
+#   [{"host":"gitlab.com","clientId":"…","clientSecret":"…"},{"host":"gitlab.corp.com"}]
+#
+# What throws on the first request is a typo: JSON that does not parse, a host
+# that is not one, the same host twice, half an OAuth pair, or more than eight
+# hosts — as many sign-ins as one session cookie holds. Unset simply
+# means no GitLab hosts. Everything here is runtime-only — the client learns
+# the list from the server, so a change is a restart, never a rebuild.
+#
+# Migration note: GHDIFF_FORGE, GITLAB_HOST, GITLAB_CLIENT_ID and
+# GITLAB_CLIENT_SECRET are deleted and ignored. The old GHDIFF_FORGE=gitlab
+# with GITLAB_HOST=gitlab.corp.com becomes [{"host":"gitlab.corp.com"}] — add
+# the OAuth client id and secret to the same entry if the instance had them.
+#
+# GITLAB_HOSTS=
+
 # --- The deployment's own presentation --------------------------------------------
 #
 # What this deployment calls itself on screen: the home page's heading and the
@@ -78,9 +105,9 @@ SESSION_SECRET=
 #
 # The example diffs the home page offers, as a JSON object of host to rows,
 # each row the forge's own path for the target. Unset offers the built-in
-# catalog (github.com rows, shown only when GitHub is served). A host this
-# deployment does not serve, or a path that is no target on its host, throws on
-# the first request.
+# catalog (github.com and gitlab.com rows, shown only when that host is
+# served). A host this deployment does not serve, or a path that is no target
+# on its host, throws on the first request.
 #
 #   {"github.com":[{"title":"Rewrite Bun in Rust","path":"oven-sh/bun/pull/30412","scale":"2,188 files","note":"The large one."}]}
 #

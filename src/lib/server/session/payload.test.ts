@@ -27,11 +27,21 @@ const CLAIMS: SessionClaims = {
         refreshExpiresAt: NOW + 180 * 24 * HOUR,
       },
     },
+    gitlab: {
+      'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+      'gitlab.com': {
+        type: 'oauth',
+        accessToken: 'tok',
+        accessExpiresAt: NOW + 60_000,
+        refreshToken: 'ref',
+        refreshExpiresAt: undefined,
+      },
+    },
   },
 };
 
 describe('sessionToClaims and sessionFromClaims', () => {
-  it('round-trips a GitHub session', () => {
+  it('round-trips a session with both forges in it', () => {
     const session = sessionFromClaims(CLAIMS);
     assert.deepEqual(session, {
       issuedAt: NOW,
@@ -40,6 +50,16 @@ describe('sessionToClaims and sessionFromClaims', () => {
         accessExpiresAt: NOW + 8 * HOUR,
         refreshToken: 'ghr_example-refresh-token',
         refreshExpiresAt: NOW + 180 * 24 * HOUR,
+      },
+      gitlab: {
+        'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+        'gitlab.com': {
+          type: 'oauth',
+          accessToken: 'tok',
+          accessExpiresAt: NOW + 60_000,
+          refreshToken: 'ref',
+          refreshExpiresAt: undefined,
+        },
       },
     });
     // And the way back names the same claims, so what a build writes is what
@@ -54,6 +74,14 @@ describe('sessionToClaims and sessionFromClaims', () => {
       sessionFromClaims({ iat: NOW / 1000, exp: CLAIMS.exp, auth: {} }),
       undefined
     );
+    assert.equal(
+      sessionFromClaims({
+        iat: NOW / 1000,
+        exp: CLAIMS.exp,
+        auth: { gitlab: {} },
+      }),
+      undefined
+    );
   });
 
   it('reads no GitHub credential from a grant under a host it does not serve', () => {
@@ -64,12 +92,16 @@ describe('sessionToClaims and sessionFromClaims', () => {
       exp: CLAIMS.exp,
       auth: {
         github: { 'github.corp.example': { accessToken: 'ghu_elsewhere' } },
+        gitlab: { 'gitlab.com': { type: 'pat', token: 'glpat-abc' } },
       },
     });
-    assert.equal(session, undefined);
+    assert.equal(session?.github, undefined);
+    assert.deepEqual(session?.gitlab, {
+      'gitlab.com': { type: 'pat', token: 'glpat-abc' },
+    });
   });
 
-  it('claims exactly the GitHub grant, under its host', () => {
+  it('writes no empty maps: a GitHub-only session claims no gitlab key', () => {
     const claims = sessionToClaims({
       issuedAt: NOW,
       github: { accessToken: 'ghu_example-access-token' },
@@ -113,7 +145,26 @@ describe('sessionClaimsSchema', () => {
     assert.equal(sessionClaimsSchema.safeParse(without).success, false);
   });
 
-  it('drops a malformed GitHub grant rather than refusing the claims', () => {
+  it('drops a malformed grant and keeps the good one', () => {
+    const parsed = sessionClaimsSchema.safeParse({
+      ...CLAIMS,
+      auth: {
+        gitlab: {
+          'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+          'bad.example.com': { type: 'pat' },
+          'worse.example.com': 'a string, not a grant',
+        },
+      },
+    });
+    assert.equal(parsed.success, true);
+    assert.deepEqual(parsed.data?.auth.gitlab, {
+      'gitlab.corp.com': { type: 'pat', token: 'glpat-abc' },
+      'bad.example.com': undefined,
+      'worse.example.com': undefined,
+    });
+  });
+
+  it('drops a malformed GitHub grant the same way', () => {
     const parsed = sessionClaimsSchema.safeParse({
       ...CLAIMS,
       auth: { github: { 'github.com': { refreshToken: 'ghr_no-access' } } },
@@ -124,11 +175,13 @@ describe('sessionClaimsSchema', () => {
 });
 
 describe('handoffToClaims and handoffFromClaims', () => {
-  it('round-trips a handoff', () => {
+  it('round-trips a handoff, GitLab host included', () => {
     const handoff = {
       state: 'state',
       verifier: 'verifier',
       returnTo: '/owner/repo/pull/1',
+      forge: 'gitlab' as const,
+      host: 'gitlab.corp.com',
     };
     const claims = handoffToClaims(handoff, NOW);
     assert.equal(handoffClaimsSchema.safeParse(claims).success, true);

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
 import { authExpiredMessage, failureForStatus } from '@/lib/failure';
-import { repoRefFromTarget } from '@/lib/forges';
+import { gitLabHostOf, repoRefFromTarget } from '@/lib/forges';
 import { toLoggable } from '@/lib/logger';
 import { reviewTargetKey, reviewTargetSearch } from '@/lib/reviewTarget';
 import { resolveForgeCredential } from '@/lib/server/credentials';
@@ -14,19 +14,19 @@ import { m } from '@/paraglide/messages.js';
 
 // One image the forge hosts, streamed back with the caller's credential.
 //
-// A comment body's `<img>` cannot load from a private repository: the
-// attachment address demands github.com's own session cookie, which the
-// browser does not have on this origin — the reviewer's credential is a
+// A comment body's `<img>` cannot load on a private instance: a relative
+// `/uploads/...` resolves against this origin, and an absolute one demands
+// the instance's own session cookie, which the browser does not have — the
 // sealed grant only this server reads. So `CommentBody` points those images
 // here and the forge fetches with the reviewer's credential. It is a route
 // and not a procedure for the same reason `/api/file` is one: the body is a
 // stream and an RPC envelope would buffer and escape it first.
 //
-// The proxy reaches only the image hosts the forge allows — GitHub's are
-// `isGitHubMediaUrl`'s list — so this is not a way to make the server fetch
-// anywhere. There is no byte cap: the address space is that list and the
-// content-type gate holds it to images, and the body is piped, never
-// buffered.
+// The proxy reaches only the host the review target names, which the forge
+// gate has already validated against the configured hosts — this is not a
+// way to make the server fetch anywhere. There is no byte cap: the address
+// space is that one host and the content-type gate holds it to images, and
+// the body is piped, never buffered.
 //
 // A dead token answers 401 like `/api/file`, but an `<img>` load cannot run
 // `withRefresh`: the picture stays broken until any real request refreshes
@@ -47,12 +47,13 @@ export const Route = createFileRoute('/api/media')({
         context: { log, config, session, search: target },
       }) => {
         const ref = repoRefFromTarget(target);
+        const host = gitLabHostOf(ref);
         const url = new URL(request.url).searchParams.get('url');
         if (url == null || url.length === 0 || url.length > 2048) {
           log.set({ outcome: 'invalid-url' });
           return textResponse(m.forge_that_image_address_is_not_valid(), {
             status: 400,
-            failure: { reason: 'bad-request', forge: ref.forge },
+            failure: { reason: 'bad-request', forge: ref.forge, host },
           });
         }
         log.set({ target: reviewTargetKey(target), targetKind: target.kind });
@@ -60,15 +61,16 @@ export const Route = createFileRoute('/api/media')({
         const { cred, refreshDue } = await resolveForgeCredential(
           config,
           session,
-          request
+          request,
+          target
         );
         // A cookie whose token has died is answered before the forge is asked:
         // the 401 is the same contract `/api/file` keeps.
         if (refreshDue) {
           log.set({ outcome: 'refresh-due' });
-          return textResponse(authExpiredMessage(ref.forge), {
+          return textResponse(authExpiredMessage(ref.forge, host), {
             status: 401,
-            failure: { reason: 'auth-expired', forge: ref.forge },
+            failure: { reason: 'auth-expired', forge: ref.forge, host },
           });
         }
         log.set({ authenticated: cred.token != null });
@@ -108,6 +110,7 @@ export const Route = createFileRoute('/api/media')({
                 error.failure ??
                 failureForStatus(error.status, {
                   forge: ref.forge,
+                  host,
                   credentialed: cred.token != null,
                 }),
             });

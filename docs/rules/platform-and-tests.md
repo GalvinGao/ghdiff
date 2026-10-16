@@ -75,8 +75,8 @@ separate step. Re-run it after any change to the bindings.
 The GraphQL document types are the opposite arrangement: committed, with no CI
 gate. `pnpm codegen:gql` runs `@graphql-codegen/client-preset` over the
 `graphql()`-tagged documents in the forges' `<forge>.gql.ts` files against the
-vendor's live schema — the URL in `codegen.ts`, so a run needs the network — and
-writes `src/lib/server/forges/gqlgen/`, which both oxc tools skip like
+vendors' live schemas — the URLs in `codegen.ts`, so a run needs the network —
+and writes `src/lib/server/forges/gqlgen/`, which both oxc tools skip like
 `src/routeTree.gen.ts`.
 
 `vite build` writes `dist/client` (the static assets, which the generated
@@ -90,7 +90,8 @@ figures. Almost all of it is shiki: `@pierre/diffs`'s own entry imports the bare
 `shiki` specifier, which carries the lazy loader for all 300-odd grammars, so
 importing anything from that package pulls the whole registry into whichever
 bundle it lands in. The server never highlights, so none of those chunks is ever
-evaluated there.
+evaluated there. Both forges ship in every build, because which hosts a
+deployment serves is a runtime answer, not a build-time one.
 
 A dependency that only a stylesheet imports is not in that graph. The three
 fontsource packages are reached from `globals.css`, which `__root.tsx` links as
@@ -107,10 +108,12 @@ Vite, and vitest's `resolve.tsconfigPaths` alike). oxlint's
 `import/no-relative-parent-imports` holds the line on `../`.
 
 A test that needs a particular deployment constructs it as a plain value:
-`parseDeploymentConfig({ GITHUB_TOKEN: '...' })` parses one from env-shaped
-input. Everything below the request boundaries takes the config as a parameter —
-there is no process-wide cache, so there is nothing to override and nothing to
-reset.
+`parseDeploymentConfig({ GITLAB_HOSTS: '[...]' })` parses one from env-shaped
+input, and helpers like `corpConfig` in `src/lib/server/credentials.test.ts`
+wrap that with defaults. Everything below the request boundaries takes the
+config as a parameter — there is no process-wide cache, so there is nothing to
+override and nothing to reset. Client modules take the host list as a parameter
+the same way.
 
 Three layers, and they answer different questions. Pure domain logic in
 `src/lib/` is unit tested as it always was. The RPC procedures are tested
@@ -123,4 +126,14 @@ invented cannot pass for a real one.
 
 The fixtures are recorded by the scripts in `test/fixtures/record/`, which share
 one scaffold (`record/lib.mjs`): the retry, the file per source, and the
-`_meta.json` manifest.
+`_meta.json` manifest. A re-record keeps what it did not record:
+`record/gitlab.mjs` preserves the `_meta.json` entries for fixtures it was not
+asked to fetch. A recording touches real data, so
+`record/gitlab-discussions.mjs` anonymizes what the private instance answers —
+bodies, usernames, avatars, file paths and the instance's own ids are replaced
+on the way out, and `sanitizeNote` drops `resolved_by` and `suggestions` — one
+names a real person, the other quotes the source's own code. The real usernames
+and instance ids the anonymization needs live in
+`record/gitlab-discussions.local.json`, which is gitignored (the committed
+`.example` shows the shape), and a username with no pseudonym stops the
+recording rather than passing through.

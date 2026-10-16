@@ -43,8 +43,9 @@ foot of the screen says why. Never hydrate a side that has not been checked.
 
 **A file's commit is `refs/pull/{n}/head`, its own sha, or the range's head.**
 `newSideRef` in `src/lib/server/forges/github.ts` answers for all three targets
-without a second request, and the pull ref resolves in the base repository even
-when the head belongs to a fork. A compare range typed across two forks
+without a second request — the GitLab twin in `gitlab.ts` spends one read of the
+merge request on its head sha — and the pull ref resolves in the base repository
+even when the head belongs to a fork. A compare range typed across two forks
 addresses its head as `owner:branch`, which no source can read, so that one
 range gets no unmodified lines and says so.
 
@@ -114,12 +115,21 @@ mutates in place and a filter change reuses, so an entry cannot go stale.
 `ReviewViewer` passes `item.fileDiff` to every annotation pass through that
 public contract rather than reaching into the renderer's protected cache.
 
-One thing the forge decides rather than this app: a line comment written on an
-expanded line of a **pull request** is a line outside the diff, and the review
-comment API refuses one. The failure arrives as the forge's own sentence in the
-strip along the foot of the screen, which is where every other comment failure
-already lands. A commit and a compare range keep their comments in the browser
-and take them anywhere.
+One thing the forges decide alike rather than this app: a line comment written
+on an expanded line of a **pull request** is a line outside the diff, and the
+review comment API refuses one — GitLab's discussions API answers the same way
+with a 400 that names the line code. The failure arrives as the forge's own
+sentence in the strip along the foot of the screen, which is where every other
+comment failure already lands. A staged comment on a merge request can never get
+that far: GitLab takes a draft note at any position and then fails the whole
+publish for it, so on a merge request **Add review suggestion** is disabled when
+the selection touches an unchanged line, with a Tooltip saying a suggestion sits
+on a changed line. GitHub answers a bad position as the thread is staged, and a
+context line inside a hunk is one it takes, so a pull request blocks nothing.
+`rangeTouchesContextLines` in `src/lib/lineMarks.ts` computes that from the same
+change blocks the dimming reads, so the gate is ready at parse time and no
+server round-trip decides it. A commit and a compare range keep their comments
+in the browser and take them anywhere.
 
 **A lens reads one kind of file another way, and it is not a plugin.**
 `src/lib/lenses/lenses.ts` lists every lens in `LENSES`, compiled in. A lens
@@ -360,52 +370,56 @@ Chinese query would step the old search instead of landing. And opening the bar
 takes a phone's file list away, which sits over the very column the bar is in.
 
 **A line comment is posted where it is written, or staged as the forge's own
-draft.** The composer on a pull request keys off whether the target holds a
-draft review yet: before one it carries two actions — **Comment**, solid, posts
-at once, and **Add review suggestion**, outline, starts the draft with this
-comment — and once one exists the single **Add review suggestion** joins it, the
-way github.com's own composer works once a review is pending. The draft lives on
-the forge, not in this browser — a thread on the viewer's pending review on
-GitHub — so it survives a reload and shows on the forge's own UI as pending, and
-a draft started there lists here. Staging is a forge write and asks for a
-credential, because the draft is the user's own: with none, **Add review
-suggestion** is disabled and a Tooltip says to sign in to stage a comment.
-Deleting a draft is the same kind of write, and Delete is withheld while any
-write is on the wire — the card offers it again once the write settles — so a
-create that has not landed cannot outlive its own card and wait for the verdict
-to publish it. A commit and a compare range have no verdict to publish a draft
-with, so their composer keeps the one action — **Save comment**, with the hint
-that the comment lives in this browser — and the thread stays in this browser
-under `ghdiff-comments:<targetKey>`. A draft thread can never be misread as
-posted: its card draws a dashed accent border (`border-dashed border-accent/60`)
-and a **Draft** chip where a pending one's **Posting…** sits, the sidebar's rows
-draw the same chip, and the thread draws no reply form — a draft takes no
-replies. A reply staged on github.com under a posted thread is a draft too, but
-it belongs to that thread: it joins the posted thread's card, carries the
-**Draft** chip on its own message and on the card, and keeps the posted thread's
-solid border, since the rest of the thread is published. It also has a Delete of
-its own, the draft's question and the drafts endpoint behind it, so dropping it
-never deletes the published messages around it. The header's **Review** button
-counts what is waiting — **Review (3)**, or the count beside the verdict already
-on record — and a staged reply stays in that count while its posted thread's own
-write is in flight or has failed, since a failed resolve leaves the reply on the
-forge for the verdict to publish. The submit dialog lists the draft threads
-above the note, `path:line` and the body's first line each. The note rule
-relaxes for them: `needs-note` fires only when the body is empty and nothing is
-drafted. On the submit the verdict publishes them all:
+draft.** The composer on a pull request or a merge request keys off whether the
+target holds a draft review yet: before one it carries two actions —
+**Comment**, solid, posts at once, and **Add review suggestion**, outline,
+starts the draft with this comment — and once one exists the single **Add review
+suggestion** joins it, the way github.com's own composer works once a review is
+pending. The draft lives on the forge, not in this browser — a draft note on
+GitLab, a thread on the viewer's pending review on GitHub — so it survives a
+reload and shows on the forge's own UI as pending, and a draft started there
+lists here. Staging is a forge write and asks for a credential, because the
+draft is the user's own: with none, **Add review suggestion** is disabled and a
+Tooltip says to sign in to stage a comment. Deleting a draft is the same kind of
+write, and Delete is withheld while any write is on the wire — the card offers
+it again once the write settles — so a create that has not landed cannot outlive
+its own card and wait for the verdict to publish it. A commit and a compare
+range have no verdict to publish a draft with, so their composer keeps the one
+action — **Save comment**, with the hint that the comment lives in this browser
+— and the thread stays in this browser under `ghdiff-comments:<targetKey>`. A
+draft thread can never be misread as posted: its card draws a dashed accent
+border (`border-dashed border-accent/60`) and a **Draft** chip where a pending
+one's **Posting…** sits, the sidebar's rows draw the same chip, and the thread
+draws no reply form — a draft takes no replies. A reply staged on github.com
+under a posted thread is a draft too, but it belongs to that thread: it joins
+the posted thread's card, carries the **Draft** chip on its own message and on
+the card, and keeps the posted thread's solid border, since the rest of the
+thread is published. It also has a Delete of its own, the draft's question and
+the drafts endpoint behind it, so dropping it never deletes the published
+messages around it. The header's **Review** button counts what is waiting —
+**Review (3)**, or the count beside the verdict already on record — and a staged
+reply stays in that count while its posted thread's own write is in flight or
+has failed, since a failed resolve leaves the reply on the forge for the verdict
+to publish. The submit dialog lists the draft threads above the note,
+`path:line` and the body's first line each. The note rule relaxes for them:
+`needs-note` fires only when the body is empty and nothing is drafted. On the
+submit the verdict publishes them all: `bulk_publish` on GitLab, with the note
+posted as its own call right after — an instance may ignore the publish's `note`
+param, and a body that rides only there is a body silently lost — and
 `POST …/reviews/{id}/events` on GitHub.
 
 **A thread resolves on its forge, and the press is on the card.** A forge thread
-that carries a `threadId` — every resolvable thread, so never a draft and never
-a browser-only comment — offers **Resolve thread** in the open card's header
-row, beside Delete and Close, and a resolved thread's collapsed one-line card
-offers **Unresolve** in the same slot. The press flips the mark optimistically:
-the card collapses or reopens at once, the sidebar row re-sorts with it, and the
-button holds until the forge answers. A refusal rolls the flip back and puts the
-forge's own sentence on the thread — who may resolve is the forge's answer, not
-this app's (GitHub: write access). A resolved thread stays collapsed to one line
-in the diff until it is pressed, and sorts after the open threads in the
-comments list.
+that carries a `threadId` — every resolvable thread on either forge, so never a
+draft and never a browser-only comment — offers **Resolve thread** in the open
+card's header row, beside Delete and Close, and a resolved thread's collapsed
+one-line card offers **Unresolve** in the same slot. The press flips the mark
+optimistically: the card collapses or reopens at once, the sidebar row re-sorts
+with it, and the button holds until the forge answers. A refusal rolls the flip
+back and puts the forge's own sentence on the thread — who may resolve is the
+forge's answer, not this app's (GitLab: the note's author, the merge request's
+author, or a maintainer; GitHub: write access). A resolved thread keeps its
+treatments on both forges: collapsed to one line in the diff until it is
+pressed, and sorted after the open threads in the comments list.
 
 **Copy JSONL hands the staged review to an agent.** A quiet button in the submit
 dialog's footer copies it as line-per-object JSON — `reviewToJsonl` in
@@ -453,31 +467,32 @@ and the read marks re-list on their own, and the fragment is applied again, so
 the scroll holds.
 
 **The tab belongs to the review on screen.** `useDocumentTitle` names it after
-the change — `Fix the bug · github.com/owner/repo #123 · ghdiff`, the host
-always in the path — which `reviewTabTitle` in `src/lib/reviewTarget.ts` builds,
-falling back to the bare place while the pull request's details are still
-arriving. `useReviewFavicon` clips the runner emoji and paints two octicon marks
-on the ground that frees, from `reviewFaviconDataUri` in
-`src/lib/reviewFavicon.ts`. The top mark is the kind of diff, always in the
-accent — with a fourth state, the draft-PR octicon, where the state is the
-glyph's shape and its colour never changes. The bottom mark is the head commit's
-checks in the watch list's colours: green check, red cross, and a solid amber
-dot while they run — github.com's own favicon vocabulary on a pull request, a
-bare check, a bare cross, and a solid yellow dot — and the mark keeps those
-colours on a draft too. The clip is only as wide as what sits on it: the whole
-right half while two marks stand there, just the top quarter when the type mark
-stands alone, so a commit and a compare keep three quarters of the runner. Each
-glyph carries a thin halo in the accent ink under its fill — a bare near-white
-mark vanishes on a light tab strip and a bare near-black one on a dark — and the
-dot is the one mark that goes without. That check axis rides `pulls.get` as
-`PullDetails.check` — GraphQL, because REST carries no rollup — and keeps the
-watch list's contract: no token, no mark, and a failed read costs the mark
-rather than the details. `'none'` paints no mark either: the branch has no
-checks, and the marks only speak when there is something to say. Both hooks
-write onto the document and restore what they found on unmount, so every other
-page keeps the app's own title and favicon; the favicon's hexes are read off the
-CSS tokens at paint time, and a watch on the scheme attribute repaints it
-however the flip arrives — the toggle, the platform, or another tab.
+the change — `Fix the bug · github.com/owner/repo #123 · ghdiff`, `!` for a
+GitLab number, the host always in the path — which `reviewTabTitle` in
+`src/lib/reviewTarget.ts` builds, falling back to the bare place while the pull
+request's details are still arriving. `useReviewFavicon` clips the runner emoji
+and paints two octicon marks on the ground that frees, from
+`reviewFaviconDataUri` in `src/lib/reviewFavicon.ts`. The top mark is the kind
+of diff, always in the accent — with a fourth state, the draft-PR octicon, where
+the state is the glyph's shape and its colour never changes. The bottom mark is
+the head commit's checks in the watch list's colours: green check, red cross,
+and a solid amber dot while they run — github.com's own favicon vocabulary on a
+pull request, a bare check, a bare cross, and a solid yellow dot — and the mark
+keeps those colours on a draft too. The clip is only as wide as what sits on it:
+the whole right half while two marks stand there, just the top quarter when the
+type mark stands alone, so a commit and a compare keep three quarters of the
+runner. Each glyph carries a thin halo in the accent ink under its fill — a bare
+near-white mark vanishes on a light tab strip and a bare near-black one on a
+dark — and the dot is the one mark that goes without. That check axis rides
+`pulls.get` as `PullDetails.check` — GraphQL on GitHub, because REST carries no
+rollup; `head_pipeline` on GitLab — and keeps the watch list's contract: no
+token, no mark, and a failed read costs the mark rather than the details.
+`'none'` paints no mark either: the branch has no checks, and the marks only
+speak when there is something to say. Both hooks write onto the document and
+restore what they found on unmount, so every other page keeps the app's own
+title and favicon; the favicon's hexes are read off the CSS tokens at paint
+time, and a watch on the scheme attribute repaints it however the flip arrives —
+the toggle, the platform, or another tab.
 
 **A phone gets one layout, and 480px is where it starts.** `--breakpoint-phone`
 in `src/globals.css` is 30rem, and `useIsPhone` states the same figure for the
@@ -768,8 +783,10 @@ body. A signature lasts five minutes and the card mounts only when opened, so a
 signed file that fails once its signature is old asks `usePullDetails` to fetch
 again; a young one never does, which is what keeps a real 404 from looping. The
 age is measured from the answer's arrival against the token's own `exp - nbf`,
-so no two clocks are compared. A body with no signed address falls back to the
-media proxy below.
+so no two clocks are compared. GitLab signs nothing: its uploads answer the
+instance's own session, so `src/lib/mediaUrl.ts` sends them through `/api/media`
+instead, and a body with no signed address on GitHub falls back to the same
+proxy.
 
 Review comments take the same path with one difference. `comments.list` asks for
 the same media type and each `CommentPayload` carries its own `attachments`, but
@@ -782,15 +799,18 @@ reviewer who only scrolled a picture into view. The map is never written to
 browser storage, because every address in it is dead within minutes.
 
 **An image the forge keeps behind its own sign-in goes through the media
-proxy.** GitHub's form of it is the `/owner/repo/assets/…` attachment and the
-raw host's file on a private repository, both of which demand github.com's own
-session — and the reviewer's grant is sealed on the server. So `BodyImage`
-passes every `src` it has no signed address for through `mediaSrc` in
-`src/lib/mediaUrl.ts`, which points an assets or raw address at `/api/media` and
-leaves everything else — a foreign host, a data URL, `user-images` and avatars,
-which are public already — alone. The target comes from
-`useCurrentReviewTarget()`, read off the path the way every other reader gets
-it, so the diff card, the expansion overlay, the sidebar list and the
+proxy.** GitLab's editor writes an upload as `/uploads/<hash>/name`, a relative
+address that resolves against this origin, and an absolute one on a private
+instance demands the instance's own session cookie, which the browser does not
+have — the reviewer's grant is sealed on the server. GitHub's form of the same
+thing is the `/owner/repo/assets/…` attachment and the raw host's file on a
+private repository. So `BodyImage` passes every `src` it has no signed address
+for through `mediaSrc` in `src/lib/mediaUrl.ts`, which points those addresses —
+a root-relative or same-host one on GitLab, an assets or raw one on GitHub — at
+`/api/media` and leaves everything else — a foreign host, a data URL,
+`user-images` and avatars, which are public already — alone. The target comes
+from `useCurrentReviewTarget()`, read off the path the way every other reader
+gets it, so the diff card, the expansion overlay, the sidebar list and the
 description all inherit the rewrite with no prop threading, and the hook living
 in the image component keeps the memoized body parse out of it. What the proxy
 does with the address — the host check, the redirect rule, the `image/*` gate —
@@ -972,7 +992,16 @@ splits them into People and Bots and the strip at the foot of the panel holds
 one kind at a time. GitHub types an App's account as `Bot` and the comments
 payload forwards that; `isBotLogin` is the fallback for a comment kept in
 browser storage, which keeps the login and nothing else. A bot answering a
-person leaves the thread under People.
+person leaves the thread under People. GitLab cannot answer the same way from a
+note: the discussions API serializes a note's author in the restricted user
+object — no `bot` field on it — and a self-hosted instance's busiest commenter
+is often a custom-named bot the username cannot give away. So `comments.list`
+reads each distinct author once, in parallel and capped at thirty, and the
+answer comes from the user object's own `bot` flag. `isGitLabBotLogin` is the
+fallback for whoever is left: an anonymous caller, a failed lookup, an author
+past the cap. Its two shapes are GitLab's reserved `project_\d+_bot_…` and
+`group_\d+_bot_…` names and the `-bot`/`_bot` suffix at a separator, which is
+what keeps `abbott` a person.
 
 **A path in the comment list is trimmed from its start.** The end of a path
 identifies the file, and a column of `src/components/CommentThre…` against

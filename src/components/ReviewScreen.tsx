@@ -12,6 +12,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppData } from '@/components/AppDataProvider';
 import { AttachmentsProvider } from '@/components/CommentBody';
+import { CommentExpansion } from '@/components/CommentExpansion';
+import { ExpandedThread } from '@/components/CommentThreadCard';
 import { DiffSearchBar } from '@/components/DiffSearchBar';
 import {
   LocalizationPanel,
@@ -36,6 +38,7 @@ import { type DiffAnchorTarget, useDiffAnchor } from '@/hooks/useDiffAnchor';
 import { useDiffFileLoader } from '@/hooks/useDiffFileLoader';
 import { useDiffSearch } from '@/hooks/useDiffSearch';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { gitLabConnectionFor } from '@/hooks/useGitHubSession';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { usePullConversation } from '@/hooks/usePullConversation';
 import { usePullDetails } from '@/hooks/usePullDetails';
@@ -69,11 +72,19 @@ import {
   countCommentAuthors,
   filterCommentSections,
 } from '@/lib/commentAuthors';
-import { type CommentListEntry, type CommentMetadata } from '@/lib/comments';
-import { buildCommentSections } from '@/lib/commentSections';
+import {
+  type CommentListEntry,
+  type CommentMetadata,
+  MERGE_REQUEST_ITEM_ID,
+} from '@/lib/comments';
+import {
+  buildCommentSections,
+  buildMergeRequestSection,
+} from '@/lib/commentSections';
 import type { SearchMatch } from '@/lib/diffSearch';
 import {
   forgeOfTarget,
+  isGitLabTarget,
   pullRefFromTarget,
   reviewCapabilities,
 } from '@/lib/forges';
@@ -203,6 +214,14 @@ export function ReviewScreen({
   const [dismissedError, setDismissedError] = useState<string | undefined>(
     undefined
   );
+  // The merge-request thread open over its sidebar row, if one is. Only the
+  // row and the thread's key are held: the metadata is read live at render, so
+  // a reply, a pending mark or a failure shows as it lands — and the panel is
+  // gone with the thread, where a snapshot would outlive it.
+  const [mergeRequestThread, setMergeRequestThread] = useState<{
+    anchor: HTMLElement;
+    key: string;
+  } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<CodeViewHandle<CommentMetadata> | null>(null);
   // The frame waiting to ask the viewer for a place again. See runOnFrames.
@@ -255,7 +274,10 @@ export function ReviewScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [targetKey]
   );
-  const pullTarget = target.kind === 'github-pull' ? target : undefined;
+  const pullTarget =
+    target.kind === 'github-pull' || target.kind === 'gitlab-mr'
+      ? target
+      : undefined;
   // What this target can do with comments, drafts, and verdicts. A commit and
   // a compare range have no review thread on their forge: their comments stay
   // in this browser, and no draft or verdict control is offered.
@@ -347,14 +369,24 @@ export function ReviewScreen({
   // nothing on a review nobody expands.
   const files = useDiffFileLoader({ target });
   // Whose name and picture a comment written here carries before the forge
-  // answers.
-  const commentViewer = session.viewer;
+  // answers: the GitHub viewer for a GitHub target, and for a GitLab one the
+  // host's own connection — a GitLab author and the GitHub viewer are not the
+  // same person just because they share a login.
+  const commentViewer =
+    forgeTarget == null
+      ? session.viewer
+      : isGitLabTarget(forgeTarget)
+        ? gitLabConnectionFor(session.gitlab, forgeTarget.host)?.viewer
+        : session.viewer;
   const comments = useReviewComments({
     target,
     entries: patch.data.entries,
     viewerLogin: commentViewer?.login,
     viewerAvatarUrl: commentViewer?.avatarUrl,
     ready: patch.state === 'ready',
+    // The GitLab create paths read the patch itself to state a comment's
+    // diff position as raw cursors; every other target never asks for it.
+    patchText: patch.text,
     // While a verdict is in flight every comment write is blocked: the
     // verdict publishes what the forge holds, and a write that lands
     // mid-submit is one its answer cannot account for.
@@ -479,7 +511,9 @@ export function ReviewScreen({
       ? target.kind === 'local-diff'
         ? repoNameFromRoot(target.root)
         : ''
-      : `${forgeTarget.owner}/${forgeTarget.repo}`;
+      : isGitLabTarget(forgeTarget)
+        ? `${forgeTarget.host}/${forgeTarget.project}`
+        : `${forgeTarget.owner}/${forgeTarget.repo}`;
   const patchPaths = useMemo(
     () => patch.data.entries.map((entry) => entry.path),
     [patch.data.entries]
@@ -517,15 +551,19 @@ export function ReviewScreen({
     viewerItems,
   ]);
 
-  const commentSections = useMemo(
-    () =>
-      buildCommentSections(
-        patch.data.items,
-        comments.annotationsByItemId,
-        patch.data.entries
-      ),
-    [comments.annotationsByItemId, patch.data.entries, patch.data.items]
-  );
+  const commentSections = useMemo(() => {
+    const sections = buildCommentSections(
+      patch.data.items,
+      comments.annotationsByItemId,
+      patch.data.entries
+    );
+    const mergeRequestSection = buildMergeRequestSection(
+      comments.annotationsByItemId.get(MERGE_REQUEST_ITEM_ID) ?? []
+    );
+    return mergeRequestSection == null
+      ? sections
+      : [mergeRequestSection, ...sections];
+  }, [comments.annotationsByItemId, patch.data.entries, patch.data.items]);
 
   // Every thread in the diff, and the subset the sidebar lists. The counts come
   // from the whole set, so the buttons still say how many the other filter
@@ -896,9 +934,16 @@ export function ReviewScreen({
   );
 
   const handleSelectComment = useCallback(
-    (comment: CommentListEntry) => {
+    (comment: CommentListEntry, rowAnchor?: HTMLElement) => {
+      // A thread on the merge request itself is no annotation in the diff, so
+      // there is nothing to scroll to: the card opens over the row instead.
+      if (comment.scope === 'merge-request') {
+        if (rowAnchor == null) return;
+        setMergeRequestThread({ anchor: rowAnchor, key: comment.key });
+        return;
+      }
       const viewer = viewerRef.current;
-      if (viewer == null) return;
+      if (viewer == null || comment.range == null) return;
       const range = comment.range;
       landOn(comment.itemId);
       const revealed = revealLensFile(comment.itemId);
@@ -1040,13 +1085,18 @@ export function ReviewScreen({
     [anchor]
   );
 
-  // The target as the JSONL export names it — `github.com:owner/repo#123` —
-  // which only a pull target has.
+  // The target as the JSONL export names it — `github.com:owner/repo#123`,
+  // the GitLab host in github.com's place — which only a pull target has.
   const stagedTarget = useMemo(
-    () =>
-      target.kind === 'github-pull'
-        ? `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}#${target.number}`
-        : undefined,
+    () => {
+      if (target.kind === 'github-pull') {
+        return `${GITHUB_HOSTS[0]}:${target.owner}/${target.repo}#${target.number}`;
+      }
+      if (target.kind === 'gitlab-mr') {
+        return `${target.host}:${target.project}#${target.number}`;
+      }
+      return undefined;
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [targetKey]
   );
@@ -1058,10 +1108,28 @@ export function ReviewScreen({
     () =>
       forgeTarget == null
         ? undefined
-        : { owner: forgeTarget.owner, repo: forgeTarget.repo },
+        : isGitLabTarget(forgeTarget)
+          ? {
+              forge: 'gitlab',
+              host: forgeTarget.host,
+              project: forgeTarget.project,
+            }
+          : { owner: forgeTarget.owner, repo: forgeTarget.repo },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [targetKey]
   );
+
+  // The open merge-request thread, read live rather than remembered: it gains
+  // replies, pending marks and failures while it is open, and a navigation
+  // replaces it — a snapshot would hide all three and outlive its merge
+  // request.
+  const mergeRequestMetadata =
+    mergeRequestThread == null
+      ? undefined
+      : comments.annotationsByItemId
+          .get(MERGE_REQUEST_ITEM_ID)
+          ?.find((item) => item.metadata.key === mergeRequestThread.key)
+          ?.metadata;
 
   // A failed comment-store read, for the strip along the foot of the screen.
   // The submit dialog gates on the same failure.
@@ -1379,6 +1447,27 @@ export function ReviewScreen({
           ready={patch.state === 'ready'}
           subject={watchOfferSubject}
         />
+      )}
+
+      {/* A thread on the merge request itself, read over its own row: the
+          diff holds no annotation for it, so the thread opens here instead. */}
+      {mergeRequestThread != null && mergeRequestMetadata != null && (
+        <CommentExpansion
+          anchor={mergeRequestThread.anchor}
+          measureKey={mergeRequestMetadata.comments?.length}
+          onClose={() => setMergeRequestThread(null)}
+        >
+          <ExpandedThread
+            forge={forge}
+            itemId={MERGE_REQUEST_ITEM_ID}
+            metadata={mergeRequestMetadata}
+            onClose={() => setMergeRequestThread(null)}
+            onDelete={comments.removeComment}
+            onReply={comments.replyToThread}
+            onResolveThread={comments.resolveThread}
+            store={comments.store}
+          />
+        </CommentExpansion>
       )}
     </>
   );
