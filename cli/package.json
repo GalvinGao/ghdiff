@@ -1,6 +1,6 @@
 {
   "name": "@imggdev/ghdiff",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read a local git diff in the ghdiff review surface.",
   "keywords": [
     "cli",
