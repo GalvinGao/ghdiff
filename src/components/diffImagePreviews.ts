@@ -1,5 +1,7 @@
 import { m } from '../paraglide/messages.js';
+import { getLocale } from '../paraglide/runtime.js';
 import { findImageLinks } from '@/lib/imageLinks';
+import { textDirection } from '@/lib/locale';
 
 export const IMAGE_PREVIEWS_CSS = `
 [data-ghdiff-image] {
@@ -167,6 +169,7 @@ function createController(
       hide();
       closeActive = hide;
       active = button;
+      panel.dir = textDirection(getLocale());
       panel.setAttribute('aria-label', m.image_preview_label({ url }));
       const header = doc.createElement('div');
       header.dataset.ghdiffImageHeader = '';

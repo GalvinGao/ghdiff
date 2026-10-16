@@ -69,6 +69,32 @@ try {
       story: 'unified',
       locale: 'ar',
     },
+    {
+      name: 'persian',
+      width: 402,
+      height: 874,
+      theme: 'light',
+      story: 'unified',
+      locale: 'fa',
+    },
+    {
+      name: 'arabic-fallback',
+      width: 402,
+      height: 874,
+      theme: 'light',
+      story: 'unified',
+      locale: 'ar',
+      fallback: true,
+    },
+    {
+      name: 'persian-fallback',
+      width: 402,
+      height: 874,
+      theme: 'light',
+      story: 'unified',
+      locale: 'fa',
+      fallback: true,
+    },
   ]) {
     const context = await browser.newContext({
       viewport: { width: scenario.width, height: scenario.height },
@@ -140,6 +166,22 @@ try {
     const panel = page.locator('[data-ghdiff-image-preview]');
     const image = panel.locator('img');
     await image.waitFor();
+    const direction = ['ar', 'fa'].includes(scenario.locale) ? 'rtl' : 'ltr';
+    assert.equal(
+      await panel.evaluate((node) => getComputedStyle(node).direction),
+      direction
+    );
+    assert.equal(
+      await panel
+        .locator('a')
+        .evaluate((node) => getComputedStyle(node).direction),
+      'ltr'
+    );
+    const linkBox = await panel.locator('a').boundingBox();
+    const closeBox = await panel.locator('button').boundingBox();
+    assert.ok(
+      direction === 'rtl' ? closeBox.x < linkBox.x : closeBox.x > linkBox.x
+    );
     assert.ok(await image.evaluate((node) => node.naturalWidth > 0));
     const box = await panel.boundingBox();
     assert.ok(
@@ -259,6 +301,148 @@ try {
       imageRequests: imageRequests.length,
       passed: true,
     });
+    await context.close();
+  }
+  for (const scenario of [
+    {
+      name: 'effect-unified',
+      diffStyle: 'unified',
+      theme: 'light',
+      search: false,
+      width: 1200,
+      height: 700,
+    },
+    {
+      name: 'effect-split',
+      diffStyle: 'split',
+      theme: 'dark',
+      search: false,
+      width: 1200,
+      height: 700,
+    },
+    {
+      name: 'effect-search-unified',
+      diffStyle: 'unified',
+      theme: 'light',
+      search: true,
+      width: 1200,
+      height: 700,
+    },
+    {
+      name: 'effect-search-split',
+      diffStyle: 'split',
+      theme: 'dark',
+      search: true,
+      width: 1200,
+      height: 700,
+    },
+    {
+      name: 'effect-phone-light',
+      diffStyle: 'unified',
+      theme: 'light',
+      search: false,
+      width: 402,
+      height: 874,
+    },
+    {
+      name: 'effect-phone-dark',
+      diffStyle: 'unified',
+      theme: 'dark',
+      search: false,
+      width: 402,
+      height: 874,
+    },
+  ]) {
+    const context = await browser.newContext({
+      viewport: { width: scenario.width, height: scenario.height },
+    });
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    const url = new URL('/iframe.html', origin);
+    url.search = new URLSearchParams({
+      id: `review-image-link-previews--${scenario.search ? 'effect-search' : 'effect-fold'}`,
+      viewMode: 'story',
+      globals: `theme:${scenario.theme}`,
+      args: `themeType:${scenario.theme};diffStyle:${scenario.diffStyle}`,
+    });
+    await page.goto(url.href);
+    const buttons = page.locator('[data-ghdiff-image]');
+    await buttons.nth(2).waitFor();
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(700);
+    const icon = buttons.first();
+    const fold = page.locator('[data-ghdiff-fold]');
+    const source = await icon.evaluate(
+      (node) => node.closest('[data-line]').textContent
+    );
+    const imageUrl = await icon.getAttribute('data-ghdiff-image');
+    assert.equal(
+      await icon.locator('xpath=ancestor::*[@data-ghdiff-fold-part]').count(),
+      1
+    );
+    assert.equal(
+      await fold.getAttribute('aria-expanded'),
+      String(scenario.search)
+    );
+    assert.equal(await icon.isVisible(), scenario.search);
+    if (scenario.search) {
+      const texts = await page.evaluate(() =>
+        [...CSS.highlights.get('ghdiff-search')].map((span) => {
+          const range = document.createRange();
+          range.setStart(span.startContainer, span.startOffset);
+          range.setEnd(span.endContainer, span.endOffset);
+          return range.toString();
+        })
+      );
+      assert.ok(texts.length > 0 && texts.every((text) => text === imageUrl));
+    } else {
+      await icon.focus();
+      assert.equal(
+        await icon.evaluate(
+          (node) => node.getRootNode().activeElement === node
+        ),
+        false
+      );
+      assert.equal(
+        await fold
+          .locator('xpath=ancestor::*[@data-line]')
+          .getByRole('button')
+          .count(),
+        1,
+        'a closed fold exposes only its label to keyboard and assistive technology'
+      );
+      await page.screenshot({
+        path: join(output, `${scenario.name}-closed.png`),
+      });
+      await fold.click();
+    }
+    assert.ok(await icon.isVisible());
+    await icon.hover();
+    const panel = page.locator('[data-ghdiff-image-preview]');
+    await panel.locator('img').waitFor();
+    await page.screenshot({ path: join(output, `${scenario.name}-open.png`) });
+    await panel.locator('button').click();
+    await fold.click();
+    assert.equal(await icon.isVisible(), false);
+    const lens = page.getByRole('button', { name: 'Effect lens', exact: true });
+    await lens.click();
+    assert.equal(await fold.count(), 0);
+    assert.ok(await icon.isVisible());
+    await lens.click();
+    assert.equal(await fold.count(), 1);
+    assert.equal(
+      await icon.isVisible(),
+      false,
+      'enabling the lens also folds existing image controls'
+    );
+    assert.equal(await buttons.count(), 3);
+    assert.equal(
+      await icon.evaluate((node) => node.closest('[data-line]').textContent),
+      source
+    );
+    assert.deepEqual(errors, []);
+    results.push({ ...scenario, passed: true });
     await context.close();
   }
   await writeFile(
