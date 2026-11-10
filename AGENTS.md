@@ -228,6 +228,16 @@ names change. The title-row actions were the other candidate and lost: GitHub
 puts the review state, **Code** and **Preview** there, and it needs a second
 selector for the same button.
 
+That rule already paid for itself once. The header GitHub shipped in November
+2026 renamed the nav to `Pull request`, moved **Files changed** to `/changes`,
+and put every tab in an `li` of Primer's `UnderlineNav`. So `findHost` looks for
+the link to `/changes` and then `/files` first, and the two selectors are only a
+fallback. When the link sits in an `li`, the button takes a third skin,
+`underline`: it copies the class names of that tab and of its `li` at run time,
+carries the same `data-component` spans, and lets Primer's own rules draw it.
+That skin needs no figures of its own, so a rebuild that renames every hashed
+class still leaves the button matching the tab beside it.
+
 **A commit is the other page that is one diff, and its button goes beside Browse
 files.** A commit header has no tab row, so `findHost` sends a commit to the
 same `findRowByLinkTo` with a different question: the row that holds the link to
