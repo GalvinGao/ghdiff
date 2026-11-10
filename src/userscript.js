@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ghdiff
 // @namespace    https://ghdiff.com/
-// @version      1.3.0
+// @version      1.4.0
 // @description  Adds a ghdiff button to the tab row of every GitHub pull request, and beside Browse files on every commit.
 // @author       GalvinGao
 // @homepageURL  https://github.com/GalvinGao/ghdiff
@@ -35,6 +35,7 @@ function userscriptLocale() {
   const APP_ORIGIN = 'https://ghdiff.com';
   const BUTTON_ID = 'ghdiff-open-button';
   const STYLE_ID = 'ghdiff-open-style';
+  const ITEM_ID = 'ghdiff-open-item';
 
   const PULL_PATH = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:\/|$)/;
   const COMMIT_PATH = /^\/([^/]+)\/([^/]+)\/commit\/([0-9a-f]{7,40})(?:\/|$)/i;
@@ -46,8 +47,17 @@ function userscriptLocale() {
   // carrying one over would put a fragment in the bar that resolves to nothing.
   const GITHUB_DIFF_HASH = /^#diff-[0-9a-f]{64}(?:[LR]\d+(?:-[LR]\d+)?)?$/;
 
-  // The button wears two skins, and `data-ghdiff-place` picks between them.
-  // Both were read off the live page rather than guessed.
+  // The button wears three skins, and `data-ghdiff-place` picks between them.
+  // All were read off the live page rather than guessed.
+  //
+  // In the pull request header GitHub shipped in November 2026 the tab row is
+  // Primer's `UnderlineNav`: a list with one item per tab, every class on it
+  // hashed per build. There the button wears no style of its own. It takes the
+  // classes of the Files changed tab at run time, sits in an item that takes
+  // the classes of that tab's item, and carries the same `data-component`
+  // spans, so Primer's own rules draw it — hover, the icon's colour, and the
+  // icon going under the breakpoint the row names — and a rebuild that renames
+  // every class still leaves it matching its neighbour.
   //
   // In the pull request's tab row it is another one of github.com's own tabs —
   // the same `TabNavLink` the row draws for Files changed: transparent and
@@ -68,7 +78,8 @@ function userscriptLocale() {
   // reviewer's own scheme; the fallbacks are the ones Primer itself ships, for
   // the day a token is renamed.
   const STYLE = `
-#${BUTTON_ID} {
+#${BUTTON_ID}[data-ghdiff-place="tabs"],
+#${BUTTON_ID}[data-ghdiff-place="actions"] {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
@@ -79,7 +90,9 @@ function userscriptLocale() {
   cursor: pointer;
   appearance: none;
 }
-#${BUTTON_ID} .ghdiff-icon {
+#${BUTTON_ID}[data-ghdiff-place="tabs"] [data-component="icon"],
+#${BUTTON_ID}[data-ghdiff-place="actions"] [data-component="icon"] {
+  display: inline-flex;
   flex: 0 0 auto;
   color: var(--fgColor-muted, #59636e);
 }
@@ -99,7 +112,7 @@ function userscriptLocale() {
   outline-offset: -6px;
 }
 @media (max-width: 575.98px) {
-  #${BUTTON_ID}[data-ghdiff-place="tabs"] .ghdiff-icon {
+  #${BUTTON_ID}[data-ghdiff-place="tabs"] [data-component="icon"] {
     display: none;
   }
 }
@@ -193,7 +206,8 @@ function userscriptLocale() {
       : m.userscript_open_commit({}, { locale: userscriptLocale() });
   }
 
-  // The row of tabs, in the two headers GitHub serves today. The React header
+  // The row of tabs in the two older headers, for a page that still serves
+  // one and draws no tab that the link search below can find. The React header
   // names its own classes with a hash per build, so `aria-label` is the one
   // thing on it that a script can hold to.
   const TAB_LISTS = [
@@ -201,18 +215,36 @@ function userscriptLocale() {
     '.tabnav-tabs',
   ];
 
+  // Files changed is `/changes` in the header GitHub shipped in November 2026,
+  // and `/files` in the two before it.
+  const FILES_TABS = ['changes', 'files'];
+
   /**
-   * Where the button goes for this target: the tab bar on a pull request, the
-   * action row on a commit. Both are found by what they hold rather than by
-   * what they are called — see the two functions below.
+   * Where the button goes for this target: the tab row on a pull request, the
+   * action row on a commit. A host is the row, and the tab the button copies
+   * its classes from when the row is a list.
    */
   function findHost(target) {
-    if (target.kind === 'commit') return findRowByLinkTo(treePath(target));
-    for (const selector of TAB_LISTS) {
-      const found = document.querySelector(selector);
-      if (found != null) return found;
+    if (target.kind === 'commit') {
+      const row = findRowByLinkTo(treePath(target));
+      return row == null ? null : { row, place: 'actions' };
     }
-    return findRowByLinkTo(`${targetPath(target)}/files`);
+    for (const tab of FILES_TABS) {
+      const link = findLinkTo(`${targetPath(target)}/${tab}`);
+      if (link == null) continue;
+      const item = link.parentElement;
+      const list = item?.parentElement;
+      if (item?.tagName === 'LI' && list != null) {
+        return { row: list, place: 'underline', item, link };
+      }
+      const row = rowOf(link);
+      if (row != null) return { row, place: 'tabs' };
+    }
+    for (const selector of TAB_LISTS) {
+      const row = document.querySelector(selector);
+      if (row != null) return { row, place: 'tabs' };
+    }
+    return null;
   }
 
   /** Browse files, which is this commit's own tree page. */
@@ -221,7 +253,7 @@ function userscriptLocale() {
   }
 
   // No selector GitHub gives is a contract, and it has already replaced the
-  // pull request header once. So neither row is looked up by name. What each one
+  // pull request header twice. So no row is looked up by name. What each one
   // *is* is the row that holds the link to one page — Files changed for a pull
   // request, Browse files for a commit — so find that link and take the row it
   // sits in.
@@ -231,31 +263,44 @@ function userscriptLocale() {
   // and the commit header holds two of them — a wide one with the words and a
   // narrow icon, one of which is always hidden. They share the one row, so
   // whichever is on screen answers.
-  function findRowByLinkTo(path) {
+  function findLinkTo(path) {
     for (const link of document.querySelectorAll('a[href]')) {
+      if (link.id === BUTTON_ID) continue;
       const href = link.getAttribute('href');
       if (href == null) continue;
       const url = new URL(href, location.href);
       if (url.pathname !== path) continue;
       if (url.hash !== '' || url.search !== '') continue;
       if (link.offsetParent == null) continue;
-      const row = link.parentElement;
-      if (row != null && row.children.length > 1) return row;
+      return link;
     }
     return null;
   }
 
-  function placeFor(target) {
-    return target.kind === 'pull' ? 'tabs' : 'actions';
+  function rowOf(link) {
+    const row = link.parentElement;
+    return row != null && row.children.length > 1 ? row : null;
+  }
+
+  function findRowByLinkTo(path) {
+    const link = findLinkTo(path);
+    return link == null ? null : rowOf(link);
   }
 
   function buildButton() {
     const button = document.createElement('a');
     button.id = BUTTON_ID;
+    // The two spans are the ones Primer's `UnderlineNav` puts in every tab, so
+    // its rules find them; `data-content` is what it reserves the bold width
+    // of the selected label with.
     const label = document.createElement('span');
+    label.dataset.component = 'text';
+    label.dataset.content = 'ghdiff';
     label.textContent = 'ghdiff';
+    const iconBox = document.createElement('span');
+    iconBox.dataset.component = 'icon';
     const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    icon.setAttribute('class', 'ghdiff-icon');
+    icon.setAttribute('class', 'octicon');
     icon.setAttribute('viewBox', '0 0 16 16');
     icon.setAttribute('width', '16');
     icon.setAttribute('height', '16');
@@ -265,9 +310,10 @@ function userscriptLocale() {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', LINK_EXTERNAL_PATH);
     icon.append(path);
+    iconBox.append(icon);
     // The icon leads, because in the tab row every tab leads with its own
     // octicon; Primer buttons carry leading visuals just as happily.
-    button.append(icon, label);
+    button.append(iconBox, label);
     return button;
   }
 
@@ -279,36 +325,57 @@ function userscriptLocale() {
     (document.head ?? document.documentElement).append(style);
   }
 
+  function removeButton(button) {
+    button?.remove();
+    document.getElementById(ITEM_ID)?.remove();
+  }
+
   function sync() {
     const target = currentTarget();
     const existing = document.getElementById(BUTTON_ID);
     if (target == null) {
-      existing?.remove();
+      removeButton(existing);
       return;
     }
     const host = findHost(target);
     if (host == null) {
-      existing?.remove();
+      removeButton(existing);
       return;
     }
     installStyle();
     const button = existing ?? buildButton();
+    const { row, place } = host;
     // A move from a pull request to a commit reuses this button, so everything
     // that differs between the two is written on every sync and not once at
     // build time.
     const href = ghdiffHref(target);
     if (button.getAttribute('href') !== href) button.setAttribute('href', href);
-    const place = placeFor(target);
     if (button.dataset.ghdiffPlace !== place)
       button.dataset.ghdiffPlace = place;
+    // Only the list row lends its classes, and a move to a commit takes them
+    // back, or the action skin would be drawn under a tab's rules.
+    const className = place === 'underline' ? host.link.className : '';
+    if (button.className !== className) button.className = className;
     const title = buttonTitle(target);
     if (button.title !== title) button.title = title;
     // React owns these rows and re-renders them, which drops anything it did
     // not put there. Appending is what brings the button back. Appending only
     // when it is not already the last child is what keeps this from answering
     // its own observer for ever.
-    if (button.parentElement !== host || button.nextElementSibling != null) {
-      host.append(button);
+    const item = document.getElementById(ITEM_ID);
+    let mount = button;
+    if (place === 'underline') {
+      mount = item ?? document.createElement('li');
+      mount.id = ITEM_ID;
+      if (mount.className !== host.item.className) {
+        mount.className = host.item.className;
+      }
+      if (button.parentElement !== mount) mount.append(button);
+    } else {
+      item?.remove();
+    }
+    if (mount.parentElement !== row || mount.nextElementSibling != null) {
+      row.append(mount);
     }
   }
 
